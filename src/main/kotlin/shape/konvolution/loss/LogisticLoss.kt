@@ -1,18 +1,18 @@
 package shape.konvolution.loss
 
-import no.uib.cipr.matrix.Matrix
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.RealMatrix
+import shape.konvolution.createRealMatrix
 
 class LogisticLoss : LossFunction {
 
     // -log(probability of the correct target)
-    override fun forward(predictions: Matrix, targets : Matrix): Double {
+    override fun forward(predictions: RealMatrix, targets : RealMatrix): Double {
 
         var loss = 0.0
 
-        for (indexColumn in 0..targets.numColumns() -1) {
+        for (indexColumn in 0..targets.numberColumns() -1) {
 
-            for (indexRow in 0..targets.numRows() - 1) {
+            for (indexRow in 0..targets.numberRows() - 1) {
 
                 val target = targets.get(indexRow, indexColumn)
 
@@ -30,13 +30,13 @@ class LogisticLoss : LossFunction {
     }
 
     // -1/probability of the correct target summed over each column
-    override fun backward(predictions: Matrix, targets : Matrix) : Matrix {
+    override fun backward(predictions: RealMatrix, targets : RealMatrix) : RealMatrix {
 
-        val derivatives = createDenseMatrix(predictions.numRows(), predictions.numColumns())
+        val derivatives = createRealMatrix(predictions.numberRows(), predictions.numberColumns())
 
-        for (indexColumn in 0..predictions.numColumns() -1) {
+        for (indexColumn in 0..predictions.numberColumns() -1) {
 
-            for (indexRow in 0..targets.numRows() - 1) {
+            for (indexRow in 0..targets.numberRows() - 1) {
 
                 val target = targets.get(indexRow, indexColumn)
 

@@ -1,9 +1,8 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
-import no.uib.cipr.matrix.DenseMatrix
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.BackwardResult
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.RealMatrix
+import shape.konvolution.createRealMatrix
 
 /*
     Example:
@@ -11,19 +10,19 @@ import shape.konvolution.createDenseMatrix
     The output is a 100D row vector
  */
 
-class MaxPoolingLayer : Layer {
+class MaxPoolingLayer : ContinuationLayer {
 
-    override fun forward(input: Matrix): DenseMatrix {
+    override fun forward(input: RealMatrix): RealMatrix {
 
-        val maxPooled = createDenseMatrix(input.numRows(), 1)
+        val maxPooled = createRealMatrix(input.numberRows(), 1)
 
         var index = 0
 
-        for (indexRow in 0..input.numRows() - 1) {
+        for (indexRow in 0..input.numberRows() - 1) {
 
             var maxValue = Double.NEGATIVE_INFINITY
 
-            for (indexColumn in 0..input.numColumns() - 1) {
+            for (indexColumn in 0..input.numberColumns() - 1) {
 
                 val entry = input.get(indexRow, indexColumn)
 
@@ -41,16 +40,16 @@ class MaxPoolingLayer : Layer {
 
     }
 
-    override fun backward(input: Matrix, output : Matrix, chain : Matrix): BackwardResult {
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
-        val derivatives = createDenseMatrix(input.numRows(), input.numColumns())
+        val derivatives = createRealMatrix(input.numberRows(), input.numberColumns())
 
-        for (indexRow in 0..input.numRows() - 1) {
+        for (indexRow in 0..input.numberRows() - 1) {
 
             var maxValue = Double.NEGATIVE_INFINITY
             var maxIndexColumn = -1
 
-            for (indexColumn in 0..input.numColumns() - 1) {
+            for (indexColumn in 0..input.numberColumns() - 1) {
 
                 val entry = input.get(indexRow, indexColumn)
 

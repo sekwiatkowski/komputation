@@ -1,26 +1,25 @@
 package shape.konvolution
 
 import no.uib.cipr.matrix.DenseMatrix
-import no.uib.cipr.matrix.Matrix
 
-fun createDenseMatrix(vararg rows: DoubleArray) =
+fun createRealMatrix(vararg rows: DoubleArray) =
 
-    DenseMatrix(rows)
+    RealMatrix(*rows)
 
-fun createDenseMatrix(numberRows: Int, numberColumns: Int) =
+fun createRealMatrix(numberRows: Int, numberColumns: Int) =
 
-    DenseMatrix(numberRows, numberColumns)
+    RealMatrix(numberRows, numberColumns)
 
-fun concatColumns(matrices : Array<Matrix>, numberMatrices : Int, numberRows : Int, numberColumns : Int): Matrix {
+fun concatColumns(matrices : Array<RealMatrix>, numberMatrices : Int, numberRows : Int, numberColumns : Int): RealMatrix {
 
-    val concatenation = createDenseMatrix(numberRows, numberColumns)
+    val concatenation = createRealMatrix(numberRows, numberColumns)
 
     var indexColumnConcatenation = 0
 
     for (indexMatrix in 0..numberMatrices - 1) {
 
         val matrix = matrices[indexMatrix]
-        val numberColumnsMatrix = matrix.numColumns()
+        val numberColumnsMatrix = matrix.numberColumns()
 
         for (indexColumnMatrix in 0..numberColumnsMatrix - 1) {
 
@@ -40,13 +39,13 @@ fun concatColumns(matrices : Array<Matrix>, numberMatrices : Int, numberRows : I
 
 }
 
-fun softmax(input: Matrix) =
+fun softmax(input: RealMatrix) =
 
-    DenseMatrix(input.numRows(), input.numColumns()).let { activated ->
+    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
-        for (indexColumn in 0..input.numColumns() - 1) {
+        for (indexColumn in 0..input.numberColumns() - 1) {
 
-            val exponentiated = Array(input.numRows()) { indexRow ->
+            val exponentiated = Array(input.numberRows()) { indexRow ->
 
                 Math.exp(input.get(indexRow, indexColumn))
 
@@ -54,7 +53,7 @@ fun softmax(input: Matrix) =
 
             val sum = exponentiated.sum()
 
-            for (indexRow in 0..input.numRows() - 1) {
+            for (indexRow in 0..input.numberRows() - 1) {
 
                 val activation = exponentiated[indexRow].div(sum)
 
@@ -68,13 +67,13 @@ fun softmax(input: Matrix) =
 
     }
 
-fun sigmoid(input: Matrix) =
+fun sigmoid(input: RealMatrix) =
 
-    DenseMatrix(input.numRows(), input.numColumns()).let { activated ->
+    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
-        for (indexRow in 0..input.numRows() - 1) {
+        for (indexRow in 0..input.numberRows() - 1) {
 
-            for (indexColumn in 0..input.numColumns() - 1) {
+            for (indexColumn in 0..input.numberColumns() - 1) {
 
                 val entry = input.get(indexRow, indexColumn)
 
@@ -90,13 +89,13 @@ fun sigmoid(x: Double) =
 
     1.0 / (1.0 + Math.exp(-x))
 
-fun relu(input: Matrix) =
+fun relu(input: RealMatrix) =
 
-    DenseMatrix(input.numRows(), input.numColumns()).let { activated ->
+    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
-        for (indexRow in 0..input.numRows() - 1) {
+        for (indexRow in 0..input.numberRows() - 1) {
 
-            for (indexColumn in 0..input.numColumns() - 1) {
+            for (indexColumn in 0..input.numberColumns() - 1) {
 
                 val entry = input.get(indexRow, indexColumn)
 
@@ -112,33 +111,33 @@ fun relu(entry: Double) =
 
     Math.max(entry, 0.0)
 
-fun project(input: Matrix, weights: Matrix, bias : Matrix?) =
+fun project(input: RealMatrix, weights: RealMatrix, bias : RealMatrix?) =
 
     if (bias != null) {
 
-        if (input.numColumns() == 1) {
+        if (input.numberColumns() == 1) {
 
-            weights.multAdd(input, bias.copy())
+            weights.multiplyAdd(input, bias.copy())
         }
         else {
-            weights.multAdd(input, expandBias(bias, input.numColumns()))
+            weights.multiplyAdd(input, expandBias(bias, input.numberColumns()))
         }
 
     }
     else {
 
-        weights.mult(input, DenseMatrix(weights.numRows(), input.numColumns()))
+        weights.multiply(input)
     }
 
-fun expandBias(bias: Matrix, inputColumns: Int): DenseMatrix {
+fun expandBias(bias: RealMatrix, inputColumns: Int): RealMatrix {
 
-    val biasRows = bias.numRows()
+    val biasRows = bias.numberRows()
 
-    val expandedBiasMatrix = createDenseMatrix(biasRows, inputColumns)
+    val expandedBiasMatrix = createRealMatrix(biasRows, inputColumns)
 
     for (indexRow in 0..biasRows - 1) {
 
-        val biasColumns = bias.numColumns()
+        val biasColumns = bias.numberColumns()
 
         for (indexColumn in 0..biasColumns - 1) {
 

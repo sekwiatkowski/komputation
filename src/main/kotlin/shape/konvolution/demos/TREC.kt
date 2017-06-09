@@ -1,9 +1,8 @@
 package shape.konvolution.demos
 
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.createRealMatrix
 import shape.konvolution.oneHot
 import java.io.File
-import kotlin.streams.toList
 
 fun main(args: Array<String>) {
 
@@ -79,7 +78,7 @@ class Test {
 
                 val rows = tokens.map { doubleArrayOf(finalVocabulary.indexOf(it).toDouble()) }.toTypedArray()
 
-                val matrix = createDenseMatrix(*rows)
+                val matrix = createRealMatrix(*rows)
 
                 matrix
             }

@@ -3,7 +3,11 @@ package shape.konvolution.layers
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.createRealMatrix
+import shape.konvolution.layers.continuation.ConvolutionLayer
+import shape.konvolution.layers.continuation.expandMatrixForConvolution
+import shape.konvolution.layers.continuation.expandedColumnToOriginalColumn
+import shape.konvolution.layers.continuation.expandedRowToOriginalRow
 
 class ConvolutionLayerTest {
 
@@ -17,15 +21,15 @@ class ConvolutionLayerTest {
             3 4 11 18
          */
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0),
             doubleArrayOf(3.0))
 
-        val weights = createDenseMatrix(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0))
-        val convolutionLayer = ConvolutionLayer(1,2, weights)
+        val weights = createRealMatrix(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0))
+        val convolutionLayer = ConvolutionLayer(1, 2, weights)
 
-        val expected = createDenseMatrix(doubleArrayOf(5.0, 8.0), doubleArrayOf(11.0, 18.0))
+        val expected = createRealMatrix(doubleArrayOf(5.0, 8.0), doubleArrayOf(11.0, 18.0))
         val actual = convolutionLayer.forward(input)
 
         assertMatrixEquality(expected, actual, 0.001)
@@ -35,9 +39,9 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion_1x1_1W1H() {
 
-        val input = createDenseMatrix(doubleArrayOf(1.0))
+        val input = createRealMatrix(doubleArrayOf(1.0))
 
-        val expected = createDenseMatrix(doubleArrayOf(1.0))
+        val expected = createRealMatrix(doubleArrayOf(1.0))
 
         val actual = expandMatrixForConvolution(input, 1, 1)
 
@@ -52,12 +56,12 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion_2x1_1W1H() {
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0)
         )
 
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(1.0, 2.0)
         )
 
@@ -74,12 +78,12 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion3_2x1_1W2H() {
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0)
         )
 
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0)
         )
@@ -98,11 +102,11 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion3_1x2_1W1H() {
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0, 2.0)
         )
 
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(1.0, 2.0)
         )
 
@@ -120,11 +124,11 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion3_1x2_2W1H() {
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0, 2.0)
         )
 
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0)
         )
@@ -143,13 +147,13 @@ class ConvolutionLayerTest {
     @Test
     fun testExpansion3_3x1_1W2H() {
 
-        val input = createDenseMatrix(
+        val input = createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(2.0),
             doubleArrayOf(3.0)
         )
 
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(1.0, 2.0),
             doubleArrayOf(2.0, 3.0)
         )

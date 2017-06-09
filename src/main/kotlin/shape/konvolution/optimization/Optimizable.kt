@@ -1,9 +1,9 @@
 package shape.konvolution.optimization
 
-import no.uib.cipr.matrix.Matrix
+import shape.konvolution.RealMatrix
 
 interface Optimizable {
 
-    fun optimize(gradients : Array<Matrix?>)
+    fun optimize(gradients : Array<RealMatrix?>)
 
 }

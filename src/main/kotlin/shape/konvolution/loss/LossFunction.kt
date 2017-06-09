@@ -1,11 +1,11 @@
 package shape.konvolution.loss
 
-import no.uib.cipr.matrix.Matrix
+import shape.konvolution.RealMatrix
 
 interface LossFunction {
 
-    fun forward(predictions: Matrix, targets : Matrix): Double
+    fun forward(predictions: RealMatrix, targets : RealMatrix): Double
 
-    fun backward(predictions: Matrix, targets : Matrix): Matrix
+    fun backward(predictions: RealMatrix, targets : RealMatrix): RealMatrix
 
 }

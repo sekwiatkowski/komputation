@@ -1,24 +1,23 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.*
 import shape.konvolution.optimization.Optimizable
 import shape.konvolution.optimization.Optimizer
 
 class ProjectionLayer(
-    private val weights : Matrix,
-    private val bias : Matrix? = null,
+    private val weights : RealMatrix,
+    private val bias : RealMatrix? = null,
     private val weightOptimizer: Optimizer? = null,
-    private val biasOptimizer: Optimizer? = null) : Layer, Optimizable {
+    private val biasOptimizer: Optimizer? = null) : ContinuationLayer, Optimizable {
 
     private val optimizeWeights = weightOptimizer != null
     private val optimizeBias = biasOptimizer != null
 
-    override fun forward(input: Matrix) =
+    override fun forward(input: RealMatrix) =
 
         project(input, weights, bias)
 
-    override fun backward(input: Matrix, output : Matrix, chain : Matrix) : BackwardResult {
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix) : BackwardResult {
 
         val inputGradient = differentiateProjectionWrtInput(input, weights, chain)
 
@@ -28,7 +27,7 @@ class ProjectionLayer(
 
     }
 
-    override fun optimize(gradients: Array<Matrix?>) {
+    override fun optimize(gradients: Array<RealMatrix?>) {
 
         if (optimizeWeights) {
 
@@ -64,17 +63,17 @@ fun createProjectionLayer(
 
 }
 
-fun differentiateProjectionWrtInput(input: Matrix, weights: Matrix, chain: Matrix) =
+fun differentiateProjectionWrtInput(input: RealMatrix, weights: RealMatrix, chain: RealMatrix) =
 
-    createDenseMatrix(input.numRows(), input.numColumns()).let { derivatives ->
+    createRealMatrix(input.numberRows(), input.numberColumns()).let { derivatives ->
 
-        for (indexInputRow in 0..input.numRows() - 1) {
+        for (indexInputRow in 0..input.numberRows() - 1) {
 
-            for (indexInputColumn in 0..input.numColumns() - 1) {
+            for (indexInputColumn in 0..input.numberColumns() - 1) {
 
                 var derivative = 0.0
 
-                for (indexWeightRow in 0..weights.numRows() - 1) {
+                for (indexWeightRow in 0..weights.numberRows() - 1) {
 
                     val chainEntry = chain.get(indexWeightRow, indexInputColumn)
                     val weightEntry = weights.get(indexWeightRow, indexInputRow)
@@ -93,28 +92,28 @@ fun differentiateProjectionWrtInput(input: Matrix, weights: Matrix, chain: Matri
     }
 
 
-fun differentiateProjectionWrtParameters(input: Matrix, weights: Matrix, optimizeWeights : Boolean, bias : Matrix?, optimizeBias: Boolean, chain: Matrix) : Array<Matrix?>? =
+fun differentiateProjectionWrtParameters(input: RealMatrix, weights: RealMatrix, optimizeWeights : Boolean, bias : RealMatrix?, optimizeBias: Boolean, chain: RealMatrix) : Array<RealMatrix?>? =
 
     if (optimizeWeights && optimizeBias) {
 
         val weightGradient = differentiateProjectionWrtWeights(input, weights, chain)
         val biasGradient = differentiateProjectionWrtBias(bias!!, chain)
 
-        arrayOf<Matrix?>(weightGradient, biasGradient)
+        arrayOf<RealMatrix?>(weightGradient, biasGradient)
 
     }
     else if (optimizeWeights) {
 
         val weightGradient = differentiateProjectionWrtWeights(input, weights, chain)
 
-        arrayOf<Matrix?>(weightGradient, null)
+        arrayOf<RealMatrix?>(weightGradient, null)
 
     }
     else if (optimizeBias) {
 
         val biasGradient = differentiateProjectionWrtBias(bias!!, chain)
 
-        arrayOf<Matrix?>(null, biasGradient)
+        arrayOf<RealMatrix?>(null, biasGradient)
 
     }
     else {
@@ -124,17 +123,17 @@ fun differentiateProjectionWrtParameters(input: Matrix, weights: Matrix, optimiz
     }
 
 
-fun differentiateProjectionWrtWeights(input: Matrix, weights : Matrix, chain: Matrix) =
+fun differentiateProjectionWrtWeights(input: RealMatrix, weights : RealMatrix, chain: RealMatrix) =
 
-    createDenseMatrix(weights.numRows(), weights.numColumns()).let { derivatives ->
+    createRealMatrix(weights.numberRows(), weights.numberColumns()).let { derivatives ->
 
-        for (indexWeightRow in 0..weights.numRows() - 1) {
+        for (indexWeightRow in 0..weights.numberRows() - 1) {
 
-            for (indexWeightColumn in 0..weights.numColumns() - 1) {
+            for (indexWeightColumn in 0..weights.numberColumns() - 1) {
 
                 var derivative = 0.0
 
-                for (indexChainColumn in 0..chain.numColumns() - 1) {
+                for (indexChainColumn in 0..chain.numberColumns() - 1) {
 
                     // d loss / d pre1, d loss / d pre2
                     // All multiplications on other rows equal to zero
@@ -156,15 +155,15 @@ fun differentiateProjectionWrtWeights(input: Matrix, weights : Matrix, chain: Ma
 
     }
 
-fun differentiateProjectionWrtBias(bias : Matrix, chain: Matrix) =
+fun differentiateProjectionWrtBias(bias : RealMatrix, chain: RealMatrix) =
 
-    createDenseMatrix(bias.numRows(), 1).let { derivatives ->
+    createRealMatrix(bias.numberRows(), 1).let { derivatives ->
 
-        for (indexRow in 0..bias.numRows() - 1) {
+        for (indexRow in 0..bias.numberRows() - 1) {
 
             var derivative = 0.0
 
-            for (indexChainColumn in 0..chain.numColumns() - 1) {
+            for (indexChainColumn in 0..chain.numberColumns() - 1) {
 
                 derivative += chain.get(indexRow, indexChainColumn)
 

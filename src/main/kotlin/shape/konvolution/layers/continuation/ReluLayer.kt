@@ -1,22 +1,22 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.BackwardResult
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.RealMatrix
+import shape.konvolution.createRealMatrix
 import shape.konvolution.relu
 
-class ReluLayer : Layer {
+class ReluLayer : ContinuationLayer {
 
-    override fun forward(input: Matrix) =
+    override fun forward(input: RealMatrix) =
 
         relu(input)
 
-    override fun backward(input: Matrix, output : Matrix, chain : Matrix): BackwardResult {
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
-        val numberRows = output.numRows()
-        val nmberColumns = output.numColumns()
+        val numberRows = output.numberRows()
+        val nmberColumns = output.numberColumns()
 
-        val derivatives = createDenseMatrix(numberRows, nmberColumns)
+        val derivatives = createRealMatrix(numberRows, nmberColumns)
 
         for (indexRow in 0..numberRows - 1) {
 

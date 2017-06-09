@@ -1,7 +1,5 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
-import no.uib.cipr.matrix.DenseMatrix
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.*
 import shape.konvolution.optimization.Optimizable
 import shape.konvolution.optimization.Optimizer
@@ -9,15 +7,15 @@ import shape.konvolution.optimization.Optimizer
 class ConvolutionLayer(
     private val filterWidth: Int,
     private val filterHeight: Int,
-    private val weights : Matrix,
-    private val bias : Matrix? = null,
+    private val weights : RealMatrix,
+    private val bias : RealMatrix? = null,
     private val weightOptimizer: Optimizer? = null,
-    private val biasOptimizer: Optimizer? = null) : Layer, Optimizable {
+    private val biasOptimizer: Optimizer? = null) : ContinuationLayer, Optimizable {
 
     private val optimizeWeights = weightOptimizer != null
     private val optimizeBias = biasOptimizer != null
 
-    override fun forward(input: Matrix) : Matrix {
+    override fun forward(input: RealMatrix) : RealMatrix {
 
         val expandedInputMatrix = expandMatrixForConvolution(input, filterWidth, filterHeight)
 
@@ -27,14 +25,14 @@ class ConvolutionLayer(
 
     }
 
-    override fun backward(input: Matrix, output : Matrix, chain : Matrix): BackwardResult {
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
         // # filters * # convolutions
         val expandedInputGradient = differentiateProjectionWrtInput(input, weights, chain)
 
-        val convolutionsPerRow = convolutionsPerRow(input.numColumns(), filterWidth)
+        val convolutionsPerRow = convolutionsPerRow(input.numberColumns(), filterWidth)
 
-        val inputGradient = collectGradients(input.numRows(), input.numColumns(), expandedInputGradient, convolutionsPerRow)
+        val inputGradient = collectGradients(input.numberRows(), input.numberColumns(), expandedInputGradient, convolutionsPerRow)
 
         val parameterGradients = differentiateProjectionWrtParameters(input, weights, optimizeWeights, bias, optimizeBias, chain)
 
@@ -42,13 +40,13 @@ class ConvolutionLayer(
 
     }
 
-    fun collectGradients(inputRows : Int, inputColumns : Int, expandedInputGradient: DenseMatrix, convolutionsPerRow: Int): DenseMatrix {
+    fun collectGradients(inputRows : Int, inputColumns : Int, expandedInputGradient: RealMatrix, convolutionsPerRow: Int): RealMatrix {
 
-        val inputGradient = createDenseMatrix(inputRows, inputColumns)
+        val inputGradient = createRealMatrix(inputRows, inputColumns)
 
-        for (indexConvolution in 0..expandedInputGradient.numColumns() - 1) {
+        for (indexConvolution in 0..expandedInputGradient.numberColumns() - 1) {
 
-            for (indexConvolutionEntry in 0..expandedInputGradient.numRows() - 1) {
+            for (indexConvolutionEntry in 0..expandedInputGradient.numberRows() - 1) {
 
                 val inputRow = expandedRowToOriginalRow(indexConvolution, indexConvolutionEntry, convolutionsPerRow, filterWidth)
                 val inputColumn = expandedColumnToOriginalColumn(indexConvolution, indexConvolutionEntry, convolutionsPerRow, filterWidth)
@@ -64,7 +62,7 @@ class ConvolutionLayer(
         return inputGradient
     }
 
-    override fun optimize(gradients: Array<Matrix?>) {
+    override fun optimize(gradients: Array<RealMatrix?>) {
 
         if (this.weightOptimizer != null) {
 
@@ -101,14 +99,14 @@ fun createConvolutionLayer(
 
 }
 
-fun expandMatrixForConvolution(input: Matrix, filterWidth : Int, filterHeight: Int): Matrix {
+fun expandMatrixForConvolution(input: RealMatrix, filterWidth : Int, filterHeight: Int): RealMatrix {
 
-    val convolutionsPerRow = input.numColumns() - filterWidth + 1
-    val convolutionsPerColumn = input.numRows() - filterHeight + 1
+    val convolutionsPerRow = input.numberColumns() - filterWidth + 1
+    val convolutionsPerColumn = input.numberRows() - filterHeight + 1
 
     val numberConvolutions = convolutionsPerRow * convolutionsPerColumn
 
-    val expandedInputMatrix = createDenseMatrix(filterWidth * filterHeight, numberConvolutions)
+    val expandedInputMatrix = createRealMatrix(filterWidth * filterHeight, numberConvolutions)
 
     var indexConvolution = 0
 

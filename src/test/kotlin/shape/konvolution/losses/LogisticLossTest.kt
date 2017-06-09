@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import shape.konvolution.loss.LogisticLoss
 import org.junit.jupiter.api.Assertions.assertTrue
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.createRealMatrix
 
 class LogisticLossTest {
 
@@ -13,12 +13,12 @@ class LogisticLossTest {
 
         val logisticLoss = LogisticLoss()
 
-        val targets = createDenseMatrix(
+        val targets = createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(1.0)
         )
 
-        val prettyGoodPrediction = createDenseMatrix(
+        val prettyGoodPrediction = createRealMatrix(
             doubleArrayOf(0.3),
             doubleArrayOf(0.7)
         )
@@ -28,7 +28,7 @@ class LogisticLossTest {
             targets
         )
 
-        val goodPrediction = createDenseMatrix(
+        val goodPrediction = createRealMatrix(
             doubleArrayOf(0.2),
             doubleArrayOf(0.8)
         )
@@ -38,7 +38,7 @@ class LogisticLossTest {
             targets
         )
 
-        val veryGoodPrediction = createDenseMatrix(
+        val veryGoodPrediction = createRealMatrix(
             doubleArrayOf(0.1),
             doubleArrayOf(0.9)
         )
@@ -58,12 +58,12 @@ class LogisticLossTest {
 
         val logisticLoss = LogisticLoss()
 
-        val targets = createDenseMatrix(
+        val targets = createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(1.0)
         )
 
-        val prediction = createDenseMatrix(
+        val prediction = createRealMatrix(
             doubleArrayOf(0.3),
             doubleArrayOf(0.7)
         )
@@ -72,7 +72,7 @@ class LogisticLossTest {
             prediction,
             targets
         )
-        val expected = createDenseMatrix(
+        val expected = createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(-1.0.div(0.7))
         )

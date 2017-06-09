@@ -1,49 +1,46 @@
 package shape.konvolution.demos
 
-import no.uib.cipr.matrix.Matrix
-import shape.konvolution.Network
-import shape.konvolution.createDenseMatrix
-import shape.konvolution.createGaussianInitializer
-import shape.konvolution.layers.SigmoidLayer
-import shape.konvolution.layers.createProjectionLayer
+import shape.konvolution.*
+import shape.konvolution.layers.entry.InputLayer
+import shape.konvolution.layers.continuation.SigmoidLayer
+import shape.konvolution.layers.continuation.createProjectionLayer
 import shape.konvolution.loss.SquaredLoss
 import shape.konvolution.optimization.StochasticGradientDescent
-import shape.konvolution.train
 import java.util.*
 
 fun main(args: Array<String>) {
 
     val input = arrayOf<Matrix>(
 
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(0.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(1.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(0.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(1.0)
         )
     )
 
-    val targets = arrayOf<Matrix>(
-        createDenseMatrix(
+    val targets = arrayOf<RealMatrix>(
+        createRealMatrix(
             doubleArrayOf(0.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(0.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(0.0)
         ),
-        createDenseMatrix(
+        createRealMatrix(
             doubleArrayOf(1.0)
         )
     )
@@ -56,10 +53,9 @@ fun main(args: Array<String>) {
     val sigmoidLayer = SigmoidLayer()
 
     val network = Network(
-        arrayOf(
-            projectionLayer,
-            sigmoidLayer
-        )
+        InputLayer(),
+        projectionLayer,
+        sigmoidLayer
     )
 
     train(network, input, targets, SquaredLoss(), 10_000)

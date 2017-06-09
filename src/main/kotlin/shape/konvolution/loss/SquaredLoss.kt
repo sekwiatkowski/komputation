@@ -1,17 +1,18 @@
 package shape.konvolution.loss
 
 import no.uib.cipr.matrix.Matrix
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.RealMatrix
+import shape.konvolution.createRealMatrix
 
 class SquaredLoss : LossFunction {
 
-    override fun forward(predictions: Matrix, targets : Matrix): Double {
+    override fun forward(predictions: RealMatrix, targets : RealMatrix): Double {
 
         var loss = 0.0
 
-        for (indexRow in 0..predictions.numRows()-1) {
+        for (indexRow in 0..predictions.numberRows()-1) {
 
-            for (indexColumn in 0..predictions.numColumns()-1) {
+            for (indexColumn in 0..predictions.numberColumns()-1) {
 
                 loss += 0.5 * Math.pow(predictions.get(indexRow, indexColumn) - targets.get(indexRow, indexColumn), 2.0)
 
@@ -26,13 +27,13 @@ class SquaredLoss : LossFunction {
     // loss = 0.5 (prediction - target)^2 = 0.5 prediction^2 - prediction * target + 0.5 target ^2
     // d loss / d prediction = prediction - target
 
-    override fun backward(predictions: Matrix, targets : Matrix) : Matrix {
+    override fun backward(predictions: RealMatrix, targets : RealMatrix) : RealMatrix {
 
-        val derivatives = createDenseMatrix(predictions.numRows(), predictions.numColumns())
+        val derivatives = createRealMatrix(predictions.numberRows(), predictions.numberColumns())
 
-        for (indexRow in 0..predictions.numRows()-1) {
+        for (indexRow in 0..predictions.numberRows()-1) {
 
-            for (indexColumn in 0..predictions.numColumns() - 1) {
+            for (indexColumn in 0..predictions.numberColumns() - 1) {
 
                 val derivative = predictions.get(indexRow, indexColumn) - targets.get(indexRow, indexColumn)
 

@@ -18,7 +18,7 @@ fun createGaussianInitializer(random: Random): () -> Double {
 
 fun initializeMatrix(generateEntry : () -> Double, numberRows : Int, numberColumns: Int) =
 
-    createDenseMatrix(numberRows, numberColumns).let { matrix ->
+    createRealMatrix(numberRows, numberColumns).let { matrix ->
 
         for (indexRow in 0..numberRows - 1) {
 

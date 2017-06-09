@@ -1,33 +1,33 @@
 package shape.konvolution
 
-import no.uib.cipr.matrix.Matrix
-import shape.konvolution.layers.Layer
+import shape.konvolution.layers.continuation.ContinuationLayer
+import shape.konvolution.layers.entry.EntryPoint
 import shape.konvolution.optimization.Optimizable
 
-class Network(private val layers : Array<Layer>) {
+class Network(private val entryPoint: EntryPoint, vararg val continuationLayers: ContinuationLayer) {
 
-    val numberLayers = layers.size
+    val numberLayers = continuationLayers.size
 
-    fun forward(input : Matrix): Array<Matrix> {
+    fun forward(input : Matrix): Array<RealMatrix> {
 
-        var previousResult : Matrix = input
+        var previousResult : RealMatrix? = null
 
-        val results = Array(layers.size + 1) { indexLayer ->
+        val results = Array(continuationLayers.size + 1) { indexLayer ->
 
             if (indexLayer == 0) {
 
-                previousResult = input
+                previousResult = entryPoint.forward(input)
 
             }
             else {
 
-                val layer = layers[indexLayer - 1]
+                val layer = continuationLayers[indexLayer - 1]
 
-                previousResult = layer.forward(previousResult)
+                previousResult = layer.forward(previousResult!!)
 
             }
 
-            previousResult
+            previousResult!!
 
         }
 
@@ -35,7 +35,7 @@ class Network(private val layers : Array<Layer>) {
 
     }
 
-    fun backward(forwardResults : Array<Matrix>, lossGradient: Matrix) : Array<BackwardResult> {
+    fun backward(forwardResults : Array<RealMatrix>, lossGradient: RealMatrix) : Array<BackwardResult> {
 
         var chain = lossGradient
 
@@ -43,7 +43,7 @@ class Network(private val layers : Array<Layer>) {
 
             val reverseIndex = numberLayers - indexLayer - 1
 
-            val layer = layers[reverseIndex]
+            val layer = continuationLayers[reverseIndex]
 
             val input = forwardResults[reverseIndex]
             val output = forwardResults[reverseIndex + 1]
@@ -64,7 +64,7 @@ class Network(private val layers : Array<Layer>) {
 
         for (index in 0..numberLayers-1) {
 
-            val layer = layers[numberLayers-1-index]
+            val layer = continuationLayers[numberLayers-1-index]
 
             if (layer is Optimizable) {
 

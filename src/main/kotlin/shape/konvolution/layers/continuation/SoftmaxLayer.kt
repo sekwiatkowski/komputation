@@ -1,13 +1,13 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.BackwardResult
-import shape.konvolution.createDenseMatrix
+import shape.konvolution.RealMatrix
+import shape.konvolution.createRealMatrix
 import shape.konvolution.softmax
 
-class SoftmaxLayer : Layer {
+class SoftmaxLayer : ContinuationLayer {
 
-    override fun forward(input: Matrix) =
+    override fun forward(input: RealMatrix) =
 
         softmax(input)
 
@@ -16,21 +16,21 @@ class SoftmaxLayer : Layer {
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(input: Matrix, output : Matrix, chain : Matrix) =
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix) =
 
-        createDenseMatrix(output.numRows(), output.numColumns())
+        createRealMatrix(output.numberRows(), output.numberColumns())
             .let { derivatives ->
 
-                for (indexColumn in 0..output.numColumns() - 1) {
+                for (indexColumn in 0..output.numberColumns() - 1) {
 
-                    for (outerIndexRow in 0..output.numRows() - 1) {
+                    for (outerIndexRow in 0..output.numberRows() - 1) {
 
                         var derivative = 0.0
 
                         val prediction = output.get(outerIndexRow, indexColumn)
 
                         // Go through each row
-                        for (innerIndexRow in 0..output.numRows() - 1) {
+                        for (innerIndexRow in 0..output.numberRows() - 1) {
 
                             val chainEntry = chain.get(innerIndexRow, indexColumn)
 

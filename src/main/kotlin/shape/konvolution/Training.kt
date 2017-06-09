@@ -1,9 +1,8 @@
 package shape.konvolution
 
-import no.uib.cipr.matrix.Matrix
 import shape.konvolution.loss.LossFunction
 
-fun train(network: Network, inputs: Array<Matrix>, targets: Array<Matrix>, lossFunction: LossFunction, numberIterations : Int) {
+fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, lossFunction: LossFunction, numberIterations : Int) {
 
     repeat(numberIterations) {
 
