@@ -1,20 +1,21 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 
-class ExpansionLayer(private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer {
+class ExpansionLayer(private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(1, 0) {
 
-    override fun forward(input: RealMatrix) =
+    override fun forward() {
 
-        expandMatrixForConvolution(input, filterWidth, filterHeight)
+        this.lastForwardResult[0] = expandMatrixForConvolution(this.lastInput!!, filterWidth, filterHeight)
 
-    override fun backward(input: RealMatrix, output: RealMatrix, chain: RealMatrix): BackwardResult {
+    }
 
-        val collectedGradients = collectGradients(input.numberRows(), input.numberColumns(), filterWidth, chain)
+    override fun backward(chain: RealMatrix) {
 
-        return BackwardResult(collectedGradients)
+        val lastInput = this.lastInput!!
+
+        this.lastBackwardResultWrtInput = collectGradients(lastInput.numberRows(), lastInput.numberColumns(), filterWidth, chain)
 
     }
 

@@ -76,7 +76,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialize = createUniformInitializer(random, -0.05, 0.05)
 
-    val updateRule = stochasticGradientDescent(0.01)
+    val optimization = stochasticGradientDescent(0.01)
 
     val filterWidth = 3
     val filterHeight = 1
@@ -84,11 +84,10 @@ fun main(args: Array<String>) {
 
     val network = Network(
         InputLayer(),
-        ExpansionLayer(filterWidth, filterHeight),
-        createProjectionLayer(filterWidth * filterHeight, numberFilters, initialize, updateRule),
-        ReluLayer(),
+        createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
         MaxPoolingLayer(),
-        createProjectionLayer(numberFilters, 2, initialize, updateRule),
+        ReluLayer(),
+        createProjectionLayer(numberFilters, 2, initialize, optimization),
         SoftmaxLayer()
     )
 

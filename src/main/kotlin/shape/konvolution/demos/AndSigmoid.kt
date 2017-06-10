@@ -64,5 +64,4 @@ fun main(args: Array<String>) {
 
     train(network, input, targets, SquaredLoss(), 10_000)
 
-
 }

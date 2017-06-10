@@ -1,15 +1,16 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.matrix.sigmoid
 
-class SigmoidLayer : ContinuationLayer {
+class SigmoidLayer : ContinuationLayer(1, 0) {
 
-    override fun forward(input: RealMatrix) =
+    override fun forward() {
 
-        sigmoid(input)
+        this.lastForwardResult[0] = sigmoid(this.lastInput!!)
+
+    }
 
     /*
         input = pre-activation
@@ -17,30 +18,32 @@ class SigmoidLayer : ContinuationLayer {
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(chain : RealMatrix) {
 
-        val numberRows = output.numberRows()
-        val nmberColumns = output.numberColumns()
+        val lastForwardResult = this.lastForwardResult.single()!!
 
-        val derivatives = createRealMatrix(numberRows, nmberColumns)
+        val numberRows = lastForwardResult.numberRows()
+        val nmberColumns = lastForwardResult.numberColumns()
+
+        val gradient = createRealMatrix(numberRows, nmberColumns)
 
         for (indexRow in 0..numberRows - 1) {
 
             for (indexColumn in 0..nmberColumns - 1) {
 
-                val forward = output.get(indexRow, indexColumn)
+                val forward = lastForwardResult.get(indexRow, indexColumn)
 
                 val chainEntry = chain.get(indexRow, indexColumn)
                 val dActivationWrtPreActivation = forward * (1 - forward)
 
                 val derivative = chainEntry * dActivationWrtPreActivation
 
-                derivatives.set(indexRow, indexColumn, derivative)
+                gradient.set(indexRow, indexColumn, derivative)
 
             }
         }
 
-        return BackwardResult(derivatives)
+        this.lastBackwardResultWrtInput = gradient
 
     }
 

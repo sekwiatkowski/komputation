@@ -102,7 +102,7 @@ fun main(args: Array<String>) {
         .flatMap { it }
         .toTypedArray()
 
-    val updateRule = momentum(0.01, 0.9)
+    val optimizationStrategy = momentum(0.01, 0.9)
 
     val numberFilters = 2
 
@@ -110,12 +110,11 @@ fun main(args: Array<String>) {
     val filterHeight = 2
 
     val network = Network(
-        createLookupLayer(embeddings, updateRule),
-        ExpansionLayer(filterWidth, filterHeight),
-        createProjectionLayer(filterWidth * filterHeight, numberFilters, generateEntry, updateRule),
+        createLookupLayer(embeddings, optimizationStrategy),
+        createConvolutionalLayer(numberFilters, filterWidth, filterHeight, generateEntry, optimizationStrategy),
         MaxPoolingLayer(),
         ReluLayer(),
-        createProjectionLayer(numberFilters, numberClasses, generateEntry, updateRule),
+        createProjectionLayer(numberFilters, numberClasses, generateEntry, optimizationStrategy),
         SoftmaxLayer()
     )
 
@@ -124,4 +123,5 @@ fun main(args: Array<String>) {
 }
 
 private fun createInputs(modifierIndices: IntRange, polarityIndices: IntRange) =
+
     modifierIndices.zip(polarityIndices).map { (weak, positive) -> createIntegerVector(weak, positive) }

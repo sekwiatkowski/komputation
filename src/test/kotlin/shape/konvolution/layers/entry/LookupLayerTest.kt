@@ -20,8 +20,12 @@ class LookupLayerTest {
     @Test
     fun testForward1() {
 
-        val actual = embeddingLayer.forward(createIntegerVector(0))
+        embeddingLayer.setInput(createIntegerVector(0))
+        embeddingLayer.forward()
+
         val expected = createRealMatrix(firstEmbedding)
+
+        val actual = embeddingLayer.lastForwardResult!!
 
         assertMatrixEquality(expected, actual, 0.001)
 
@@ -30,8 +34,12 @@ class LookupLayerTest {
     @Test
     fun testForward2() {
 
-        val actual = embeddingLayer.forward(createIntegerVector(1))
+        embeddingLayer.setInput(createIntegerVector(1))
+        embeddingLayer.forward()
+
         val expected = createRealMatrix(secondEmbedding)
+
+        val actual = embeddingLayer.lastForwardResult!!
 
         assertMatrixEquality(expected, actual, 0.001)
 
@@ -40,8 +48,12 @@ class LookupLayerTest {
     @Test
     fun testForward3() {
 
-        val actual = embeddingLayer.forward(createIntegerVector(0, 1))
+        embeddingLayer.setInput(createIntegerVector(0, 1))
+        embeddingLayer.forward()
+
         val expected = createRealMatrix(firstEmbedding, secondEmbedding)
+
+        val actual = embeddingLayer.lastForwardResult!!
 
         assertMatrixEquality(expected, actual, 0.001)
 
@@ -50,8 +62,12 @@ class LookupLayerTest {
     @Test
     fun testForward4() {
 
-        val actual = embeddingLayer.forward(createIntegerVector(1, 0))
+        embeddingLayer.setInput(createIntegerVector(1, 0))
+        embeddingLayer.forward()
+
         val expected = createRealMatrix(secondEmbedding, firstEmbedding)
+
+        val actual = embeddingLayer.lastForwardResult!!
 
         assertMatrixEquality(expected, actual, 0.001)
 

@@ -1,37 +1,40 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.matrix.relu
 
-class ReluLayer : ContinuationLayer {
+class ReluLayer : ContinuationLayer(1, 0) {
 
-    override fun forward(input: RealMatrix) =
+    override fun forward() {
 
-        relu(input)
+        this.lastForwardResult[0] = relu(this.lastInput!!)
 
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    }
 
-        val numberRows = output.numberRows()
-        val nmberColumns = output.numberColumns()
+    override fun backward(chain : RealMatrix) {
 
-        val derivatives = createRealMatrix(numberRows, nmberColumns)
+        val lastForwardResult = this.lastForwardResult.single()!!
+
+        val numberRows = lastForwardResult.numberRows()
+        val nmberColumns = lastForwardResult.numberColumns()
+
+        val gradient = createRealMatrix(numberRows, nmberColumns)
 
         for (indexRow in 0..numberRows - 1) {
 
             for (indexColumn in 0..nmberColumns - 1) {
 
-                val forward = output.get(indexRow, indexColumn)
+                val forward = lastForwardResult.get(indexRow, indexColumn)
 
                 val derivative = if (forward > 0.0) chain.get(indexRow, indexColumn) else 0.0
 
-                derivatives.set(indexRow, indexColumn, derivative)
+                gradient.set(indexRow, indexColumn, derivative)
 
             }
         }
 
-        return BackwardResult(derivatives)
+        this.lastBackwardResultWrtInput = gradient
 
     }
 

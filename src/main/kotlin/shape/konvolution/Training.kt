@@ -14,15 +14,15 @@ fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, l
 
             val forwardResults = network.forward(input)
 
-            val prediction = forwardResults.last()
+            val prediction = forwardResults
 
             val loss = lossFunction.forward(prediction, target)
 
             val lossGradient = lossFunction.backward(prediction, target)
 
-            val backwardResults = network.backward(forwardResults, lossGradient)
+            network.backward(lossGradient)
 
-            network.optimize(input, forwardResults, backwardResults)
+            network.optimize()
 
             iterationLoss += loss
 

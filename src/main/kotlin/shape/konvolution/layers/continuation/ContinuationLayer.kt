@@ -1,12 +1,24 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 
-interface ContinuationLayer {
+abstract class ContinuationLayer(resultSize : Int, parameterSize : Int) {
 
-    fun forward(input : RealMatrix) : RealMatrix
+    var lastInput : RealMatrix? = null
 
-    fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix) : BackwardResult
+    var lastForwardResult : Array<RealMatrix?> = arrayOfNulls(resultSize)
+
+    var lastBackwardResultWrtInput : RealMatrix? = null
+    var lastBackwardResultWrtParameters : Array<RealMatrix?> = arrayOfNulls(parameterSize)
+
+    fun setInput(input: RealMatrix) {
+
+        this.lastInput = input
+
+    }
+
+    abstract fun forward()
+
+    abstract fun backward(chain : RealMatrix)
 
 }

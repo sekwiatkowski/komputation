@@ -1,35 +1,38 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.matrix.softmax
 
-class SoftmaxLayer : ContinuationLayer {
+class SoftmaxLayer : ContinuationLayer(1, 0) {
 
-    override fun forward(input: RealMatrix) =
+    override fun forward() {
 
-        softmax(input)
+        this.lastForwardResult[0] = softmax(this.lastInput!!)
+
+    }
 
     /*
         Note that each pre-activation effects all nodes.
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(chain : RealMatrix) {
 
-        val derivatives = createRealMatrix(output.numberRows(), output.numberColumns())
+        val lastForwardResult = this.lastForwardResult.single()!!
 
-        for (indexColumn in 0..output.numberColumns() - 1) {
+        val gradient = createRealMatrix(lastForwardResult.numberRows(), lastForwardResult.numberColumns())
 
-            for (outerIndexRow in 0..output.numberRows() - 1) {
+        for (indexColumn in 0..lastForwardResult.numberColumns() - 1) {
+
+            for (outerIndexRow in 0..lastForwardResult.numberRows() - 1) {
 
                 var derivative = 0.0
 
-                val prediction = output.get(outerIndexRow, indexColumn)
+                val prediction = lastForwardResult.get(outerIndexRow, indexColumn)
 
                 // Go through each row
-                for (innerIndexRow in 0..output.numberRows() - 1) {
+                for (innerIndexRow in 0..lastForwardResult.numberRows() - 1) {
 
                     val chainEntry = chain.get(innerIndexRow, indexColumn)
 
@@ -42,7 +45,7 @@ class SoftmaxLayer : ContinuationLayer {
                     // i != j
                     else {
 
-                        val otherPrediction = output.get(innerIndexRow, indexColumn)
+                        val otherPrediction = lastForwardResult.get(innerIndexRow, indexColumn)
 
                         derivative += chainEntry * (-prediction * otherPrediction)
 
@@ -50,13 +53,13 @@ class SoftmaxLayer : ContinuationLayer {
 
                 }
 
-                derivatives.set(outerIndexRow, indexColumn, derivative)
+                gradient.set(outerIndexRow, indexColumn, derivative)
 
             }
 
         }
 
-        return BackwardResult(derivatives)
+        this.lastBackwardResultWrtInput = gradient
 
     }
 }

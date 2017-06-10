@@ -1,12 +1,13 @@
 package shape.konvolution.layers.entry
 
-import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 
-class InputLayer : EntryPoint {
+class InputLayer : EntryPoint() {
 
-    override fun forward(input : Matrix) =
+    override fun forward() {
 
-        input as RealMatrix
+        this.lastForwardResult = this.lastInput!! as RealMatrix
+
+    }
 
 }

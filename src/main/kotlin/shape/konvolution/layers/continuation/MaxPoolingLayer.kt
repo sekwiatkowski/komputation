@@ -1,6 +1,5 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 
@@ -10,9 +9,11 @@ import shape.konvolution.matrix.createRealMatrix
     The output is a 100D row vector
  */
 
-class MaxPoolingLayer : ContinuationLayer {
+class MaxPoolingLayer : ContinuationLayer(1, 0) {
 
-    override fun forward(input: RealMatrix): RealMatrix {
+    override fun forward() {
+
+        val input = this.lastInput!!
 
         val maxPooled = createRealMatrix(input.numberRows(), 1)
 
@@ -36,22 +37,24 @@ class MaxPoolingLayer : ContinuationLayer {
 
         }
 
-        return maxPooled
+        this.lastForwardResult[0] = maxPooled
 
     }
 
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(chain : RealMatrix) {
 
-        val derivatives = createRealMatrix(input.numberRows(), input.numberColumns())
+        val lastInput = this.lastInput!!
 
-        for (indexRow in 0..input.numberRows() - 1) {
+        val gradient = createRealMatrix(lastInput.numberRows(), lastInput.numberColumns())
+
+        for (indexRow in 0..lastInput.numberRows() - 1) {
 
             var maxValue = Double.NEGATIVE_INFINITY
             var maxIndexColumn = -1
 
-            for (indexColumn in 0..input.numberColumns() - 1) {
+            for (indexColumn in 0..lastInput.numberColumns() - 1) {
 
-                val entry = input.get(indexRow, indexColumn)
+                val entry = lastInput.get(indexRow, indexColumn)
 
                 if (entry > maxValue) {
                     maxValue = entry
@@ -59,11 +62,11 @@ class MaxPoolingLayer : ContinuationLayer {
                 }
 
             }
-            derivatives.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
+            gradient.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
 
         }
 
-        return BackwardResult(derivatives)
+        this.lastBackwardResultWrtInput = gradient
 
     }
 

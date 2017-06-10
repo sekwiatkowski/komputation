@@ -9,9 +9,11 @@ import shape.konvolution.optimization.updateSparsely
 
 class LookupLayer(
     private val data: Array<DoubleArray>,
-    private val update: UpdateRule? = null) : EntryPoint, OptimizableEntryPoint {
+    private val update: UpdateRule? = null) : EntryPoint(), OptimizableEntryPoint {
 
-    override fun forward(input : Matrix) : RealMatrix {
+    override fun forward() {
+
+        val input = this.lastInput!!
 
         input as IntegerMatrix
 
@@ -21,19 +23,19 @@ class LookupLayer(
 
         }
 
-        return createRealMatrix(*forwarded)
+        this.lastForwardResult = createRealMatrix(*forwarded)
 
     }
 
-    override fun optimize(input: Matrix, output: RealMatrix, gradient: RealMatrix) {
+    override fun optimize(chain: RealMatrix) {
 
         if (update != null) {
 
-            input as IntegerMatrix
+            val input = this.lastInput as IntegerMatrix
 
             val indices = input.getColumn(0)
 
-            updateSparsely(data, indices, gradient, update)
+            updateSparsely(data, indices, chain, update)
 
         }
 

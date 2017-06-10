@@ -16,17 +16,18 @@ class MaxPoolingLayerTest {
             doubleArrayOf(3.0, -4.0)
         )
 
-        val actual = maxPoolingLayer.forward(input)
+        maxPoolingLayer.setInput(input)
+        maxPoolingLayer.forward()
 
         val expected = createRealMatrix(
             doubleArrayOf(2.0),
             doubleArrayOf(3.0)
         )
 
+        val actual = maxPoolingLayer.lastForwardResult.last()!!
+
         assertMatrixEquality(expected, actual, 0.001)
 
     }
-
-
 
 }

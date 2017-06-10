@@ -1,61 +1,58 @@
 package shape.konvolution.layers.continuation
 
-import shape.konvolution.BackwardResult
-import shape.konvolution.initializeMatrix
-import shape.konvolution.initializeRowVector
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.optimization.UpdateRule
 
-/* class ConvolutionLayer(
-    filterWidth: Int,
-    filterHeight: Int,
-    weights : RealMatrix,
-    bias : RealMatrix? = null,
-    updateRule: UpdateRule? = null) : ContinuationLayer, OptimizableContinuationLayer {
+class ConvolutionalLayer(
+    private val expansionLayer: ExpansionLayer,
+    private val projectionLayer: ProjectionLayer) : ContinuationLayer(2, 2), OptimizableContinuationLayer {
 
-    private val expansionLayer = ExpansionLayer(filterWidth, filterHeight)
-    private val projectionLayer = ProjectionLayer(weights, bias, updateRule)
+    override fun forward() {
 
-    override fun forward(input: RealMatrix): Array<RealMatrix> {
+        this.expansionLayer.setInput(this.lastInput!!)
+        this.expansionLayer.forward()
+        val expansion = this.expansionLayer.lastForwardResult[0]!!
 
-        val expansion = this.expansionLayer.forward(input).single()
+        this.projectionLayer.setInput(expansion)
+        this.projectionLayer.forward()
 
-        val projection = this.projectionLayer.forward(expansion).single()
-
-        return arrayOf(expansion, projection)
+        this.lastForwardResult[0] = expansion
+        this.lastForwardResult[1] = this.projectionLayer.lastForwardResult[0]
 
     }
 
-    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
+    override fun backward(chain : RealMatrix) {
 
-        val (expansion, projection) = outputs
+        this.projectionLayer.backward(chain)
 
-        val projectionBackward = this.projectionLayer.backward(arrayOf(expansion), arrayOf(projection), chain)
+        this.expansionLayer.backward(this.projectionLayer.lastBackwardResultWrtInput!!)
 
-        val expansionBackward = this.expansionLayer.backward(inputs, arrayOf(expansion), projectionBackward.input)
+        this.lastBackwardResultWrtInput = this.expansionLayer.lastBackwardResultWrtInput!!
 
-        return BackwardResult(expansionBackward.input, projectionBackward.parameter)
+        this.lastBackwardResultWrtParameters[0] = this.projectionLayer.lastBackwardResultWrtParameters.first()
+        this.lastBackwardResultWrtParameters[1] = this.projectionLayer.lastBackwardResultWrtParameters.last()
 
     }
 
-    override fun optimize(gradients: Array<RealMatrix?>) {
+    override fun optimize() {
 
-        this.projectionLayer.optimize(gradients)
+        this.projectionLayer.optimize()
 
     }
 
 }
 
-fun createConvolutionLayer(
+fun createConvolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
     filterHeight : Int,
     initializationStrategy : () -> Double,
-    updateRule: UpdateRule? = null): ConvolutionLayer {
+    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
 
-    val weights = initializeMatrix(initializationStrategy, numberFilters,filterWidth * filterHeight)
-    val bias = initializeRowVector(initializationStrategy, numberFilters)
+    val expansionLayer = ExpansionLayer(filterWidth, filterHeight)
 
-    return ConvolutionLayer(filterWidth, filterHeight, weights, bias, updateRule)
+    val projectionLayer = createProjectionLayer(filterWidth * filterHeight, numberFilters, initializationStrategy, optimizationStrategy)
 
-} */
+    return ConvolutionalLayer(expansionLayer, projectionLayer)
+
+}

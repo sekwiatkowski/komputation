@@ -70,5 +70,4 @@ fun main(args: Array<String>) {
 
     train(network, input, targets, LogisticLoss(), 10_000)
 
-
 }

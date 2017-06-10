@@ -13,11 +13,15 @@ class ProjectionLayerTest {
 
         val input = createRealMatrix(doubleArrayOf(1.0), doubleArrayOf(2.0), doubleArrayOf(3.0))
 
-        val actual = projectionLayer.forward(input)
+        projectionLayer.setInput(input)
+        projectionLayer.forward()
+
         val expected = createRealMatrix(
             doubleArrayOf(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0),
             doubleArrayOf(4.0 * 1.0 + 5.0 * 2.0 + 6.0 * 3.0)
         )
+
+        val actual = projectionLayer.lastForwardResult.last()!!
 
         assertMatrixEquality(expected, actual, 0.001)
 
