@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import shape.konvolution.loss.LogisticLoss
 import org.junit.jupiter.api.Assertions.assertTrue
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createRealMatrix
+import shape.konvolution.matrix.createRealMatrix
 
 class LogisticLossTest {
 

@@ -1,5 +1,6 @@
 package shape.konvolution
 
+import shape.konvolution.matrix.createRealMatrix
 import java.util.*
 
 fun createUniformInitializer(random: Random, min: Double = 0.0, max: Double = 1.0): () -> Double {
@@ -16,24 +17,23 @@ fun createGaussianInitializer(random: Random): () -> Double {
 
 }
 
+fun initializeRow(generateEntry: () -> Double, numberColumns: Int) =
+
+    DoubleArray(numberColumns) { generateEntry() }
+
 fun initializeMatrix(generateEntry : () -> Double, numberRows : Int, numberColumns: Int) =
 
-    createRealMatrix(numberRows, numberColumns).let { matrix ->
+    Array(numberRows) {
 
-        for (indexRow in 0..numberRows - 1) {
-
-            for (indexColumns in 0..numberColumns - 1) {
-
-                matrix.set(indexRow, indexColumns, generateEntry())
-
-            }
+            initializeRow(generateEntry, numberColumns)
 
         }
+        .let { rows ->
 
-        matrix
+            createRealMatrix(*rows)
+        }
 
-    }
 
-fun initializeBias(generateEntry : () -> Double, numberRows : Int) =
+fun initializeRowVector(generateEntry : () -> Double, dimension: Int) =
 
-    initializeMatrix(generateEntry, numberRows, 1)
+    initializeMatrix(generateEntry, dimension, 1)

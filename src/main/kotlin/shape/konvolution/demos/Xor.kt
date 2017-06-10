@@ -5,18 +5,19 @@ import shape.konvolution.layers.entry.InputLayer
 import shape.konvolution.layers.continuation.SigmoidLayer
 import shape.konvolution.layers.continuation.createProjectionLayer
 import shape.konvolution.loss.SquaredLoss
+import shape.konvolution.matrix.Matrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.optimization.StochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
 
     val input = arrayOf<Matrix>(
-
         createRealMatrix(doubleArrayOf(0.0), doubleArrayOf(0.0)),
         createRealMatrix(doubleArrayOf(1.0), doubleArrayOf(0.0)),
         createRealMatrix(doubleArrayOf(0.0), doubleArrayOf(1.0)),
         createRealMatrix(doubleArrayOf(1.0), doubleArrayOf(1.0))
-
     )
 
     val targets = arrayOf<RealMatrix>(

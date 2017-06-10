@@ -1,8 +1,7 @@
 package shape.konvolution.loss
 
-import no.uib.cipr.matrix.Matrix
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 
 class SquaredLoss : LossFunction {
 

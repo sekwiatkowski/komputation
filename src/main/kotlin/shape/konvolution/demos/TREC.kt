@@ -1,7 +1,7 @@
 package shape.konvolution.demos
 
-import shape.konvolution.createRealMatrix
-import shape.konvolution.oneHot
+import shape.konvolution.matrix.createRealMatrix
+import shape.konvolution.matrix.createOneHotVector
 import java.io.File
 
 fun main(args: Array<String>) {
@@ -30,7 +30,7 @@ class Test {
 
         val targets = trainingExamples
             .map { (category, _) -> category }
-            .map { category -> oneHot(numberCategories, indexedCategories[category]!!) }
+            .map { category -> createOneHotVector(numberCategories, indexedCategories[category]!!) }
 
         val vocabulary = trainingExamples
             .map { (_, text) -> text }

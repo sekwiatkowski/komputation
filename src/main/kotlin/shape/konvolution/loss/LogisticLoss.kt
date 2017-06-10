@@ -1,7 +1,7 @@
 package shape.konvolution.loss
 
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 
 class LogisticLoss : LossFunction {
 

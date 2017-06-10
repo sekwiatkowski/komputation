@@ -1,6 +1,6 @@
 package shape.konvolution.loss
 
-import shape.konvolution.RealMatrix
+import shape.konvolution.matrix.RealMatrix
 
 interface LossFunction {
 

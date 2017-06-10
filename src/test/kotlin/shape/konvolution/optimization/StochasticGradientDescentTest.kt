@@ -2,7 +2,7 @@ package shape.konvolution.optimization
 
 import org.junit.jupiter.api.Test
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createRealMatrix
+import shape.konvolution.matrix.createRealMatrix
 
 class StochasticGradientDescentTest {
 

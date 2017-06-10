@@ -1,8 +1,8 @@
 package shape.konvolution.layers.continuation
 
 import shape.konvolution.BackwardResult
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 
 /*
     Example:
@@ -12,7 +12,7 @@ import shape.konvolution.createRealMatrix
 
 class MaxPoolingLayer : ContinuationLayer {
 
-    override fun forward(input: RealMatrix): RealMatrix {
+    override fun forward(input: RealMatrix): Array<RealMatrix> {
 
         val maxPooled = createRealMatrix(input.numberRows(), 1)
 
@@ -36,11 +36,13 @@ class MaxPoolingLayer : ContinuationLayer {
 
         }
 
-        return maxPooled
+        return arrayOf(maxPooled)
 
     }
 
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
+
+        val input = inputs.last()
 
         val derivatives = createRealMatrix(input.numberRows(), input.numberColumns())
 

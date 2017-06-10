@@ -1,13 +1,9 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createRealMatrix
-import shape.konvolution.layers.continuation.ConvolutionLayer
-import shape.konvolution.layers.continuation.expandMatrixForConvolution
-import shape.konvolution.layers.continuation.expandedColumnToOriginalColumn
-import shape.konvolution.layers.continuation.expandedRowToOriginalRow
+import shape.konvolution.matrix.createRealMatrix
 
 class ConvolutionLayerTest {
 
@@ -30,7 +26,7 @@ class ConvolutionLayerTest {
         val convolutionLayer = ConvolutionLayer(1, 2, weights)
 
         val expected = createRealMatrix(doubleArrayOf(5.0, 8.0), doubleArrayOf(11.0, 18.0))
-        val actual = convolutionLayer.forward(input)
+        val actual = convolutionLayer.forward(input).last()
 
         assertMatrixEquality(expected, actual, 0.001)
 

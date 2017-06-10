@@ -1,6 +1,8 @@
 package shape.konvolution
 
 import shape.konvolution.loss.LossFunction
+import shape.konvolution.matrix.Matrix
+import shape.konvolution.matrix.RealMatrix
 
 fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, lossFunction: LossFunction, numberIterations : Int) {
 
@@ -12,7 +14,7 @@ fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, l
 
             val forwardResults = network.forward(input)
 
-            val prediction = forwardResults.last()
+            val prediction = forwardResults.last().last()
 
             val loss = lossFunction.forward(prediction, target)
 
@@ -20,7 +22,7 @@ fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, l
 
             val backwardResults = network.backward(forwardResults, lossGradient)
 
-            network.optimize(backwardResults)
+            network.optimize(input, forwardResults, backwardResults)
 
             iterationLoss += loss
 

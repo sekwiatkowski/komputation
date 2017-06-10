@@ -1,6 +1,7 @@
 package shape.konvolution
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import shape.konvolution.matrix.RealMatrix
 
 fun assertMatrixEquality(expected: RealMatrix, actual: RealMatrix, delta : Double) {
 
@@ -15,4 +16,5 @@ fun assertMatrixEquality(expected: RealMatrix, actual: RealMatrix, delta : Doubl
         }
 
     }
+
 }

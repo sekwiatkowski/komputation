@@ -1,9 +1,8 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
 import org.junit.jupiter.api.Test
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createRealMatrix
-import shape.konvolution.layers.continuation.ProjectionLayer
+import shape.konvolution.matrix.createRealMatrix
 
 class ProjectionLayerTest {
 
@@ -14,10 +13,10 @@ class ProjectionLayerTest {
 
         val input = createRealMatrix(doubleArrayOf(1.0), doubleArrayOf(2.0), doubleArrayOf(3.0))
 
-        val actual = projectionLayer.forward(input)
+        val actual = projectionLayer.forward(input).single()
         val expected = createRealMatrix(
-            doubleArrayOf(1.0*1.0+2.0*2.0+3.0*3.0),
-            doubleArrayOf(4.0*1.0+5.0*2.0+6.0*3.0)
+            doubleArrayOf(1.0 * 1.0 + 2.0 * 2.0 + 3.0 * 3.0),
+            doubleArrayOf(4.0 * 1.0 + 5.0 * 2.0 + 6.0 * 3.0)
         )
 
         assertMatrixEquality(expected, actual, 0.001)

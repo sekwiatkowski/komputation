@@ -1,17 +1,19 @@
 package shape.konvolution.layers.continuation
 
 import shape.konvolution.BackwardResult
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
-import shape.konvolution.relu
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
+import shape.konvolution.matrix.relu
 
 class ReluLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        relu(input)
+        arrayOf(relu(input))
 
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
+
+        val output = outputs.last()
 
         val numberRows = output.numberRows()
         val nmberColumns = output.numberColumns()
@@ -32,7 +34,6 @@ class ReluLayer : ContinuationLayer {
         }
 
         return BackwardResult(derivatives)
-
 
     }
 

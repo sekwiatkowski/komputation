@@ -2,8 +2,8 @@ package shape.konvolution.layers.continuation
 
 import shape.konvolution.BackwardResult
 import shape.konvolution.Network
-import shape.konvolution.RealMatrix
-import shape.konvolution.concatColumns
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.concatColumns
 import shape.konvolution.layers.entry.InputLayer
 
 class Branch(private val dimension: Int, vararg branches : Array<ContinuationLayer>) : ContinuationLayer {
@@ -12,21 +12,21 @@ class Branch(private val dimension: Int, vararg branches : Array<ContinuationLay
 
     val subnetworks = branches.map { layers -> Network(InputLayer(), *layers) }
 
-    override fun forward(input: RealMatrix) =
+    override fun forward(input: RealMatrix): Array<RealMatrix> {
 
-        Array(numberBranches) { indexBranch ->
+        val branches = Array(numberBranches) { indexBranch ->
 
-            subnetworks[indexBranch].forward(input).first()
-
-
-        }
-        .let { results ->
-
-            concatColumns(results, numberBranches, 1, dimension)
+            subnetworks[indexBranch].forward(input).first().last()
 
         }
 
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+        val concatenation = concatColumns(branches, numberBranches, 1, dimension)
+
+        return arrayOf(concatenation)
+
+    }
+
+    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
 
         TODO("not implemented")
     }

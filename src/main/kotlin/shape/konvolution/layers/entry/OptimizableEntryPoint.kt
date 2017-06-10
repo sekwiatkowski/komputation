@@ -3,10 +3,8 @@ package shape.konvolution.layers.entry
 import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 
-class InputLayer : EntryPoint {
+interface OptimizableEntryPoint {
 
-    override fun forward(input : Matrix) =
-
-        input as RealMatrix
+    fun optimize(input : Matrix, output: Array<RealMatrix>, gradient : RealMatrix)
 
 }

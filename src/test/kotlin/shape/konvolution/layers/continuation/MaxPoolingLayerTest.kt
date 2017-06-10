@@ -1,9 +1,8 @@
-package shape.konvolution.layers
+package shape.konvolution.layers.continuation
 
 import org.junit.jupiter.api.Test
 import shape.konvolution.assertMatrixEquality
-import shape.konvolution.createRealMatrix
-import shape.konvolution.layers.continuation.MaxPoolingLayer
+import shape.konvolution.matrix.createRealMatrix
 
 class MaxPoolingLayerTest {
 
@@ -17,7 +16,7 @@ class MaxPoolingLayerTest {
             doubleArrayOf(3.0, -4.0)
         )
 
-        val actual = maxPoolingLayer.forward(input)
+        val actual = maxPoolingLayer.forward(input).single()
 
         val expected = createRealMatrix(
             doubleArrayOf(2.0),

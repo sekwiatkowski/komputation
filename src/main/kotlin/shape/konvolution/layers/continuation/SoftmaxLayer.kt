@@ -1,68 +1,64 @@
 package shape.konvolution.layers.continuation
 
 import shape.konvolution.BackwardResult
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
-import shape.konvolution.softmax
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
+import shape.konvolution.matrix.softmax
 
 class SoftmaxLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        softmax(input)
+        arrayOf(softmax(input))
 
     /*
         Note that each pre-activation effects all nodes.
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix) =
+    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
 
-        createRealMatrix(output.numberRows(), output.numberColumns())
-            .let { derivatives ->
+        val output = outputs.first()
 
-                for (indexColumn in 0..output.numberColumns() - 1) {
+        val derivatives = createRealMatrix(output.numberRows(), output.numberColumns())
 
-                    for (outerIndexRow in 0..output.numberRows() - 1) {
+        for (indexColumn in 0..output.numberColumns() - 1) {
 
-                        var derivative = 0.0
+            for (outerIndexRow in 0..output.numberRows() - 1) {
 
-                        val prediction = output.get(outerIndexRow, indexColumn)
+                var derivative = 0.0
 
-                        // Go through each row
-                        for (innerIndexRow in 0..output.numberRows() - 1) {
+                val prediction = output.get(outerIndexRow, indexColumn)
 
-                            val chainEntry = chain.get(innerIndexRow, indexColumn)
+                // Go through each row
+                for (innerIndexRow in 0..output.numberRows() - 1) {
 
-                            // i == j
-                            if (outerIndexRow == innerIndexRow) {
+                    val chainEntry = chain.get(innerIndexRow, indexColumn)
 
-                                derivative += chainEntry * prediction * (1 - prediction)
+                    // i == j
+                    if (outerIndexRow == innerIndexRow) {
 
-                            }
-                            // i != j
-                            else {
+                        derivative += chainEntry * prediction * (1 - prediction)
 
-                                val otherPrediction = output.get(innerIndexRow, indexColumn)
+                    }
+                    // i != j
+                    else {
 
-                                derivative += chainEntry * (-prediction * otherPrediction)
+                        val otherPrediction = output.get(innerIndexRow, indexColumn)
 
-                            }
-
-                        }
-
-                        derivatives.set(outerIndexRow, indexColumn, derivative)
+                        derivative += chainEntry * (-prediction * otherPrediction)
 
                     }
 
                 }
 
-                derivatives
+                derivatives.set(outerIndexRow, indexColumn, derivative)
 
             }
-            .let { derivatives ->
 
-                BackwardResult(derivatives)
+        }
 
-            }
+        return BackwardResult(derivatives)
+
+    }
 }

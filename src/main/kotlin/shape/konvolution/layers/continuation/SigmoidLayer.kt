@@ -1,15 +1,15 @@
 package shape.konvolution.layers.continuation
 
 import shape.konvolution.BackwardResult
-import shape.konvolution.RealMatrix
-import shape.konvolution.createRealMatrix
-import shape.konvolution.sigmoid
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
+import shape.konvolution.matrix.sigmoid
 
 class SigmoidLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        sigmoid(input)
+        arrayOf(sigmoid(input))
 
     /*
         input = pre-activation
@@ -17,7 +17,9 @@ class SigmoidLayer : ContinuationLayer {
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
+    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
+
+        val output = outputs.last()
 
         val numberRows = output.numberRows()
         val nmberColumns = output.numberColumns()

@@ -5,6 +5,9 @@ import shape.konvolution.layers.entry.InputLayer
 import shape.konvolution.layers.continuation.SigmoidLayer
 import shape.konvolution.layers.continuation.createProjectionLayer
 import shape.konvolution.loss.SquaredLoss
+import shape.konvolution.matrix.Matrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.optimization.StochasticGradientDescent
 import java.util.*
 

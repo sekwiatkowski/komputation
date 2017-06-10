@@ -1,6 +1,6 @@
 package shape.konvolution.optimization
 
-import shape.konvolution.RealMatrix
+import shape.konvolution.matrix.RealMatrix
 
 class StochasticGradientDescent(private val learningRate : Double) : Optimizer {
 

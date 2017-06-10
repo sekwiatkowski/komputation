@@ -2,8 +2,12 @@ package shape.konvolution.demos
 
 import shape.konvolution.*
 import shape.konvolution.layers.continuation.*
+import shape.konvolution.layers.continuation.createConvolutionLayer
 import shape.konvolution.layers.entry.InputLayer
 import shape.konvolution.loss.LogisticLoss
+import shape.konvolution.matrix.Matrix
+import shape.konvolution.matrix.RealMatrix
+import shape.konvolution.matrix.createRealMatrix
 import shape.konvolution.optimization.StochasticGradientDescent
 import java.util.*
 

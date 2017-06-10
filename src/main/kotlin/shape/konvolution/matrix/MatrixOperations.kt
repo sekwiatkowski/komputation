@@ -1,14 +1,5 @@
-package shape.konvolution
+package shape.konvolution.matrix
 
-import no.uib.cipr.matrix.DenseMatrix
-
-fun createRealMatrix(vararg rows: DoubleArray) =
-
-    RealMatrix(*rows)
-
-fun createRealMatrix(numberRows: Int, numberColumns: Int) =
-
-    RealMatrix(numberRows, numberColumns)
 
 fun concatColumns(matrices : Array<RealMatrix>, numberMatrices : Int, numberRows : Int, numberColumns : Int): RealMatrix {
 
@@ -41,7 +32,7 @@ fun concatColumns(matrices : Array<RealMatrix>, numberMatrices : Int, numberRows
 
 fun softmax(input: RealMatrix) =
 
-    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
+    createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
         for (indexColumn in 0..input.numberColumns() - 1) {
 
@@ -69,7 +60,7 @@ fun softmax(input: RealMatrix) =
 
 fun sigmoid(input: RealMatrix) =
 
-    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
+    createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
         for (indexRow in 0..input.numberRows() - 1) {
 
@@ -91,7 +82,7 @@ fun sigmoid(x: Double) =
 
 fun relu(input: RealMatrix) =
 
-    RealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
+    createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
         for (indexRow in 0..input.numberRows() - 1) {
 
@@ -149,11 +140,3 @@ fun expandBias(bias: RealMatrix, inputColumns: Int): RealMatrix {
     return expandedBiasMatrix
 
 }
-
-fun oneHot(size : Int, oneHotIndex: Int, value : Double = 1.0) =
-
-    DoubleArray(size) { index ->
-
-        if (index == oneHotIndex) value else 0.0
-
-    }
