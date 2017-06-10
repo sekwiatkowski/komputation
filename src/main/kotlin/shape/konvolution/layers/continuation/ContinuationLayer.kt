@@ -5,8 +5,8 @@ import shape.konvolution.matrix.RealMatrix
 
 interface ContinuationLayer {
 
-    fun forward(input : RealMatrix) : Array<RealMatrix>
+    fun forward(input : RealMatrix) : RealMatrix
 
-    fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix) : BackwardResult
+    fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix) : BackwardResult
 
 }

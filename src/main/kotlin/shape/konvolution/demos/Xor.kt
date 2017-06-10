@@ -8,7 +8,7 @@ import shape.konvolution.loss.SquaredLoss
 import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.optimization.StochasticGradientDescent
+import shape.konvolution.optimization.stochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -32,10 +32,12 @@ fun main(args: Array<String>) {
 
     val inputLayer = InputLayer()
 
-    val hiddenPreactivationLayer = createProjectionLayer(2, 2, initialize, StochasticGradientDescent(0.1), StochasticGradientDescent(0.1))
+    val updateRule = stochasticGradientDescent(0.1)
+
+    val hiddenPreactivationLayer = createProjectionLayer(2, 2, initialize, updateRule)
     val hiddenLayer = SigmoidLayer()
 
-    val outputPreactivationLayer = createProjectionLayer(2, 1, initialize, StochasticGradientDescent(0.1), StochasticGradientDescent(0.1))
+    val outputPreactivationLayer = createProjectionLayer(2, 1, initialize, updateRule)
     val outputLayer = SigmoidLayer()
 
     val network = Network(

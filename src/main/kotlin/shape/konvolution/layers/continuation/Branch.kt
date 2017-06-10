@@ -12,21 +12,21 @@ class Branch(private val dimension: Int, vararg branches : Array<ContinuationLay
 
     val subnetworks = branches.map { layers -> Network(InputLayer(), *layers) }
 
-    override fun forward(input: RealMatrix): Array<RealMatrix> {
+    override fun forward(input: RealMatrix): RealMatrix {
 
         val branches = Array(numberBranches) { indexBranch ->
 
-            subnetworks[indexBranch].forward(input).first().last()
+            subnetworks[indexBranch].forward(input).first()
 
         }
 
         val concatenation = concatColumns(branches, numberBranches, 1, dimension)
 
-        return arrayOf(concatenation)
+        return concatenation
 
     }
 
-    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
         TODO("not implemented")
     }

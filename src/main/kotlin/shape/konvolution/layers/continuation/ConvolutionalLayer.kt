@@ -4,18 +4,17 @@ import shape.konvolution.BackwardResult
 import shape.konvolution.initializeMatrix
 import shape.konvolution.initializeRowVector
 import shape.konvolution.matrix.RealMatrix
-import shape.konvolution.optimization.Optimizer
+import shape.konvolution.optimization.UpdateRule
 
-class ConvolutionLayer(
+/* class ConvolutionLayer(
     filterWidth: Int,
     filterHeight: Int,
     weights : RealMatrix,
     bias : RealMatrix? = null,
-    weightOptimizer: Optimizer? = null,
-    biasOptimizer: Optimizer? = null) : ContinuationLayer, OptimizableContinuationLayer {
+    updateRule: UpdateRule? = null) : ContinuationLayer, OptimizableContinuationLayer {
 
     private val expansionLayer = ExpansionLayer(filterWidth, filterHeight)
-    private val projectionLayer = ProjectionLayer(weights, bias, weightOptimizer, biasOptimizer)
+    private val projectionLayer = ProjectionLayer(weights, bias, updateRule)
 
     override fun forward(input: RealMatrix): Array<RealMatrix> {
 
@@ -52,12 +51,11 @@ fun createConvolutionLayer(
     filterWidth: Int,
     filterHeight : Int,
     initializationStrategy : () -> Double,
-    weightOptimizer: Optimizer,
-    biasOptimizer: Optimizer): ConvolutionLayer {
+    updateRule: UpdateRule? = null): ConvolutionLayer {
 
     val weights = initializeMatrix(initializationStrategy, numberFilters,filterWidth * filterHeight)
     val bias = initializeRowVector(initializationStrategy, numberFilters)
 
-    return ConvolutionLayer(filterWidth, filterHeight, weights, bias, weightOptimizer, biasOptimizer)
+    return ConvolutionLayer(filterWidth, filterHeight, weights, bias, updateRule)
 
-}
+} */

@@ -8,31 +8,6 @@ import shape.konvolution.matrix.createRealMatrix
 class ConvolutionLayerTest {
 
     @Test
-    fun testConvolution() {
-
-        /*
-                1 2
-                2 3
-            1 2 5 8
-            3 4 11 18
-         */
-
-        val input = createRealMatrix(
-            doubleArrayOf(1.0),
-            doubleArrayOf(2.0),
-            doubleArrayOf(3.0))
-
-        val weights = createRealMatrix(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0))
-        val convolutionLayer = ConvolutionLayer(1, 2, weights)
-
-        val expected = createRealMatrix(doubleArrayOf(5.0, 8.0), doubleArrayOf(11.0, 18.0))
-        val actual = convolutionLayer.forward(input).last()
-
-        assertMatrixEquality(expected, actual, 0.001)
-
-    }
-
-    @Test
     fun testExpansion_1x1_1W1H() {
 
         val input = createRealMatrix(doubleArrayOf(1.0))

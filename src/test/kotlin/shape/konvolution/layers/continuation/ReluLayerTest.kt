@@ -13,7 +13,7 @@ class ReluLayerTest {
 
         val input = createRealMatrix(doubleArrayOf(1.0, -2.0), doubleArrayOf(-3.0, 4.0))
 
-        val actual = reluLayer.forward(input).single()
+        val actual = reluLayer.forward(input)
         val expected = createRealMatrix(
             doubleArrayOf(1.0, 0.0),
             doubleArrayOf(0.0, 4.0)
@@ -30,7 +30,7 @@ class ReluLayerTest {
 
         val input = createRealMatrix(doubleArrayOf(-1.0), doubleArrayOf(2.0))
 
-        val actual = reluLayer.forward(input).single()
+        val actual = reluLayer.forward(input)
         val expected = createRealMatrix(
             doubleArrayOf(0.0),
             doubleArrayOf(2.0)

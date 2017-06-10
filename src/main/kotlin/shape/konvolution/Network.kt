@@ -11,22 +11,22 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
     private val numberContinuationLayers = continuationLayers.size
 
-    fun forward(input : Matrix): Array<Array<RealMatrix>> {
+    fun forward(input : Matrix): Array<RealMatrix> {
 
-        var previousResult : Array<RealMatrix>? = null
+        var previousResult : RealMatrix? = null
 
         val results = Array(continuationLayers.size + 1) { indexLayer ->
 
             if (indexLayer == 0) {
 
-                previousResult = arrayOf(entryPoint.forward(input))
+                previousResult = entryPoint.forward(input)
 
             }
             else {
 
                 val layer = continuationLayers[indexLayer - 1]
 
-                previousResult = layer.forward(previousResult!!.last())
+                previousResult = layer.forward(previousResult!!)
 
             }
 
@@ -38,11 +38,11 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
     }
 
-    fun backward(forwardResults : Array<Array<RealMatrix>>, lossGradient: RealMatrix) : Array<BackwardResult> {
+    fun backward(forwardResults : Array<RealMatrix>, lossGradient: RealMatrix) : Array<BackwardResult> {
 
         var chain = lossGradient
 
-        return Array(numberContinuationLayers) { indexLayer ->
+        val results = Array(numberContinuationLayers) { indexLayer ->
 
             val reverseIndex = numberContinuationLayers - indexLayer - 1
 
@@ -61,9 +61,11 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
         }
 
+        return results
+
     }
 
-    fun optimize(input: Matrix, forwardResults : Array<Array<RealMatrix>>, backwardResults: Array<BackwardResult>) {
+    fun optimize(input: Matrix, forwardResults : Array<RealMatrix>, backwardResults: Array<BackwardResult>) {
 
         optimizeContinuationLayers(backwardResults)
 

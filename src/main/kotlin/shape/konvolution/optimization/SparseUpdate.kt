@@ -2,15 +2,21 @@ package shape.konvolution.optimization
 
 import shape.konvolution.matrix.RealMatrix
 
-fun optimizeSparsely(rows: Array<DoubleArray>, rowIndices: IntArray, updates: RealMatrix) {
+fun updateSparsely(rows: Array<DoubleArray>, rowIndices: IntArray, gradient: RealMatrix, rule : UpdateRule) {
 
-    for ((updateIndex, rowIndex) in rowIndices.withIndex()) {
+    for (indexRow in 0..gradient.numberRows() - 1) {
 
-        val embedding = rows[rowIndex]
+        val rowIndex = rowIndices[indexRow]
+        val row = rows[rowIndex]
 
-        for (indexColumn in 0..embedding.size - 1) {
+        for (indexColumn in 0..gradient.numberColumns() - 1) {
 
-            embedding[indexColumn] = updates.get(updateIndex, indexColumn)
+            val current = row[indexColumn]
+            val derivative = gradient.get(indexRow, indexColumn)
+
+            val updated = rule(rowIndex, indexColumn, current, derivative)
+
+            row[indexColumn] = updated
 
         }
 

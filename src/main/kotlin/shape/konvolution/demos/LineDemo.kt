@@ -2,13 +2,12 @@ package shape.konvolution.demos
 
 import shape.konvolution.*
 import shape.konvolution.layers.continuation.*
-import shape.konvolution.layers.continuation.createConvolutionLayer
 import shape.konvolution.layers.entry.InputLayer
 import shape.konvolution.loss.LogisticLoss
 import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.optimization.StochasticGradientDescent
+import shape.konvolution.optimization.stochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -77,14 +76,19 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialize = createUniformInitializer(random, -0.05, 0.05)
 
-    val optimizer = StochasticGradientDescent(0.01)
+    val updateRule = stochasticGradientDescent(0.01)
+
+    val filterWidth = 3
+    val filterHeight = 1
+    val numberFilters = 6
 
     val network = Network(
         InputLayer(),
-        createConvolutionLayer(6, 3, 1, initialize, optimizer, optimizer),
-        MaxPoolingLayer(),
+        ExpansionLayer(filterWidth, filterHeight),
+        createProjectionLayer(filterWidth * filterHeight, numberFilters, initialize, updateRule),
         ReluLayer(),
-        createProjectionLayer(6, 2, initialize, optimizer, optimizer),
+        MaxPoolingLayer(),
+        createProjectionLayer(numberFilters, 2, initialize, updateRule),
         SoftmaxLayer()
     )
 

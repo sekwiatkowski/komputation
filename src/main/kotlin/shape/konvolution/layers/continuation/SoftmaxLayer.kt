@@ -9,16 +9,14 @@ class SoftmaxLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        arrayOf(softmax(input))
+        softmax(input)
 
     /*
         Note that each pre-activation effects all nodes.
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
-
-        val output = outputs.first()
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
         val derivatives = createRealMatrix(output.numberRows(), output.numberColumns())
 

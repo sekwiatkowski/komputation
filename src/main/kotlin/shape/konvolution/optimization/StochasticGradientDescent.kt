@@ -1,23 +1,16 @@
 package shape.konvolution.optimization
 
-import shape.konvolution.matrix.RealMatrix
+fun stochasticGradientDescent(learningRate: Double): (Int, Int) -> UpdateRule {
 
-class StochasticGradientDescent(private val learningRate : Double) : Optimizer {
+    return { numberRows : Int, numberColumns : Int ->
 
-    override fun optimize(parameter: RealMatrix, gradient: RealMatrix) {
+        val updateRule = { indexRow: Int, indexColumn: Int, current: Double, derivative: Double ->
 
-        for (indexRow in 0..parameter.numberRows() - 1) {
-
-            for (indexColumn in 0..parameter.numberColumns() - 1) {
-
-                val current = parameter.get(indexRow, indexColumn)
-                val updated = current - learningRate * gradient.get(indexRow, indexColumn)
-
-                parameter.set(indexRow, indexColumn, updated)
-
-            }
+            current - learningRate * derivative
 
         }
+
+        updateRule
 
     }
 

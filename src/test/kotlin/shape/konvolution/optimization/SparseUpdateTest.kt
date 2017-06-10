@@ -15,10 +15,10 @@ class SparseUpdateTest {
         )
 
         val updates = createRealMatrix(
-            doubleArrayOf(1.1, 2.1)
+            doubleArrayOf(-1.0, -1.0)
         )
 
-        optimizeSparsely(actual, intArrayOf(0), updates)
+        updateSparsely(actual, intArrayOf(0), updates, stochasticGradientDescent(0.1)(2, 2))
 
         val expected = arrayOf(
             doubleArrayOf(1.1, 2.1),
@@ -38,10 +38,10 @@ class SparseUpdateTest {
         )
 
         val updates = createRealMatrix(
-            doubleArrayOf(3.1, 4.1)
+            doubleArrayOf(-1.0, -1.0)
         )
 
-        optimizeSparsely(actual, intArrayOf(1), updates)
+        updateSparsely(actual, intArrayOf(1), updates, stochasticGradientDescent(0.1)(2, 2))
 
         val expected = arrayOf(
             doubleArrayOf(1.0, 2.0),

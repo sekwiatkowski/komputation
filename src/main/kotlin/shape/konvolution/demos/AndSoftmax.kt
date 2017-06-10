@@ -8,7 +8,7 @@ import shape.konvolution.loss.LogisticLoss
 import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.optimization.StochasticGradientDescent
+import shape.konvolution.optimization.stochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -57,7 +57,9 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialize = createGaussianInitializer(random)
 
-    val projectionLayer = createProjectionLayer(2, 2, initialize, StochasticGradientDescent(0.03), StochasticGradientDescent(0.03))
+    val optimizer = stochasticGradientDescent(0.03)
+
+    val projectionLayer = createProjectionLayer(2, 2, initialize, optimizer)
     val softmaxLayer = SoftmaxLayer()
 
     val network = Network(

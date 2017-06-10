@@ -14,7 +14,7 @@ fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, l
 
             val forwardResults = network.forward(input)
 
-            val prediction = forwardResults.last().last()
+            val prediction = forwardResults.last()
 
             val loss = lossFunction.forward(prediction, target)
 

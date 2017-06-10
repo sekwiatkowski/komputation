@@ -5,6 +5,6 @@ import shape.konvolution.matrix.RealMatrix
 
 interface OptimizableEntryPoint {
 
-    fun optimize(input : Matrix, output: Array<RealMatrix>, gradient : RealMatrix)
+    fun optimize(input : Matrix, output: RealMatrix, gradient : RealMatrix)
 
 }

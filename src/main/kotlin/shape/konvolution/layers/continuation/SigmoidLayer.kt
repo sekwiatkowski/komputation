@@ -9,7 +9,7 @@ class SigmoidLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        arrayOf(sigmoid(input))
+        sigmoid(input)
 
     /*
         input = pre-activation
@@ -17,9 +17,7 @@ class SigmoidLayer : ContinuationLayer {
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
-
-        val output = outputs.last()
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
         val numberRows = output.numberRows()
         val nmberColumns = output.numberColumns()

@@ -9,11 +9,9 @@ class ReluLayer : ContinuationLayer {
 
     override fun forward(input: RealMatrix) =
 
-        arrayOf(relu(input))
+        relu(input)
 
-    override fun backward(inputs: Array<RealMatrix>, outputs : Array<RealMatrix>, chain : RealMatrix): BackwardResult {
-
-        val output = outputs.last()
+    override fun backward(input: RealMatrix, output : RealMatrix, chain : RealMatrix): BackwardResult {
 
         val numberRows = output.numberRows()
         val nmberColumns = output.numberColumns()

@@ -16,7 +16,7 @@ class MaxPoolingLayerTest {
             doubleArrayOf(3.0, -4.0)
         )
 
-        val actual = maxPoolingLayer.forward(input).single()
+        val actual = maxPoolingLayer.forward(input)
 
         val expected = createRealMatrix(
             doubleArrayOf(2.0),

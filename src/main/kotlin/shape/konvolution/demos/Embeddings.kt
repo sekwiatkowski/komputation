@@ -2,11 +2,11 @@ package shape.konvolution.demos
 
 import shape.konvolution.*
 import shape.konvolution.layers.continuation.*
-import shape.konvolution.layers.continuation.createConvolutionLayer
-import shape.konvolution.layers.entry.LookupLayer
+import shape.konvolution.layers.entry.createLookupLayer
 import shape.konvolution.loss.SquaredLoss
 import shape.konvolution.matrix.*
-import shape.konvolution.optimization.StochasticGradientDescent
+import shape.konvolution.optimization.momentum
+import shape.konvolution.optimization.stochasticGradientDescent
 import java.util.*
 
 /*
@@ -102,20 +102,24 @@ fun main(args: Array<String>) {
         .flatMap { it }
         .toTypedArray()
 
-    val optimizer = StochasticGradientDescent(0.03)
+    val updateRule = momentum(0.01, 0.9)
 
     val numberFilters = 2
 
+    val filterWidth = embeddingDimension
+    val filterHeight = 2
+
     val network = Network(
-        LookupLayer(embeddings, optimizer),
-        createConvolutionLayer(numberFilters, embeddingDimension, 2, generateEntry, optimizer, optimizer),
+        createLookupLayer(embeddings, updateRule),
+        ExpansionLayer(filterWidth, filterHeight),
+        createProjectionLayer(filterWidth * filterHeight, numberFilters, generateEntry, updateRule),
         MaxPoolingLayer(),
         ReluLayer(),
-        createProjectionLayer(numberFilters, numberClasses, generateEntry, optimizer, optimizer),
+        createProjectionLayer(numberFilters, numberClasses, generateEntry, updateRule),
         SoftmaxLayer()
     )
 
-    train(network, input, targets, SquaredLoss(), 30_000)
+    train(network, input, targets, SquaredLoss(), 5_000)
 
 }
 
