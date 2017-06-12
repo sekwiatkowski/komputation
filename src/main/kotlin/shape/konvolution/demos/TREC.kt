@@ -1,26 +1,69 @@
 package shape.konvolution.demos
 
-import shape.konvolution.matrix.createRealMatrix
+import shape.konvolution.Network
+import shape.konvolution.createUniformInitializer
+import shape.konvolution.layers.continuation.*
+import shape.konvolution.layers.entry.createLookupLayer
+import shape.konvolution.loss.LogisticLoss
+import shape.konvolution.matrix.Matrix
+import shape.konvolution.matrix.createIntegerVector
 import shape.konvolution.matrix.createOneHotVector
+import shape.konvolution.optimization.momentum
+import shape.konvolution.train
 import java.io.File
+import java.util.*
 
 fun main(args: Array<String>) {
 
-    Test().run()
+    val embeddingFilePath = args.first()
+    val dimensions = args.last().toInt()
 
+    TrecTraining().run(embeddingFilePath, dimensions)
 
 }
 
-class Test {
+class TrecTraining {
 
-    fun run() {
+    fun run(embeddingFilePath: String, embeddingDimension: Int) {
 
-        val trainingFile = File(javaClass.classLoader.getResource("train_5500.label").toURI())
+        val embeddingFile = File(embeddingFilePath)
+
+        val numberFilters = 100
+        val filterWidth = embeddingDimension
+        val filterHeights = intArrayOf(3)
+        val numberFilterHeights = filterHeights.size
+
+        val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
+        val trainingFile = File(trecDirectory, "training.data")
+        val testFile = File(trecDirectory, "test.data")
 
         val trainingExamples = readTrecExamples(trainingFile)
+        val testExamples = readTrecExamples(testFile)
 
-        val indexedCategories = trainingExamples
+        val vocabulary = trainingExamples
+            .map { (_, text) -> text }
+            .flatMap { tokens -> tokens }
+            .toSet()
+
+        val embeddingMap = embedVocabulary(vocabulary, embeddingFile)
+
+        val embeddableVocabulary = embeddingMap.keys.sorted()
+
+        val maximumFilterHeight = filterHeights.max()!!
+
+        val embeddableTrainingExamples = filterExamles(trainingExamples, embeddableVocabulary, maximumFilterHeight)
+        val embeddableTestExamples = filterExamles(testExamples, embeddableVocabulary, maximumFilterHeight)
+
+        val trainingRepresentations = represent(embeddableTrainingExamples, embeddableVocabulary)
+        val testRepresentations = represent(embeddableTestExamples, embeddableVocabulary)
+
+        val trainingCategories = embeddableTrainingExamples
             .map { ex -> ex.category }
+
+        val testCategories = embeddableTestExamples
+            .map { ex -> ex.category }
+
+        val indexedCategories = trainingCategories
             .toSet()
             .sorted()
             .mapIndexed { index, category -> category to index }
@@ -28,80 +71,126 @@ class Test {
 
         val numberCategories = indexedCategories.size
 
-        val targets = trainingExamples
-            .map { (category, _) -> category }
-            .map { category -> createOneHotVector(numberCategories, indexedCategories[category]!!) }
-
-        val vocabulary = trainingExamples
-            .map { (_, text) -> text }
-            .flatMap { tokens -> tokens }
-            .toSet()
-
-        val embeddingDimension = 300
-
-        val embeddingFile = File("C:\\Users\\Sebastian\\Documents\\Glove\\glove.6B.${embeddingDimension}d.txt")
-
-        val embeddingMap = embeddingFile.bufferedReader().use { reader ->
-
-
-            reader
-                .lineSequence()
-                .map { line ->
-
-                    val split = line.split(" ")
-
-                    val word = split.first()
-                    val embedding = split.drop(1).map { it.toDouble() }.toDoubleArray()
-
-                    word to embedding
-
-                }
-                .filter { (word, _) ->
-                    vocabulary.contains(word)
-                }
-                .toMap()
-
-        }
+        val trainingTargets = createTargets(trainingCategories, indexedCategories)
+        val testTargets = createTargets(testCategories, indexedCategories)
 
         val missing = vocabulary.minus(embeddingMap.keys)
 
-        val finalVocabulary = embeddingMap.keys.sorted()
+        val embeddings = embeddableVocabulary
+            .map { token -> embeddingMap[token]!! }
+            .toTypedArray()
 
-        val embeddings = finalVocabulary.map { token -> embeddingMap[token]!! }
+        val random = Random(1)
+        val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
 
-        val representations = trainingExamples
-            .map { (_, text) ->
+        val optimizationStrategy = momentum(0.01, 0.1)
 
-                text.filter { finalVocabulary.contains(it) }
-            }
-            .map { tokens ->
+        val network = Network(
+            createLookupLayer(embeddings, optimizationStrategy),
+            createConcatenation(
+                *filterHeights
+                    .map { filterHeight ->
 
-                val rows = tokens.map { doubleArrayOf(finalVocabulary.indexOf(it).toDouble()) }.toTypedArray()
+                        arrayOf(
+                            createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
+                            ReluLayer(),
+                            MaxPoolingLayer()
+                        )
+                    }
+                    .toTypedArray()
+            ),
+            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, optimizationStrategy),
+            SoftmaxLayer()
+        )
 
-                val matrix = createRealMatrix(*rows)
+        val testData = testRepresentations.zip(testTargets)
+        val numberTestExamples = testData.size
 
-                matrix
-            }
+        train(network, trainingRepresentations, trainingTargets, LogisticLoss(), 10_000) { _, loss ->
+
+            val accuracy = testData
+                .count { (input, target) ->
+
+                    network.forward(input).maxRow() == target.maxRow()
+
+                }
+                .toDouble()
+                .div(numberTestExamples.toDouble())
+
+            println(accuracy)
+
+        }
 
     }
 
-    private fun readTrecExamples(source : File) =
-
-        source
-            .readLines(Charsets.ISO_8859_1)
-            .map { line ->
-
-                val split = line.split(' ')
-
-                val category = split.first().split(":").first()
-                val text = split.drop(1).map { it.toLowerCase() }
-
-                TrecExample(category, text)
-
-            }
-
 }
+
+private fun readTrecExamples(source : File) =
+
+    source
+        .readLines(Charsets.ISO_8859_1)
+        .map { line ->
+
+            val split = line.split(' ')
+
+            val category = split.first().split(":").first()
+            val text = split.drop(1).dropLast(1).map { it.toLowerCase() }
+
+            TrecExample(category, text)
+
+        }
 
 data class TrecExample(val category : String, val text : List<String>)
 
-data class WordEmbedding(val word : String, val embedding : DoubleArray)
+private fun embedVocabulary(vocabulary: Set<String>, embeddingFile: File): Map<String, DoubleArray> {
+
+    val embeddingMap = hashMapOf<String, DoubleArray>()
+
+    embeddingFile.bufferedReader().use { reader ->
+
+        reader
+            .lineSequence()
+            .forEach { line ->
+
+                val split = line.split(" ")
+
+                val word = split.first()
+
+                if (vocabulary.contains(word)) {
+
+                    val embedding = split.drop(1).map { it.toDouble() }.toDoubleArray()
+
+                    embeddingMap.put(word, embedding)
+
+                }
+
+            }
+
+        embeddingMap
+
+    }
+
+    return embeddingMap
+
+}
+
+private fun filterExamles(examples: Iterable<TrecExample>, vocabulary: Collection<String>, minLength : Int) =
+
+    examples
+        .map { (category, text) -> TrecExample(category, text.filter { vocabulary.contains(it) }) }
+        .filter { (_, tokens) -> tokens.size >= minLength }
+
+
+private fun represent(examples: Iterable<TrecExample>, vocabulary: Collection<String>) =
+
+    examples
+        .map { (_, tokens) -> tokens }
+        .map { tokens -> tokens.map { vocabulary.indexOf(it) }.toIntArray() }
+        .map { indices -> createIntegerVector(*indices) as Matrix }
+        .toTypedArray()
+
+private fun createTargets(trainingCategories: List<String>, indexedCategories: Map<String, Int>) =
+
+    trainingCategories
+        .map { category -> createOneHotVector(indexedCategories.size, indexedCategories[category]!!) }
+        .toTypedArray()

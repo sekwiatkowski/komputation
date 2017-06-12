@@ -17,6 +17,10 @@ class RealMatrix(private val matrix: DenseMatrix) : Matrix {
 
     }
 
+    fun add(otherMatrix: RealMatrix) =
+
+        RealMatrix(this.matrix.add(otherMatrix.matrix) as DenseMatrix)
+
     fun add(indexRow: Int, indexColumn : Int, value: Double) {
 
         this.matrix.add(indexRow, indexColumn, value)
@@ -35,6 +39,32 @@ class RealMatrix(private val matrix: DenseMatrix) : Matrix {
 
         RealMatrix(this.matrix.copy())
 
+    fun maxRow() : Int {
+
+        var maxValue = Double.NEGATIVE_INFINITY
+        var maxRow = -1
+
+        for (indexRow in 0..numberRows() - 1) {
+
+            for (indexColumn in 0..numberColumns() - 1) {
+
+                val value = get(indexRow, indexColumn)
+
+                if (value > maxValue) {
+
+                    maxValue = value
+                    maxRow = indexRow
+
+                }
+
+            }
+
+        }
+
+        return maxRow
+
+    }
+
 
 }
 
@@ -45,6 +75,22 @@ fun createRealMatrix(vararg rows: DoubleArray) =
 fun createRealMatrix(numberRows: Int, numberColumns: Int) =
 
     RealMatrix(DenseMatrix(numberRows, numberColumns))
+
+fun createRealVector(vararg entries : Double) : RealMatrix {
+
+    val numberEntries = entries.size
+
+    val vector = createRealMatrix(numberEntries, 1)
+
+    for (indexEntry in 0..numberEntries - 1) {
+
+        vector.set(indexEntry,0, entries[indexEntry])
+
+    }
+
+    return vector
+
+}
 
 fun createRealVector(numberRows: Int) =
 
@@ -59,3 +105,5 @@ fun createOneHotVector(size : Int, oneHotIndex: Int, value : Double = 1.0): Real
     return vector
 
 }
+
+val EMPTY_MATRIX = createRealMatrix(0, 0)

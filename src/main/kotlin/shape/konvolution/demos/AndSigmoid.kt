@@ -62,6 +62,6 @@ fun main(args: Array<String>) {
         sigmoidLayer
     )
 
-    train(network, input, targets, SquaredLoss(), 10_000)
+    train(network, input, targets, SquaredLoss(), 10_000, printLoss)
 
 }

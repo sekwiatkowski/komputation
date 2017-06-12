@@ -1,14 +1,16 @@
 package shape.konvolution.layers.continuation
 
+import shape.konvolution.functions.softmax
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.matrix.softmax
 
-class SoftmaxLayer : ContinuationLayer(1, 0) {
+class SoftmaxLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
 
     override fun forward() {
 
-        this.lastForwardResult[0] = softmax(this.lastInput!!)
+        val result = softmax(this.lastInput!!)
+
+        this.lastForwardResult[0] = result
 
     }
 
@@ -19,7 +21,7 @@ class SoftmaxLayer : ContinuationLayer(1, 0) {
      */
     override fun backward(chain : RealMatrix) {
 
-        val lastForwardResult = this.lastForwardResult.single()!!
+        val lastForwardResult = this.lastForwardResult.single()
 
         val gradient = createRealMatrix(lastForwardResult.numberRows(), lastForwardResult.numberColumns())
 

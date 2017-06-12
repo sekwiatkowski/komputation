@@ -107,18 +107,29 @@ fun main(args: Array<String>) {
     val numberFilters = 2
 
     val filterWidth = embeddingDimension
-    val filterHeight = 2
+    val filterHeights = arrayOf(1, 2)
+
+    val createConvolutionSubnetwork = { filterHeight : Int ->
+
+        arrayOf(
+            createConvolutionalLayer("conv-$filterHeight", numberFilters, filterWidth, filterHeight, generateEntry, optimizationStrategy),
+            ReluLayer(),
+            MaxPoolingLayer()
+
+        )
+
+    }
 
     val network = Network(
-        createLookupLayer(embeddings, optimizationStrategy),
-        createConvolutionalLayer(numberFilters, filterWidth, filterHeight, generateEntry, optimizationStrategy),
-        MaxPoolingLayer(),
-        ReluLayer(),
-        createProjectionLayer(numberFilters, numberClasses, generateEntry, optimizationStrategy),
-        SoftmaxLayer()
+        createLookupLayer("lookup", embeddings, optimizationStrategy),
+        createConcatenation(
+            "concatenation", *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
+        ),
+        createProjectionLayer("projection", numberFilters * filterHeights.size, numberClasses, generateEntry, optimizationStrategy),
+        SoftmaxLayer("softmax")
     )
 
-    train(network, input, targets, SquaredLoss(), 5_000, printLoss)
+    train(network, input, targets, SquaredLoss(), 10_000, printLoss)
 
 }
 

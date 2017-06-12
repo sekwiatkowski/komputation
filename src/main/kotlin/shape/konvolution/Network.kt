@@ -25,7 +25,7 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
             }
             else {
 
-                val previousOutput = if(indexLayer == 1) entryPoint.lastForwardResult!! else continuationLayers[indexLayer - 1 - 1].lastForwardResult.last()!!
+                val previousOutput = if(indexLayer == 1) entryPoint.lastForwardResult!! else continuationLayers[indexLayer - 1 - 1].lastForwardResult.last()
 
                 val layer = continuationLayers[indexLayer - 1]
 
@@ -37,11 +37,13 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
             }
         }
 
-        return continuationLayers.last().lastForwardResult.last()!!
+        val output = continuationLayers.last().lastForwardResult.last()
+
+        return output
 
     }
 
-    fun backward(lossGradient: RealMatrix) {
+    fun backward(lossGradient: RealMatrix): RealMatrix {
 
         var chain = lossGradient
 
@@ -56,6 +58,8 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
             chain = layer.lastBackwardResultWrtInput!!
 
         }
+
+        return chain
 
     }
 

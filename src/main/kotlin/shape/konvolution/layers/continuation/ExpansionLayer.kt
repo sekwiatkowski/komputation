@@ -3,7 +3,7 @@ package shape.konvolution.layers.continuation
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
 
-class ExpansionLayer(private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(1, 0) {
+class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name, 1, 0) {
 
     override fun forward() {
 
@@ -66,6 +66,21 @@ fun expandMatrixForConvolution(input: RealMatrix, filterWidth : Int, filterHeigh
 
     return expandedInputMatrix
 
+}
+
+fun createExpansionLayer(
+    filterWidth: Int,
+    filterHeight: Int): ExpansionLayer {
+
+    return createExpansionLayer(null, filterWidth, filterHeight)
+}
+
+fun createExpansionLayer(
+    name : String?,
+    filterWidth: Int,
+    filterHeight: Int): ExpansionLayer {
+
+    return ExpansionLayer(name, filterWidth, filterHeight)
 }
 
 fun collectGradients(

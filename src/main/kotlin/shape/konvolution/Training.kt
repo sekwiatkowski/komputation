@@ -4,9 +4,17 @@ import shape.konvolution.loss.LossFunction
 import shape.konvolution.matrix.Matrix
 import shape.konvolution.matrix.RealMatrix
 
-fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, lossFunction: LossFunction, numberIterations : Int) {
+val printLoss = { _ : Int, loss : Double -> println(loss) }
 
-    repeat(numberIterations) {
+fun train(
+    network: Network,
+    inputs: Array<Matrix>,
+    targets: Array<RealMatrix>,
+    lossFunction: LossFunction,
+    numberIterations : Int,
+    afterEachIteration : (index : Int, loss : Double) -> Unit) {
+
+    repeat(numberIterations) { indexIteration ->
 
         var iterationLoss = 0.0
 
@@ -28,7 +36,7 @@ fun train(network: Network, inputs: Array<Matrix>, targets: Array<RealMatrix>, l
 
         }
 
-        println(iterationLoss)
+        afterEachIteration(indexIteration, iterationLoss)
 
     }
 

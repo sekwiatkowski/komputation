@@ -17,6 +17,12 @@ fun createGaussianInitializer(random: Random): () -> Double {
 
 }
 
+fun createConstantInitializer(constant: Double): () -> Double {
+
+    return { constant }
+
+}
+
 fun initializeRow(generateEntry: () -> Double, numberColumns: Int) =
 
     DoubleArray(numberColumns) { generateEntry() }

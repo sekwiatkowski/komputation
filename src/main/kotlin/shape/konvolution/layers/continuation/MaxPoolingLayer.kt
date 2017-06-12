@@ -9,7 +9,7 @@ import shape.konvolution.matrix.createRealMatrix
     The output is a 100D row vector
  */
 
-class MaxPoolingLayer : ContinuationLayer(1, 0) {
+class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
 
     override fun forward() {
 
@@ -45,7 +45,7 @@ class MaxPoolingLayer : ContinuationLayer(1, 0) {
 
         val lastInput = this.lastInput!!
 
-        val gradient = createRealMatrix(lastInput.numberRows(), lastInput.numberColumns())
+        val derivatives = createRealMatrix(lastInput.numberRows(), lastInput.numberColumns())
 
         for (indexRow in 0..lastInput.numberRows() - 1) {
 
@@ -59,14 +59,16 @@ class MaxPoolingLayer : ContinuationLayer(1, 0) {
                 if (entry > maxValue) {
                     maxValue = entry
                     maxIndexColumn = indexColumn
+
                 }
 
             }
-            gradient.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
+
+            derivatives.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
 
         }
 
-        this.lastBackwardResultWrtInput = gradient
+        this.lastBackwardResultWrtInput = derivatives
 
     }
 

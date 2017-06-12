@@ -1,10 +1,10 @@
 package shape.konvolution.layers.continuation
 
+import shape.konvolution.functions.sigmoid
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.matrix.sigmoid
 
-class SigmoidLayer : ContinuationLayer(1, 0) {
+class SigmoidLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
 
     override fun forward() {
 
@@ -20,7 +20,7 @@ class SigmoidLayer : ContinuationLayer(1, 0) {
      */
     override fun backward(chain : RealMatrix) {
 
-        val lastForwardResult = this.lastForwardResult.single()!!
+        val lastForwardResult = this.lastForwardResult.single()
 
         val numberRows = lastForwardResult.numberRows()
         val nmberColumns = lastForwardResult.numberColumns()

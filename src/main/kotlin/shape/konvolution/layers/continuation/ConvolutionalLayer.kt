@@ -4,20 +4,22 @@ import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.optimization.UpdateRule
 
 class ConvolutionalLayer(
+    name : String? = null,
     private val expansionLayer: ExpansionLayer,
-    private val projectionLayer: ProjectionLayer) : ContinuationLayer(2, 2), OptimizableContinuationLayer {
+    private val projectionLayer: ProjectionLayer) : ContinuationLayer(name, 2, 2), OptimizableContinuationLayer {
 
     override fun forward() {
 
         this.expansionLayer.setInput(this.lastInput!!)
         this.expansionLayer.forward()
-        val expansion = this.expansionLayer.lastForwardResult[0]!!
+        val expansion = this.expansionLayer.lastForwardResult[0]
 
         this.projectionLayer.setInput(expansion)
         this.projectionLayer.forward()
+        val projection = this.projectionLayer.lastForwardResult[0]
 
         this.lastForwardResult[0] = expansion
-        this.lastForwardResult[1] = this.projectionLayer.lastForwardResult[0]
+        this.lastForwardResult[1] = projection
 
     }
 
@@ -49,10 +51,26 @@ fun createConvolutionalLayer(
     initializationStrategy : () -> Double,
     optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
 
-    val expansionLayer = ExpansionLayer(filterWidth, filterHeight)
+    return createConvolutionalLayer(null, numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy)
 
-    val projectionLayer = createProjectionLayer(filterWidth * filterHeight, numberFilters, initializationStrategy, optimizationStrategy)
+}
 
-    return ConvolutionalLayer(expansionLayer, projectionLayer)
+fun createConvolutionalLayer(
+    name : String?,
+    numberFilters: Int,
+    filterWidth: Int,
+    filterHeight : Int,
+    initializationStrategy : () -> Double,
+    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
+
+    val expansionLayerName = if(name == null) null else "$name-expansion"
+
+    val expansionLayer = createExpansionLayer(expansionLayerName, filterWidth, filterHeight)
+
+    val projectionLayerName = if(name == null) null else "$name-projection"
+
+    val projectionLayer = createProjectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, initializationStrategy, optimizationStrategy)
+
+    return ConvolutionalLayer(name, expansionLayer, projectionLayer)
 
 }

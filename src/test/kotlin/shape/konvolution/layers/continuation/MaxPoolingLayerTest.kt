@@ -24,7 +24,7 @@ class MaxPoolingLayerTest {
             doubleArrayOf(3.0)
         )
 
-        val actual = maxPoolingLayer.lastForwardResult.last()!!
+        val actual = maxPoolingLayer.lastForwardResult.last()
 
         assertMatrixEquality(expected, actual, 0.001)
 

@@ -21,7 +21,7 @@ class ReluLayerTest {
             doubleArrayOf(0.0, 4.0)
         )
 
-        assertMatrixEquality(expected, reluLayer.lastForwardResult.last()!!, 0.0001)
+        assertMatrixEquality(expected, reluLayer.lastForwardResult.last(), 0.0001)
 
     }
 
@@ -40,7 +40,7 @@ class ReluLayerTest {
             doubleArrayOf(2.0)
         )
 
-        val actual = reluLayer.lastForwardResult.last()!!
+        val actual = reluLayer.lastForwardResult.last()
 
         assertMatrixEquality(expected, actual, 0.0001)
 

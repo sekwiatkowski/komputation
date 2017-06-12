@@ -21,7 +21,7 @@ class SoftmaxLayerTest {
             doubleArrayOf(Math.exp(3.0) / (Math.exp(1.0) + Math.exp(3.0)), Math.exp(4.0) / (Math.exp(2.0) + Math.exp(4.0)))
         )
 
-        val actual = softmaxLayer.lastForwardResult.last()!!
+        val actual = softmaxLayer.lastForwardResult.last()
 
         assertMatrixEquality(expected, actual, 0.0001)
 

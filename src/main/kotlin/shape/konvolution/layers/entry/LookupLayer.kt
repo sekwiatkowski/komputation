@@ -8,8 +8,9 @@ import shape.konvolution.optimization.UpdateRule
 import shape.konvolution.optimization.updateSparsely
 
 class LookupLayer(
+    name : String?,
     private val data: Array<DoubleArray>,
-    private val update: UpdateRule? = null) : EntryPoint(), OptimizableEntryPoint {
+    private val update: UpdateRule? = null) : EntryPoint(name), OptimizableEntryPoint {
 
     override fun forward() {
 
@@ -47,6 +48,14 @@ fun createLookupLayer(
     data: Array<DoubleArray>,
     optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): LookupLayer {
 
+    return createLookupLayer(null, data, optimizationStrategy)
+}
+
+fun createLookupLayer(
+    name : String? = null,
+    data: Array<DoubleArray>,
+    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): LookupLayer {
+
     val updateRule = if (optimizationStrategy != null) {
 
         optimizationStrategy(data.size, data[0].size)
@@ -57,6 +66,6 @@ fun createLookupLayer(
         null
     }
 
-    return LookupLayer(data, updateRule)
+    return LookupLayer(name, data, updateRule)
 
 }

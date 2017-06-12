@@ -91,6 +91,5 @@ fun main(args: Array<String>) {
         SoftmaxLayer()
     )
 
-    train(network, input, targets, LogisticLoss(), 30_000)
-
+    train(network, input, targets, LogisticLoss(), 30_000, printLoss)
 }

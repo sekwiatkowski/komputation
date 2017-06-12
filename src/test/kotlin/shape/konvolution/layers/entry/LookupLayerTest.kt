@@ -15,7 +15,7 @@ class LookupLayerTest {
         secondEmbedding
     )
 
-    val embeddingLayer = LookupLayer(embeddings)
+    val embeddingLayer = createLookupLayer(embeddings)
 
     @Test
     fun testForward1() {

@@ -48,6 +48,6 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    train(network, input, targets, SquaredLoss(), 30_000)
+    train(network, input, targets, SquaredLoss(), 30_000, printLoss)
 
 }

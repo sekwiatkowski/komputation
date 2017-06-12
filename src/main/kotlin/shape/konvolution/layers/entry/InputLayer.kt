@@ -2,7 +2,7 @@ package shape.konvolution.layers.entry
 
 import shape.konvolution.matrix.RealMatrix
 
-class InputLayer : EntryPoint() {
+class InputLayer(name : String? = null) : EntryPoint(name) {
 
     override fun forward() {
 

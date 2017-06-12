@@ -1,23 +1,26 @@
 package shape.konvolution.layers.continuation
 
 import shape.konvolution.*
+import shape.konvolution.functions.project
 import shape.konvolution.matrix.RealMatrix
 import shape.konvolution.matrix.createRealMatrix
-import shape.konvolution.matrix.project
 import shape.konvolution.optimization.UpdateRule
 import shape.konvolution.optimization.updateDensely
 
 class ProjectionLayer(
+    name : String? = null,
     private val weights : RealMatrix,
     private val bias : RealMatrix? = null,
     private val weightUpdateRule: UpdateRule? = null,
-    private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(1, 2), OptimizableContinuationLayer {
+    private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name, 1, 2), OptimizableContinuationLayer {
 
     val optimize = weightUpdateRule != null || biasUpdateRule != null
 
     override fun forward() {
 
-        this.lastForwardResult[0] = project(this.lastInput!!, weights, bias)
+        val input = this.lastInput!!
+
+        this.lastForwardResult[0] = project(input, weights, bias)
 
     }
 
@@ -75,6 +78,17 @@ fun createProjectionLayer(
     initializationStrategy : () -> Double,
     optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ProjectionLayer {
 
+    return createProjectionLayer(null, previousLayerRows, nextLayerRows, initializationStrategy, optimizationStrategy)
+}
+
+
+fun createProjectionLayer(
+    name : String?,
+    previousLayerRows: Int,
+    nextLayerRows: Int,
+    initializationStrategy : () -> Double,
+    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ProjectionLayer {
+
     val weights = initializeMatrix(initializationStrategy, nextLayerRows, previousLayerRows)
     val bias = initializeRowVector(initializationStrategy, nextLayerRows)
 
@@ -94,7 +108,7 @@ fun createProjectionLayer(
 
     }
 
-    return ProjectionLayer(weights, bias, weightUpdateRule, biasUpdateRule)
+    return ProjectionLayer(name, weights, bias, weightUpdateRule, biasUpdateRule)
 
 }
 
