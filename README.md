@@ -4,9 +4,10 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 ## Initialization
 
-- [Constant](./src/main/kotlin/shape/komputation/Initialization.kt)
-- [Gaussian](./src/main/kotlin/shape/komputation/Initialization.kt)
-- [Uniform](./src/main/kotlin/shape/komputation/Initialization.kt)
+- [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
+- [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
+- [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
+- [Identity](./src/main/kotlin/shape/komputation/initialization/IdentityInitialization.kt)
 
 ## Layers
 
