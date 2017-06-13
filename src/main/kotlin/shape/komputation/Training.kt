@@ -28,9 +28,9 @@ fun train(
 
             val lossGradient = lossFunction.backward(prediction, target)
 
-            network.backward(lossGradient)
+            val endOfBackpropagation = network.backward(lossGradient)
 
-            network.optimize()
+            network.optimize(endOfBackpropagation)
 
             iterationLoss += loss
 

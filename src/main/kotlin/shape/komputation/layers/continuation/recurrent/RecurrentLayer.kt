@@ -8,34 +8,24 @@ import shape.komputation.matrix.RealMatrix
 class RecurrentLayer(
     name : String?,
     private val statefulProjectionLayer: StatefulProjectionLayer,
-    private val activationLayer: ActivationLayer) : ContinuationLayer(name, 2, 3), OptimizableContinuationLayer {
+    private val activationLayer: ActivationLayer) : ContinuationLayer(name), OptimizableContinuationLayer {
 
     // activate(stateful_projection(input))
-    override fun forward() {
+    override fun forward(input : RealMatrix) : RealMatrix {
 
-        this.statefulProjectionLayer.setInput(this.lastInput!!)
-        this.statefulProjectionLayer.forward()
-        val projection = this.statefulProjectionLayer.lastForwardResult[0]
+        val projection = this.statefulProjectionLayer.forward(input)
 
-        this.activationLayer.setInput(projection)
-        this.activationLayer.forward()
-        val activation = this.activationLayer.lastForwardResult[0]
+        val activation = this.activationLayer.forward(projection)
 
-        this.lastForwardResult[0] = projection
-        this.lastForwardResult[1] = activation
+        return activation
 
     }
 
-    override fun backward(chain: RealMatrix) {
+    override fun backward(chain: RealMatrix) : RealMatrix {
 
-        this.activationLayer.backward(chain)
+        val backpropagationActivation =  this.activationLayer.backward(chain)
 
-        this.statefulProjectionLayer.backward(this.activationLayer.lastBackwardResultWrtInput!!)
-
-        this.lastBackwardResultWrtInput = this.statefulProjectionLayer.lastBackwardResultWrtInput!!
-
-        this.lastBackwardResultWrtParameters[0] = this.statefulProjectionLayer.lastBackwardResultWrtParameters.first()
-        this.lastBackwardResultWrtParameters[1] = this.statefulProjectionLayer.lastBackwardResultWrtParameters.last()
+        return this.statefulProjectionLayer.backward(backpropagationActivation)
 
     }
 

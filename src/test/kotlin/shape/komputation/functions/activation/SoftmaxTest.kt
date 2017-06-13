@@ -1,32 +1,27 @@
-package shape.komputation.layers.continuation
+package shape.komputation.functions.activation
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
+import shape.komputation.functions.activation.softmax
 import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.matrix.createRealMatrix
 
-class SoftmaxLayerTest {
+class SoftmaxTest {
 
     @Test
     fun test() {
 
-        val softmaxLayer = SoftmaxLayer()
-
         val input = createRealMatrix(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0))
-
-        softmaxLayer.setInput(input)
-        softmaxLayer.forward()
 
         val expected = createRealMatrix(
             doubleArrayOf(Math.exp(1.0) / (Math.exp(1.0) + Math.exp(3.0)), Math.exp(2.0) / (Math.exp(2.0) + Math.exp(4.0))),
             doubleArrayOf(Math.exp(3.0) / (Math.exp(1.0) + Math.exp(3.0)), Math.exp(4.0) / (Math.exp(2.0) + Math.exp(4.0)))
         )
 
-        val actual = softmaxLayer.lastForwardResult.last()
+        val actual = softmax(input)
 
         assertMatrixEquality(expected, actual, 0.0001)
 
     }
-
 
 }

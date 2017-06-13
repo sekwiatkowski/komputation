@@ -18,48 +18,45 @@ class StatefulProjectionLayer(
     private val stateProjectionLayer: ProjectionLayer,
     private val inputProjectionLayer: ProjectionLayer,
     private val bias: RealMatrix? = null,
-    private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name, 1, 3), OptimizableContinuationLayer {
+    private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name), OptimizableContinuationLayer {
 
     private var state = initialState
 
+    private var forwardResult : RealMatrix? = null
+    private var backpropagationWrtBias : RealMatrix? = null
+
     // project(state) + project(input) + bias
-    override fun forward() {
+    override fun forward(input : RealMatrix) : RealMatrix {
 
-        stateProjectionLayer.setInput(state)
-        stateProjectionLayer.forward()
+        val stateProjection = stateProjectionLayer.forward(state)
 
-        val stateProjection = stateProjectionLayer.lastForwardResult[0]
-
-        inputProjectionLayer.setInput(this.lastInput!!)
-        inputProjectionLayer.forward()
-
-        val inputProjection = inputProjectionLayer.lastForwardResult[0]
+        val inputProjection = inputProjectionLayer.forward(input)
 
         val sum = stateProjection.add(inputProjection)
 
-        this.lastForwardResult[0] = if (bias == null) sum else sum.add(bias)
+        this.forwardResult = if (bias == null) sum else sum.add(bias)
+
+        return this.forwardResult!!
 
     }
 
-    override fun backward(chain: RealMatrix) {
+    override fun backward(chain: RealMatrix) : RealMatrix {
 
         // d [ state weights * state + input weights * input + bias ] / d state weights
         stateProjectionLayer.backward(chain)
-        this.lastBackwardResultWrtParameters[0] = stateProjectionLayer.lastBackwardResultWrtParameters.first()
 
         // d [ state weights * state + input weights * input + bias ] / d input weights
-        inputProjectionLayer.backward(chain)
-        this.lastBackwardResultWrtParameters[1] = inputProjectionLayer.lastBackwardResultWrtParameters.first()
+        val backpropagationWrtInput = inputProjectionLayer.backward(chain)
 
         if (bias != null) {
 
             // d [ state weights * state + input weights * input + bias ] / d bias
-            this.lastBackwardResultWrtParameters[2] = differentiateProjectionWrtBias(bias.numberRows(), chain)
+            this.backpropagationWrtBias = differentiateProjectionWrtBias(bias.numberRows(), chain)
 
         }
 
         // d [ state weights * state + input weights * input + bias ] / d input weights = d input weights * input / d input
-        this.lastBackwardResultWrtInput = this.inputProjectionLayer.lastBackwardResultWrtInput
+        return backpropagationWrtInput
 
     }
 
@@ -71,9 +68,7 @@ class StatefulProjectionLayer(
 
         if (bias != null && biasUpdateRule != null) {
 
-            val biasGradient = this.lastBackwardResultWrtParameters.last()
-
-            updateDensely(this.bias, biasGradient!!, biasUpdateRule)
+            updateDensely(this.bias, this.backpropagationWrtBias!!, biasUpdateRule)
 
         }
 

@@ -4,13 +4,15 @@ import shape.komputation.functions.activation.softmax
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class SoftmaxLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
+class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
 
-    override fun forward() {
+    private var forwardResult : RealMatrix? = null
 
-        val result = softmax(this.lastInput!!)
+    override fun forward(input : RealMatrix) : RealMatrix {
 
-        this.lastForwardResult[0] = result
+        this.forwardResult = softmax(input)
+
+        return this.forwardResult!!
 
     }
 
@@ -19,9 +21,9 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(chain : RealMatrix) {
+    override fun backward(chain : RealMatrix): RealMatrix {
 
-        val lastForwardResult = this.lastForwardResult.single()
+        val lastForwardResult = this.forwardResult!!
 
         val gradient = createRealMatrix(lastForwardResult.numberRows(), lastForwardResult.numberColumns())
 
@@ -61,7 +63,7 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
 
         }
 
-        this.lastBackwardResultWrtInput = gradient
+        return gradient
 
     }
 }

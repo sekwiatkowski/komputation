@@ -4,19 +4,26 @@ import shape.komputation.layers.continuation.ContinuationLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name, 1, 0) {
+class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name) {
 
-    override fun forward() {
+    private var input : RealMatrix? = null
+    private var forwardResult : RealMatrix? = null
 
-        this.lastForwardResult[0] = expandMatrixForConvolution(this.lastInput!!, filterWidth, filterHeight)
+    override fun forward(input: RealMatrix) : RealMatrix {
+
+        this.input = input
+
+        this.forwardResult = expandMatrixForConvolution(input, filterWidth, filterHeight)
+
+        return this.forwardResult!!
 
     }
 
-    override fun backward(chain: RealMatrix) {
+    override fun backward(chain: RealMatrix): RealMatrix {
 
-        val lastInput = this.lastInput!!
+        val input = this.input!!
 
-        this.lastBackwardResultWrtInput = collectGradients(lastInput.numberRows(), lastInput.numberColumns(), filterWidth, chain)
+        return collectGradients(input.numberRows(), input.numberColumns(), filterWidth, chain)
 
     }
 

@@ -1,5 +1,6 @@
 package shape.komputation.layers.continuation.convolution
 
+import shape.komputation.functions.convolution.maxPooling
 import shape.komputation.layers.continuation.ContinuationLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
@@ -10,52 +11,32 @@ import shape.komputation.matrix.createRealMatrix
     The output is a 100D row vector
  */
 
-class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
+class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
-    override fun forward() {
+    var input : RealMatrix? = null
 
-        val input = this.lastInput!!
+    override fun forward(input : RealMatrix) : RealMatrix {
 
-        val maxPooled = createRealMatrix(input.numberRows(), 1)
+        this.input = input
 
-        var index = 0
+        return maxPooling(input)
+
+    }
+
+    override fun backward(chain : RealMatrix): RealMatrix {
+
+        val input = this.input!!
+
+        val gradient = createRealMatrix(input.numberRows(), input.numberColumns())
 
         for (indexRow in 0..input.numberRows() - 1) {
 
             var maxValue = Double.NEGATIVE_INFINITY
+            var maxIndexColumn = -1
 
             for (indexColumn in 0..input.numberColumns() - 1) {
 
                 val entry = input.get(indexRow, indexColumn)
-
-                if (entry > maxValue) {
-                    maxValue = entry
-                }
-
-            }
-
-            maxPooled.set(index++, 0, maxValue)
-
-        }
-
-        this.lastForwardResult[0] = maxPooled
-
-    }
-
-    override fun backward(chain : RealMatrix) {
-
-        val lastInput = this.lastInput!!
-
-        val derivatives = createRealMatrix(lastInput.numberRows(), lastInput.numberColumns())
-
-        for (indexRow in 0..lastInput.numberRows() - 1) {
-
-            var maxValue = Double.NEGATIVE_INFINITY
-            var maxIndexColumn = -1
-
-            for (indexColumn in 0..lastInput.numberColumns() - 1) {
-
-                val entry = lastInput.get(indexRow, indexColumn)
 
                 if (entry > maxValue) {
                     maxValue = entry
@@ -65,11 +46,11 @@ class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
 
             }
 
-            derivatives.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
+            gradient.set(indexRow, maxIndexColumn, chain.get(indexRow, 0))
 
         }
 
-        this.lastBackwardResultWrtInput = derivatives
+        return gradient
 
     }
 

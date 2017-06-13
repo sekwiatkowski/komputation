@@ -4,11 +4,15 @@ import shape.komputation.functions.activation.sigmoid
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class SigmoidLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
+class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
 
-    override fun forward() {
+    private var forwardResult : RealMatrix? = null
 
-        this.lastForwardResult[0] = sigmoid(this.lastInput!!)
+    override fun forward(input : RealMatrix): RealMatrix {
+
+        this.forwardResult = sigmoid(input)
+
+        return this.forwardResult!!
 
     }
 
@@ -18,9 +22,9 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(chain : RealMatrix) {
+    override fun backward(chain : RealMatrix) : RealMatrix {
 
-        val lastForwardResult = this.lastForwardResult.single()
+        val lastForwardResult = this.forwardResult!!
 
         val numberRows = lastForwardResult.numberRows()
         val nmberColumns = lastForwardResult.numberColumns()
@@ -43,7 +47,7 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
             }
         }
 
-        this.lastBackwardResultWrtInput = gradient
+        return gradient
 
     }
 

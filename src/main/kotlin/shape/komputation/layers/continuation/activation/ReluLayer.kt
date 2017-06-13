@@ -4,20 +4,24 @@ import shape.komputation.functions.activation.relu
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class ReluLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
+class ReluLayer(name : String? = null) : ActivationLayer(name) {
 
-    override fun forward() {
+    private var forwardResult : RealMatrix? = null
 
-        this.lastForwardResult[0] = relu(this.lastInput!!)
+    override fun forward(input : RealMatrix): RealMatrix {
+
+        this.forwardResult = relu(input)
+
+        return this.forwardResult!!
 
     }
 
-    override fun backward(chain : RealMatrix) {
+    override fun backward(chain : RealMatrix) : RealMatrix {
 
-        val lastForwardResult = this.lastForwardResult.single()
+        val forwardResult = this.forwardResult!!
 
-        val numberRows = lastForwardResult.numberRows()
-        val nmberColumns = lastForwardResult.numberColumns()
+        val numberRows = forwardResult.numberRows()
+        val nmberColumns = forwardResult.numberColumns()
 
         val gradient = createRealMatrix(numberRows, nmberColumns)
 
@@ -25,7 +29,7 @@ class ReluLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
 
             for (indexColumn in 0..nmberColumns - 1) {
 
-                val forward = lastForwardResult.get(indexRow, indexColumn)
+                val forward = forwardResult.get(indexRow, indexColumn)
 
                 val derivative = if (forward > 0.0) chain.get(indexRow, indexColumn) else 0.0
 
@@ -34,7 +38,7 @@ class ReluLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
             }
         }
 
-        this.lastBackwardResultWrtInput = gradient
+        return gradient
 
     }
 

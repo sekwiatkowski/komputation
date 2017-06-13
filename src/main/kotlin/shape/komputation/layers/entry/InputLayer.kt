@@ -1,12 +1,13 @@
 package shape.komputation.layers.entry
 
+import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.RealMatrix
 
 class InputLayer(name : String? = null) : EntryPoint(name) {
 
-    override fun forward() {
+    override fun forward(input : Matrix) : RealMatrix {
 
-        this.lastForwardResult = this.lastInput!! as RealMatrix
+        return input as RealMatrix
 
     }
 

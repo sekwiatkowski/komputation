@@ -1,6 +1,7 @@
 package shape.komputation.layers.entry
 
 import shape.komputation.matrix.IntegerMatrix
+import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 import shape.komputation.optimization.UpdateRule
@@ -11,11 +12,11 @@ class LookupLayer(
     private val data: Array<DoubleArray>,
     private val update: UpdateRule? = null) : EntryPoint(name), OptimizableEntryPoint {
 
-    override fun forward() {
+    private var input : IntegerMatrix? = null
 
-        val input = this.lastInput!!
+    override fun forward(input : Matrix) : RealMatrix {
 
-        input as IntegerMatrix
+        this.input = input as IntegerMatrix
 
         val forwarded = Array(input.numberRows()) { index ->
 
@@ -23,7 +24,7 @@ class LookupLayer(
 
         }
 
-        this.lastForwardResult = createRealMatrix(*forwarded)
+        return createRealMatrix(*forwarded)
 
     }
 
@@ -31,9 +32,7 @@ class LookupLayer(
 
         if (update != null) {
 
-            val input = this.lastInput as IntegerMatrix
-
-            val indices = input.getColumn(0)
+            val indices = this.input!!.getColumn(0)
 
             updateSparsely(data, indices, chain, update)
 

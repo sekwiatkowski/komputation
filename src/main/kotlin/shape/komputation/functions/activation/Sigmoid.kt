@@ -3,7 +3,7 @@ package shape.komputation.functions.activation
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-val sigmoid = { input: RealMatrix ->
+fun sigmoid(input: RealMatrix) =
 
     createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
@@ -20,8 +20,6 @@ val sigmoid = { input: RealMatrix ->
 
         activated
     }
-
-}
 
 fun sigmoid(x: Double) =
 

@@ -3,7 +3,7 @@ package shape.komputation.functions.activation
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-val relu = { input: RealMatrix ->
+fun relu(input: RealMatrix) =
 
     createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
@@ -20,8 +20,6 @@ val relu = { input: RealMatrix ->
 
         activated
     }
-
-}
 
 fun relu(entry: Double) =
 

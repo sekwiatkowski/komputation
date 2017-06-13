@@ -3,7 +3,7 @@ package shape.komputation.functions.activation
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-val softmax = { input: RealMatrix ->
+fun softmax(input: RealMatrix) =
 
     createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
@@ -30,5 +30,3 @@ val softmax = { input: RealMatrix ->
         activated
 
     }
-
-}

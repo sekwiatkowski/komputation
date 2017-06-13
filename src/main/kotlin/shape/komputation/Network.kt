@@ -13,31 +13,13 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
     fun forward(input : Matrix) : RealMatrix {
 
-        for (indexLayer in 0..continuationLayers.size) {
+        var output = entryPoint.forward(input)
 
-            if (indexLayer == 0) {
+        for (continuationLayer in continuationLayers) {
 
-                entryPoint.run {
-                    setInput(input)
-                    forward()
-                }
+            output = continuationLayer.forward(output)
 
-            }
-            else {
-
-                val previousOutput = if(indexLayer == 1) entryPoint.lastForwardResult!! else continuationLayers[indexLayer - 1 - 1].lastForwardResult.last()
-
-                val layer = continuationLayers[indexLayer - 1]
-
-                layer.run {
-                    setInput(previousOutput)
-                    forward()
-                }
-
-            }
         }
-
-        val output = continuationLayers.last().lastForwardResult.last()
 
         return output
 
@@ -47,15 +29,9 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
         var chain = lossGradient
 
-        for(indexLayer in 0..numberContinuationLayers-1) {
+        for(indexLayer in numberContinuationLayers-1 downTo 0) {
 
-            val reverseIndex = numberContinuationLayers - indexLayer - 1
-
-            val layer = continuationLayers[reverseIndex]
-
-            layer.backward(chain)
-
-            chain = layer.lastBackwardResultWrtInput!!
+            chain = continuationLayers[indexLayer].backward(chain)
 
         }
 
@@ -63,21 +39,19 @@ class Network(private val entryPoint: EntryPoint, private vararg val continuatio
 
     }
 
-    fun optimize() {
+    fun optimize(endOfBackpropagation: RealMatrix) {
 
         optimizeContinuationLayers()
 
         if (entryPoint is OptimizableEntryPoint) {
 
-            val firstContinuationLayer = this.continuationLayers.first()
-
-            entryPoint.optimize(firstContinuationLayer.lastBackwardResultWrtInput!!)
+            entryPoint.optimize(endOfBackpropagation)
 
         }
 
     }
 
-    private fun optimizeContinuationLayers() {
+    fun optimizeContinuationLayers() {
 
         for (index in 0..numberContinuationLayers - 1) {
 

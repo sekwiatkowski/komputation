@@ -10,33 +10,25 @@ import shape.komputation.optimization.UpdateRule
 class ConvolutionalLayer(
     name : String? = null,
     private val expansionLayer: ExpansionLayer,
-    private val projectionLayer: ProjectionLayer) : ContinuationLayer(name, 2, 2), OptimizableContinuationLayer {
+    private val projectionLayer: ProjectionLayer) : ContinuationLayer(name), OptimizableContinuationLayer {
 
-    override fun forward() {
+    override fun forward(input : RealMatrix) : RealMatrix {
 
-        this.expansionLayer.setInput(this.lastInput!!)
-        this.expansionLayer.forward()
-        val expansion = this.expansionLayer.lastForwardResult[0]
+        val expansion = this.expansionLayer.forward(input)
 
-        this.projectionLayer.setInput(expansion)
-        this.projectionLayer.forward()
-        val projection = this.projectionLayer.lastForwardResult[0]
+        val projection = this.projectionLayer.forward(expansion)
 
-        this.lastForwardResult[0] = expansion
-        this.lastForwardResult[1] = projection
+        return projection
 
     }
 
-    override fun backward(chain : RealMatrix) {
+    override fun backward(chain : RealMatrix) : RealMatrix {
 
-        this.projectionLayer.backward(chain)
+        val backwardProjectionLayer = this.projectionLayer.backward(chain)
 
-        this.expansionLayer.backward(this.projectionLayer.lastBackwardResultWrtInput!!)
+        val backwardExpansionLayer = this.expansionLayer.backward(backwardProjectionLayer)
 
-        this.lastBackwardResultWrtInput = this.expansionLayer.lastBackwardResultWrtInput!!
-
-        this.lastBackwardResultWrtParameters[0] = this.projectionLayer.lastBackwardResultWrtParameters.first()
-        this.lastBackwardResultWrtParameters[1] = this.projectionLayer.lastBackwardResultWrtParameters.last()
+        return backwardExpansionLayer
 
     }
 

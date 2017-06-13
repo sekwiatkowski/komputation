@@ -7,7 +7,7 @@ import shape.komputation.layers.entry.InputLayer
 import shape.komputation.matrix.EMPTY_MATRIX
 import shape.komputation.matrix.RealMatrix
 
-class Concatenation(name : String? = null, vararg continuations: Array<ContinuationLayer>) : ContinuationLayer(name, 1, 0), OptimizableContinuationLayer {
+class Concatenation(name : String? = null, vararg continuations: Array<ContinuationLayer>) : ContinuationLayer(name), OptimizableContinuationLayer {
 
     val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
 
@@ -15,9 +15,12 @@ class Concatenation(name : String? = null, vararg continuations: Array<Continuat
 
     val individualHeights = IntArray(continuations.size)
 
-    override fun forward() {
+    var input : RealMatrix? = null
+    var forwardResult : RealMatrix? = null
 
-        val input = this.lastInput!!
+    override fun forward(input : RealMatrix) : RealMatrix {
+
+        this.input = input
 
         for (indexNetwork in (0..networks.size-1)) {
 
@@ -31,14 +34,14 @@ class Concatenation(name : String? = null, vararg continuations: Array<Continuat
 
         }
 
-        val concatenation = concatRows(*individualResults)
+        this.forwardResult = concatRows(*individualResults)
 
-        this.lastForwardResult[0] = concatenation
+        return this.forwardResult!!
 
     }
 
     // Chain is the same for (1, 2) and (2, 1)
-    override fun backward(chain : RealMatrix) {
+    override fun backward(chain : RealMatrix) : RealMatrix {
 
         val chainSplit = splitRows(chain, this.individualHeights)
 
@@ -54,7 +57,7 @@ class Concatenation(name : String? = null, vararg continuations: Array<Continuat
 
         }
 
-        this.lastBackwardResultWrtInput = resultWrtInput
+        return resultWrtInput
 
     }
 
@@ -62,7 +65,7 @@ class Concatenation(name : String? = null, vararg continuations: Array<Continuat
 
         for (network in networks) {
 
-            network.optimize()
+            network.optimizeContinuationLayers()
 
         }
 
