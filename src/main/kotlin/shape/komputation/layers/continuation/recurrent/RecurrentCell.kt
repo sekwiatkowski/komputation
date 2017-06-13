@@ -1,10 +1,12 @@
 package shape.komputation.layers.continuation.recurrent
 
-import shape.komputation.initializeMatrix
-import shape.komputation.initializeRowVector
+import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeRowVector
 import shape.komputation.layers.continuation.ContinuationLayer
 import shape.komputation.layers.continuation.OptimizableContinuationLayer
 import shape.komputation.layers.continuation.ProjectionLayer
+import shape.komputation.layers.continuation.activation.ActivationLayer
 import shape.komputation.layers.continuation.differentiateProjectionWrtBias
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealVector
@@ -12,18 +14,25 @@ import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateDensely
 
-class StatefulProjectionLayer(
+class RecurrentCell(
     name : String?,
-    initialState : RealMatrix,
+    private val initialState : RealMatrix,
     private val stateProjectionLayer: ProjectionLayer,
     private val inputProjectionLayer: ProjectionLayer,
+    private val activationLayer: ActivationLayer,
     private val bias: RealMatrix? = null,
     private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name), OptimizableContinuationLayer {
 
     private var state = initialState
+    private var step = 0
 
-    private var forwardResult : RealMatrix? = null
     private var backpropagationWrtBias : RealMatrix? = null
+
+    fun reset() {
+
+        this.state = initialState
+        this.step = 0
+    }
 
     // project(state) + project(input) + bias
     override fun forward(input : RealMatrix) : RealMatrix {
@@ -34,24 +43,28 @@ class StatefulProjectionLayer(
 
         val sum = stateProjection.add(inputProjection)
 
-        this.forwardResult = if (bias == null) sum else sum.add(bias)
+        val preActivation = if (bias == null) sum else sum.add(bias)
 
-        return this.forwardResult!!
+        this.state = activationLayer.forward(preActivation)
+
+        return this.state
 
     }
 
     override fun backward(chain: RealMatrix) : RealMatrix {
 
+        val backpropagationActivation = this.activationLayer.backward(chain)
+
         // d [ state weights * state + input weights * input + bias ] / d state weights
-        stateProjectionLayer.backward(chain)
+        stateProjectionLayer.backward(backpropagationActivation)
 
         // d [ state weights * state + input weights * input + bias ] / d input weights
-        val backpropagationWrtInput = inputProjectionLayer.backward(chain)
+        val backpropagationWrtInput = inputProjectionLayer.backward(backpropagationActivation)
 
         if (bias != null) {
 
             // d [ state weights * state + input weights * input + bias ] / d bias
-            this.backpropagationWrtBias = differentiateProjectionWrtBias(bias.numberRows(), chain)
+            this.backpropagationWrtBias = differentiateProjectionWrtBias(bias.numberRows(), backpropagationActivation)
 
         }
 
@@ -80,8 +93,9 @@ fun createStatefulProjectionLayer(
     name : String? = null,
     inputDimension : Int,
     hiddenDimension : Int,
-    initializationStrategy: () -> Double,
-    optimizationStrategy : OptimizationStrategy? = null) : StatefulProjectionLayer {
+    activationLayer: ActivationLayer,
+    initializationStrategy: InitializationStrategy,
+    optimizationStrategy : OptimizationStrategy? = null) : RecurrentCell {
 
     val initialState = createRealVector(hiddenDimension)
     val stateWeights = initializeMatrix(initializationStrategy, hiddenDimension, hiddenDimension)
@@ -97,25 +111,6 @@ fun createStatefulProjectionLayer(
     val bias = initializeRowVector(initializationStrategy, hiddenDimension)
     val biasUpdateRule = if(optimizationStrategy != null) optimizationStrategy(hiddenDimension, 1) else null
 
-    return StatefulProjectionLayer(name, initialState, stateProjectionLayer, inputProjectionLayer, bias, biasUpdateRule)
+    return RecurrentCell(name, initialState, stateProjectionLayer, inputProjectionLayer, activationLayer, bias, biasUpdateRule)
+
 }
-
-/* fun main(args: Array<String>) {
-
-    val random = Random(1)
-
-    val inputDimension = 2
-    val hiddenDimension = 10
-
-    val state = createRealMatrix(10, 1)
-
-    val initialize = createUniformInitializer(random, -0.01, 0.01)
-
-    val input = createRealVector(1.0, 2.0)
-
-    inputProjection.setInput(input)
-    inputProjection.forward()
-
-    val lastForwardResult = inputProjection.lastForwardResult[0]
-
-} */

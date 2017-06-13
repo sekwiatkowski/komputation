@@ -1,6 +1,10 @@
 package shape.komputation.demos
 
 import shape.komputation.*
+import shape.komputation.initialization.createUniformInitializer
+import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeRow
+import shape.komputation.initialization.initializeRowVector
 import shape.komputation.layers.continuation.activation.ReluLayer
 import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.*
@@ -67,10 +71,10 @@ fun main(args: Array<String>) {
     val numberEmbeddings = 40
     val embeddingDimension = 2
 
-    val generateEntry = createUniformInitializer(random, -0.05, 0.05)
-    val initializeEmbedding = { initializeRow(generateEntry, embeddingDimension)}
+    val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
 
-    val embeddings = Array(numberEmbeddings) { initializeEmbedding() }
+    val initializeEmbedding = { index : Int -> initializeRow(initializationStrategy, index, embeddingDimension) }
+    val embeddings = Array(numberEmbeddings) { indexEmbedding -> initializeEmbedding(indexEmbedding) }
 
     val numberClasses = 4
 
@@ -115,7 +119,7 @@ fun main(args: Array<String>) {
     val createConvolutionSubnetwork = { filterHeight : Int ->
 
         arrayOf(
-            createConvolutionalLayer("conv-$filterHeight", numberFilters, filterWidth, filterHeight, generateEntry, optimizationStrategy),
+            createConvolutionalLayer("conv-$filterHeight", numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
             ReluLayer(),
             MaxPoolingLayer()
 
@@ -128,7 +132,7 @@ fun main(args: Array<String>) {
         createConcatenation(
             "concatenation", *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
         ),
-        createProjectionLayer("projection", numberFilters * filterHeights.size, numberClasses, generateEntry, optimizationStrategy),
+        createProjectionLayer("projection", numberFilters * filterHeights.size, numberClasses, initializationStrategy, optimizationStrategy),
         SoftmaxLayer("softmax")
     )
 

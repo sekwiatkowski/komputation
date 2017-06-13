@@ -1,6 +1,7 @@
 package shape.komputation.demos
 
 import shape.komputation.*
+import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.continuation.activation.ReluLayer
 import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.*
@@ -9,7 +10,6 @@ import shape.komputation.layers.continuation.convolution.createConvolutionalLaye
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*

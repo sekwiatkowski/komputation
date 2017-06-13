@@ -1,12 +1,12 @@
 package shape.komputation.demos
 
 import shape.komputation.*
+import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*

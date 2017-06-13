@@ -1,7 +1,9 @@
 package shape.komputation.layers.continuation
 
-import shape.komputation.*
 import shape.komputation.functions.project
+import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeRowVector
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 import shape.komputation.optimization.OptimizationStrategy
@@ -79,7 +81,7 @@ class ProjectionLayer(
 fun createProjectionLayer(
     previousLayerRows: Int,
     nextLayerRows: Int,
-    initializationStrategy : () -> Double,
+    initializationStrategy : InitializationStrategy,
     optimizationStrategy : OptimizationStrategy? = null) =
 
     createProjectionLayer(null, previousLayerRows, nextLayerRows, initializationStrategy, optimizationStrategy)
@@ -88,7 +90,7 @@ fun createProjectionLayer(
     name : String?,
     previousLayerRows: Int,
     nextLayerRows: Int,
-    initializationStrategy : () -> Double,
+    initializationStrategy : InitializationStrategy,
     optimizationStrategy : OptimizationStrategy? = null): ProjectionLayer {
 
     val weights = initializeMatrix(initializationStrategy, nextLayerRows, previousLayerRows)

@@ -1,11 +1,12 @@
 package shape.komputation.layers.continuation.convolution
 
+import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.continuation.ContinuationLayer
 import shape.komputation.layers.continuation.OptimizableContinuationLayer
 import shape.komputation.layers.continuation.ProjectionLayer
 import shape.komputation.layers.continuation.createProjectionLayer
 import shape.komputation.matrix.RealMatrix
-import shape.komputation.optimization.UpdateRule
+import shape.komputation.optimization.OptimizationStrategy
 
 class ConvolutionalLayer(
     name : String? = null,
@@ -44,8 +45,8 @@ fun createConvolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
     filterHeight : Int,
-    initializationStrategy : () -> Double,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
+    initializationStrategy : InitializationStrategy,
+    optimizationStrategy : OptimizationStrategy? = null): ConvolutionalLayer {
 
     return createConvolutionalLayer(null, numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy)
 
@@ -56,8 +57,8 @@ fun createConvolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
     filterHeight : Int,
-    initializationStrategy : () -> Double,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
+    initializationStrategy : InitializationStrategy,
+    optimizationStrategy : OptimizationStrategy? = null): ConvolutionalLayer {
 
     val expansionLayerName = if(name == null) null else "$name-expansion"
     val expansionLayer = createExpansionLayer(expansionLayerName, filterWidth, filterHeight)

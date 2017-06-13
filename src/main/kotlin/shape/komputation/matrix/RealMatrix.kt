@@ -1,6 +1,8 @@
 package shape.komputation.matrix
 
 import no.uib.cipr.matrix.DenseMatrix
+import no.uib.cipr.matrix.DenseVector
+import java.util.*
 
 class RealMatrix(private val matrix: DenseMatrix) : Matrix {
 
@@ -10,6 +12,17 @@ class RealMatrix(private val matrix: DenseMatrix) : Matrix {
     fun get(indexRow: Int, indexColumn : Int) =
 
         this.matrix.get(indexRow, indexColumn)
+
+    fun getColumn(indexRow: Int): RealMatrix {
+
+        val from = indexRow * this.numberColumns()
+        val to = (indexRow+1) * this.numberColumns()
+
+        val vector = DenseVector(Arrays.copyOfRange(this.matrix.data, from, to), false)
+
+        return RealMatrix(DenseMatrix(vector, false))
+
+    }
 
     fun set(indexRow: Int, indexColumn : Int, value: Double) {
 

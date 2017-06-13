@@ -1,7 +1,7 @@
 package shape.komputation.demos
 
 import shape.komputation.Network
-import shape.komputation.createUniformInitializer
+import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.continuation.activation.ReluLayer
 import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.*
