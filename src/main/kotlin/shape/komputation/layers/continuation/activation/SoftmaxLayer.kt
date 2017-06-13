@@ -1,10 +1,10 @@
-package shape.komputation.layers.continuation
+package shape.komputation.layers.continuation.activation
 
-import shape.komputation.functions.softmax
+import shape.komputation.functions.activation.softmax
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class SoftmaxLayer(name : String? = null) : ContinuationLayer(name, 1, 0) {
+class SoftmaxLayer(name : String? = null) : ActivationLayer(name, 1, 0) {
 
     override fun forward() {
 

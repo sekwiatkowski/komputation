@@ -2,7 +2,7 @@ package shape.komputation.demos
 
 import shape.komputation.*
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.continuation.SoftmaxLayer
+import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
 
     )
 
-    val targets = arrayOf<RealMatrix>(
+    val targets = arrayOf(
         createRealMatrix(
             doubleArrayOf(1.0),
             doubleArrayOf(0.0)

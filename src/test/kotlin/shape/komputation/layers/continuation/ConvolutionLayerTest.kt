@@ -3,6 +3,9 @@ package shape.komputation.layers.continuation
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import shape.komputation.assertMatrixEquality
+import shape.komputation.layers.continuation.convolution.expandMatrixForConvolution
+import shape.komputation.layers.continuation.convolution.expandedColumnToOriginalColumn
+import shape.komputation.layers.continuation.convolution.expandedRowToOriginalRow
 import shape.komputation.matrix.createRealMatrix
 
 class ConvolutionLayerTest {

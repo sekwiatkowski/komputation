@@ -4,6 +4,7 @@ import shape.komputation.*
 import shape.komputation.functions.project
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
+import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateDensely
 
@@ -14,7 +15,7 @@ class ProjectionLayer(
     private val weightUpdateRule: UpdateRule? = null,
     private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name, 1, 2), OptimizableContinuationLayer {
 
-    val optimize = weightUpdateRule != null || biasUpdateRule != null
+    private val optimize = weightUpdateRule != null || biasUpdateRule != null
 
     override fun forward() {
 
@@ -76,7 +77,7 @@ fun createProjectionLayer(
     previousLayerRows: Int,
     nextLayerRows: Int,
     initializationStrategy : () -> Double,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ProjectionLayer {
+    optimizationStrategy : OptimizationStrategy? = null): ProjectionLayer {
 
     return createProjectionLayer(null, previousLayerRows, nextLayerRows, initializationStrategy, optimizationStrategy)
 }
@@ -87,7 +88,7 @@ fun createProjectionLayer(
     previousLayerRows: Int,
     nextLayerRows: Int,
     initializationStrategy : () -> Double,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ProjectionLayer {
+    optimizationStrategy : OptimizationStrategy? = null): ProjectionLayer {
 
     val weights = initializeMatrix(initializationStrategy, nextLayerRows, previousLayerRows)
     val bias = initializeRowVector(initializationStrategy, nextLayerRows)

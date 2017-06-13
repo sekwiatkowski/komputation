@@ -2,6 +2,7 @@ package shape.komputation.layers.continuation
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
+import shape.komputation.layers.continuation.activation.ReluLayer
 import shape.komputation.matrix.createRealMatrix
 
 class ReluLayerTest {

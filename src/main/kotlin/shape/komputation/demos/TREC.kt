@@ -2,7 +2,11 @@ package shape.komputation.demos
 
 import shape.komputation.Network
 import shape.komputation.createUniformInitializer
+import shape.komputation.layers.continuation.activation.ReluLayer
+import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.layers.continuation.*
+import shape.komputation.layers.continuation.convolution.MaxPoolingLayer
+import shape.komputation.layers.continuation.convolution.createConvolutionalLayer
 import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix

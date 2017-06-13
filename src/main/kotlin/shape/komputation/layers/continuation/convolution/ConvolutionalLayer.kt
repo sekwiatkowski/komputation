@@ -1,5 +1,9 @@
-package shape.komputation.layers.continuation
+package shape.komputation.layers.continuation.convolution
 
+import shape.komputation.layers.continuation.ContinuationLayer
+import shape.komputation.layers.continuation.OptimizableContinuationLayer
+import shape.komputation.layers.continuation.ProjectionLayer
+import shape.komputation.layers.continuation.createProjectionLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.optimization.UpdateRule
 
@@ -64,11 +68,9 @@ fun createConvolutionalLayer(
     optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): ConvolutionalLayer {
 
     val expansionLayerName = if(name == null) null else "$name-expansion"
-
     val expansionLayer = createExpansionLayer(expansionLayerName, filterWidth, filterHeight)
 
     val projectionLayerName = if(name == null) null else "$name-projection"
-
     val projectionLayer = createProjectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, initializationStrategy, optimizationStrategy)
 
     return ConvolutionalLayer(name, expansionLayer, projectionLayer)

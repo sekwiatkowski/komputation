@@ -1,9 +1,9 @@
-package shape.komputation.functions
+package shape.komputation.functions.activation
 
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-fun sigmoid(input: RealMatrix) =
+val relu = { input: RealMatrix ->
 
     createRealMatrix(input.numberRows(), input.numberColumns()).let { activated ->
 
@@ -13,7 +13,7 @@ fun sigmoid(input: RealMatrix) =
 
                 val entry = input.get(indexRow, indexColumn)
 
-                activated.set(indexRow, indexColumn, sigmoid(entry))
+                activated.set(indexRow, indexColumn, relu(entry))
 
             }
         }
@@ -21,6 +21,8 @@ fun sigmoid(input: RealMatrix) =
         activated
     }
 
-fun sigmoid(x: Double) =
+}
 
-    1.0 / (1.0 + Math.exp(-x))
+fun relu(entry: Double) =
+
+    Math.max(entry, 0.0)

@@ -1,5 +1,6 @@
-package shape.komputation.layers.continuation
+package shape.komputation.layers.continuation.convolution
 
+import shape.komputation.layers.continuation.ContinuationLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
