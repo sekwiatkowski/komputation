@@ -1,21 +1,20 @@
 package shape.komputation.demos
 
-import shape.komputation.Network
+import shape.komputation.network.Network
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.initialization.initializeRow
-import shape.komputation.layers.continuation.activation.ReluLayer
-import shape.komputation.layers.continuation.activation.SoftmaxLayer
-import shape.komputation.layers.continuation.convolution.MaxPoolingLayer
-import shape.komputation.layers.continuation.convolution.createConvolutionalLayer
-import shape.komputation.layers.continuation.createProjectionLayer
+import shape.komputation.layers.feedforward.activation.ReluLayer
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
+import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
+import shape.komputation.layers.feedforward.createProjectionLayer
 import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.createIntegerVector
 import shape.komputation.matrix.createOneHotVector
+import shape.komputation.network.printLoss
 import shape.komputation.optimization.momentum
-import shape.komputation.printLoss
-import shape.komputation.train
 import java.util.*
 
 /*
@@ -75,7 +74,7 @@ fun main(args: Array<String>) {
 
     val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
 
-    val initializeEmbedding = { index : Int -> initializeRow(initializationStrategy, index, embeddingDimension) }
+    val initializeEmbedding = { index : Int -> initializeRow(initializationStrategy, embeddingDimension) }
     val embeddings = Array(numberEmbeddings) { indexEmbedding -> initializeEmbedding(indexEmbedding) }
 
     val numberClasses = 4
@@ -127,7 +126,7 @@ fun main(args: Array<String>) {
         SoftmaxLayer()
     )
 
-    train(network, input, targets, SquaredLoss(), 5_000, printLoss)
+    network.train(input, targets, SquaredLoss(), 5_000, printLoss)
 
 }
 

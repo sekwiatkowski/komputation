@@ -4,13 +4,17 @@ fun stochasticGradientDescent(learningRate: Double): (Int, Int) -> UpdateRule {
 
     return { numberRows : Int, numberColumns : Int ->
 
-        val updateRule = { indexRow: Int, indexColumn: Int, current: Double, derivative: Double ->
+        StochasticGradientDescent(learningRate)
 
-            current - learningRate * derivative
+    }
 
-        }
+}
 
-        updateRule
+class StochasticGradientDescent(private val learningRate: Double) : UpdateRule {
+
+    override fun apply(index : Int, current: Double, derivative: Double): Double {
+
+        return current - learningRate * derivative
 
     }
 

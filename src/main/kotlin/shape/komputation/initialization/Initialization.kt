@@ -7,7 +7,7 @@ fun initializeMatrix(strategy : InitializationStrategy, numberRows : Int, number
 
     Array(numberRows) { indexRow ->
 
-        initializeRow(strategy, indexRow, numberColumns)
+        initializeRow(strategy, numberColumns)
 
     }
     .let { rows ->
@@ -15,13 +15,22 @@ fun initializeMatrix(strategy : InitializationStrategy, numberRows : Int, number
         createRealMatrix(*rows)
     }
 
-fun initializeRow(strategy: InitializationStrategy, indexRow: Int, numberColumns: Int) =
+fun initializeRow(strategy: InitializationStrategy, numberColumns: Int) =
 
     DoubleArray(numberColumns) { indexColumn ->
 
-        strategy(indexRow, indexColumn)
+        strategy(0, indexColumn)
 
     }
+
+fun initializeColumn(strategy: InitializationStrategy, numberRows: Int) =
+
+    DoubleArray(numberRows) { indexRow ->
+
+        strategy(indexRow, 0)
+
+    }
+
 
 fun initializeRowVector(strategy : InitializationStrategy, numberRows: Int) =
 

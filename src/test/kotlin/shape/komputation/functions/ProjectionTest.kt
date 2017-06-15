@@ -2,7 +2,6 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.layers.continuation.ProjectionLayer
 import shape.komputation.matrix.createRealMatrix
 
 class ProjectionTest {

@@ -12,11 +12,9 @@ class LookupLayer(
     private val data: Array<DoubleArray>,
     private val update: UpdateRule? = null) : EntryPoint(name), OptimizableEntryPoint {
 
-    private var input : IntegerMatrix? = null
-
     override fun forward(input : Matrix) : RealMatrix {
 
-        this.input = input as IntegerMatrix
+        input as IntegerMatrix
 
         val forwarded = Array(input.numberRows()) { index ->
 
@@ -28,11 +26,13 @@ class LookupLayer(
 
     }
 
-    override fun optimize(chain: RealMatrix) {
+    override fun optimize(input : Matrix, chain: RealMatrix) {
 
         if (update != null) {
 
-            val indices = this.input!!.getColumn(0)
+            input as IntegerMatrix
+
+            val indices = input.getColumn(0)
 
             updateSparsely(data, indices, chain, update)
 

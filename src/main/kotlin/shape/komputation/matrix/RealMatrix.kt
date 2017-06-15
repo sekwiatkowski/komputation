@@ -24,15 +24,23 @@ class RealMatrix(private val matrix: DenseMatrix) : Matrix {
 
     }
 
+    fun getEntries() =
+
+        this.matrix.data
+
     fun set(indexRow: Int, indexColumn : Int, value: Double) {
 
         this.matrix.set(indexRow, indexColumn, value)
 
     }
 
-    fun add(otherMatrix: RealMatrix) =
+    fun add(otherMatrix: RealMatrix): RealMatrix {
 
-        RealMatrix(this.matrix.add(otherMatrix.matrix) as DenseMatrix)
+        val result = this.matrix.add(otherMatrix.matrix) as DenseMatrix
+
+        return RealMatrix(result)
+
+    }
 
     fun add(indexRow: Int, indexColumn : Int, value: Double) {
 
@@ -78,6 +86,12 @@ class RealMatrix(private val matrix: DenseMatrix) : Matrix {
 
     }
 
+    fun zero() {
+
+        this.matrix.zero()
+
+    }
+
 
 }
 
@@ -88,6 +102,14 @@ fun createRealMatrix(vararg rows: DoubleArray) =
 fun createRealMatrix(numberRows: Int, numberColumns: Int) =
 
     RealMatrix(DenseMatrix(numberRows, numberColumns))
+
+fun createRealMatrix(numberRows: Int, numberColumns: Int, entries : DoubleArray) =
+
+    RealMatrix(DenseMatrix(numberRows, numberColumns, entries, false))
+
+fun createRealVector(numberRows: Int, entries : DoubleArray) =
+
+    RealMatrix(DenseMatrix(numberRows, 1, entries, false))
 
 fun createRealVector(vararg entries : Double) : RealMatrix {
 

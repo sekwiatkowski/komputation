@@ -1,10 +1,10 @@
-package shape.komputation.layers.continuation.convolution
+package shape.komputation.layers.feedforward.convolution
 
-import shape.komputation.layers.continuation.ContinuationLayer
+import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
-class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name) {
+class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : FeedForwardLayer(name) {
 
     private var input : RealMatrix? = null
     private var forwardResult : RealMatrix? = null

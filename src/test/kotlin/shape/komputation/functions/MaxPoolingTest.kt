@@ -3,15 +3,12 @@ package shape.komputation.functions
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
 import shape.komputation.functions.convolution.maxPooling
-import shape.komputation.layers.continuation.convolution.MaxPoolingLayer
 import shape.komputation.matrix.createRealMatrix
 
 class MaxPoolingTest {
 
     @Test
     fun test() {
-
-        val maxPoolingLayer = MaxPoolingLayer()
 
         val input = createRealMatrix(
             doubleArrayOf(1.0, 2.0),

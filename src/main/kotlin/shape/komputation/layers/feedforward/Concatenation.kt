@@ -1,13 +1,15 @@
-package shape.komputation.layers.continuation
+package shape.komputation.layers.feedforward
 
-import shape.komputation.Network
+import shape.komputation.network.Network
 import shape.komputation.functions.concatRows
 import shape.komputation.functions.splitRows
+import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.matrix.EMPTY_MATRIX
 import shape.komputation.matrix.RealMatrix
 
-class Concatenation(name : String? = null, vararg continuations: Array<ContinuationLayer>) : ContinuationLayer(name), OptimizableContinuationLayer {
+class Concatenation(name : String? = null, vararg continuations: Array<FeedForwardLayer>) : FeedForwardLayer(name), OptimizableLayer {
 
     val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
 
@@ -73,12 +75,12 @@ class Concatenation(name : String? = null, vararg continuations: Array<Continuat
 
 }
 
-fun createConcatenation(vararg continuations: Array<ContinuationLayer>): Concatenation {
+fun createConcatenation(vararg continuations: Array<FeedForwardLayer>): Concatenation {
 
     return createConcatenation(null, *continuations)
 }
 
-fun createConcatenation(name : String?, vararg continuations: Array<ContinuationLayer>): Concatenation {
+fun createConcatenation(name : String?, vararg continuations: Array<FeedForwardLayer>): Concatenation {
 
     return Concatenation(name, *continuations)
 }

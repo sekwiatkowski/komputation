@@ -1,11 +1,11 @@
-package shape.komputation.layers.continuation
+package shape.komputation.layers.feedforward
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertEquals
 import shape.komputation.assertMatrixEquality
-import shape.komputation.layers.continuation.convolution.expandMatrixForConvolution
-import shape.komputation.layers.continuation.convolution.expandedColumnToOriginalColumn
-import shape.komputation.layers.continuation.convolution.expandedRowToOriginalRow
+import shape.komputation.layers.feedforward.convolution.expandMatrixForConvolution
+import shape.komputation.layers.feedforward.convolution.expandedColumnToOriginalColumn
+import shape.komputation.layers.feedforward.convolution.expandedRowToOriginalRow
 import shape.komputation.matrix.createRealMatrix
 
 class ConvolutionLayerTest {

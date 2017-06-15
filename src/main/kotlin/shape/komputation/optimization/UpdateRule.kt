@@ -1,3 +1,7 @@
 package shape.komputation.optimization
 
-typealias UpdateRule = (indexRow : Int, indexColumn : Int, current : Double, derivative : Double) -> Double
+interface UpdateRule {
+
+    fun apply (index : Int, current : Double, derivative : Double): Double
+
+}

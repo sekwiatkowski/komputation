@@ -1,17 +1,17 @@
-package shape.komputation.layers.continuation.convolution
+package shape.komputation.layers.feedforward.convolution
 
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.continuation.ContinuationLayer
-import shape.komputation.layers.continuation.OptimizableContinuationLayer
-import shape.komputation.layers.continuation.ProjectionLayer
-import shape.komputation.layers.continuation.createProjectionLayer
+import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.feedforward.ProjectionLayer
+import shape.komputation.layers.feedforward.createProjectionLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.optimization.OptimizationStrategy
 
 class ConvolutionalLayer(
     name : String? = null,
     private val expansionLayer: ExpansionLayer,
-    private val projectionLayer: ProjectionLayer) : ContinuationLayer(name), OptimizableContinuationLayer {
+    private val projectionLayer: ProjectionLayer) : FeedForwardLayer(name), OptimizableLayer {
 
     override fun forward(input : RealMatrix) : RealMatrix {
 

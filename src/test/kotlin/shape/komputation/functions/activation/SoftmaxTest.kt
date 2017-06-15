@@ -2,8 +2,6 @@ package shape.komputation.functions.activation
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.functions.activation.softmax
-import shape.komputation.layers.continuation.activation.SoftmaxLayer
 import shape.komputation.matrix.createRealMatrix
 
 class SoftmaxTest {

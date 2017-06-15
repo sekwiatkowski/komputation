@@ -1,7 +1,7 @@
-package shape.komputation.layers.continuation.convolution
+package shape.komputation.layers.feedforward.convolution
 
 import shape.komputation.functions.convolution.maxPooling
-import shape.komputation.layers.continuation.ContinuationLayer
+import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
@@ -11,7 +11,7 @@ import shape.komputation.matrix.createRealMatrix
     The output is a 100D row vector
  */
 
-class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
+class MaxPoolingLayer(name : String? = null) : FeedForwardLayer(name) {
 
     var input : RealMatrix? = null
 

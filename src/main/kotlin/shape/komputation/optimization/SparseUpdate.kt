@@ -14,7 +14,7 @@ fun updateSparsely(rows: Array<DoubleArray>, rowIndices: IntArray, gradient: Rea
             val current = row[indexColumn]
             val derivative = gradient.get(indexRow, indexColumn)
 
-            val updated = rule(rowIndex, indexColumn, current, derivative)
+            val updated = rule.apply(indexColumn, current, derivative)
 
             row[indexColumn] = updated
 

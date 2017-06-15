@@ -1,19 +1,18 @@
 package shape.komputation.demos
 
-import shape.komputation.Network
+import shape.komputation.network.Network
 import shape.komputation.initialization.createUniformInitializer
-import shape.komputation.layers.continuation.activation.ReluLayer
-import shape.komputation.layers.continuation.activation.SoftmaxLayer
-import shape.komputation.layers.continuation.*
-import shape.komputation.layers.continuation.convolution.MaxPoolingLayer
-import shape.komputation.layers.continuation.convolution.createConvolutionalLayer
+import shape.komputation.layers.feedforward.activation.ReluLayer
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.*
+import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
+import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
 import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.createIntegerVector
 import shape.komputation.matrix.createOneHotVector
 import shape.komputation.optimization.momentum
-import shape.komputation.train
 import java.io.File
 import java.util.*
 
@@ -110,7 +109,7 @@ class TrecTraining {
         val testData = testRepresentations.zip(testTargets)
         val numberTestExamples = testData.size
 
-        train(network, trainingRepresentations, trainingTargets, LogisticLoss(), 10_000) { _, _ ->
+        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), 10_000) { _, _ ->
 
             val accuracy = testData
                 .count { (input, target) ->

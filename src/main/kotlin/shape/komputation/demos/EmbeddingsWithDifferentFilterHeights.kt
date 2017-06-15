@@ -1,18 +1,17 @@
 package shape.komputation.demos
 
-import shape.komputation.*
 import shape.komputation.initialization.createUniformInitializer
-import shape.komputation.initialization.initializeMatrix
 import shape.komputation.initialization.initializeRow
-import shape.komputation.initialization.initializeRowVector
-import shape.komputation.layers.continuation.activation.ReluLayer
-import shape.komputation.layers.continuation.activation.SoftmaxLayer
-import shape.komputation.layers.continuation.*
-import shape.komputation.layers.continuation.convolution.MaxPoolingLayer
-import shape.komputation.layers.continuation.convolution.createConvolutionalLayer
+import shape.komputation.layers.feedforward.activation.ReluLayer
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.*
+import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
+import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
 import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
+import shape.komputation.network.Network
+import shape.komputation.network.printLoss
 import shape.komputation.optimization.momentum
 import java.util.*
 
@@ -73,7 +72,7 @@ fun main(args: Array<String>) {
 
     val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
 
-    val initializeEmbedding = { index : Int -> initializeRow(initializationStrategy, index, embeddingDimension) }
+    val initializeEmbedding = { index : Int -> initializeRow(initializationStrategy, embeddingDimension) }
     val embeddings = Array(numberEmbeddings) { indexEmbedding -> initializeEmbedding(indexEmbedding) }
 
     val numberClasses = 4
@@ -136,7 +135,7 @@ fun main(args: Array<String>) {
         SoftmaxLayer("softmax")
     )
 
-    train(network, input, targets, SquaredLoss(), 10_000, printLoss)
+    network.train(input, targets, SquaredLoss(), 10_000, printLoss)
 
 }
 

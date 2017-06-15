@@ -1,4 +1,4 @@
-package shape.komputation.layers.continuation.activation
+package shape.komputation.layers.feedforward.activation
 
 import shape.komputation.functions.activation.softmax
 import shape.komputation.matrix.RealMatrix

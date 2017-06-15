@@ -1,16 +1,28 @@
 package shape.komputation.demos
 
+import shape.komputation.initialization.createGaussianInitializer
+import shape.komputation.layers.feedforward.activation.ReluLayer
+import shape.komputation.layers.recurrent.createVanillaRecurrentLayer
+import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.feedforward.createProjectionLayer
+import shape.komputation.loss.SquaredLoss
+import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.createRealVector
+import shape.komputation.network.RecurrentNetwork
+import shape.komputation.network.printLoss
+import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val length = 100
+    val length = 10
     val numberExamples = 100_000
+    val inputDimension = 2
+    val hiddenDimension = 100
 
-    val inputs = Array(numberExamples) { generateInput(random, 100) }
+    val inputs = Array(numberExamples) { generateInput(random, length) }
 
     val targets = Array(numberExamples) { indexInput ->
 
@@ -18,15 +30,43 @@ fun main(args: Array<String>) {
 
     }
 
+    val initializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val optimizationStrategy = stochasticGradientDescent(0.01)
+
+    val recurrentLayer = createVanillaRecurrentLayer(
+        length,
+        inputDimension,
+        hiddenDimension,
+        ReluLayer(),
+        initializationStrategy,
+        optimizationStrategy
+    )
+
+    val network = RecurrentNetwork(
+        length,
+        InputLayer(),
+        recurrentLayer,
+        createProjectionLayer(hiddenDimension, 1, initializationStrategy, optimizationStrategy)
+    )
+
+    network.train(
+        inputs,
+        targets,
+        SquaredLoss(),
+        10_000,
+        printLoss
+    )
 
 }
 
-private fun generateInput(random: Random, length: Int): RealMatrix {
+private fun generateInput(random: Random, length: Int): Array<Matrix> {
 
-    val example = createRealMatrix(2, length)
+    val input = Array<Matrix>(length) {
 
-    for (indexColumn in 0..length - 1) {
-        example.set(0, indexColumn, random.nextDouble())
+        createRealVector(
+            random.nextDouble(),
+            0.0)
+
     }
 
     val firstIndex = random.nextInt(length)
@@ -49,17 +89,24 @@ private fun generateInput(random: Random, length: Int): RealMatrix {
 
     }
 
-    example.set(1, firstIndex, 1.0)
-    example.set(1, secondIndex, 1.0)
+    (input[firstIndex] as RealMatrix).set(1, 0, 1.0)
+    (input[secondIndex] as RealMatrix).set(1, 0, 1.0)
 
-    return example
+    return input
 
 }
 
-private fun calculateSolution(input: RealMatrix): Double {
+private fun calculateSolution(input: Array<Matrix>): RealMatrix {
 
-    val solution = (0..input.numberColumns() - 1)
-        .sumByDouble { input.get(0, it) * input.get(1, it) }
+    val solution = input
+        .sumByDouble { matrix ->
 
-    return solution
+            matrix as RealMatrix
+
+            matrix.get(0, 0) * matrix.get(1, 0)
+
+        }
+
+    return createRealVector(solution)
+
 }

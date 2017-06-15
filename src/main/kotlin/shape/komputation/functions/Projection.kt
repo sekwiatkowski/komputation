@@ -3,6 +3,10 @@ package shape.komputation.functions
 import shape.komputation.matrix.RealMatrix
 import shape.komputation.matrix.createRealMatrix
 
+fun project(input: RealMatrix, weights: RealMatrix) =
+
+    project(input, weights, null)
+
 fun project(input: RealMatrix, weights: RealMatrix, bias : RealMatrix?) =
 
     if (bias != null) {
