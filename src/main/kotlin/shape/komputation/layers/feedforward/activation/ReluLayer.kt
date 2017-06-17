@@ -1,38 +1,31 @@
 package shape.komputation.layers.feedforward.activation
 
+import shape.komputation.functions.activation.backwardRelu
 import shape.komputation.functions.activation.relu
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
 class ReluLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : RealMatrix? = null
+    private var forwardResult : DoubleMatrix? = null
 
-    override fun forward(input : RealMatrix): RealMatrix {
+    override fun forward(input : DoubleMatrix): DoubleMatrix {
 
-        this.forwardResult = createRealMatrix(input.numberRows(), input.numberColumns(), relu(input.getEntries()))
+        this.forwardResult = DoubleMatrix(input.numberRows, input.numberColumns, relu(input.entries))
 
         return this.forwardResult!!
 
     }
 
-    override fun backward(chain : RealMatrix) : RealMatrix {
+    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val forwardEntries = this.forwardResult!!.getEntries()
-        val chainEntries = chain.getEntries()
+        val forwardResult = this.forwardResult!!
+        val forwardEntries = forwardResult.entries
 
-        val backwardEntries = DoubleArray(chainEntries.size) { index ->
+        val chainEntries = chain.entries
 
-            val forwardEntry = forwardEntries[index]
+        val backwardEntries = backwardRelu(forwardEntries, chainEntries)
 
-            if (forwardEntry > 0.0)
-                chainEntries[index]
-            else
-                0.0
-
-        }
-
-        return createRealMatrix(chain.numberRows(), chain.numberColumns(), backwardEntries)
+        return DoubleMatrix(forwardResult.numberRows, forwardResult.numberColumns, backwardEntries)
 
     }
 

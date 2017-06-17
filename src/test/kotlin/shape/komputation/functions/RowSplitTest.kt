@@ -2,15 +2,16 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.doubleRowMatrix
 
 class RowSplitTest {
 
-    val firstRow = doubleArrayOf(1.0, 2.0)
-    val secondRow = doubleArrayOf(3.0, 4.0)
-    val thirdRow = doubleArrayOf(5.0, 6.0)
+    val firstRow = doubleColumnVector(1.0, 2.0)
+    val secondRow = doubleColumnVector(3.0, 4.0)
+    val thirdRow = doubleColumnVector(5.0, 6.0)
 
-    val matrix = createRealMatrix(
+    val matrix = doubleRowMatrix(
         firstRow,
         secondRow,
         thirdRow
@@ -19,13 +20,15 @@ class RowSplitTest {
     @Test
     fun test1() {
 
-        val (firstActual, secondActual) = splitRows(matrix, intArrayOf(1, 2))
+        val (firstActual, secondActual) = splitRows(
+            matrix,
+            intArrayOf(1, 2))
 
-        val firstExpected = createRealMatrix(
+        val firstExpected = doubleRowMatrix(
             firstRow
         )
 
-        val secondExpected = createRealMatrix(
+        val secondExpected = doubleRowMatrix(
             secondRow,
             thirdRow
         )
@@ -40,12 +43,12 @@ class RowSplitTest {
 
         val (firstActual, secondActual) = splitRows(matrix, intArrayOf(2, 1))
 
-        val firstExpected = createRealMatrix(
+        val firstExpected = doubleRowMatrix(
             firstRow,
             secondRow
         )
 
-        val secondExpected = createRealMatrix(
+        val secondExpected = doubleRowMatrix(
             thirdRow
         )
 

@@ -2,23 +2,21 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.createRealMatrix
-import shape.komputation.matrix.createRealVector
+import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.doubleRowMatrix
 
 class RowConcatenationTest {
 
     @Test
     fun test1() {
 
-        val firstVector = createRealVector(1.0, 2.0)
-        val secondVector = createRealVector(3.0, 4.0)
+        val firstColumnVector = doubleColumnVector(1.0, 2.0)
+        val secondColumnVector = doubleColumnVector(3.0, 4.0)
 
-        val actual = concatRows(firstVector, secondVector)
-        val expected = createRealVector(
-            1.0,
-            2.0,
-            3.0,
-            4.0
+        val actual = concatRows(firstColumnVector, secondColumnVector)
+        val expected = doubleRowMatrix(
+            firstColumnVector,
+            secondColumnVector
         )
 
         assertMatrixEquality(expected, actual, 0.01)
@@ -28,20 +26,21 @@ class RowConcatenationTest {
     @Test
     fun test2() {
 
-        val firstVector = createRealMatrix(
-            doubleArrayOf(1.0, 2.0)
+        val firstVector = doubleColumnVector(1.0, 2.0)
+
+        val secondVector = doubleColumnVector(3.0, 4.0)
+        val thirdVector = doubleColumnVector(5.0, 6.0)
+
+        val secondMatrix = doubleRowMatrix(
+            secondVector,
+            thirdVector
         )
 
-        val secondVector = createRealMatrix(
-            doubleArrayOf(3.0, 4.0),
-            doubleArrayOf(5.0, 6.0)
-        )
-
-        val actual = concatRows(firstVector, secondVector)
-        val expected = createRealMatrix(
-            doubleArrayOf(1.0, 2.0),
-            doubleArrayOf(3.0, 4.0),
-            doubleArrayOf(5.0, 6.0)
+        val actual = concatRows(firstVector, secondMatrix)
+        val expected = doubleRowMatrix(
+            firstVector,
+            secondVector,
+            thirdVector
         )
 
         assertMatrixEquality(expected, actual, 0.01)

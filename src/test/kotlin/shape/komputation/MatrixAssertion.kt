@@ -1,20 +1,19 @@
 package shape.komputation
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import shape.komputation.matrix.RealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
-fun assertMatrixEquality(expected: RealMatrix, actual: RealMatrix, delta : Double) {
+fun assertMatrixEquality(expected: DoubleMatrix, actual: DoubleMatrix, delta : Double) {
 
-    assertEquals(expected.numberRows(), actual.numberRows())
-    assertEquals(expected.numberColumns(), actual.numberColumns())
+    assertEquals(expected.numberRows, actual.numberRows)
+    assertEquals(expected.numberColumns, actual.numberColumns)
 
-    for (indexRow in 0..actual.numberRows() - 1) {
+    val expectedEntries = expected.entries
+    val actualEntries = actual.entries
 
-        for (indexColumn in 0..actual.numberColumns() - 1) {
+    for (index in 0..actualEntries.size - 1) {
 
-            assertEquals(expected.get(indexRow, indexColumn), actual.get(indexRow, indexColumn), delta)
-        }
-
+        assertEquals(actualEntries[index], expectedEntries[index], delta)
     }
 
 }

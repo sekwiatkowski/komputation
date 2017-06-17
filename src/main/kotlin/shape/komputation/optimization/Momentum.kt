@@ -1,7 +1,5 @@
 package shape.komputation.optimization
 
-import shape.komputation.matrix.createRealMatrix
-
 fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
 
     return { numberRows : Int, numberColumns : Int ->
@@ -13,18 +11,18 @@ fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
 
 class Momentum(private val learningRate: Double, private val momentum: Double, val numberRows : Int, val numberColumns : Int) : UpdateRule {
 
-    val state = createRealMatrix(numberRows, numberColumns)
+    val state = DoubleArray(numberRows * numberColumns)
 
     override fun apply(index : Int, current: Double, derivative: Double): Double {
 
-        val indexColumn = index % numberRows
-        val indexRow = index / numberColumns
+        val newStateEntry = momentum * state[index] + learningRate * derivative
 
-        val newStateEntry = momentum * state.get(indexRow, indexColumn) + learningRate * derivative
+        state[index] = newStateEntry
 
-        state.set(indexRow, indexColumn, newStateEntry)
+        val result = current - newStateEntry
 
-        return current - newStateEntry
+        return result
+
 
     }
 

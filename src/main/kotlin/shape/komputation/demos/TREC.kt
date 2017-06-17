@@ -1,6 +1,6 @@
 package shape.komputation.demos
 
-import shape.komputation.network.Network
+import shape.komputation.functions.findMaxIndicesInColumns
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.feedforward.activation.ReluLayer
 import shape.komputation.layers.feedforward.activation.SoftmaxLayer
@@ -8,10 +8,12 @@ import shape.komputation.layers.feedforward.*
 import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
 import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
 import shape.komputation.layers.entry.createLookupLayer
+import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.createIntegerVector
-import shape.komputation.matrix.createOneHotVector
+import shape.komputation.matrix.intVector
+import shape.komputation.matrix.oneHotVector
+import shape.komputation.networks.Network
 import shape.komputation.optimization.momentum
 import java.io.File
 import java.util.*
@@ -28,6 +30,8 @@ fun main(args: Array<String>) {
 class TrecTraining {
 
     fun run(embeddingFilePath: String, embeddingDimension: Int) {
+
+        val maximumBatchSize = 10
 
         val embeddingFile = File(embeddingFilePath)
 
@@ -89,7 +93,7 @@ class TrecTraining {
         val optimizationStrategy = momentum(0.01, 0.1)
 
         val network = Network(
-            createLookupLayer(embeddings, optimizationStrategy),
+            createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
             createConcatenation(
                 *filterHeights
                     .map { filterHeight ->
@@ -102,19 +106,24 @@ class TrecTraining {
                     }
                     .toTypedArray()
             ),
-            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, optimizationStrategy),
+            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, true, initializationStrategy, optimizationStrategy),
             SoftmaxLayer()
         )
 
         val testData = testRepresentations.zip(testTargets)
         val numberTestExamples = testData.size
 
-        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), 10_000) { _, _ ->
+        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), 10_000, maximumBatchSize) { _, _ ->
 
             val accuracy = testData
                 .count { (input, target) ->
 
-                    network.forward(input).maxRow() == target.maxRow()
+                    val output = network.forward(input)
+
+                    val predictedCategory = findMaxIndicesInColumns(output.entries, output.numberRows, output.numberColumns).first()
+                    val actualCategory = findMaxIndicesInColumns(target.entries, target.numberRows, target.numberColumns).first()
+
+                    predictedCategory == actualCategory
 
                 }
                 .toDouble()
@@ -189,11 +198,11 @@ private fun represent(examples: Iterable<TrecExample>, vocabulary: Collection<St
     examples
         .map { (_, tokens) -> tokens }
         .map { tokens -> tokens.map { vocabulary.indexOf(it) }.toIntArray() }
-        .map { indices -> createIntegerVector(*indices) as Matrix }
+        .map { indices -> intVector(*indices) as Matrix }
         .toTypedArray()
 
 private fun createTargets(trainingCategories: List<String>, indexedCategories: Map<String, Int>) =
 
     trainingCategories
-        .map { category -> createOneHotVector(indexedCategories.size, indexedCategories[category]!!) }
+        .map { category -> oneHotVector(indexedCategories.size, indexedCategories[category]!!) }
         .toTypedArray()

@@ -1,11 +1,11 @@
 package shape.komputation.loss
 
-import shape.komputation.matrix.RealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
 interface LossFunction {
 
-    fun forward(predictions: RealMatrix, targets : RealMatrix): Double
+    fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double
 
-    fun backward(predictions: RealMatrix, targets : RealMatrix): RealMatrix
+    fun backward(predictions: DoubleMatrix, targets : DoubleMatrix): DoubleMatrix
 
 }

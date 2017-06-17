@@ -1,26 +1,26 @@
 package shape.komputation.layers.feedforward
 
-import shape.komputation.network.Network
 import shape.komputation.functions.concatRows
 import shape.komputation.functions.splitRows
 import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.matrix.EMPTY_MATRIX
-import shape.komputation.matrix.RealMatrix
+import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
+import shape.komputation.networks.Network
 
 class Concatenation(name : String? = null, vararg continuations: Array<FeedForwardLayer>) : FeedForwardLayer(name), OptimizableLayer {
 
     val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
 
-    val individualResults = Array(continuations.size) { EMPTY_MATRIX }
+    val individualResults = Array(continuations.size) { EMPTY_DOUBLE_MATRIX }
 
     val individualHeights = IntArray(continuations.size)
 
-    var input : RealMatrix? = null
-    var forwardResult : RealMatrix? = null
+    var input : DoubleMatrix? = null
+    var forwardResult : DoubleMatrix? = null
 
-    override fun forward(input : RealMatrix) : RealMatrix {
+    override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
         this.input = input
 
@@ -32,7 +32,7 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
             individualResults[indexNetwork] = individualResult
 
-            individualHeights[indexNetwork] = individualResult.numberRows()
+            individualHeights[indexNetwork] = individualResult.numberRows
 
         }
 
@@ -43,11 +43,13 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
     }
 
     // Chain is the same for (1, 2) and (2, 1)
-    override fun backward(chain : RealMatrix) : RealMatrix {
+    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
         val chainSplit = splitRows(chain, this.individualHeights)
 
-        var resultWrtInput = this.networks.first().backward(chainSplit[0])
+        val resultWrtInput = this.networks.first().backward(chainSplit[0])
+
+        val resultEntries = resultWrtInput.entries
 
         for (indexNetwork in (1..this.networks.size-1)) {
 
@@ -55,7 +57,11 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
             val secondResultWrtInput = network.backward(chainSplit[indexNetwork])
 
-            resultWrtInput = resultWrtInput.add(secondResultWrtInput)
+            for (index in 0..resultEntries.size - 1) {
+
+                resultEntries[index] += secondResultWrtInput.entries[index]
+            }
+
 
         }
 
@@ -67,7 +73,7 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
         for (network in networks) {
 
-            network.optimizeContinuationLayers()
+            network.optimize()
 
         }
 

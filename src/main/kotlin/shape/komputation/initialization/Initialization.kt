@@ -1,41 +1,31 @@
 package shape.komputation.initialization
 
-import shape.komputation.matrix.createRealMatrix
+fun initializeColumnVector(strategy: InitializationStrategy, numberColumns: Int): DoubleArray {
 
+    return initializeMatrix(strategy, 1, numberColumns)
 
-fun initializeMatrix(strategy : InitializationStrategy, numberRows : Int, numberColumns: Int) =
+}
 
-    Array(numberRows) { indexRow ->
+fun initializeRowVector(strategy: InitializationStrategy, numberColumns: Int): DoubleArray {
 
-        initializeRow(strategy, numberColumns)
+    return initializeMatrix(strategy, numberColumns, 1)
 
-    }
-    .let { rows ->
+}
 
-        createRealMatrix(*rows)
-    }
+fun initializeMatrix(strategy: InitializationStrategy, numberRows: Int, numberColumns : Int): DoubleArray {
 
-fun initializeRow(strategy: InitializationStrategy, numberColumns: Int) =
+    val array = DoubleArray(numberRows * numberColumns)
 
-    DoubleArray(numberColumns) { indexColumn ->
+    for (indexRow in 0..numberRows - 1) {
 
-        strategy(0, indexColumn)
+        for (indexColumn in 0..numberColumns - 1) {
 
-    }
+            array[indexColumn * numberRows + indexRow] = strategy(indexRow, indexColumn)
 
-fun initializeColumn(strategy: InitializationStrategy, numberRows: Int) =
-
-    DoubleArray(numberRows) { indexRow ->
-
-        strategy(indexRow, 0)
+        }
 
     }
 
+    return array
 
-fun initializeRowVector(strategy : InitializationStrategy, numberRows: Int) =
-
-    initializeMatrix(strategy, numberRows, 1)
-
-fun initializeColumnVector(strategy : InitializationStrategy, numberColumns: Int) =
-
-    initializeMatrix(strategy, 1, numberColumns)
+}

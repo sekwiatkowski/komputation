@@ -6,8 +6,9 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
 - [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
-- [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
 - [Identity](./src/main/kotlin/shape/komputation/initialization/IdentityInitialization.kt)
+- [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
+- [Zero](./src/main/kotlin/shape/komputation/initialization/ZeroInitialization.kt)
 
 ## Layers
 
@@ -16,14 +17,17 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Lookup](./src/main/kotlin/shape/komputation/layers/entry/LookupLayer.kt)
 
 - Standard feed-forward networks:
-  - [Projection](./src/main/kotlin/shape/komputation/layers/continuation/ProjectionLayer.kt)
-  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/continuation/SigmoidLayer.kt)
-  - [Softmax](./src/main/kotlin/shape/komputation/layers/continuation/SoftmaxLayer.kt)
+  - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
+  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
+  - [Softmax](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
 
 - Convolutional neural networks:
-  - [Convolution](./src/main/kotlin/shape/komputation/layers/continuation/ConvolutionalLayer.kt)
-  - [Max-pooling](./src/main/kotlin/shape/komputation/layers/continuation/MaxPoolingLayer.kt)
-  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/continuation/ReluLayer.kt)
+  - [Convolution](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/ConvolutionalLayer.kt)
+  - [Max-pooling](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/MaxPoolingLayer.kt)
+  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
+
+- Recurrent neural networks:
+  - [Vanilla RNN](./src/main/kotlin/shape/komputation/layers/recurrent/RecurrentLayer.kt)
 
 ## Loss functions
 
@@ -43,6 +47,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [XOR](./src/main/kotlin/shape/komputation/demos/Xor.kt)
 
 - Toy problems:
+  - [Addition problem](./src/main/kotlin/shape/komputation/demos/AdditionProblem.kt)
   - [Image classification](./src/main/kotlin/shape/komputation/demos/LineDemo.kt)
   - [Word embeddings](./src/main/kotlin/shape/komputation/demos/Embeddings.kt)
 

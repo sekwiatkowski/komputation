@@ -1,16 +1,16 @@
 package shape.komputation.layers.feedforward.activation
 
+import shape.komputation.functions.activation.backwardSoftmax
 import shape.komputation.functions.activation.softmax
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
 class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : RealMatrix? = null
+    private var forwardResult : DoubleMatrix? = null
 
-    override fun forward(input : RealMatrix) : RealMatrix {
+    override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
-        this.forwardResult = softmax(input)
+        this.forwardResult = softmax(input.entries, input.numberRows, input.numberColumns)
 
         return this.forwardResult!!
 
@@ -21,49 +21,19 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
         For i == j: prediction (1 - prediction)
         for i != j: -(prediction_i * prediction_j)
      */
-    override fun backward(chain : RealMatrix): RealMatrix {
+    override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        val lastForwardResult = this.forwardResult!!
+        val forwardResult = this.forwardResult!!
+        val forwardEntries = forwardResult.entries
+        val numberForwardRows = forwardResult.numberRows
+        val numberForwardColumns = forwardResult.numberColumns
 
-        val gradient = createRealMatrix(lastForwardResult.numberRows(), lastForwardResult.numberColumns())
+        val chainEntries = chain.entries
 
-        for (indexColumn in 0..lastForwardResult.numberColumns() - 1) {
+        val gradient = backwardSoftmax(numberForwardRows, numberForwardColumns, forwardEntries, chainEntries)
 
-            for (outerIndexRow in 0..lastForwardResult.numberRows() - 1) {
-
-                var derivative = 0.0
-
-                val prediction = lastForwardResult.get(outerIndexRow, indexColumn)
-
-                // Go through each row
-                for (innerIndexRow in 0..lastForwardResult.numberRows() - 1) {
-
-                    val chainEntry = chain.get(innerIndexRow, indexColumn)
-
-                    // i == j
-                    if (outerIndexRow == innerIndexRow) {
-
-                        derivative += chainEntry * prediction * (1 - prediction)
-
-                    }
-                    // i != j
-                    else {
-
-                        val otherPrediction = lastForwardResult.get(innerIndexRow, indexColumn)
-
-                        derivative += chainEntry * (-prediction * otherPrediction)
-
-                    }
-
-                }
-
-                gradient.set(outerIndexRow, indexColumn, derivative)
-
-            }
-
-        }
-
-        return gradient
+        return DoubleMatrix(numberForwardRows, numberForwardColumns, gradient)
 
     }
+
 }

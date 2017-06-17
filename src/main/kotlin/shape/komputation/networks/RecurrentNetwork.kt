@@ -1,39 +1,33 @@
-package shape.komputation.network
+package shape.komputation.networks
 
-import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.FeedForwardLayer
-import shape.komputation.layers.OptimizableLayer
-import shape.komputation.layers.RecurrentLayer
-import shape.komputation.layers.entry.EntryPoint
-import shape.komputation.layers.entry.OptimizableEntryPoint
+import shape.komputation.layers.*
+import shape.komputation.layers.entry.InputLayer
 import shape.komputation.loss.LossFunction
+import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.RealMatrix
 
 class RecurrentNetwork(
-    maximumSteps : Int,
-    private val entryPoint: EntryPoint,
+    private val inputLayer: InputLayer,
     private vararg val layers: ContinuationLayer) {
 
-    private val inputGradients = arrayOfNulls<RealMatrix>(maximumSteps)
     private val numberLayers = layers.size
-    private val optimizableLayers = layers.filterIsInstance(OptimizableLayer::class.java).reversed()
+    private val optimizables = listOf(inputLayer).plus(layers).filterIsInstance(OptimizableLayer::class.java).reversed()
 
-    fun forward(inputs : Array<Matrix>) : RealMatrix {
-
-        var output : RealMatrix? = null
+    fun forward(inputs : Array<Matrix>) : DoubleMatrix {
 
         val firstLayer = layers.first()
 
-        if (firstLayer is RecurrentLayer) {
+        if (firstLayer is StatefulLayer) {
 
-            firstLayer.resetForward()
+            firstLayer.startForward()
 
         }
 
+        var output : DoubleMatrix? = null
+
         for (input in inputs) {
 
-            val entry = entryPoint.forward(input)
+            val entry = this.inputLayer.forward(input)
 
             output = firstLayer.forward(entry)
 
@@ -41,7 +35,12 @@ class RecurrentNetwork(
 
         for (indexLayer in 1..numberLayers - 1) {
 
-            val layer = layers[indexLayer]
+            val layer = this.layers[indexLayer]
+
+            if (layer is StatefulLayer) {
+
+                layer.startForward()
+            }
 
             output = layer.forward(output!!)
 
@@ -51,19 +50,25 @@ class RecurrentNetwork(
 
     }
 
-    fun backward(numberSteps : Int, lossGradient: RealMatrix) {
+    fun backward(numberSteps : Int, lossGradient: DoubleMatrix) {
 
         var chain = lossGradient
 
         for (indexLayer in numberLayers - 1 downTo 1) {
 
-            val layer = layers[indexLayer]
+            val layer = this.layers[indexLayer]
 
             when (layer) {
 
                 is FeedForwardLayer -> {
 
                     chain = layer.backward(chain)
+
+                    if (layer is StatefulLayer) {
+
+                        layer.finishBackward()
+
+                    }
 
                 }
                 is RecurrentLayer -> {
@@ -82,15 +87,13 @@ class RecurrentNetwork(
 
             is RecurrentLayer -> {
 
-                firstLayer.resetBackward()
-
                 for (step in numberSteps - 1 downTo 0) {
 
                     val (stateGradient, inputGradient) = firstLayer.backward(chain)
 
                     chain = stateGradient
 
-                    inputGradients[step] = inputGradient
+                    inputLayer.backward(inputGradient)
 
                 }
 
@@ -98,36 +101,24 @@ class RecurrentNetwork(
 
             is FeedForwardLayer -> {
 
-                for (step in numberSteps - 1 downTo 0) {
-
-                    inputGradients[step] = firstLayer.backward(chain)
-
-                }
-
+                throw NotImplementedError()
             }
+
+        }
+
+        if (firstLayer is StatefulLayer) {
+
+            firstLayer.finishBackward()
 
         }
 
     }
 
-    fun optimize(inputs : Array<Matrix>) {
+    fun optimize() {
 
-        for (layer in optimizableLayers) {
+        for (layer in optimizables) {
 
             layer.optimize()
-
-        }
-
-        if (entryPoint is OptimizableEntryPoint) {
-
-            for (step in inputs.size downTo 0) {
-
-                val input = inputs[step]
-                val inputGradient = inputGradients[step]!!
-
-                entryPoint.optimize(input, inputGradient)
-
-            }
 
         }
 
@@ -135,14 +126,17 @@ class RecurrentNetwork(
 
     fun train(
         inputs: Array<Array<Matrix>>,
-        targets: Array<RealMatrix>,
+        targets: Array<DoubleMatrix>,
         lossFunction: LossFunction,
         numberIterations : Int,
-        afterEachIteration : (index : Int, loss : Double) -> Unit) {
+        batchSize : Int,
+        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
 
         repeat(numberIterations) { indexIteration ->
 
             var iterationLoss = 0.0
+
+            var indexBatch = 0
 
             inputs.zip(targets).forEach { (input, target) ->
 
@@ -154,13 +148,24 @@ class RecurrentNetwork(
 
                 this.backward(input.size, lossGradient)
 
-                this.optimize(input)
+                indexBatch++
+
+                if (indexBatch == batchSize) {
+
+                    this.optimize()
+                    indexBatch = 0
+
+                }
 
                 iterationLoss += loss
 
             }
 
-            afterEachIteration(indexIteration, iterationLoss)
+            if (afterEachIteration != null) {
+
+                afterEachIteration(indexIteration, iterationLoss)
+
+            }
 
         }
 

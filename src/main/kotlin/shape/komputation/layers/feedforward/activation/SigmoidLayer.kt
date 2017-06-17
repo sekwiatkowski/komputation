@@ -1,16 +1,16 @@
 package shape.komputation.layers.feedforward.activation
 
+import shape.komputation.functions.activation.backwardSigmoid
 import shape.komputation.functions.activation.sigmoid
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
 class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : RealMatrix? = null
+    private var forwardResult : DoubleMatrix? = null
 
-    override fun forward(input : RealMatrix): RealMatrix {
+    override fun forward(input : DoubleMatrix): DoubleMatrix {
 
-        this.forwardResult = sigmoid(input)
+        this.forwardResult = DoubleMatrix(input.numberRows, input.numberColumns, sigmoid(input.entries))
 
         return this.forwardResult!!
 
@@ -22,32 +22,16 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(chain : RealMatrix) : RealMatrix {
+    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val lastForwardResult = this.forwardResult!!
+        val chainEntries = chain.entries
 
-        val numberRows = lastForwardResult.numberRows()
-        val nmberColumns = lastForwardResult.numberColumns()
+        val forwardResult = this.forwardResult!!
+        val forwardResultEntries = forwardResult.entries
 
-        val gradient = createRealMatrix(numberRows, nmberColumns)
+        val entries = backwardSigmoid(forwardResultEntries, chainEntries)
 
-        for (indexRow in 0..numberRows - 1) {
-
-            for (indexColumn in 0..nmberColumns - 1) {
-
-                val forward = lastForwardResult.get(indexRow, indexColumn)
-
-                val chainEntry = chain.get(indexRow, indexColumn)
-                val dActivationWrtPreActivation = forward * (1 - forward)
-
-                val derivative = chainEntry * dActivationWrtPreActivation
-
-                gradient.set(indexRow, indexColumn, derivative)
-
-            }
-        }
-
-        return gradient
+        return DoubleMatrix(forwardResult.numberRows, forwardResult.numberColumns, entries)
 
     }
 

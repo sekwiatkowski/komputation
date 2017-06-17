@@ -1,16 +1,19 @@
 package shape.komputation.demos
 
 import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.layers.feedforward.activation.ReluLayer
-import shape.komputation.layers.recurrent.createVanillaRecurrentLayer
+import shape.komputation.initialization.createIdentityInitializer
+import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.createProjectionLayer
+import shape.komputation.layers.feedforward.activation.ReluLayer
+import shape.komputation.layers.feedforward.projection.createProjectionLayer
+import shape.komputation.layers.recurrent.createRecurrentLayer
 import shape.komputation.loss.SquaredLoss
+import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealVector
-import shape.komputation.network.RecurrentNetwork
-import shape.komputation.network.printLoss
+import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleScalar
+import shape.komputation.networks.RecurrentNetwork
+import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -19,8 +22,9 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val length = 10
     val numberExamples = 100_000
+    val batchSize = 4
     val inputDimension = 2
-    val hiddenDimension = 100
+    val hiddenDimension = 5
 
     val inputs = Array(numberExamples) { generateInput(random, length) }
 
@@ -30,30 +34,36 @@ fun main(args: Array<String>) {
 
     }
 
-    val initializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val stateWeightInitializationStrategy = createIdentityInitializer()
+    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val biasInitializationStrategy = createZeroInitializer()
+
+    val projectionWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val recurrentLayer = createVanillaRecurrentLayer(
-        length,
+    val recurrentLayer = createRecurrentLayer(
         inputDimension,
         hiddenDimension,
         ReluLayer(),
-        initializationStrategy,
+        stateWeightInitializationStrategy,
+        inputWeightInitializationStrategy,
+        biasInitializationStrategy,
         optimizationStrategy
     )
 
     val network = RecurrentNetwork(
-        length,
         InputLayer(),
         recurrentLayer,
-        createProjectionLayer(hiddenDimension, 1, initializationStrategy, optimizationStrategy)
+        createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
     )
 
     network.train(
         inputs,
         targets,
         SquaredLoss(),
-        10_000,
+        100,
+        batchSize,
         printLoss
     )
 
@@ -63,7 +73,7 @@ private fun generateInput(random: Random, length: Int): Array<Matrix> {
 
     val input = Array<Matrix>(length) {
 
-        createRealVector(
+        doubleRowVector(
             random.nextDouble(),
             0.0)
 
@@ -89,24 +99,27 @@ private fun generateInput(random: Random, length: Int): Array<Matrix> {
 
     }
 
-    (input[firstIndex] as RealMatrix).set(1, 0, 1.0)
-    (input[secondIndex] as RealMatrix).set(1, 0, 1.0)
+    val firstSelection = input[firstIndex] as DoubleMatrix
+    firstSelection.entries[1] = 1.0
+
+    val secondSelection = input[secondIndex] as DoubleMatrix
+    secondSelection.entries[1] = 1.0
 
     return input
 
 }
 
-private fun calculateSolution(input: Array<Matrix>): RealMatrix {
+private fun calculateSolution(input: Array<Matrix>): DoubleMatrix {
 
     val solution = input
         .sumByDouble { matrix ->
 
-            matrix as RealMatrix
+            matrix as DoubleMatrix
 
-            matrix.get(0, 0) * matrix.get(1, 0)
+            matrix.entries[0] * matrix.entries[1]
 
         }
 
-    return createRealVector(solution)
+    return doubleScalar(solution)
 
 }

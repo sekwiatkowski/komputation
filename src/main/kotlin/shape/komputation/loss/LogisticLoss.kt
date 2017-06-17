@@ -1,25 +1,24 @@
 package shape.komputation.loss
 
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
 class LogisticLoss : LossFunction {
 
     // -log(probability of the correct target)
-    override fun forward(predictions: RealMatrix, targets : RealMatrix): Double {
+    override fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double {
+
+        val predictionEntries = predictions.entries
+        val targetEntries = targets.entries
 
         var loss = 0.0
 
-        for (indexColumn in 0..targets.numberColumns() -1) {
+        for (index in 0..predictionEntries.size-1) {
 
-            for (indexRow in 0..targets.numberRows() - 1) {
+            val target = targetEntries[index]
 
-                val target = targets.get(indexRow, indexColumn)
+            if (target == 1.0) {
 
-                if (target == 1.0) {
-
-                    loss -= Math.log(predictions.get(indexRow, indexColumn))
-                }
+                loss -= Math.log(predictionEntries[index])
 
             }
 
@@ -30,30 +29,29 @@ class LogisticLoss : LossFunction {
     }
 
     // -1/probability of the correct target summed over each column
-    override fun backward(predictions: RealMatrix, targets : RealMatrix) : RealMatrix {
+    override fun backward(predictions: DoubleMatrix, targets : DoubleMatrix) : DoubleMatrix {
 
-        val derivatives = createRealMatrix(predictions.numberRows(), predictions.numberColumns())
+        val predictionEntries = predictions.entries
+        val targetEntries = targets.entries
 
-        for (indexColumn in 0..predictions.numberColumns() -1) {
+        val derivatives = DoubleArray(predictionEntries.size) { index ->
 
-            for (indexRow in 0..targets.numberRows() - 1) {
+            val target = targetEntries[index]
 
-                val target = targets.get(indexRow, indexColumn)
+            if (target == 1.0) {
 
-                if (target == 1.0) {
+                -1.0.div(predictionEntries[index])
 
-                    val prediction = predictions.get(indexRow, indexColumn)
+            }
+            else {
 
-                    derivatives.set(indexRow, indexColumn, -1.0.div(prediction))
-
-                }
-
+                0.0
 
             }
 
         }
 
-        return derivatives
+        return DoubleMatrix(predictions.numberRows, predictions.numberColumns, derivatives)
 
     }
 

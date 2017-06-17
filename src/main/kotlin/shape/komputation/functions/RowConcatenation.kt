@@ -1,41 +1,42 @@
 package shape.komputation.functions
 
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
-fun concatRows(vararg matrices : RealMatrix): RealMatrix {
-
-    val totalNumberColumns = matrices.first().numberColumns()
+fun concatRows(vararg matrices : DoubleMatrix): DoubleMatrix {
 
     var totalNumberRows = 0
     for (matrix in matrices) {
-        totalNumberRows += matrix.numberRows()
+        totalNumberRows += matrix.numberRows
     }
 
-    val concatenation = createRealMatrix(totalNumberRows, totalNumberColumns)
+    val numberColumns = matrices.first().numberColumns
 
-    var indexConcatenationRow = 0
-    for (indexMatrix in 0..matrices.size-1) {
+    val concatenation = DoubleArray(totalNumberRows * numberColumns)
+
+    var startAtRow = 0
+    for(indexMatrix in 0..matrices.size - 1) {
 
         val matrix = matrices[indexMatrix]
+        val matrixEntries = matrix.entries
+        val numberMatrixRows = matrix.numberRows
 
-        val numberRows = matrix.numberRows()
+        for (indexMatrixColumn in 0..numberColumns - 1) {
 
-        for (indexMatrixRow in 0..numberRows - 1) {
+            val startAtIndex = indexMatrixColumn * totalNumberRows
 
-            for (indexMatrixColumn in 0..totalNumberColumns - 1) {
+            for (indexMatrixRow in 0..numberMatrixRows - 1) {
 
-                concatenation.set(indexConcatenationRow, indexMatrixColumn, matrix.get(indexMatrixRow, indexMatrixColumn))
+                concatenation[startAtIndex + startAtRow + indexMatrixRow] = matrixEntries[indexMatrixColumn * numberMatrixRows + indexMatrixRow]
 
             }
 
-            indexConcatenationRow++
-
         }
+
+        startAtRow += numberMatrixRows
 
     }
 
-    return concatenation
+    return DoubleMatrix(totalNumberRows, numberColumns, concatenation)
 
 }
 

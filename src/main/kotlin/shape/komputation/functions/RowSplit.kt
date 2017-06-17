@@ -1,33 +1,37 @@
 package shape.komputation.functions
 
-import shape.komputation.matrix.RealMatrix
-import shape.komputation.matrix.createRealMatrix
+import shape.komputation.matrix.DoubleMatrix
 
-fun splitRows(matrix : RealMatrix, heights : IntArray): Array<RealMatrix> {
+fun splitRows(matrix : DoubleMatrix, heights : IntArray): Array<DoubleMatrix> {
 
-    val numberColumns = matrix.numberColumns()
+    val numberColumns = matrix.numberColumns
+    val numberRows = matrix.numberRows
+    val matrixEntries = matrix.entries
 
-    var indexRow = 0
+    var runningHeight = 0
 
-    return Array<RealMatrix>(heights.size) { index ->
+    return Array(heights.size) { indexMatrix ->
 
-        val height = heights[index]
+        val height = heights[indexMatrix]
 
-        val subMatrix = createRealMatrix(height, numberColumns)
+        val subEntries = DoubleArray(height * numberColumns)
 
-        for (indexSubRow in 0..height - 1) {
+        for (indexColumn in 0..numberColumns - 1) {
 
-            for (indexColumn in 0..numberColumns - 1) {
+            val entriesBeforeSubColumn = indexColumn * height
+            val entriesBeforeConcatenationColumn = indexColumn * numberRows + runningHeight
 
-                subMatrix.set(indexSubRow, indexColumn, matrix.get(indexRow, indexColumn))
+            for (indexSubRow in 0..height - 1) {
+
+                subEntries[entriesBeforeSubColumn + indexSubRow] = matrixEntries[entriesBeforeConcatenationColumn + indexSubRow]
 
             }
 
-            indexRow += 1
-
         }
 
-        subMatrix
+        runningHeight += height
+
+        DoubleMatrix(height, numberColumns, subEntries)
 
     }
 
