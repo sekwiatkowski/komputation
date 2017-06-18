@@ -1,53 +1,36 @@
 package shape.komputation.matrix
 
+import java.util.*
+
 sealed class Matrix
 
-data class DoubleMatrix(val numberRows : Int, val numberColumns : Int, val entries : DoubleArray) : Matrix()
+open class DoubleMatrix(val numberRows : Int, val numberColumns : Int, val entries : DoubleArray) : Matrix()
 
-val EMPTY_DOUBLE_MATRIX = DoubleMatrix(0, 0, doubleArrayOf())
+class SequenceMatrix(val numberSteps : Int, val numberStepRows: Int, val numberStepColumns: Int, entries : DoubleArray) : DoubleMatrix(numberStepRows, numberSteps * numberStepColumns, entries) {
 
-fun doubleZeroMatrix(numberRows: Int, numberColumns: Int) = DoubleMatrix(numberRows, numberColumns, DoubleArray(numberRows * numberColumns))
+    private val stepSize = numberStepRows * numberStepColumns
 
-fun doubleScalar(value: Double) = DoubleMatrix(1, 1, doubleArrayOf(value))
+    fun setEntry(step: Int, indexRow: Int, indexColumn: Int, entry : Double) {
 
-fun doubleRowVector(vararg entries : Double) = DoubleMatrix(entries.size, 1, entries)
-
-fun doubleZeroRowVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows))
-
-fun doubleColumnVector(vararg entries : Double) = DoubleMatrix(1, entries.size, entries)
-
-fun doubleRowMatrix(vararg columnVectors: DoubleMatrix): DoubleMatrix {
-
-    val numberRows = columnVectors.size
-    val numberColumns = columnVectors[0].numberColumns
-
-    val matrixEntries = DoubleArray(numberRows * numberColumns)
-
-    for (indexRow in 0..numberRows - 1) {
-
-        val entries = columnVectors[indexRow].entries
-
-        for (indexColumn in 0..numberColumns - 1) {
-
-            matrixEntries[indexRow + indexColumn * numberRows] = entries[indexColumn]
-
-        }
+        entries[step * stepSize + indexColumn * numberStepRows + indexRow] = entry
 
     }
 
-    return DoubleMatrix(numberRows, numberColumns, matrixEntries)
+    fun getStep(step: Int) : DoubleMatrix {
+
+        val start = step * stepSize
+        val end = start + stepSize
+
+        return DoubleMatrix(numberStepRows, numberStepColumns, Arrays.copyOfRange(this.entries, start, end))
+
+    }
+
+    fun setStep(step: Int, entries: DoubleArray) {
+
+        System.arraycopy(entries, 0, this.entries, step * stepSize, entries.size)
+
+    }
 
 }
 
-fun oneHotVector(size: Int, index: Int, value : Double = 1.0): DoubleMatrix {
-
-    val vector = doubleZeroRowVector(size)
-    vector.entries[index] = value
-
-    return vector
-
-}
-
-data class IntMatrix(val entries : IntArray, val numberRows : Int, val numberColumns : Int) : Matrix()
-
-fun intVector(vararg entries : Int) = IntMatrix(entries, entries.size, 1)
+class IntMatrix(val entries : IntArray, val numberRows : Int, val numberColumns : Int) : Matrix()

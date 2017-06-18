@@ -2,7 +2,6 @@ package shape.komputation.networks
 
 import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.layers.OptimizableLayer
-import shape.komputation.layers.StatefulLayer
 import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
@@ -21,12 +20,6 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Fee
 
         for (continuationLayer in layers) {
 
-            if (continuationLayer is StatefulLayer) {
-
-                continuationLayer.startForward()
-
-            }
-
             output = continuationLayer.forward(output)
 
         }
@@ -44,12 +37,6 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Fee
             val layer = layers[indexLayer]
 
             chain = layer.backward(chain)
-
-            if (layer is StatefulLayer) {
-
-                layer.finishBackward()
-
-            }
 
         }
 

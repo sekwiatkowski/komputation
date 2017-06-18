@@ -1,18 +1,15 @@
 package shape.komputation.demos
 
+import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.activation.ReluLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.layers.recurrent.createRecurrentLayer
 import shape.komputation.loss.SquaredLoss
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleRowVector
-import shape.komputation.matrix.doubleScalar
-import shape.komputation.networks.RecurrentNetwork
+import shape.komputation.matrix.*
+import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -20,17 +17,17 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val length = 10
+    val length = 8
     val numberExamples = 100_000
     val batchSize = 4
     val inputDimension = 2
     val hiddenDimension = 5
 
-    val inputs = Array(numberExamples) { generateInput(random, length) }
+    val inputs = Array<Matrix>(numberExamples) { generateInput(random, length) }
 
     val targets = Array(numberExamples) { indexInput ->
 
-        calculateSolution(inputs[indexInput])
+        calculateSolution(inputs[indexInput] as SequenceMatrix)
 
     }
 
@@ -43,16 +40,17 @@ fun main(args: Array<String>) {
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
     val recurrentLayer = createRecurrentLayer(
+        length,
         inputDimension,
         hiddenDimension,
-        ReluLayer(),
+        ActivationFunction.ReLU,
         stateWeightInitializationStrategy,
         inputWeightInitializationStrategy,
         biasInitializationStrategy,
         optimizationStrategy
     )
 
-    val network = RecurrentNetwork(
+    val network = Network(
         InputLayer(),
         recurrentLayer,
         createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
@@ -69,26 +67,26 @@ fun main(args: Array<String>) {
 
 }
 
-private fun generateInput(random: Random, length: Int): Array<Matrix> {
+private fun generateInput(random: Random, length: Int): SequenceMatrix {
 
-    val input = Array<Matrix>(length) {
+    val input = sequence(length, 2) {
 
-        doubleRowVector(
+        doubleArrayOf(
             random.nextDouble(),
             0.0)
 
     }
 
-    val firstIndex = random.nextInt(length)
-    val secondIndex = random.nextInt(length).let { candidate ->
+    val firstStep = random.nextInt(length)
+    val secondStep = random.nextInt(length).let { candidate ->
 
-        if (candidate == firstIndex) {
+        if (candidate == firstStep) {
 
-            if (firstIndex == length - 1) {
-                firstIndex - 1
+            if (firstStep == length - 1) {
+                firstStep - 1
             }
             else {
-                firstIndex + 1
+                firstStep + 1
             }
 
         }
@@ -99,26 +97,23 @@ private fun generateInput(random: Random, length: Int): Array<Matrix> {
 
     }
 
-    val firstSelection = input[firstIndex] as DoubleMatrix
-    firstSelection.entries[1] = 1.0
-
-    val secondSelection = input[secondIndex] as DoubleMatrix
-    secondSelection.entries[1] = 1.0
+    input.setEntry(firstStep, 1, 0, 1.0)
+    input.setEntry(secondStep, 1, 0, 1.0)
 
     return input
 
 }
 
-private fun calculateSolution(input: Array<Matrix>): DoubleMatrix {
+private fun calculateSolution(input: SequenceMatrix): DoubleMatrix {
 
-    val solution = input
-        .sumByDouble { matrix ->
+    var solution = 0.0
+    for (indexStep in 0..input.numberSteps - 1) {
 
-            matrix as DoubleMatrix
+        val step = input.getStep(indexStep)
 
-            matrix.entries[0] * matrix.entries[1]
+        solution += step.entries[0] * step.entries[1]
 
-        }
+    }
 
     return doubleScalar(solution)
 
