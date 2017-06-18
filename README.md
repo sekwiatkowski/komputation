@@ -1,3 +1,5 @@
+<img src="Logo.jpg" align="right" height="150" width="150" />
+
 # Komputation
 
 Komputation is a neural network framework for the JVM written in the Kotlin programming language.
