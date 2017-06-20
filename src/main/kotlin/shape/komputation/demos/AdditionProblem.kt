@@ -6,7 +6,7 @@ import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.recurrent.createRecurrentLayer
+import shape.komputation.layers.recurrent.createEncoder
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -22,6 +22,7 @@ fun main(args: Array<String>) {
     val batchSize = 4
     val inputDimension = 2
     val hiddenDimension = 5
+    val numberIterations = 100
 
     val inputs = Array<Matrix>(numberExamples) { generateInput(random, length) }
 
@@ -31,21 +32,21 @@ fun main(args: Array<String>) {
 
     }
 
-    val stateWeightInitializationStrategy = createIdentityInitializer()
-    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val previousStateProjectionInitializationStrategy = createIdentityInitializer()
+    val inputProjectionInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
     val biasInitializationStrategy = createZeroInitializer()
 
     val projectionWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val recurrentLayer = createRecurrentLayer(
+    val recurrentLayer = createEncoder(
         length,
         inputDimension,
         hiddenDimension,
         ActivationFunction.ReLU,
-        stateWeightInitializationStrategy,
-        inputWeightInitializationStrategy,
+        inputProjectionInitializationStrategy,
+        previousStateProjectionInitializationStrategy,
         biasInitializationStrategy,
         optimizationStrategy
     )
@@ -56,11 +57,12 @@ fun main(args: Array<String>) {
         createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
     )
 
+
     network.train(
         inputs,
         targets,
         SquaredLoss(),
-        100,
+        numberIterations,
         batchSize,
         printLoss
     )

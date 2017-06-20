@@ -71,7 +71,7 @@ fun createSeriesProjection(
 
     val stateStepProjections = Array(numberSteps) { index ->
 
-        val stateProjectionLayerName = if (name == null) null else "$$name-$index"
+        val stateProjectionLayerName = if (name == null) null else "$name-$index"
 
         if (useIdentityAtFirstStep && index == 0) {
 

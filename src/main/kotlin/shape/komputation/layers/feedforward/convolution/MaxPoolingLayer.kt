@@ -4,13 +4,7 @@ import shape.komputation.functions.findMaxIndicesInRows
 import shape.komputation.functions.selectEntries
 import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleRowVector
-
-/*
-    Example:
-    The input is a 20*100 matrix (filter size of 3, 22 words, 100 filters)
-    The output is a 100D row vector
- */
+import shape.komputation.matrix.doubleColumnVector
 
 class MaxPoolingLayer(name : String? = null) : FeedForwardLayer(name) {
 
@@ -29,7 +23,7 @@ class MaxPoolingLayer(name : String? = null) : FeedForwardLayer(name) {
 
         val maxPooled = selectEntries(input.entries, maxRowIndices)
 
-        return doubleRowVector(*maxPooled)
+        return doubleColumnVector(*maxPooled)
 
     }
 

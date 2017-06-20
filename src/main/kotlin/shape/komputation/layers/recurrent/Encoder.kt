@@ -4,24 +4,23 @@ import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.FeedForwardLayer
 import shape.komputation.layers.OptimizableLayer
-import shape.komputation.layers.feedforward.activation.ActivationLayer
-import shape.komputation.layers.feedforward.activation.ReluLayer
-import shape.komputation.layers.feedforward.activation.SigmoidLayer
-import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.activation.*
 import shape.komputation.matrix.*
 import shape.komputation.optimization.OptimizationStrategy
 import java.util.*
 
-class RecurrentLayer(
+class Encoder(
     name : String?,
+    private val numberSteps: Int,
+    private val numberStepRows: Int,
+    private val numberStepColumns: Int,
     private val hiddenDimension : Int,
-    private val activationLayers: Array<ActivationLayer>,
-    private val stateProjection: SeriesProjection,
     private val inputProjection: SeriesProjection,
+    private val previousStateProjection: SeriesProjection,
+    private val activationLayers: Array<ActivationLayer>,
     private val bias : SeriesBias?) : FeedForwardLayer(name), OptimizableLayer {
 
-    private var state = doubleZeroRowVector(hiddenDimension)
-    private var input : SequenceMatrix = EMPTY_SEQUENCE_MATRIX
+    private var state = doubleZeroColumnVector(hiddenDimension)
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
@@ -29,11 +28,9 @@ class RecurrentLayer(
 
         input as SequenceMatrix
 
-        this.input = input
-
         var output : DoubleMatrix? = null
 
-        for (indexStep in 0..input.numberSteps - 1) {
+        for (indexStep in 0..numberSteps - 1) {
 
             val step = input.getStep(indexStep)
 
@@ -42,7 +39,7 @@ class RecurrentLayer(
             val projectedInputEntries = projectedInput.entries
 
             // projected state = state weights * state
-            val projectedState =  stateProjection.forwardStep(indexStep, this.state)
+            val projectedState =  previousStateProjection.forwardStep(indexStep, this.state)
             val projectedStateEntries = projectedState.entries
 
             // addition = projected state + projected input
@@ -82,28 +79,31 @@ class RecurrentLayer(
 
         var seriesChain = chain
 
-        val seriesBackwardWrtInput = zeroSequenceMatrix(this.input.numberSteps, this.input.numberStepRows, this.input.numberStepColumns)
+        val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, this.numberStepRows, this.numberStepColumns)
 
-        for (indexStep in this.input.numberSteps - 1 downTo 0) {
+        for (indexStep in this.numberSteps - 1 downTo 0) {
 
             // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
             val backwardActivation = this.activationLayers[indexStep].backward(seriesChain)
 
             // d state weights * state(1) + input weights * input(2) + bias / d state(1) = state weights
-            seriesChain = this.stateProjection.backwardStep(indexStep, backwardActivation)
+            seriesChain = this.previousStateProjection.backwardStep(indexStep, backwardActivation)
 
             // d state weights * state(1) + input weights * input(2) + bias / d input(2) = input weights
             val backwardWrtInput = this.inputProjection.backwardStep(indexStep, backwardActivation)
 
             if (this.bias != null) {
-                this.bias.backwardStep(seriesChain)
+
+                // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
+                this.bias.backwardStep(backwardActivation)
+
             }
 
             seriesBackwardWrtInput.setStep(indexStep, backwardWrtInput.entries)
 
         }
 
-        this.stateProjection.backwardSeries()
+        this.previousStateProjection.backwardSeries()
         this.inputProjection.backwardSeries()
 
         if (this.bias != null) {
@@ -112,14 +112,13 @@ class RecurrentLayer(
 
         }
 
-
         return seriesChain
 
     }
 
     override fun optimize() {
 
-        this.stateProjection.optimize()
+        this.previousStateProjection.optimize()
         this.inputProjection.optimize()
 
         if (this.bias != null) {
@@ -132,67 +131,63 @@ class RecurrentLayer(
 
 }
 
-fun createRecurrentLayer(
+fun createEncoder(
     numberSteps : Int,
-    stepSize : Int,
+    numberStepRows : Int,
     hiddenDimension: Int,
     activationFunction : ActivationFunction,
-    stateWeightInitializationStrategy: InitializationStrategy,
     inputWeightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy,
+    stateWeightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
     optimizationStrategy : OptimizationStrategy? = null) =
 
-    createRecurrentLayer(
+    createEncoder(
         null,
         numberSteps,
-        stepSize,
+        numberStepRows,
         hiddenDimension,
         activationFunction,
-        stateWeightInitializationStrategy,
         inputWeightInitializationStrategy,
+        stateWeightInitializationStrategy,
         biasInitializationStrategy,
         optimizationStrategy)
 
-fun createRecurrentLayer(
+fun createEncoder(
     name : String?,
     numberSteps : Int,
-    stepSize : Int,
+    numberStepRows : Int,
     hiddenDimension: Int,
     activationFunction : ActivationFunction,
-    stateWeightInitializationStrategy: InitializationStrategy,
-    inputWeightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy,
-    optimizationStrategy : OptimizationStrategy? = null): RecurrentLayer {
-
-    val activationLayers = Array(numberSteps) { index ->
-
-        val activationLayerName = if(name == null) null else "$name-activation-$index"
-
-        when (activationFunction) {
-
-            ActivationFunction.Sigmoid -> SigmoidLayer(activationLayerName)
-            ActivationFunction.ReLU -> ReluLayer(activationLayerName)
-            ActivationFunction.Softmax -> SoftmaxLayer(activationLayerName)
-
-        }
-
-    }
-
-    val stateProjectionName = if(name == null) null else "$name-state-projection"
-    val seriesProjection = createSeriesProjection(stateProjectionName, numberSteps, true, hiddenDimension, hiddenDimension, stateWeightInitializationStrategy, optimizationStrategy)
+    inputProjectionInitializationStrategy: InitializationStrategy,
+    previousStateProjectionInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy : OptimizationStrategy? = null): Encoder {
 
     val inputProjectionName = if(name == null) null else "$name-input-projection"
-    val inputProjection = createSeriesProjection(inputProjectionName, numberSteps, false, hiddenDimension, stepSize, inputWeightInitializationStrategy, optimizationStrategy)
+    val inputProjection = createSeriesProjection(inputProjectionName, numberSteps, false, hiddenDimension, numberStepRows, inputProjectionInitializationStrategy, optimizationStrategy)
 
-    val biasName = if(name == null) null else "$name-input-projection"
-    val bias = createSeriesBias(biasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+    val previousStateProjectionName = if(name == null) null else "$name-previous-state-projection"
+    val previousStateProjection = createSeriesProjection(previousStateProjectionName, numberSteps, true, hiddenDimension, hiddenDimension, previousStateProjectionInitializationStrategy, optimizationStrategy)
 
-    return RecurrentLayer(
+    val activationName = if(name == null) null else "$name-state-activation"
+    val activationLayers = createActivationLayers(activationName, numberSteps, activationFunction)
+
+    val bias =
+
+        if(biasInitializationStrategy == null)
+            null
+        else
+            createSeriesBias(if(name == null) null else "$name-bias", hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+
+    return Encoder(
         name,
+        numberSteps,
+        numberStepRows,
+        1,
         hiddenDimension,
-        activationLayers,
-        seriesProjection,
         inputProjection,
+        previousStateProjection,
+        activationLayers,
         bias
     )
 

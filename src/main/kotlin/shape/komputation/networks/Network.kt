@@ -6,6 +6,7 @@ import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
+import shape.komputation.matrix.partitionIndices
 
 val printLoss = { _ : Int, loss : Double -> println(loss) }
 
@@ -62,38 +63,38 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Fee
         batchSize : Int,
         afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
 
-        val lastExample = inputs.size - 1
+        val numberExamples = inputs.size
+
+        val batches = partitionIndices(numberExamples, batchSize)
 
         repeat(numberIterations) { indexIteration ->
 
             var iterationLoss = 0.0
 
-            var indexBatch = 0
+            for (batch in batches) {
 
-            for (indexExample in 0..inputs.size-1) {
+                var batchLoss = 0.0
 
-                val input = inputs[indexExample]
-                val target = targets[indexExample]
+                for (indexExample in batch) {
 
-                val prediction = this.forward(input)
+                    val input = inputs[indexExample]
+                    val target = targets[indexExample]
 
-                val loss = lossFunction.forward(prediction, target)
+                    val prediction = this.forward(input)
 
-                val lossGradient = lossFunction.backward(prediction, target)
+                    val loss = lossFunction.forward(prediction, target)
 
-                this.backward(lossGradient)
+                    val lossGradient = lossFunction.backward(prediction, target)
 
-                indexBatch++
+                    this.backward(lossGradient)
 
-                if (indexExample == lastExample || indexBatch == batchSize) {
-
-                    this.optimize()
-
-                    indexBatch = 0
+                    batchLoss += loss
 
                 }
 
-                iterationLoss += loss
+                iterationLoss += batchLoss
+
+                this.optimize()
 
             }
 

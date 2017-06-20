@@ -30,7 +30,6 @@ class SeriesBias(
 
     fun backwardStep(chain: DoubleMatrix) {
 
-        // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
         val backwardWrtBias = backwardProjectionWrtBias(this.bias.size, chain.entries, chain.numberRows, chain.numberColumns)
 
         this.seriesAccumulator.accumulate(backwardWrtBias)

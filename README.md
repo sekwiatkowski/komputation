@@ -4,14 +4,6 @@
 
 Komputation is a neural network framework for the JVM written in the Kotlin programming language.
 
-## Initialization
-
-- [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
-- [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
-- [Identity](./src/main/kotlin/shape/komputation/initialization/IdentityInitialization.kt)
-- [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
-- [Zero](./src/main/kotlin/shape/komputation/initialization/ZeroInitialization.kt)
-
 ## Layers
 
 - Entry points:
@@ -29,17 +21,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
 
 - Recurrent neural networks:
-  - [Vanilla RNN](./src/main/kotlin/shape/komputation/layers/recurrent/RecurrentLayer.kt)
-
-## Loss functions
-
-- [Logistic loss](./src/main/kotlin/shape/komputation/loss/LogisticLoss.kt)
-- [Squared loss](./src/main/kotlin/shape/komputation/loss/SquaredLoss.kt)
-
-## Optimization
-
-- [Stochastic Gradient Descent](./src/main/kotlin/shape/komputation/optimization/StochasticGradientDescent.kt)
-- [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)
+  - [Encoder](./src/main/kotlin/shape/komputation/layers/recurrent/Encoder.kt)
+  - [Decoder](./src/main/kotlin/shape/komputation/layers/recurrent/Decoder.kt)
 
 ## Demos
 
@@ -48,8 +31,11 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Negation](./src/main/kotlin/shape/komputation/demos/Negation.kt)
   - [XOR](./src/main/kotlin/shape/komputation/demos/Xor.kt)
 
-- Toy problems:
+- Sequential data:
   - [Addition problem](./src/main/kotlin/shape/komputation/demos/AdditionProblem.kt)
+  - [Reverse](./src/main/kotlin/shape/komputation/demos/Reverse.kt)
+
+- Toy problems:
   - [Image classification](./src/main/kotlin/shape/komputation/demos/LineDemo.kt)
   - [Word embeddings](./src/main/kotlin/shape/komputation/demos/Embeddings.kt)
 
@@ -80,3 +66,21 @@ val network = Network(
 ```
 
 See the [TREC demo](./src/main/kotlin/shape/komputation/demos/TREC.kt) for more details.
+
+## Initialization
+
+- [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
+- [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
+- [Identity](./src/main/kotlin/shape/komputation/initialization/IdentityInitialization.kt)
+- [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
+- [Zero](./src/main/kotlin/shape/komputation/initialization/ZeroInitialization.kt)
+
+## Loss functions
+
+- [Logistic loss](./src/main/kotlin/shape/komputation/loss/LogisticLoss.kt)
+- [Squared loss](./src/main/kotlin/shape/komputation/loss/SquaredLoss.kt)
+
+## Optimization
+
+- [Stochastic Gradient Descent](./src/main/kotlin/shape/komputation/optimization/StochasticGradientDescent.kt)
+- [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)

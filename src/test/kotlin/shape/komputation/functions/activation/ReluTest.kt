@@ -1,11 +1,9 @@
-package shape.komputation.functions
+package shape.komputation.functions.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.functions.activation.relu
 
 class ReluTest {
-
 
     @Test
     fun test() {
@@ -15,6 +13,5 @@ class ReluTest {
             doubleArrayOf(0.0, 0.0, 1.0))
 
     }
-
 
 }

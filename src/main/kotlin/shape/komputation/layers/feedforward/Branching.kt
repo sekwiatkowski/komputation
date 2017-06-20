@@ -9,20 +9,15 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 
-class Concatenation(name : String? = null, vararg continuations: Array<FeedForwardLayer>) : FeedForwardLayer(name), OptimizableLayer {
+class Branching(name : String? = null, vararg continuations: Array<FeedForwardLayer>) : FeedForwardLayer(name), OptimizableLayer {
 
-    val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
+    private val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
 
-    val individualResults = Array(continuations.size) { EMPTY_DOUBLE_MATRIX }
+    private val results = Array(continuations.size) { EMPTY_DOUBLE_MATRIX }
 
-    val individualHeights = IntArray(continuations.size)
-
-    var input : DoubleMatrix? = null
-    var forwardResult : DoubleMatrix? = null
+    private val heights = IntArray(continuations.size)
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
-
-        this.input = input
 
         for (indexNetwork in (0..networks.size-1)) {
 
@@ -30,22 +25,20 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
             val individualResult = network.forward(input)
 
-            individualResults[indexNetwork] = individualResult
+            results[indexNetwork] = individualResult
 
-            individualHeights[indexNetwork] = individualResult.numberRows
+            heights[indexNetwork] = individualResult.numberRows
 
         }
 
-        this.forwardResult = concatRows(*individualResults)
-
-        return this.forwardResult!!
+        return concatRows(*results)
 
     }
 
     // Chain is the same for (1, 2) and (2, 1)
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val chainSplit = splitRows(chain, this.individualHeights)
+        val chainSplit = splitRows(chain, this.heights)
 
         val resultWrtInput = this.networks.first().backward(chainSplit[0])
 
@@ -55,13 +48,12 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
             val network = networks[indexNetwork]
 
-            val secondResultWrtInput = network.backward(chainSplit[indexNetwork])
+            val remainingResultWrtInput = network.backward(chainSplit[indexNetwork])
 
             for (index in 0..resultEntries.size - 1) {
 
-                resultEntries[index] += secondResultWrtInput.entries[index]
+                resultEntries[index] += remainingResultWrtInput.entries[index]
             }
-
 
         }
 
@@ -81,12 +73,12 @@ class Concatenation(name : String? = null, vararg continuations: Array<FeedForwa
 
 }
 
-fun createConcatenation(vararg continuations: Array<FeedForwardLayer>): Concatenation {
+fun createBranching(vararg continuations: Array<FeedForwardLayer>): Branching {
 
-    return createConcatenation(null, *continuations)
+    return createBranching(null, *continuations)
 }
 
-fun createConcatenation(name : String?, vararg continuations: Array<FeedForwardLayer>): Concatenation {
+fun createBranching(name : String?, vararg continuations: Array<FeedForwardLayer>): Branching {
 
-    return Concatenation(name, *continuations)
+    return Branching(name, *continuations)
 }

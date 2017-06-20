@@ -29,8 +29,8 @@ class ProjectionLayer(
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
 
-    private var weightAccumulator = if(weightUpdateRule != null) DenseAccumulator(numberWeightRows * numberWeightColumns) else null
-    private var biasAccumulator = if(bias != null && biasUpdateRule != null) DenseAccumulator(bias.size) else null
+    private var weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
+    private var biasAccumulator = if(bias != null) DenseAccumulator(bias.size) else null
 
     override fun forward(input: DoubleMatrix) : DoubleMatrix {
 
@@ -64,21 +64,17 @@ class ProjectionLayer(
             chainEntries,
             numberChainRows)
 
-        if (weightUpdateRule != null) {
+        val backwardWrtWeights = backwardProjectionWrtWeights(
+            numberWeightEntries,
+            numberWeightRows,
+            numberWeightColumns,
+            input.entries,
+            numberInputRows,
+            chainEntries,
+            numberChainRows,
+            numberChainColumns)
 
-            val backwardWrtWeights = backwardProjectionWrtWeights(
-                numberWeightEntries,
-                numberWeightRows,
-                numberWeightColumns,
-                input.entries,
-                numberInputRows,
-                chainEntries,
-                numberChainRows,
-                numberChainColumns)
-
-            this.weightAccumulator!!.accumulate(backwardWrtWeights)
-
-        }
+        this.weightAccumulator.accumulate(backwardWrtWeights)
 
         if (bias != null && biasUpdateRule != null) {
 
@@ -97,7 +93,7 @@ class ProjectionLayer(
 
         if (this.weightUpdateRule != null) {
 
-            val weightAccumulator = this.weightAccumulator!!
+            val weightAccumulator = this.weightAccumulator
 
             updateDensely(this.weights, weightAccumulator.getAccumulation(), weightAccumulator.getCount(), weightUpdateRule)
 

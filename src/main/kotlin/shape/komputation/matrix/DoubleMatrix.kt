@@ -2,26 +2,24 @@ package shape.komputation.matrix
 
 val EMPTY_DOUBLE_MATRIX = DoubleMatrix(0, 0, doubleArrayOf())
 
-fun doubleZeroMatrix(numberRows: Int, numberColumns: Int) = DoubleMatrix(numberRows, numberColumns, DoubleArray(numberRows * numberColumns))
-
 fun doubleScalar(value: Double) = DoubleMatrix(1, 1, doubleArrayOf(value))
 
-fun doubleRowVector(vararg entries : Double) = DoubleMatrix(entries.size, 1, entries)
+fun doubleColumnVector(vararg entries : Double) = DoubleMatrix(entries.size, 1, entries)
 
-fun doubleZeroRowVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows))
+fun doubleZeroColumnVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows))
 
-fun doubleColumnVector(vararg entries : Double) = DoubleMatrix(1, entries.size, entries)
+fun doubleRowVector(vararg entries : Double) = DoubleMatrix(1, entries.size, entries)
 
-fun doubleRowMatrix(vararg columnVectors: DoubleMatrix): DoubleMatrix {
+fun doubleMatrixFromRows(vararg rows: DoubleMatrix): DoubleMatrix {
 
-    val numberRows = columnVectors.size
-    val numberColumns = columnVectors[0].numberColumns
+    val numberRows = rows.size
+    val numberColumns = rows[0].numberColumns
 
     val matrixEntries = DoubleArray(numberRows * numberColumns)
 
     for (indexRow in 0..numberRows - 1) {
 
-        val entries = columnVectors[indexRow].entries
+        val entries = rows[indexRow].entries
 
         for (indexColumn in 0..numberColumns - 1) {
 
@@ -35,11 +33,15 @@ fun doubleRowMatrix(vararg columnVectors: DoubleMatrix): DoubleMatrix {
 
 }
 
-fun oneHotVector(size: Int, index: Int, value : Double = 1.0): DoubleMatrix {
+fun oneHotArray(size: Int, index: Int, value : Double = 1.0, otherValue: Double = 0.0): DoubleArray {
 
-    val vector = doubleZeroRowVector(size)
-    vector.entries[index] = value
+    val array = DoubleArray(size) { otherValue }
+    array[index] = value
 
-    return vector
+    return array
 
 }
+
+fun oneHotVector(size: Int, index: Int, value : Double = 1.0, otherValue: Double = 0.0) =
+
+    doubleColumnVector(*oneHotArray(size, index, value, otherValue))

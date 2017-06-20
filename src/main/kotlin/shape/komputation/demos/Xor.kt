@@ -6,7 +6,7 @@ import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleScalar
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
@@ -16,10 +16,10 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val input = arrayOf<Matrix>(
-        doubleRowVector(0.0, 0.0),
-        doubleRowVector(1.0, 0.0),
-        doubleRowVector(0.0, 1.0),
-        doubleRowVector(1.0, 1.0))
+        doubleColumnVector(0.0, 0.0),
+        doubleColumnVector(1.0, 0.0),
+        doubleColumnVector(0.0, 1.0),
+        doubleColumnVector(1.0, 1.0))
 
     val targets = arrayOf(
         doubleScalar(0.0),

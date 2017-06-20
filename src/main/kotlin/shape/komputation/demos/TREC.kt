@@ -94,7 +94,7 @@ class TrecTraining {
 
         val network = Network(
             createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
-            createConcatenation(
+            createBranching(
                 *filterHeights
                     .map { filterHeight ->
 

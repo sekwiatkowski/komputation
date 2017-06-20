@@ -21,11 +21,7 @@ fun splitRows(matrix : DoubleMatrix, heights : IntArray): Array<DoubleMatrix> {
             val entriesBeforeSubColumn = indexColumn * height
             val entriesBeforeConcatenationColumn = indexColumn * numberRows + runningHeight
 
-            for (indexSubRow in 0..height - 1) {
-
-                subEntries[entriesBeforeSubColumn + indexSubRow] = matrixEntries[entriesBeforeConcatenationColumn + indexSubRow]
-
-            }
+            System.arraycopy(matrixEntries, entriesBeforeConcatenationColumn, subEntries, entriesBeforeSubColumn, height)
 
         }
 

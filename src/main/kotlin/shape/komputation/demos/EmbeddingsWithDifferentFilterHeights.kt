@@ -130,7 +130,7 @@ fun main(args: Array<String>) {
 
     val network = Network(
         createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        createConcatenation(
+        createBranching(
             *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
         ),
         createProjectionLayer(numberFilters * filterHeights.size, numberClasses, true, initializationStrategy, optimizationStrategy),

@@ -2,7 +2,7 @@ package shape.komputation.matrix
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import kotlin.test.assertEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 
 class SequenceMatrixTest {
 

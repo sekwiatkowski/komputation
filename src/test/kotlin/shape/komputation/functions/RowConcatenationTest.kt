@@ -2,19 +2,19 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleRowMatrix
+import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleMatrixFromRows
 
 class RowConcatenationTest {
 
     @Test
     fun test1() {
 
-        val firstColumnVector = doubleColumnVector(1.0, 2.0)
-        val secondColumnVector = doubleColumnVector(3.0, 4.0)
+        val firstColumnVector = doubleRowVector(1.0, 2.0)
+        val secondColumnVector = doubleRowVector(3.0, 4.0)
 
         val actual = concatRows(firstColumnVector, secondColumnVector)
-        val expected = doubleRowMatrix(
+        val expected = doubleMatrixFromRows(
             firstColumnVector,
             secondColumnVector
         )
@@ -26,18 +26,18 @@ class RowConcatenationTest {
     @Test
     fun test2() {
 
-        val firstVector = doubleColumnVector(1.0, 2.0)
+        val firstVector = doubleRowVector(1.0, 2.0)
 
-        val secondVector = doubleColumnVector(3.0, 4.0)
-        val thirdVector = doubleColumnVector(5.0, 6.0)
+        val secondVector = doubleRowVector(3.0, 4.0)
+        val thirdVector = doubleRowVector(5.0, 6.0)
 
-        val secondMatrix = doubleRowMatrix(
+        val secondMatrix = doubleMatrixFromRows(
             secondVector,
             thirdVector
         )
 
         val actual = concatRows(firstVector, secondMatrix)
-        val expected = doubleRowMatrix(
+        val expected = doubleMatrixFromRows(
             firstVector,
             secondVector,
             thirdVector

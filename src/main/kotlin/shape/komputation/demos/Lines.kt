@@ -9,9 +9,9 @@ import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleRowMatrix
 import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleMatrixFromRows
+import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -21,45 +21,45 @@ fun main(args: Array<String>) {
 
     val input = arrayOf<Matrix>(
 
-        doubleRowMatrix(
-            doubleColumnVector(1.0, 1.0, 1.0),
-            doubleColumnVector(0.0, 0.0, 0.0),
-            doubleColumnVector(0.0, 0.0, 0.0)
+        doubleMatrixFromRows(
+            doubleRowVector(1.0, 1.0, 1.0),
+            doubleRowVector(0.0, 0.0, 0.0),
+            doubleRowVector(0.0, 0.0, 0.0)
         ),
-        doubleRowMatrix(
-            doubleColumnVector(0.0, 0.0, 0.0),
-            doubleColumnVector(1.0, 1.0, 1.0),
-            doubleColumnVector(0.0, 0.0, 0.0)
+        doubleMatrixFromRows(
+            doubleRowVector(0.0, 0.0, 0.0),
+            doubleRowVector(1.0, 1.0, 1.0),
+            doubleRowVector(0.0, 0.0, 0.0)
         ),
-        doubleRowMatrix(
-            doubleColumnVector(0.0, 0.0, 0.0),
-            doubleColumnVector(0.0, 0.0, 0.0),
-            doubleColumnVector(1.0, 1.0, 1.0)
+        doubleMatrixFromRows(
+            doubleRowVector(0.0, 0.0, 0.0),
+            doubleRowVector(0.0, 0.0, 0.0),
+            doubleRowVector(1.0, 1.0, 1.0)
         ),
-        doubleRowMatrix(
-            doubleColumnVector(1.0, 0.0, 0.0),
-            doubleColumnVector(1.0, 0.0, 0.0),
-            doubleColumnVector(1.0, 0.0, 0.0)
+        doubleMatrixFromRows(
+            doubleRowVector(1.0, 0.0, 0.0),
+            doubleRowVector(1.0, 0.0, 0.0),
+            doubleRowVector(1.0, 0.0, 0.0)
         ),
-        doubleRowMatrix(
-            doubleColumnVector(0.0, 1.0, 0.0),
-            doubleColumnVector(0.0, 1.0, 0.0),
-            doubleColumnVector(0.0, 1.0, 0.0)
+        doubleMatrixFromRows(
+            doubleRowVector(0.0, 1.0, 0.0),
+            doubleRowVector(0.0, 1.0, 0.0),
+            doubleRowVector(0.0, 1.0, 0.0)
         ),
-        doubleRowMatrix(
-            doubleColumnVector(0.0, 0.0, 1.0),
-            doubleColumnVector(0.0, 0.0, 1.0),
-            doubleColumnVector(0.0, 0.0, 1.0)
+        doubleMatrixFromRows(
+            doubleRowVector(0.0, 0.0, 1.0),
+            doubleRowVector(0.0, 0.0, 1.0),
+            doubleRowVector(0.0, 0.0, 1.0)
         )
     )
 
     val targets = arrayOf(
-        doubleRowVector(0.0, 1.0),
-        doubleRowVector(0.0, 1.0),
-        doubleRowVector(0.0, 1.0),
-        doubleRowVector(1.0, 0.0),
-        doubleRowVector(1.0, 0.0),
-        doubleRowVector(1.0, 0.0)
+        doubleColumnVector(0.0, 1.0),
+        doubleColumnVector(0.0, 1.0),
+        doubleColumnVector(0.0, 1.0),
+        doubleColumnVector(1.0, 0.0),
+        doubleColumnVector(1.0, 0.0),
+        doubleColumnVector(1.0, 0.0)
     )
 
     val random = Random(1)
