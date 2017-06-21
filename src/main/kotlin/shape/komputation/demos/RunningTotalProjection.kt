@@ -5,8 +5,8 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.feedforward.encoder.createEncoder
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -62,8 +62,8 @@ fun main(args: Array<String>) {
 
     val network = Network(
         InputLayer(),
-        createEncoder("encoder", true, numberSteps, 1, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
-        createProjectionLayer("output", hiddenDimension, 1, false, inputWeightInitializationStrategy, optimizationStrategy)
+        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
+        createProjectionLayer(hiddenDimension, 1, false, inputWeightInitializationStrategy, optimizationStrategy)
     )
 
     network.train(

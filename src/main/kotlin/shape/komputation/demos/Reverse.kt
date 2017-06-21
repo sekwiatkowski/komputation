@@ -5,8 +5,8 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.encoder.createEncoder
 import shape.komputation.layers.feedforward.decoder.createSingleInputDecoder
+import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -68,8 +68,8 @@ fun main(args: Array<String>) {
     val stateActivationFunction = ActivationFunction.ReLU
     val outputActivationFunction = ActivationFunction.Softmax
 
-    val encoder = createEncoder("encoder", false, seriesLength, numberCategories, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, stateActivationFunction, optimizationStrategy)
-    val decoder = createSingleInputDecoder("decoder", seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
+    val encoder = createSingleOutputEncoder(seriesLength, numberCategories, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, stateActivationFunction, optimizationStrategy)
+    val decoder = createSingleInputDecoder(seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
 
     val network = Network(
         InputLayer(),

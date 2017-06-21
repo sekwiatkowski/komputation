@@ -6,7 +6,7 @@ import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.decoder.createMultiInputDecoder
-import shape.komputation.layers.feedforward.encoder.createEncoder
+import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -67,7 +67,7 @@ fun main(args: Array<String>) {
 
     val network = Network(
         InputLayer(),
-        createEncoder("encoder", true, numberSteps, 1, hiddenDimension, encoderInputWeightInitializationStrategy, encoderPreviousStateWeightInitializationStrategy, encoderBiasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
+        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, encoderInputWeightInitializationStrategy, encoderPreviousStateWeightInitializationStrategy, encoderBiasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
         createMultiInputDecoder(numberSteps, hiddenDimension, hiddenDimension, 1, decoderInputWeightInitializationStrategy, decoderPreviousStateWeightInitializationStrategy, decoderBiasInitializationStrategy, ActivationFunction.Identity, decoderOutputWeightInitializationStrategy, ActivationFunction.Identity, optimizationStrategy)
     )
 
