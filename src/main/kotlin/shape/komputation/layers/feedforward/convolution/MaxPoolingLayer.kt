@@ -8,17 +8,16 @@ import shape.komputation.matrix.doubleColumnVector
 
 class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
-    var input : DoubleMatrix? = null
-    var maxRowIndices : IntArray? = null
+    private var numberInputRows = -1
+    private var numberInputColumns = -1
+    private var maxRowIndices : IntArray? = null
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
-        this.input = input
+        this.numberInputRows = input.numberRows
+        this.numberInputColumns = input.numberColumns
 
-        val numberRows = input.numberRows
-        val numberColumns = input.numberColumns
-
-        val maxRowIndices = findMaxIndicesInRows(input.entries, numberRows, numberColumns)
+        val maxRowIndices = findMaxIndicesInRows(input.entries, this.numberInputRows, this.numberInputColumns)
         this.maxRowIndices = maxRowIndices
 
         val maxPooled = selectEntries(input.entries, maxRowIndices)
@@ -29,23 +28,19 @@ class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
     override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        val input = this.input!!
-        val numberInputRows = input.numberRows
-        val numberInputColumns = input.numberColumns
-
         val chainEntries = chain.entries
 
         val maxRowIndices = this.maxRowIndices!!
 
-        val gradient = DoubleArray(numberInputRows * numberInputColumns)
+        val gradient = DoubleArray(this.numberInputRows * this.numberInputColumns)
 
-        for (indexRow in 0..numberInputRows - 1) {
+        for (indexRow in 0..this.numberInputRows - 1) {
 
             gradient[maxRowIndices[indexRow]] = chainEntries[indexRow]
 
         }
 
-        return DoubleMatrix(numberInputRows, numberInputColumns, gradient)
+        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, gradient)
 
     }
 

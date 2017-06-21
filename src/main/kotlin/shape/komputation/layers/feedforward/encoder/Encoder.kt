@@ -1,4 +1,4 @@
-package shape.komputation.layers.recurrent
+package shape.komputation.layers.feedforward.encoder
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.functions.extractStep
@@ -6,6 +6,10 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.feedforward.activation.*
+import shape.komputation.layers.feedforward.recurrent.SeriesBias
+import shape.komputation.layers.feedforward.recurrent.SeriesProjection
+import shape.komputation.layers.feedforward.recurrent.createSeriesBias
+import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
 import shape.komputation.matrix.*
 import shape.komputation.optimization.OptimizationStrategy
 import java.util.*
@@ -21,11 +25,9 @@ class Encoder(
     private val activationLayers: Array<ContinuationLayer>,
     private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
 
-    private var state = doubleZeroColumnVector(hiddenDimension)
-
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
-        Arrays.fill(state.entries, 0.0)
+        var state = doubleZeroColumnVector(hiddenDimension)
 
         input as SequenceMatrix
 
@@ -40,7 +42,7 @@ class Encoder(
             val projectedInputEntries = projectedInput.entries
 
             // projected state = state weights * state
-            val projectedState =  previousStateProjection.forwardStep(indexStep, this.state)
+            val projectedState =  previousStateProjection.forwardStep(indexStep, state)
             val projectedStateEntries = projectedState.entries
 
             // addition = projected state + projected input
@@ -66,18 +68,18 @@ class Encoder(
 
 
             // activation = activate(pre-activation)
-            this.state = activationLayers[indexStep].forward(DoubleMatrix(hiddenDimension, 1, preActivation))
+            state = activationLayers[indexStep].forward(DoubleMatrix(hiddenDimension, 1, preActivation))
 
             if (emitOutputAtEachStep) {
 
-                output.setStep(indexStep, this.state.entries)
+                output.setStep(indexStep, state.entries)
 
             }
             else {
 
                 if (indexStep == numberSteps - 1) {
 
-                    output.setStep(0, this.state.entries)
+                    output.setStep(0, state.entries)
 
                 }
 
@@ -200,10 +202,10 @@ fun createEncoder(
     numberSteps : Int,
     numberStepRows : Int,
     hiddenDimension: Int,
-    activationFunction : ActivationFunction,
     inputWeightInitializationStrategy: InitializationStrategy,
     stateWeightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
+    activationFunction : ActivationFunction,
     optimizationStrategy : OptimizationStrategy? = null) =
 
     createEncoder(
@@ -212,10 +214,10 @@ fun createEncoder(
         numberSteps,
         numberStepRows,
         hiddenDimension,
-        activationFunction,
         inputWeightInitializationStrategy,
         stateWeightInitializationStrategy,
         biasInitializationStrategy,
+        activationFunction,
         optimizationStrategy)
 
 fun createEncoder(
@@ -224,27 +226,40 @@ fun createEncoder(
     numberSteps : Int,
     inputDimension : Int,
     hiddenDimension: Int,
-    activationFunction : ActivationFunction,
     inputProjectionInitializationStrategy: InitializationStrategy,
     previousStateProjectionInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
+    activationFunction : ActivationFunction,
     optimizationStrategy : OptimizationStrategy? = null): Encoder {
 
     val inputProjectionName = if(name == null) null else "$name-input-projection"
-    val inputProjection = createSeriesProjection(inputProjectionName, numberSteps, false, hiddenDimension, inputDimension, inputProjectionInitializationStrategy, optimizationStrategy)
+    val (inputProjectionSeries, _) = createSeriesProjection(
+        inputProjectionName,
+        numberSteps,
+        false,
+        inputDimension,
+        hiddenDimension,
+        inputProjectionInitializationStrategy,
+        optimizationStrategy)
 
     val previousStateProjectionName = if(name == null) null else "$name-previous-state-projection"
-    val previousStateProjection = createSeriesProjection(previousStateProjectionName, numberSteps, true, hiddenDimension, hiddenDimension, previousStateProjectionInitializationStrategy, optimizationStrategy)
+    val (previousStateProjectionSeries, _) = createSeriesProjection(
+        previousStateProjectionName,
+        numberSteps,
+        true,
+        hiddenDimension, hiddenDimension,
+        previousStateProjectionInitializationStrategy,
+        optimizationStrategy)
 
     val activationName = if(name == null) null else "$name-state-activation"
-    val activationLayers = createActivationLayers(activationName, numberSteps, activationFunction)
+    val activationLayers = createActivationLayers(numberSteps, activationName, activationFunction)
 
     val bias =
 
         if(biasInitializationStrategy == null)
             null
         else
-            createSeriesBias(if(name == null) null else "$name-bias", hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+            createSeriesBias(if (name == null) null else "$name-bias", hiddenDimension, biasInitializationStrategy, optimizationStrategy)
 
     val encoder = Encoder(
         name,
@@ -252,8 +267,8 @@ fun createEncoder(
         numberSteps,
         inputDimension,
         hiddenDimension,
-        inputProjection,
-        previousStateProjection,
+        inputProjectionSeries,
+        previousStateProjectionSeries,
         activationLayers,
         bias
     )

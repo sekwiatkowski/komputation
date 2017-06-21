@@ -27,9 +27,9 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialize = createUniformInitializer(random, -0.5, 0.5)
 
-    val updateRule = stochasticGradientDescent(0.01)
+    val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val projectionLayer = createProjectionLayer(1, 1, true, initialize, updateRule)
+    val projectionLayer = createProjectionLayer(1, 1, true, initialize, optimizationStrategy)
     val sigmoidLayer = SigmoidLayer()
 
     val network = Network(

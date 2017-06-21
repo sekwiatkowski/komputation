@@ -1,13 +1,13 @@
-package shape.komputation.layers.recurrent
+package shape.komputation.layers.feedforward.recurrent
 
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeMatrix
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.feedforward.createIdentityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
 class SeriesProjection(
+    private val name : String?,
     private val projections: Array<ContinuationLayer>,
     private val weights: DoubleArray,
     private val seriesAccumulator: DenseAccumulator,
@@ -58,42 +58,29 @@ fun createSeriesProjection(
     name : String?,
     numberSteps : Int,
     useIdentityAtFirstStep : Boolean,
-    numberWeightRows: Int,
-    numberWeightColumns: Int,
+    inputDimension : Int,
+    outputDimension : Int,
     initializationStrategy: InitializationStrategy,
-    optimizationStrategy : OptimizationStrategy?) : SeriesProjection {
+    optimizationStrategy: OptimizationStrategy?) : Pair<SeriesProjection, Array<ContinuationLayer>> {
 
-    val weights = initializeMatrix(initializationStrategy, numberWeightRows, numberWeightColumns)
-    val numberEntries = numberWeightRows * numberWeightColumns
+    val weights = initializeMatrix(initializationStrategy, outputDimension, inputDimension)
+
+    val numberEntries = inputDimension * outputDimension
     val seriesAccumulator = DenseAccumulator(numberEntries)
-    val weightAccumulator = DenseAccumulator(numberEntries)
-    val updateRule = if(optimizationStrategy != null) optimizationStrategy(numberWeightRows, numberWeightColumns) else null
+    val batchAccumulator = DenseAccumulator(numberEntries)
 
-    val stateStepProjections = Array(numberSteps) { index ->
+    val stepProjections = createStepProjections(name, numberSteps, useIdentityAtFirstStep, weights, inputDimension, outputDimension, seriesAccumulator)
 
-        val stateProjectionLayerName = if (name == null) null else "$name-$index"
-
-        if (useIdentityAtFirstStep && index == 0) {
-
-            createIdentityLayer(stateProjectionLayerName)
-
-        }
-        else {
-
-            createStepProjection(stateProjectionLayerName, weights, numberWeightRows, numberWeightColumns, seriesAccumulator)
-        }
-
-    }
+    val updateRule = if(optimizationStrategy != null) optimizationStrategy(inputDimension, outputDimension) else null
 
     val seriesProjection = SeriesProjection(
-        stateStepProjections,
+        name,
+        stepProjections,
         weights,
         seriesAccumulator,
-        weightAccumulator,
-        updateRule
+        batchAccumulator,
+        updateRule)
 
-    )
-
-    return seriesProjection
+    return seriesProjection to stepProjections
 
 }

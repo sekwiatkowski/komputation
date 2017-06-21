@@ -1,9 +1,10 @@
-package shape.komputation.layers.recurrent
+package shape.komputation.layers.feedforward.recurrent
 
 import shape.komputation.functions.backwardProjectionWrtInput
 import shape.komputation.functions.backwardProjectionWrtWeights
 import shape.komputation.functions.project
 import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.feedforward.createIdentityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
@@ -73,8 +74,31 @@ fun createStepProjection(
     weights: DoubleArray,
     numberWeightRows: Int,
     numberWeightColumns: Int,
-    seriesAccumulator: DenseAccumulator? = null): StepProjection {
+    seriesAccumulator: DenseAccumulator? = null) =
 
-    return StepProjection(name, weights, numberWeightRows, numberWeightColumns, seriesAccumulator)
+    StepProjection(name, weights, numberWeightRows, numberWeightColumns, seriesAccumulator)
 
-}
+fun createStepProjections(
+    name : String?,
+    numberSteps : Int,
+    useIdentityAtFirstStep : Boolean,
+    weights: DoubleArray,
+    inputDimension: Int,
+    outputDimension: Int,
+    seriesAccumulator: DenseAccumulator) =
+
+    Array(numberSteps) { indexStep ->
+
+        val stateProjectionLayerName = if (name == null) null else "$name-step-$indexStep"
+
+        if (useIdentityAtFirstStep && indexStep == 0) {
+
+            createIdentityLayer(stateProjectionLayerName)
+
+        }
+        else {
+
+            createStepProjection(stateProjectionLayerName, weights, outputDimension, inputDimension, seriesAccumulator)
+        }
+
+    }

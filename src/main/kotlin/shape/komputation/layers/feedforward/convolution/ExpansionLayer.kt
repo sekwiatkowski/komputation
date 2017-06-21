@@ -7,23 +7,23 @@ import shape.komputation.matrix.DoubleMatrix
 
 class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name) {
 
-    private var input : DoubleMatrix? = null
+    private var numberInputRows = -1
+    private var numberInputColumns = -1
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
-        this.input = input
+        this.numberInputRows = input.numberRows
+        this.numberInputColumns = input.numberColumns
 
-        return expand(input.entries, input.numberRows, input.numberColumns, filterWidth, filterHeight)
+        return expand(input.entries, this.numberInputRows, this.numberInputColumns, filterWidth, filterHeight)
 
     }
 
     override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        val input = this.input!!
+        val summedDerivatives = backwardExpansion(this.numberInputRows, this.numberInputColumns, filterWidth, chain.entries, chain.numberRows, chain.numberColumns)
 
-        val summedDerivatives = backwardExpansion(input.numberRows, input.numberColumns, filterWidth, chain.entries, chain.numberRows, chain.numberColumns)
-
-        return DoubleMatrix(input.numberRows, input.numberColumns, summedDerivatives)
+        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, summedDerivatives)
 
     }
 

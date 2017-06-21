@@ -6,7 +6,7 @@ import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.recurrent.createEncoder
+import shape.komputation.layers.feedforward.encoder.createEncoder
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -45,10 +45,10 @@ fun main(args: Array<String>) {
         length,
         inputDimension,
         hiddenDimension,
-        ActivationFunction.ReLU,
         inputProjectionInitializationStrategy,
         previousStateProjectionInitializationStrategy,
         biasInitializationStrategy,
+        ActivationFunction.ReLU,
         optimizationStrategy
     )
 

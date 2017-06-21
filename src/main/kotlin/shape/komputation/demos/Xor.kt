@@ -33,12 +33,12 @@ fun main(args: Array<String>) {
 
     val inputLayer = InputLayer()
 
-    val updateRule = stochasticGradientDescent(0.1)
+    val optimizationStrategy = stochasticGradientDescent(0.1)
 
-    val hiddenPreactivationLayer = createProjectionLayer(2, 2, true, initialize, updateRule)
+    val hiddenPreactivationLayer = createProjectionLayer(2, 2, true, initialize, optimizationStrategy)
     val hiddenLayer = SigmoidLayer()
 
-    val outputPreactivationLayer = createProjectionLayer(2, 1, true, initialize, updateRule)
+    val outputPreactivationLayer = createProjectionLayer(2, 1, true, initialize, optimizationStrategy)
     val outputLayer = SigmoidLayer()
 
     val network = Network(

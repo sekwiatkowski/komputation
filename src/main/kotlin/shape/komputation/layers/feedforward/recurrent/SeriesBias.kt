@@ -1,4 +1,4 @@
-package shape.komputation.layers.recurrent
+package shape.komputation.layers.feedforward.recurrent
 
 import shape.komputation.functions.backwardProjectionWrtBias
 import shape.komputation.initialization.InitializationStrategy

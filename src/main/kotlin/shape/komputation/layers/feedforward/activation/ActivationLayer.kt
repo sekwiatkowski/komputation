@@ -6,19 +6,24 @@ import shape.komputation.layers.feedforward.IdentityLayer
 
 interface ActivationLayer
 
-fun createActivationLayers(name: String?, number: Int, function: ActivationFunction) =
+fun createActivationLayers(number: Int, name: String?, function: ActivationFunction) =
 
     Array<ContinuationLayer>(number) { index ->
 
         val activationLayerName = if (name == null) null else "$name-$index"
 
-        when (function) {
+        createActivationLayer(activationLayerName, function)
 
-            ActivationFunction.Sigmoid -> SigmoidLayer(activationLayerName)
-            ActivationFunction.ReLU -> ReluLayer(activationLayerName)
-            ActivationFunction.Softmax -> SoftmaxLayer(activationLayerName)
-            ActivationFunction.Identity -> IdentityLayer(activationLayerName)
+    }
 
-        }
+fun createActivationLayer(name: String?, function: ActivationFunction) : ContinuationLayer =
+
+
+    when (function) {
+
+        ActivationFunction.Sigmoid -> SigmoidLayer(name)
+        ActivationFunction.ReLU -> ReluLayer(name)
+        ActivationFunction.Softmax -> SoftmaxLayer(name)
+        ActivationFunction.Identity -> IdentityLayer(name)
 
     }

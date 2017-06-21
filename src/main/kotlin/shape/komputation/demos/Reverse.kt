@@ -5,8 +5,8 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.recurrent.createDecoder
-import shape.komputation.layers.recurrent.createEncoder
+import shape.komputation.layers.feedforward.encoder.createEncoder
+import shape.komputation.layers.feedforward.decoder.createSingleInputDecoder
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
     val numberCategories = 10
     val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
     val hiddenDimension = 10
-    val numberIterations = 100
+    val numberIterations = 50
 
     val inputs = Array<Matrix>(numberExamples) {
 
@@ -68,8 +68,8 @@ fun main(args: Array<String>) {
     val stateActivationFunction = ActivationFunction.ReLU
     val outputActivationFunction = ActivationFunction.Softmax
 
-    val encoder = createEncoder("encoder", false, seriesLength, numberCategories, hiddenDimension, stateActivationFunction, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
-    val decoder = createDecoder("decoder", seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
+    val encoder = createEncoder("encoder", false, seriesLength, numberCategories, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, stateActivationFunction, optimizationStrategy)
+    val decoder = createSingleInputDecoder("decoder", seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
 
     val network = Network(
         InputLayer(),

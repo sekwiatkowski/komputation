@@ -123,14 +123,14 @@ fun createProjectionLayer(
 
 fun createProjectionLayer(
     name : String?,
-    numberInputRows: Int,
-    numberResultRows: Int,
+    inputDimension: Int,
+    outputDimension: Int,
     withBias : Boolean,
     initializationStrategy : InitializationStrategy,
     optimizationStrategy : OptimizationStrategy? = null): ProjectionLayer {
 
-    val numberWeightRows = numberResultRows
-    val numberWeightColumns = numberInputRows
+    val numberWeightRows = outputDimension
+    val numberWeightColumns = inputDimension
 
     val weights = initializeMatrix(initializationStrategy, numberWeightRows, numberWeightColumns)
 

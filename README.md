@@ -24,10 +24,12 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Max-pooling](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/MaxPoolingLayer.kt)
 
 - Recurrent neural networks:
-  - [Encoder](./src/main/kotlin/shape/komputation/layers/recurrent/Encoder.kt)
-    - n-to-one
-    - n-to-n
-  - [Decoder](./src/main/kotlin/shape/komputation/layers/recurrent/Decoder.kt)
+  - [Encoder](./src/main/kotlin/shape/komputation/layers/Encoder.kt)
+    - single output
+    - multi-output
+  - Decoder
+    - [single input](./src/main/kotlin/shape/komputation/layers/SingleInputDecoder.kt)
+    - [multi-input](./src/main/kotlin/shape/komputation/layers/MultiInputDecoder.kt)
 
 ## Demos
 
@@ -37,7 +39,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [XOR](./src/main/kotlin/shape/komputation/demos/Xor.kt)
 
 - Sequential data:
-  - [Running Total](./src/main/kotlin/shape/komputation/demos/RunningTotal.kt)
+  - [Running Total](./src/main/kotlin/shape/komputation/demos/RunningTotalMultiInputDecoder.kt)
   - [Addition problem](./src/main/kotlin/shape/komputation/demos/AdditionProblem.kt)
   - [Reverse](./src/main/kotlin/shape/komputation/demos/Reverse.kt)
 
