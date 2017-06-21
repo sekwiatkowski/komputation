@@ -2,9 +2,10 @@ package shape.komputation.layers.feedforward.activation
 
 import shape.komputation.functions.activation.backwardSoftmax
 import shape.komputation.functions.activation.softmax
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
+class SoftmaxLayer(name : String? = null) : ContinuationLayer(name), ActivationLayer {
 
     private var forwardResult : DoubleMatrix? = null
 

@@ -2,13 +2,13 @@ package shape.komputation.layers.recurrent
 
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeMatrix
-import shape.komputation.layers.FeedForwardLayer
-import shape.komputation.layers.feedforward.projection.createIdentityProjectionLayer
+import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.feedforward.createIdentityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
 class SeriesProjection(
-    private val projections: Array<FeedForwardLayer>,
+    private val projections: Array<ContinuationLayer>,
     private val weights: DoubleArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
@@ -75,7 +75,7 @@ fun createSeriesProjection(
 
         if (useIdentityAtFirstStep && index == 0) {
 
-            createIdentityProjectionLayer(stateProjectionLayerName)
+            createIdentityLayer(stateProjectionLayerName)
 
         }
         else {

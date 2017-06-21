@@ -2,10 +2,10 @@ package shape.komputation.layers.feedforward.convolution
 
 import shape.komputation.functions.backwardExpansion
 import shape.komputation.functions.expand
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : FeedForwardLayer(name) {
+class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ContinuationLayer(name) {
 
     private var input : DoubleMatrix? = null
 

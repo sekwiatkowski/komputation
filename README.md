@@ -10,18 +10,23 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Input](./src/main/kotlin/shape/komputation/layers/entry/InputLayer.kt)
   - [Lookup](./src/main/kotlin/shape/komputation/layers/entry/LookupLayer.kt)
 
-- Standard feed-forward networks:
-  - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
+- Activation functions:
+  - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)
   - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
   - [Softmax](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
+  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
+
+- Standard feed-forward networks:
+  - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
 
 - Convolutional neural networks:
   - [Convolution](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/ConvolutionalLayer.kt)
   - [Max-pooling](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/MaxPoolingLayer.kt)
-  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
 
 - Recurrent neural networks:
   - [Encoder](./src/main/kotlin/shape/komputation/layers/recurrent/Encoder.kt)
+    - n-to-one
+    - n-to-n
   - [Decoder](./src/main/kotlin/shape/komputation/layers/recurrent/Decoder.kt)
 
 ## Demos
@@ -32,6 +37,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [XOR](./src/main/kotlin/shape/komputation/demos/Xor.kt)
 
 - Sequential data:
+  - [Running Total](./src/main/kotlin/shape/komputation/demos/RunningTotal.kt)
   - [Addition problem](./src/main/kotlin/shape/komputation/demos/AdditionProblem.kt)
   - [Reverse](./src/main/kotlin/shape/komputation/demos/Reverse.kt)
 

@@ -3,7 +3,7 @@ package shape.komputation.layers.recurrent
 import shape.komputation.functions.backwardProjectionWrtInput
 import shape.komputation.functions.backwardProjectionWrtWeights
 import shape.komputation.functions.project
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
@@ -12,7 +12,7 @@ class StepProjection(
     private val weights : DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
-    private val seriesAccumulator : DenseAccumulator? = null) : FeedForwardLayer(name) {
+    private val seriesAccumulator : DenseAccumulator? = null) : ContinuationLayer(name) {
 
     private var input : DoubleMatrix? = null
 

@@ -2,7 +2,7 @@ package shape.komputation.matrix
 
 val EMPTY_SEQUENCE_MATRIX = SequenceMatrix(0, 0, 0, doubleArrayOf())
 
-fun zeroSequenceMatrix(numberSteps: Int, stepRows: Int, stepColumns: Int) =
+fun zeroSequenceMatrix(numberSteps: Int, stepRows: Int, stepColumns: Int = 1) =
 
     SequenceMatrix(numberSteps, stepRows, stepColumns, DoubleArray(numberSteps * stepRows * stepColumns))
 

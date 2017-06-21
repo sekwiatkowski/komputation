@@ -5,15 +5,12 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.layers.recurrent.createDecoder
 import shape.komputation.layers.recurrent.createEncoder
 import shape.komputation.loss.LogisticLoss
-import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
-import shape.komputation.optimization.momentum
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -71,7 +68,7 @@ fun main(args: Array<String>) {
     val stateActivationFunction = ActivationFunction.ReLU
     val outputActivationFunction = ActivationFunction.Softmax
 
-    val encoder = createEncoder("encoder", seriesLength, numberCategories, hiddenDimension, stateActivationFunction, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
+    val encoder = createEncoder("encoder", false, seriesLength, numberCategories, hiddenDimension, stateActivationFunction, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
     val decoder = createDecoder("decoder", seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
 
     val network = Network(

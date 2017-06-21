@@ -2,14 +2,14 @@ package shape.komputation.layers.feedforward
 
 import shape.komputation.functions.concatRows
 import shape.komputation.functions.splitRows
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 
-class Branching(name : String? = null, vararg continuations: Array<FeedForwardLayer>) : FeedForwardLayer(name), OptimizableLayer {
+class Branching(name : String? = null, vararg continuations: Array<ContinuationLayer>) : ContinuationLayer(name), OptimizableLayer {
 
     private val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
 
@@ -73,12 +73,12 @@ class Branching(name : String? = null, vararg continuations: Array<FeedForwardLa
 
 }
 
-fun createBranching(vararg continuations: Array<FeedForwardLayer>): Branching {
+fun createBranching(vararg continuations: Array<ContinuationLayer>): Branching {
 
     return createBranching(null, *continuations)
 }
 
-fun createBranching(name : String?, vararg continuations: Array<FeedForwardLayer>): Branching {
+fun createBranching(name : String?, vararg continuations: Array<ContinuationLayer>): Branching {
 
     return Branching(name, *continuations)
 }

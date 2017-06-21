@@ -1,33 +1,33 @@
 package shape.komputation.layers.recurrent
 
 import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
-import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.activation.createActivationLayers
-import shape.komputation.matrix.*
+import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.EMPTY_SEQUENCE_MATRIX
+import shape.komputation.matrix.doubleZeroColumnVector
+import shape.komputation.matrix.zeroSequenceMatrix
 import shape.komputation.optimization.OptimizationStrategy
 import java.util.*
 
 class Decoder(
     name : String?,
     private val numberSteps : Int,
-    private val numberStepRows : Int,
-    private val numberStepColumns : Int,
+    private val inputDimension: Int,
     private val hiddenDimension : Int,
     private val numberCategories : Int,
     private val previousOutputProjection: SeriesProjection,
     private val stateProjection: SeriesProjection,
-    private val stateActivations: Array<ActivationLayer>,
+    private val stateActivations: Array<ContinuationLayer>,
     private val outputProjection: SeriesProjection,
-    private val outputActivations: Array<ActivationLayer>,
-    private val bias : SeriesBias?) : FeedForwardLayer(name), OptimizableLayer {
+    private val outputActivations: Array<ContinuationLayer>,
+    private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
 
     private var previousOutput = doubleZeroColumnVector(hiddenDimension)
     private var state: DoubleMatrix = EMPTY_SEQUENCE_MATRIX
-
-    private var stepSize = numberStepRows * numberStepColumns
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
@@ -35,7 +35,7 @@ class Decoder(
 
         this.state = input
 
-        val seriesOutput = zeroSequenceMatrix(numberSteps, numberStepRows, numberStepColumns)
+        val seriesOutput = zeroSequenceMatrix(numberSteps, inputDimension)
 
         for (indexStep in 0..numberSteps - 1) {
 
@@ -99,11 +99,7 @@ class Decoder(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            // d chain / d output(index)
-            val start = indexStep * stepSize
-            val end = start + stepSize
-            // Extract the part of the chain that is relevant for the current step
-            val stepChain = Arrays.copyOfRange(chainEntries, start, end)
+            val stepChain = extractStep(chainEntries, indexStep, numberCategories)
 
             // Is this the last step?
             val isLastStep = indexStep == this.numberSteps - 1
@@ -121,7 +117,7 @@ class Decoder(
                     // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
                     val backwardStatePreactivationWrtPreviousOutputEntries = backwardStatePreActivationWrtPreviousOutput!!.entries
 
-                    DoubleArray(stepSize) { index ->
+                    DoubleArray(numberCategories) { index ->
 
                         stepChain[index] + backwardStatePreactivationWrtPreviousOutputEntries[index]
 
@@ -277,7 +273,6 @@ fun createDecoder(
         name,
         numberSteps,
         inputDimension,
-        1,
         hiddenDimension,
         numberCategories,
         previousOutputProjection,

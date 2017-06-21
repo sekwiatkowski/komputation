@@ -7,7 +7,7 @@ import shape.komputation.functions.project
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeMatrix
 import shape.komputation.initialization.initializeRowVector
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
@@ -22,9 +22,8 @@ class ProjectionLayer(
     private val numberWeightColumns: Int,
     private val bias : DoubleArray? = null,
     private val weightUpdateRule: UpdateRule? = null,
-    private val biasUpdateRule: UpdateRule? = null) : FeedForwardLayer(name), OptimizableLayer {
+    private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name), OptimizableLayer {
 
-    private var forwardResult : DoubleMatrix? = null
     private var input : DoubleMatrix? = null
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
@@ -38,9 +37,7 @@ class ProjectionLayer(
 
         val projection = project(input.entries, input.numberRows, input.numberColumns, weights, numberWeightRows, numberWeightColumns, bias)
 
-        this.forwardResult = DoubleMatrix(numberWeightRows, input.numberColumns, projection)
-
-        return this.forwardResult!!
+        return DoubleMatrix(numberWeightRows, input.numberColumns, projection)
 
     }
 

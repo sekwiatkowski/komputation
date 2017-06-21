@@ -2,9 +2,10 @@ package shape.komputation.layers.feedforward.activation
 
 import shape.komputation.functions.activation.backwardRelu
 import shape.komputation.functions.activation.relu
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class ReluLayer(name : String? = null) : ActivationLayer(name) {
+class ReluLayer(name : String? = null) : ContinuationLayer(name), ActivationLayer {
 
     private var forwardResult : DoubleMatrix? = null
 

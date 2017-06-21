@@ -1,13 +1,14 @@
 package shape.komputation.layers.feedforward.activation
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.feedforward.IdentityLayer
 
-abstract class ActivationLayer(name : String? = null) : FeedForwardLayer(name)
+interface ActivationLayer
 
 fun createActivationLayers(name: String?, number: Int, function: ActivationFunction) =
 
-    Array(number) { index ->
+    Array<ContinuationLayer>(number) { index ->
 
         val activationLayerName = if (name == null) null else "$name-$index"
 
@@ -16,6 +17,7 @@ fun createActivationLayers(name: String?, number: Int, function: ActivationFunct
             ActivationFunction.Sigmoid -> SigmoidLayer(activationLayerName)
             ActivationFunction.ReLU -> ReluLayer(activationLayerName)
             ActivationFunction.Softmax -> SoftmaxLayer(activationLayerName)
+            ActivationFunction.Identity -> IdentityLayer(activationLayerName)
 
         }
 

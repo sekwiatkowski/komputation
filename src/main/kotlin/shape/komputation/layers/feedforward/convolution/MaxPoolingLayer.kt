@@ -2,11 +2,11 @@ package shape.komputation.layers.feedforward.convolution
 
 import shape.komputation.functions.findMaxIndicesInRows
 import shape.komputation.functions.selectEntries
-import shape.komputation.layers.FeedForwardLayer
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 
-class MaxPoolingLayer(name : String? = null) : FeedForwardLayer(name) {
+class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
     var input : DoubleMatrix? = null
     var maxRowIndices : IntArray? = null

@@ -41,6 +41,7 @@ fun main(args: Array<String>) {
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
     val recurrentLayer = createEncoder(
+        false,
         length,
         inputDimension,
         hiddenDimension,
@@ -56,7 +57,6 @@ fun main(args: Array<String>) {
         recurrentLayer,
         createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
     )
-
 
     network.train(
         inputs,
