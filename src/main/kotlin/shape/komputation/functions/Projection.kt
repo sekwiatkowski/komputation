@@ -1,6 +1,5 @@
 package shape.komputation.functions
 
-import shape.komputation.matrix.BlasMatrix
 import shape.komputation.matrix.createBlasMatrix
 import shape.komputation.matrix.createBlasVector
 
@@ -24,7 +23,9 @@ fun project(input: DoubleArray, numberInputRows : Int, numberInputColumns: Int, 
         }
         else {
 
-            return weightMatrix.multiplyAdd(inputMatrix, expandBias(bias, numberInputColumns)).getEntries()
+            val expandedBias = repeatColumn(bias, numberInputColumns)
+
+            return weightMatrix.multiplyAdd(inputMatrix, createBlasMatrix(bias.size, numberInputColumns, expandedBias)).getEntries()
 
         }
 
@@ -34,25 +35,6 @@ fun project(input: DoubleArray, numberInputRows : Int, numberInputColumns: Int, 
         return weightMatrix.multiply(inputMatrix).getEntries()
 
     }
-
-}
-
-fun expandBias(bias: DoubleArray, inputColumns: Int): BlasMatrix {
-
-    val biasRows = bias.size
-
-    val expandedBiasMatrix = createBlasMatrix(biasRows, inputColumns)
-
-    for (indexRow in 0..biasRows - 1) {
-
-        for (indexColumn in 0..inputColumns - 1) {
-
-            expandedBiasMatrix.set(indexRow, indexColumn, bias[indexRow])
-
-        }
-    }
-
-    return expandedBiasMatrix
 
 }
 

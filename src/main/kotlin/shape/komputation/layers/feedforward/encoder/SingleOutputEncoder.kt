@@ -80,11 +80,7 @@ class SingleOutputEncoder(
         this.previousStateProjection.backwardSeries()
         this.inputProjection.backwardSeries()
 
-        if (this.bias != null) {
-
-            this.bias.backwardSeries()
-
-        }
+        this.bias?.backwardSeries()
 
         return stateChain!!
 
@@ -95,11 +91,7 @@ class SingleOutputEncoder(
         this.previousStateProjection.optimize()
         this.inputProjection.optimize()
 
-        if (this.bias != null) {
-
-            this.bias.optimize()
-
-        }
+        this.bias?.optimize()
 
     }
 

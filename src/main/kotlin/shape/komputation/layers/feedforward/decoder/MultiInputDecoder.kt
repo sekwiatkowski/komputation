@@ -69,11 +69,11 @@ class MultiInputDecoder(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val stepChain = extractStep(chainEntries, indexStep, outputDimension)
+            val chainStep = extractStep(chainEntries, indexStep, outputDimension)
 
             val decoderStep = this.decoderSteps[indexStep]
 
-            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = decoderStep.backward(stepChain, backwardStatePreActivationWrtInput, backwardStatePreActivationWrtPreviousState)
+            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = decoderStep.backward(chainStep, backwardStatePreActivationWrtInput, backwardStatePreActivationWrtPreviousState)
 
             backwardStatePreActivationWrtInput.setStep(indexStep, newBackwardStatePreActivationWrtInput.entries)
             backwardStatePreActivationWrtPreviousState = newBackwardStatePreActivationWrtPreviousState
@@ -84,11 +84,7 @@ class MultiInputDecoder(
         this.stateProjection.backwardSeries()
         this.inputProjection.backwardSeries()
 
-        if (this.bias != null) {
-
-            this.bias.backwardSeries()
-
-        }
+        this.bias?.backwardSeries()
 
         return backwardStatePreActivationWrtInput
 
@@ -100,11 +96,7 @@ class MultiInputDecoder(
         this.stateProjection.optimize()
         this.inputProjection.optimize()
 
-        if (this.bias != null) {
-
-            this.bias.optimize()
-
-        }
+        this.bias?.optimize()
 
     }
 

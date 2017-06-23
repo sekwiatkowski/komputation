@@ -1,6 +1,8 @@
 package shape.komputation.layers.feedforward.decoder
 
+import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.matrix.DoubleMatrix
 
@@ -11,9 +13,9 @@ class DecoderStep(
     private val outputDimension: Int,
     private val inputProjection: ContinuationLayer,
     private val stateProjection : ContinuationLayer,
-    private val stateActivation : ContinuationLayer,
+    private val stateActivation : ActivationLayer,
     private val outputProjection: ContinuationLayer,
-    private val outputActivation : ContinuationLayer,
+    private val outputActivation : ActivationLayer,
     private val bias : SeriesBias?) {
 
     fun forward(state : DoubleMatrix, input: DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
@@ -31,11 +33,7 @@ class DecoderStep(
         // Add the two projections
         val projectedInputEntries = projectedInput.entries
         val projectedStateEntries = projectedState.entries
-        val additionEntries = DoubleArray(hiddenDimension) { index ->
-
-            projectedInputEntries[index] + projectedStateEntries[index]
-
-        }
+        val additionEntries = add(projectedInputEntries, projectedStateEntries)
 
         // Add the bias (if there is one)
         val statePreActivation =
@@ -65,7 +63,7 @@ class DecoderStep(
     }
 
     fun backward(
-        stepChain: DoubleArray,
+        chainStep: DoubleArray,
         backwardStatePreActivationWrtPreviousInput: DoubleMatrix?,
         backwardStatePreActivationWrtPreviousState : DoubleMatrix?): Pair<DoubleMatrix, DoubleMatrix> {
 
@@ -73,7 +71,7 @@ class DecoderStep(
 
             if (isLastStep || backwardStatePreActivationWrtPreviousInput == null) {
 
-                stepChain
+                chainStep
 
             }
             else {
@@ -82,11 +80,7 @@ class DecoderStep(
                 // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
                 val backwardStatePreactivationWrtPreviousOutputEntries = backwardStatePreActivationWrtPreviousInput.entries
 
-                DoubleArray(outputDimension) { index ->
-
-                    stepChain[index] + backwardStatePreactivationWrtPreviousOutputEntries[index]
-
-                }
+                add(chainStep, backwardStatePreactivationWrtPreviousOutputEntries)
 
             }
 
@@ -112,11 +106,7 @@ class DecoderStep(
                 // d chain / d output(index+1) * d output(index+1) / d state(index)
                 val backwardStatePreActivationWrtPreviousStateEntries = backwardStatePreActivationWrtPreviousState!!.entries
 
-                DoubleArray(hiddenDimension) { index ->
-
-                    backwardOutputPreActivationWrtStateEntries[index] + backwardStatePreActivationWrtPreviousStateEntries[index]
-
-                }
+                add(backwardOutputPreActivationWrtStateEntries, backwardStatePreActivationWrtPreviousStateEntries)
 
             }
 
@@ -132,12 +122,8 @@ class DecoderStep(
         // d state pre-activation / d previous state = d [ state weights * state(index-1) + previous output weights * output(index-1) + bias ] / d state(index-1)
         val newBackwardStatePreActivationWrtPreviousState = this.stateProjection.backward(backwardStateWrtStatePreActivation)
 
-        if (this.bias != null) {
-
-            // Differentiate w.r.t. the bias
-            this.bias.backwardStep(backwardStateWrtStatePreActivation)
-
-        }
+        // Differentiate w.r.t. the bias
+        this.bias?.backwardStep(backwardStateWrtStatePreActivation)
 
         return newBackwardStatePreActivationWrtInput to newBackwardStatePreActivationWrtPreviousState
 

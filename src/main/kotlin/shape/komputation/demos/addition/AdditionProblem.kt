@@ -1,4 +1,4 @@
-package shape.komputation.demos
+package shape.komputation.demos.addition
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer

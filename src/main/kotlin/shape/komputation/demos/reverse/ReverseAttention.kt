@@ -1,12 +1,11 @@
-package shape.komputation.demos
+package shape.komputation.demos.reverse
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
-import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.decoder.createSingleInputDecoder
-import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
+import shape.komputation.layers.feedforward.decoder.createAttentiveDecoder
+import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -22,6 +21,7 @@ fun main(args: Array<String>) {
     val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
     val hiddenDimension = 10
     val numberIterations = 50
+    val batchSize = 4
 
     val inputs = Array<Matrix>(numberExamples) {
 
@@ -56,20 +56,14 @@ fun main(args: Array<String>) {
 
     }
 
-    val previousStateWeightInitializationStrategy = createIdentityInitializer()
-    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val biasInitializationStrategy = createZeroInitializer()
-
-    val previousOutputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val outputWeightInitializationStrategy = createZeroInitializer()
+    val identityInitializationStrategy = createIdentityInitializer()
+    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val biasInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val stateActivationFunction = ActivationFunction.ReLU
-    val outputActivationFunction = ActivationFunction.Softmax
-
-    val encoder = createSingleOutputEncoder(seriesLength, numberCategories, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, stateActivationFunction, optimizationStrategy)
-    val decoder = createSingleInputDecoder(seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
+    val encoder = createMultiOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitializationStrategy, identityInitializationStrategy, biasInitializationStrategy, ActivationFunction.ReLU, optimizationStrategy)
+    val decoder = createAttentiveDecoder(null, seriesLength, hiddenDimension, hiddenDimension, ActivationFunction.Sigmoid, gaussianInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
 
     val network = Network(
         InputLayer(),
@@ -82,7 +76,7 @@ fun main(args: Array<String>) {
         targets,
         LogisticLoss(),
         numberIterations,
-        4,
+        batchSize,
         printLoss
     )
 

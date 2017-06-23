@@ -1,4 +1,4 @@
-package shape.komputation.demos
+package shape.komputation.demos.and
 
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.layers.entry.InputLayer

@@ -1,12 +1,12 @@
-package shape.komputation.demos
+package shape.komputation.demos.runningtotal
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.feedforward.decoder.createMultiInputDecoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -22,14 +22,19 @@ fun main(args: Array<String>) {
     val exclusiveUpperLimit = 10
     val hiddenDimension = 4
     val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
-    val numberIterations = 100
+    val numberIterations = 10
     val batchSize = 4
 
     val random = Random(1)
 
-    val previousStateWeightInitializationStrategy = createIdentityInitializer()
-    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val biasInitializationStrategy = createZeroInitializer()
+    val encoderPreviousStateWeightInitializationStrategy = createIdentityInitializer()
+    val encoderInputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val encoderBiasInitializationStrategy = createZeroInitializer()
+
+    val decoderPreviousStateWeightInitializationStrategy = createIdentityInitializer()
+    val decoderInputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val decoderBiasInitializationStrategy = createZeroInitializer()
+    val decoderOutputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
@@ -62,8 +67,8 @@ fun main(args: Array<String>) {
 
     val network = Network(
         InputLayer(),
-        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
-        createProjectionLayer(hiddenDimension, 1, false, inputWeightInitializationStrategy, optimizationStrategy)
+        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, encoderInputWeightInitializationStrategy, encoderPreviousStateWeightInitializationStrategy, encoderBiasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
+        createMultiInputDecoder(numberSteps, hiddenDimension, hiddenDimension, 1, decoderInputWeightInitializationStrategy, decoderPreviousStateWeightInitializationStrategy, decoderBiasInitializationStrategy, ActivationFunction.Identity, decoderOutputWeightInitializationStrategy, ActivationFunction.Identity, optimizationStrategy)
     )
 
     network.train(

@@ -75,11 +75,7 @@ class SingleInputDecoder(
         this.stateProjection.backwardSeries()
         this.previousOutputProjection.backwardSeries()
 
-        if (this.bias != null) {
-
-            this.bias.backwardSeries()
-
-        }
+        this.bias?.backwardSeries()
 
         return backwardStatePreActivationWrtPreviousState!!
 
@@ -91,11 +87,7 @@ class SingleInputDecoder(
         this.stateProjection.optimize()
         this.previousOutputProjection.optimize()
 
-        if (this.bias != null) {
-
-            this.bias.optimize()
-
-        }
+        this.bias?.optimize()
 
     }
 

@@ -1,13 +1,13 @@
-package shape.komputation.demos
+package shape.komputation.demos.trec
 
 import shape.komputation.functions.findMaxIndicesInColumns
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.feedforward.activation.ReluLayer
-import shape.komputation.layers.feedforward.activation.SoftmaxLayer
 import shape.komputation.layers.feedforward.*
 import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
 import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
 import shape.komputation.layers.entry.createLookupLayer
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix

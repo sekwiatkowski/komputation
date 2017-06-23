@@ -1,10 +1,9 @@
 package shape.komputation.layers.feedforward
 
-import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class IdentityLayer(name : String? = null) : ContinuationLayer(name), ActivationLayer {
+class IdentityLayer(name : String? = null) : ActivationLayer(name) {
 
     override fun forward(input : DoubleMatrix) =
 

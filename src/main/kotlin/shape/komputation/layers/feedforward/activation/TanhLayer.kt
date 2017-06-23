@@ -1,19 +1,17 @@
 package shape.komputation.layers.feedforward.activation
 
-import shape.komputation.functions.activation.backwardColumnWiseSoftmax
-import shape.komputation.functions.activation.columnWiseSoftmax
+import shape.komputation.functions.activation.backwardTanh
+import shape.komputation.functions.activation.tanh
+import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
+class TanhLayer(name : String? = null) : ActivationLayer(name) {
 
     private var forwardResult : DoubleMatrix? = null
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
-        val numberRows = input.numberRows
-        val numberColumns = input.numberColumns
-
-        this.forwardResult = DoubleMatrix(numberRows, numberColumns, columnWiseSoftmax(input.entries, numberRows, numberColumns))
+        this.forwardResult = DoubleMatrix(input.numberRows, input.numberColumns, tanh(input.entries))
 
         return this.forwardResult!!
 
@@ -33,7 +31,7 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
 
         val chainEntries = chain.entries
 
-        val gradient = backwardColumnWiseSoftmax(numberForwardRows, numberForwardColumns, forwardEntries, chainEntries)
+        val gradient = backwardTanh(forwardEntries, chainEntries)
 
         return DoubleMatrix(numberForwardRows, numberForwardColumns, gradient)
 

@@ -1,4 +1,4 @@
-package shape.komputation.demos
+package shape.komputation.demos.negation
 
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.entry.InputLayer

@@ -1,9 +1,11 @@
 package shape.komputation.layers.feedforward.encoder
 
+import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.StepProjection
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.doubleRowVector
 
 class EncoderStep(
     private val name : String?,
@@ -23,12 +25,8 @@ class EncoderStep(
 
         val projectedInputEntries = projectedInput.entries
         val projectedStateEntries = projectedState.entries
-        // addition = projected state + projected input
-        val additionEntries = DoubleArray(hiddenDimension) { index ->
-
-            projectedInputEntries[index] + projectedStateEntries[index]
-
-        }
+        // addition = projected input + projected state
+        val additionEntries = add(projectedInputEntries, projectedStateEntries)
 
         // pre-activation = addition + bias
         val preActivation =
@@ -74,14 +72,9 @@ class EncoderStep(
             val backwardPreviousStateEntries = backwardPreviousState!!.entries
             val backwardOutputEntries = backwardOutput!!.entries
 
-            backwardAddition = DoubleMatrix(hiddenDimension, 1, DoubleArray(hiddenDimension) { index ->
-
-                backwardPreviousStateEntries[index] + backwardOutputEntries[index]
-
-            })
+            backwardAddition = doubleRowVector(*add(backwardPreviousStateEntries, backwardOutputEntries))
 
         }
-
 
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
         val backwardStateWrtStatePreActivation = this.activationLayer.backward(backwardAddition)
@@ -92,12 +85,8 @@ class EncoderStep(
         // d state weights * state(1) + input weights * input(2) + bias / d input(2) = input weights
         val backwardStatePreActivationWrtInput = this.inputProjection.backward(backwardStateWrtStatePreActivation)
 
-        if (this.bias != null) {
-
-            // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
-            this.bias.backwardStep(backwardStateWrtStatePreActivation)
-
-        }
+        // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
+        this.bias?.backwardStep(backwardStateWrtStatePreActivation)
 
         return backwardStatePreActivationWrtPreviousState to backwardStatePreActivationWrtInput
 

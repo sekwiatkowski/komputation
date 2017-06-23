@@ -1,5 +1,6 @@
 package shape.komputation.layers.feedforward.recurrent
 
+import shape.komputation.functions.add
 import shape.komputation.functions.backwardProjectionWrtBias
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeRowVector
@@ -18,15 +19,9 @@ class SeriesBias(
 
     private val optimizes = updateRule != null
 
-    fun forwardStep(input : DoubleArray) : DoubleArray {
+    fun forwardStep(input : DoubleArray) =
 
-        return DoubleArray(input.size) { index ->
-
-            input[index] + bias[index]
-
-        }
-
-    }
+        add(input, bias)
 
     fun backwardStep(chain: DoubleMatrix) {
 

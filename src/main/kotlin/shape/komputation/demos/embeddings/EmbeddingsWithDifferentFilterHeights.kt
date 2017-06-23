@@ -1,17 +1,16 @@
-package shape.komputation.demos
+package shape.komputation.demos.embeddings
 
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.initialization.initializeColumnVector
-import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.layers.feedforward.activation.ReluLayer
-import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.*
 import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
 import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
+import shape.komputation.layers.entry.createLookupLayer
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.SquaredLoss
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.intVector
-import shape.komputation.matrix.oneHotVector
+import shape.komputation.matrix.*
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.momentum
@@ -69,8 +68,8 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val numberEmbeddings = 40
     val maximumBatchSize = 1
+    val numberEmbeddings = 40
     val embeddingDimension = 2
 
     val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
@@ -91,23 +90,23 @@ fun main(args: Array<String>) {
     val stronglyPositiveInputs = createInputs(strongModifierIndices, positiveIndices)
 
     val input = listOf<List<Matrix>>(
-            stronglyNegativeInputs,
-            weaklyNegativeInputs,
-            weaklyPositiveInputs,
-            stronglyPositiveInputs
+        stronglyNegativeInputs,
+        weaklyNegativeInputs,
+        weaklyPositiveInputs,
+        stronglyPositiveInputs
 
-        )
+    )
         .flatMap { it }
         .toTypedArray()
 
     val createTarget = { category : Int -> oneHotVector(numberClasses, category) }
 
     val targets = listOf(
-            (0..9).map { createTarget(0) },
-            (0..9).map { createTarget(1) },
-            (0..9).map { createTarget(2) },
-            (0..9).map { createTarget(3) }
-        )
+        (0..9).map { createTarget(0) },
+        (0..9).map { createTarget(1) },
+        (0..9).map { createTarget(2) },
+        (0..9).map { createTarget(3) }
+    )
         .flatMap { it }
         .toTypedArray()
 
@@ -116,18 +115,29 @@ fun main(args: Array<String>) {
     val numberFilters = 2
 
     val filterWidth = embeddingDimension
-    val filterHeight = 2
+    val filterHeights = arrayOf(1, 2)
+
+    val createConvolutionSubnetwork = { filterHeight : Int ->
+
+        arrayOf(
+            createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
+            ReluLayer(),
+            MaxPoolingLayer()
+
+        )
+
+    }
 
     val network = Network(
         createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-        MaxPoolingLayer(),
-        ReluLayer(),
-        createProjectionLayer(numberFilters, numberClasses, true, initializationStrategy, optimizationStrategy),
+        createBranching(
+            *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
+        ),
+        createProjectionLayer(numberFilters * filterHeights.size, numberClasses, true, initializationStrategy, optimizationStrategy),
         SoftmaxLayer()
     )
 
-    network.train(input, targets, SquaredLoss(), 5_000, maximumBatchSize, printLoss)
+    network.train(input, targets, SquaredLoss(), 10_000, maximumBatchSize, printLoss)
 
 }
 

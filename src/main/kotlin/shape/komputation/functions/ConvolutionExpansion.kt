@@ -10,7 +10,7 @@ fun convolutionsPerRow(numberColumns : Int, filterWidth: Int) =
 
     numberColumns - filterWidth + 1
 
-fun expand(inputEntries : DoubleArray, numberInputRows : Int, numberInputColumns : Int, filterWidth : Int, filterHeight: Int): DoubleMatrix {
+fun expandForConvolution(inputEntries : DoubleArray, numberInputRows : Int, numberInputColumns : Int, filterWidth : Int, filterHeight: Int): DoubleMatrix {
 
     val convolutionsPerRow = convolutionsPerRow(numberInputColumns, filterWidth)
     val convolutionsPerColumn = convolutionsPerColumn(numberInputRows, filterHeight)
@@ -47,7 +47,7 @@ fun expand(inputEntries : DoubleArray, numberInputRows : Int, numberInputColumns
 }
 
 
-fun backwardExpansion(
+fun backwardExpansionForConvolution(
     numberInputRows: Int,
     numberInputColumns: Int,
     filterWidth: Int,

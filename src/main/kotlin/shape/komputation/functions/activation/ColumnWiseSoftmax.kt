@@ -1,42 +1,40 @@
 package shape.komputation.functions.activation
 
-import shape.komputation.matrix.DoubleMatrix
 import java.util.*
 
-fun softmax(input: DoubleArray, numberRows : Int, numberColumns : Int): DoubleMatrix {
+fun columnWiseSoftmax(input: DoubleArray, numberRows : Int, numberColumns : Int): DoubleArray {
 
-    var counter = 0
-
-    val results = DoubleArray(numberRows)
+    val results = DoubleArray(input.size)
 
     for (indexColumn in 0..numberColumns - 1) {
 
-        var sum = 0.0
+        val start = indexColumn * numberRows
 
+        var sum = 0.0
         for (indexRow in 0..numberRows - 1) {
 
-            val exponentiation = Math.exp(input[counter + indexRow])
+            val indexEntry = start + indexRow
+
+            val exponentiation = Math.exp(input[indexEntry])
             sum += exponentiation
 
-            results[indexRow] = exponentiation
+            results[indexEntry] = exponentiation
 
         }
 
         for (indexRow in 0..numberRows - 1) {
 
-            results[indexRow] = results[indexRow].div(sum)
+            results[start + indexRow] /= sum
 
         }
-
-        counter += numberRows
 
     }
 
-    return DoubleMatrix(numberRows, numberColumns, results)
+    return results
 
 }
 
-fun backwardSoftmax(numberForwardRows: Int, numberForwardColumns: Int, forwardEntries: DoubleArray, chainEntries: DoubleArray): DoubleArray {
+fun backwardColumnWiseSoftmax(numberForwardRows: Int, numberForwardColumns: Int, forwardEntries: DoubleArray, chainEntries: DoubleArray): DoubleArray {
 
     val gradient = DoubleArray(numberForwardRows * numberForwardColumns)
 

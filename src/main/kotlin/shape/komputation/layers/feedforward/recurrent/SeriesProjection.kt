@@ -30,11 +30,11 @@ class SeriesProjection(
 
     fun backwardSeries() {
 
-        val stateWeightSeriesAccumulator = this.seriesAccumulator
+        val seriesAccumulator = this.seriesAccumulator
 
-        this.batchAccumulator.accumulate(stateWeightSeriesAccumulator.getAccumulation())
+        this.batchAccumulator.accumulate(seriesAccumulator.getAccumulation())
 
-        stateWeightSeriesAccumulator.reset()
+        seriesAccumulator.reset()
 
     }
 
@@ -58,20 +58,20 @@ fun createSeriesProjection(
     name : String?,
     numberSteps : Int,
     useIdentityAtFirstStep : Boolean,
-    inputDimension : Int,
-    outputDimension : Int,
+    inputRows: Int,
+    outputRows: Int,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy: OptimizationStrategy?) : Pair<SeriesProjection, Array<ContinuationLayer>> {
 
-    val weights = initializeMatrix(initializationStrategy, outputDimension, inputDimension)
+    val weights = initializeMatrix(initializationStrategy, outputRows, inputRows)
 
-    val numberEntries = inputDimension * outputDimension
+    val numberEntries = inputRows * outputRows
     val seriesAccumulator = DenseAccumulator(numberEntries)
     val batchAccumulator = DenseAccumulator(numberEntries)
 
-    val stepProjections = createStepProjections(name, numberSteps, useIdentityAtFirstStep, weights, inputDimension, outputDimension, seriesAccumulator)
+    val stepProjections = createStepProjections(name, numberSteps, useIdentityAtFirstStep, weights, inputRows, outputRows, seriesAccumulator)
 
-    val updateRule = if(optimizationStrategy != null) optimizationStrategy(inputDimension, outputDimension) else null
+    val updateRule = if(optimizationStrategy != null) optimizationStrategy(inputRows, outputRows) else null
 
     val seriesProjection = SeriesProjection(
         name,

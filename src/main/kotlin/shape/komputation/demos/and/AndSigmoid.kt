@@ -1,6 +1,6 @@
-package shape.komputation.demos
+package shape.komputation.demos.and
 
-import shape.komputation.initialization.createUniformInitializer
+import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
@@ -23,32 +23,25 @@ fun main(args: Array<String>) {
 
     val targets = arrayOf(
         doubleScalar(0.0),
-        doubleScalar(1.0),
-        doubleScalar(1.0),
-        doubleScalar(0.0)
+        doubleScalar(0.0),
+        doubleScalar(0.0),
+        doubleScalar(1.0)
     )
 
     val random = Random(1)
-    val initialize = createUniformInitializer(random, -0.5, 0.5)
+    val initialize = createGaussianInitializer(random)
 
-    val inputLayer = InputLayer()
+    val optimizer = stochasticGradientDescent(0.03)
 
-    val optimizationStrategy = stochasticGradientDescent(0.1)
-
-    val hiddenPreactivationLayer = createProjectionLayer(2, 2, true, initialize, optimizationStrategy)
-    val hiddenLayer = SigmoidLayer()
-
-    val outputPreactivationLayer = createProjectionLayer(2, 1, true, initialize, optimizationStrategy)
-    val outputLayer = SigmoidLayer()
+    val projectionLayer = createProjectionLayer(2, 1, true, initialize, optimizer)
+    val sigmoidLayer = SigmoidLayer()
 
     val network = Network(
-        inputLayer,
-        hiddenPreactivationLayer,
-        hiddenLayer,
-        outputPreactivationLayer,
-        outputLayer
+        InputLayer(),
+        projectionLayer,
+        sigmoidLayer
     )
 
-    network.train(input, targets, SquaredLoss(), 30_000, 1, printLoss)
+    network.train(input, targets, SquaredLoss(), 10_000, 1, printLoss)
 
 }

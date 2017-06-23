@@ -4,11 +4,11 @@ import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.feedforward.IdentityLayer
 
-interface ActivationLayer
+abstract class ActivationLayer(name : String?) : ContinuationLayer(name)
 
 fun createActivationLayers(number: Int, name: String?, function: ActivationFunction) =
 
-    Array<ContinuationLayer>(number) { index ->
+    Array(number) { index ->
 
         val activationLayerName = if (name == null) null else "$name-$index"
 
@@ -16,7 +16,7 @@ fun createActivationLayers(number: Int, name: String?, function: ActivationFunct
 
     }
 
-fun createActivationLayer(name: String?, function: ActivationFunction) : ContinuationLayer =
+fun createActivationLayer(name: String?, function: ActivationFunction) : ActivationLayer =
 
 
     when (function) {

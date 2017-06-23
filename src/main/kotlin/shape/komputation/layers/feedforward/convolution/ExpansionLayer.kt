@@ -1,7 +1,7 @@
 package shape.komputation.layers.feedforward.convolution
 
-import shape.komputation.functions.backwardExpansion
-import shape.komputation.functions.expand
+import shape.komputation.functions.backwardExpansionForConvolution
+import shape.komputation.functions.expandForConvolution
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.matrix.DoubleMatrix
 
@@ -15,13 +15,13 @@ class ExpansionLayer(name : String? = null, private val filterWidth: Int, privat
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
 
-        return expand(input.entries, this.numberInputRows, this.numberInputColumns, filterWidth, filterHeight)
+        return expandForConvolution(input.entries, this.numberInputRows, this.numberInputColumns, filterWidth, filterHeight)
 
     }
 
     override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        val summedDerivatives = backwardExpansion(this.numberInputRows, this.numberInputColumns, filterWidth, chain.entries, chain.numberRows, chain.numberColumns)
+        val summedDerivatives = backwardExpansionForConvolution(this.numberInputRows, this.numberInputColumns, filterWidth, chain.entries, chain.numberRows, chain.numberColumns)
 
         return DoubleMatrix(this.numberInputRows, this.numberInputColumns, summedDerivatives)
 

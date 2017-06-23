@@ -12,9 +12,12 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - Activation functions:
   - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)
-  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
-  - [Softmax](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
   - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
+  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
+  - Softmax:
+    - [column-wise](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
+    - [vectorial](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxVectorLayer.kt)
+  - [Tanh](./src/main/kotlin/shape/komputation/layers/feedforward/activation/TanhLayer.kt)
 
 - Standard feed-forward networks:
   - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
@@ -30,25 +33,31 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - Decoder
     - [single input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/SingleInputDecoder.kt)
     - [multi-input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/MultiInputDecoder.kt)
+    - [attentive](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/AttentiveDecoder.kt)
+
+- Other layers:
+  - [Transposition](./src/main/kotlin/shape/komputation/layers/feedforward/TranspositionLayer.kt)
+  - [Column repetition](./src/main/kotlin/shape/komputation/layers/feedforward/ColumnRepetitionLayer.kt)
 
 ## Demos
 
 - Boolean functions:
-  - [AND](./src/main/kotlin/shape/komputation/demos/AndSigmoid.kt)
-  - [Negation](./src/main/kotlin/shape/komputation/demos/Negation.kt)
-  - [XOR](./src/main/kotlin/shape/komputation/demos/Xor.kt)
+  - [AND](./src/main/kotlin/shape/komputation/demos/and/AndSigmoid.kt)
+  - [Negation](./src/main/kotlin/shape/komputation/demos/negation/Negation.kt)
+  - [XOR](./src/main/kotlin/shape/komputation/demos/xor/Xor.kt)
 
 - Sequential data:
-  - [Running Total](./src/main/kotlin/shape/komputation/demos/RunningTotalMultiInputDecoder.kt)
-  - [Addition problem](./src/main/kotlin/shape/komputation/demos/AdditionProblem.kt)
-  - [Reverse](./src/main/kotlin/shape/komputation/demos/Reverse.kt)
+  - [Running total](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
+  - [Addition problem](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblem.kt)
+  - [Reverse](./src/main/kotlin/shape/komputation/demos/reverse/ReverseSingleEncoding.kt)
+  - [Reverse with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
 
 - Toy problems:
-  - [Image classification](./src/main/kotlin/shape/komputation/demos/LineDemo.kt)
-  - [Word embeddings](./src/main/kotlin/shape/komputation/demos/Embeddings.kt)
+  - [Image classification](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)
+  - [Word embeddings](./src/main/kotlin/shape/komputation/demos/embeddings/Embeddings.kt)
 
 - NLP:
-  - [TREC question classification](./src/main/kotlin/shape/komputation/demos/TREC.kt)
+  - [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
 
 ## Sample code
 
@@ -73,7 +82,7 @@ val network = Network(
 )
 ```
 
-See the [TREC demo](./src/main/kotlin/shape/komputation/demos/TREC.kt) for more details.
+See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for more details.
 
 ## Initialization
 
