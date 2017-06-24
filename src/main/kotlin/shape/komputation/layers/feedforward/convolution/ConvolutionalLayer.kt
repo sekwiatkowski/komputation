@@ -3,6 +3,7 @@ package shape.komputation.layers.feedforward.convolution
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.projection.ProjectionLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.matrix.DoubleMatrix
@@ -60,10 +61,10 @@ fun createConvolutionalLayer(
     initializationStrategy : InitializationStrategy,
     optimizationStrategy : OptimizationStrategy? = null): ConvolutionalLayer {
 
-    val expansionLayerName = if(name == null) null else "$name-expansion"
+    val expansionLayerName = concatenateNames(name, "expansion")
     val expansionLayer = createExpansionLayer(expansionLayerName, filterWidth, filterHeight)
 
-    val projectionLayerName = if(name == null) null else "$name-projection"
+    val projectionLayerName = concatenateNames(name, "projection")
     val projectionLayer = createProjectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, true, initializationStrategy, optimizationStrategy)
 
     return ConvolutionalLayer(name, expansionLayer, projectionLayer)

@@ -133,19 +133,7 @@ fun createProjectionLayer(
     val numberWeightColumns = inputDimension
 
     val weights = initializeMatrix(initializationStrategy, numberWeightRows, numberWeightColumns)
-
-    val weightUpdateRule : UpdateRule?
-
-    if (optimizationStrategy != null) {
-
-        weightUpdateRule = optimizationStrategy(numberWeightRows, numberWeightColumns)
-
-    }
-    else {
-
-        weightUpdateRule = null
-
-    }
+    val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
 
     val bias : DoubleArray?
     val biasUpdateRule: UpdateRule?
@@ -153,17 +141,7 @@ fun createProjectionLayer(
     if (withBias) {
 
         bias = initializeRowVector(initializationStrategy, numberWeightRows)
-
-        if (optimizationStrategy != null) {
-
-            biasUpdateRule = optimizationStrategy(bias.size, 1)
-
-        }
-        else {
-
-            biasUpdateRule = null
-
-        }
+        biasUpdateRule = optimizationStrategy?.invoke(bias.size, 1)
 
     }
     else {

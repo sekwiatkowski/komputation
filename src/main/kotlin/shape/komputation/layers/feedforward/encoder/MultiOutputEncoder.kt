@@ -5,6 +5,7 @@ import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.activation.createActivationLayers
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.SeriesProjection
@@ -70,11 +71,7 @@ class MultiOutputDecoder(
         this.previousStateProjection.backwardSeries()
         this.inputProjection.backwardSeries()
 
-        if (this.bias != null) {
-
-            this.bias.backwardSeries()
-
-        }
+        this.bias?.backwardSeries()
 
         return stateChain!!
 
@@ -85,11 +82,7 @@ class MultiOutputDecoder(
         this.previousStateProjection.optimize()
         this.inputProjection.optimize()
 
-        if (this.bias != null) {
-
-            this.bias.optimize()
-
-        }
+        this.bias?.optimize()
 
     }
 
@@ -127,7 +120,7 @@ fun createMultiOutputEncoder(
     activationFunction : ActivationFunction,
     optimizationStrategy : OptimizationStrategy? = null): MultiOutputDecoder {
 
-    val inputProjectionName = if(name == null) null else "$name-input-projection"
+    val inputProjectionName = concatenateNames(name, "input-projection")
     val (inputProjectionSeries, inputProjectionSteps) = createSeriesProjection(
         inputProjectionName,
         numberSteps,
@@ -137,7 +130,7 @@ fun createMultiOutputEncoder(
         inputProjectionInitializationStrategy,
         optimizationStrategy)
 
-    val previousStateProjectionName = if(name == null) null else "$name-previous-state-projection"
+    val previousStateProjectionName = concatenateNames(name, "previous-state-projection")
     val (previousStateProjectionSeries, previousStateProjectionSteps) = createSeriesProjection(
         previousStateProjectionName,
         numberSteps,
@@ -146,7 +139,7 @@ fun createMultiOutputEncoder(
         previousStateProjectionInitializationStrategy,
         optimizationStrategy)
 
-    val activationName = if(name == null) null else "$name-state-activation"
+    val activationName = concatenateNames(name, "state-activation")
     val activationLayers = createActivationLayers(numberSteps, activationName, activationFunction)
 
     val bias =
@@ -154,11 +147,11 @@ fun createMultiOutputEncoder(
         if(biasInitializationStrategy == null)
             null
         else
-            createSeriesBias(if (name == null) null else "$name-bias", hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+            createSeriesBias(concatenateNames(name, "bias"), hiddenDimension, biasInitializationStrategy, optimizationStrategy)
 
     val encoderSteps = Array(numberSteps) { indexStep ->
 
-        val encoderStepName = if (name == null) null else "$name-step-$indexStep"
+        val encoderStepName = concatenateNames(name, "step-$indexStep")
 
         EncoderStep(encoderStepName, hiddenDimension, inputProjectionSteps[indexStep], previousStateProjectionSteps[indexStep], bias, activationLayers[indexStep])
 

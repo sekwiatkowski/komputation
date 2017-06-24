@@ -68,7 +68,7 @@ fun createSeriesBias(
     val seriesAccumulator = DenseAccumulator(dimension)
     val batchAccumulator = DenseAccumulator(dimension)
 
-    val updateRule = if(optimizationStrategy != null) optimizationStrategy(dimension, 1) else null
+    val updateRule = optimizationStrategy?.invoke(dimension, 1)
 
     return SeriesBias(name, bias, seriesAccumulator, batchAccumulator, updateRule)
 

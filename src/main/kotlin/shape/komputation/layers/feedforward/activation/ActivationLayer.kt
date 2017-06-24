@@ -21,9 +21,10 @@ fun createActivationLayer(name: String?, function: ActivationFunction) : Activat
 
     when (function) {
 
-        ActivationFunction.Sigmoid -> SigmoidLayer(name)
         ActivationFunction.ReLU -> ReluLayer(name)
-        ActivationFunction.Softmax -> SoftmaxLayer(name)
         ActivationFunction.Identity -> IdentityLayer(name)
+        ActivationFunction.Sigmoid -> SigmoidLayer(name)
+        ActivationFunction.Softmax -> SoftmaxLayer(name)
+        ActivationFunction.Tanh -> TanhLayer(name)
 
     }

@@ -3,6 +3,7 @@ package shape.komputation.demos.reverse
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
+import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.decoder.createAttentiveDecoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
@@ -20,8 +21,8 @@ fun main(args: Array<String>) {
     val numberCategories = 10
     val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
     val hiddenDimension = 10
-    val numberIterations = 50
-    val batchSize = 4
+    val numberIterations = 10
+    val batchSize = 1
 
     val inputs = Array<Matrix>(numberExamples) {
 
@@ -29,7 +30,7 @@ fun main(args: Array<String>) {
 
         for (indexStep in 0..seriesLength - 1) {
 
-            sequenceMatrix.setStep(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0, 0.001))
+            sequenceMatrix.setStep(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0))
 
         }
 
@@ -58,12 +59,11 @@ fun main(args: Array<String>) {
 
     val identityInitializationStrategy = createIdentityInitializer()
     val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val biasInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoder = createMultiOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitializationStrategy, identityInitializationStrategy, biasInitializationStrategy, ActivationFunction.ReLU, optimizationStrategy)
-    val decoder = createAttentiveDecoder(null, seriesLength, hiddenDimension, hiddenDimension, ActivationFunction.Sigmoid, gaussianInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
+    val encoder = createMultiOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitializationStrategy, identityInitializationStrategy, gaussianInitializationStrategy, ActivationFunction.ReLU, optimizationStrategy)
+    val decoder = createAttentiveDecoder(null, seriesLength, hiddenDimension, hiddenDimension, ActivationFunction.Sigmoid, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
 
     val network = Network(
         InputLayer(),

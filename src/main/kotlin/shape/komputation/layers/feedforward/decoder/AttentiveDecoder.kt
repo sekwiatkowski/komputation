@@ -5,6 +5,7 @@ import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.ColumnRepetitionLayer
 import shape.komputation.layers.feedforward.TranspositionLayer
 import shape.komputation.layers.feedforward.activation.ActivationLayer
@@ -273,33 +274,33 @@ fun createAttentiveDecoder(
 
     val columnRepetitionLayers = Array(numberSteps) { indexStep ->
 
-        val columnRepetitionLayerName = if (name != null) "$name-column-repetition-$indexStep" else null
+        val columnRepetitionLayerName = concatenateNames(name, "column-repetition-$indexStep")
 
         ColumnRepetitionLayer(columnRepetitionLayerName, numberSteps)
     }
 
-    val encodingProjectionName = if(name != null) "$name-encoding-projection" else null
+    val encodingProjectionName = concatenateNames(name, "encoding-projection")
     val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, false, weightInitializationStrategy, optimizationStrategy)
 
-    val attentionPreviousStateProjectionName = if(name != null) "$name-attention-previous-state-projection" else null
+    val attentionPreviousStateProjectionName = concatenateNames(name, "attention-previous-state-projection")
     val (attentionPreviousStateSeriesProjection, _) = createSeriesProjection(attentionPreviousStateProjectionName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val tanh = Array(numberSteps) { TanhLayer() }
 
-    val scoringProjectionName = if(name != null) "$name-scoring-projection" else null
+    val scoringProjectionName = concatenateNames(name, "scoring-projection")
     val (scoringProjection, _) = createSeriesProjection(scoringProjectionName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
 
     val softmax = Array(numberSteps) { SoftmaxVectorLayer() }
 
     val transposition = Array(numberSteps) { TranspositionLayer() }
 
-    val attendedEncodingProjectionName = if(name != null) "$name-attended-encoding-projection" else null
+    val attendedEncodingProjectionName = concatenateNames(name, "attended-encoding-projection")
     val (attendedEncodingProjection, _) = createSeriesProjection(attendedEncodingProjectionName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
-    val decodingPreviousStateProjectionName = if(name != null) "$name-decoding-previous-state-projection" else null
+    val decodingPreviousStateProjectionName = concatenateNames(name, "decoding-previous-state-projection")
     val (decodedPreviousStateProjection, _) = createSeriesProjection(decodingPreviousStateProjectionName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
 
-    val activationName = if(name != null) "$name-decoding-activation" else null
+    val activationName = concatenateNames(name, "decoding-activation")
     val activation = createActivationLayers(numberSteps, activationName, activationFunction)
 
     val bias =
@@ -307,7 +308,7 @@ fun createAttentiveDecoder(
             null
         else {
 
-            val biasName = if(name == null) null else "$name-bias"
+            val biasName =  concatenateNames(name, "bias")
 
             createSeriesBias(biasName, decodingDimension, biasInitializationStrategy, optimizationStrategy)
         }

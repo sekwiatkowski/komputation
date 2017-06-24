@@ -3,9 +3,8 @@ package shape.komputation.layers.feedforward.encoder
 import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
-import shape.komputation.layers.feedforward.recurrent.StepProjection
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleColumnVector
 
 class EncoderStep(
     private val name : String?,
@@ -72,7 +71,7 @@ class EncoderStep(
             val backwardPreviousStateEntries = backwardPreviousState!!.entries
             val backwardOutputEntries = backwardOutput!!.entries
 
-            backwardAddition = doubleRowVector(*add(backwardPreviousStateEntries, backwardOutputEntries))
+            backwardAddition = doubleColumnVector(*add(backwardPreviousStateEntries, backwardOutputEntries))
 
         }
 

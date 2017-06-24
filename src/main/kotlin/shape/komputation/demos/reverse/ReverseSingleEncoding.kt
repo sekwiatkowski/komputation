@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
     val hiddenDimension = 10
     val numberIterations = 50
-    val batchSize = 4
+    val batchSize = 10
 
     val inputs = Array<Matrix>(numberExamples) {
 
@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
 
         for (indexStep in 0..seriesLength - 1) {
 
-            sequenceMatrix.setStep(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0, 0.001))
+            sequenceMatrix.setStep(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0))
 
         }
 
@@ -57,20 +57,14 @@ fun main(args: Array<String>) {
 
     }
 
-    val previousStateWeightInitializationStrategy = createIdentityInitializer()
-    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val biasInitializationStrategy = createZeroInitializer()
-
-    val previousOutputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val outputWeightInitializationStrategy = createZeroInitializer()
+    val identityInitialization = createIdentityInitializer()
+    val gaussianInitialization = createGaussianInitializer(random, 0.0, 0.001)
+    val zeroInitialization = createZeroInitializer()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val stateActivationFunction = ActivationFunction.ReLU
-    val outputActivationFunction = ActivationFunction.Softmax
-
-    val encoder = createSingleOutputEncoder(seriesLength, numberCategories, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, stateActivationFunction, optimizationStrategy)
-    val decoder = createSingleInputDecoder(seriesLength, numberCategories, hiddenDimension, numberCategories, previousOutputWeightInitializationStrategy, previousStateWeightInitializationStrategy, null, stateActivationFunction, outputWeightInitializationStrategy, outputActivationFunction, optimizationStrategy)
+    val encoder = createSingleOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitialization, identityInitialization, zeroInitialization, ActivationFunction.Tanh, optimizationStrategy)
+    val decoder = createSingleInputDecoder(seriesLength, numberCategories, hiddenDimension, numberCategories, gaussianInitialization, identityInitialization, null, ActivationFunction.Tanh, gaussianInitialization, ActivationFunction.Softmax, optimizationStrategy)
 
     val network = Network(
         InputLayer(),

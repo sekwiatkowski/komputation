@@ -5,6 +5,7 @@ enum class ActivationFunction {
     Identity,
     ReLU,
     Sigmoid,
-    Softmax
+    Softmax,
+    Tanh
 
 }

@@ -4,6 +4,7 @@ import shape.komputation.functions.backwardProjectionWrtInput
 import shape.komputation.functions.backwardProjectionWrtWeights
 import shape.komputation.functions.project
 import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.createIdentityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
@@ -89,7 +90,7 @@ fun createStepProjections(
 
     Array(numberSteps) { indexStep ->
 
-        val stateProjectionLayerName = if (name == null) null else "$name-step-$indexStep"
+        val stateProjectionLayerName = concatenateNames(name, "step-$indexStep")
 
         if (useIdentityAtFirstStep && indexStep == 0) {
 

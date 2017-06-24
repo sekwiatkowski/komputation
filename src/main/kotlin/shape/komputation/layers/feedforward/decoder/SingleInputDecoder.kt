@@ -5,6 +5,7 @@ import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.activation.createActivationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.SeriesProjection
@@ -135,13 +136,13 @@ fun createSingleInputDecoder(
     outputActivationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?): SingleInputDecoder {
 
-    val previousOutputProjectionName = if(name == null) null else "$name-previous-output-projection"
+    val previousOutputProjectionName = concatenateNames(name, "previous-output-projection")
     val (previousOutputProjectionSeries, previousOutputProjectionSteps) = createSeriesProjection(previousOutputProjectionName, numberSteps, true, outputDimension, hiddenDimension, previousOutputProjectionInitializationStrategy, optimizationStrategy)
 
-    val previousStateProjectionName = if(name == null) null else "$name-previous-state-projection"
+    val previousStateProjectionName = concatenateNames(name, "previous-state-projection")
     val (previousStateProjectionSeries, previousStateProjectionSteps) = createSeriesProjection(previousStateProjectionName, numberSteps, false, hiddenDimension, hiddenDimension, previousStateProjectionInitializationStrategy, optimizationStrategy)
 
-    val outputProjectionName = if(name == null) null else "$name-output-projection"
+    val outputProjectionName = concatenateNames(name, "output-projection")
     val (outputProjectionSeries, outputProjectionSteps) = createSeriesProjection(outputProjectionName, numberSteps, false, hiddenDimension, outputDimension, outputProjectionInitializationStrategy, optimizationStrategy)
 
     val bias =
@@ -150,7 +151,7 @@ fun createSingleInputDecoder(
             null
         else {
 
-            val biasName = if (name == null) null else "$name-bias"
+            val biasName = concatenateNames(name, "bias")
 
             createSeriesBias(biasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
 
@@ -159,19 +160,19 @@ fun createSingleInputDecoder(
 
     val decoderSteps = Array(numberSteps) { indexStep ->
 
-        val stepName = if(name == null) null else "$name-step-$indexStep"
+        val stepName = concatenateNames(name, "step-$indexStep")
         val isLastStep = indexStep + 1 == numberSteps
 
         val previousOutputProjectionStep = previousOutputProjectionSteps[indexStep]
 
         val previousStateProjectionStep = previousStateProjectionSteps[indexStep]
 
-        val stateActivationName = if(name == null) null else "$name-state-activation"
+        val stateActivationName = concatenateNames(stepName, "state-activation")
         val stateActivation = createActivationLayer(stateActivationName, stateActivationFunction)
 
         val outputProjection = outputProjectionSteps[indexStep]
 
-        val outputActivationName = if(name == null) null else "$name-output-activation"
+        val outputActivationName = concatenateNames(stepName, "output-activation")
         val outputActivation = createActivationLayer(outputActivationName, outputActivationFunction)
 
         DecoderStep(

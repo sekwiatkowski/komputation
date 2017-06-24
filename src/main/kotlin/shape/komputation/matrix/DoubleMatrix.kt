@@ -33,15 +33,15 @@ fun doubleMatrixFromRows(vararg rows: DoubleMatrix): DoubleMatrix {
 
 }
 
-fun oneHotArray(size: Int, index: Int, value : Double = 1.0, otherValue: Double = 0.0): DoubleArray {
+fun oneHotArray(size: Int, index: Int, value : Double = 1.0): DoubleArray {
 
-    val array = DoubleArray(size) { otherValue }
+    val array = DoubleArray(size)
     array[index] = value
 
     return array
 
 }
 
-fun oneHotVector(size: Int, index: Int, value : Double = 1.0, otherValue: Double = 0.0) =
+fun oneHotVector(size: Int, index: Int, value : Double = 1.0) =
 
-    doubleColumnVector(*oneHotArray(size, index, value, otherValue))
+    doubleColumnVector(*oneHotArray(size, index, value))

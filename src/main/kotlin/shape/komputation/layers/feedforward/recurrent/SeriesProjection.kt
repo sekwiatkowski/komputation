@@ -71,7 +71,7 @@ fun createSeriesProjection(
 
     val stepProjections = createStepProjections(name, numberSteps, useIdentityAtFirstStep, weights, inputRows, outputRows, seriesAccumulator)
 
-    val updateRule = if(optimizationStrategy != null) optimizationStrategy(inputRows, outputRows) else null
+    val updateRule = optimizationStrategy?.invoke(inputRows, outputRows)
 
     val seriesProjection = SeriesProjection(
         name,
