@@ -16,46 +16,46 @@ class StepProjection(
     private val numberWeightColumns: Int,
     private val seriesAccumulator : DenseAccumulator? = null) : ContinuationLayer(name) {
 
-    private var input : DoubleMatrix? = null
+    private var inputEntries = DoubleArray(0)
+    private var numberInputRows = -1
+    private var numberInputColumns = -1
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
 
     override fun forward(input: DoubleMatrix) : DoubleMatrix {
 
-        this.input = input
+        this.inputEntries = input.entries
+        this.numberInputRows = input.numberRows
+        this.numberInputColumns = input.numberColumns
 
-        val projected = project(input.entries, input.numberRows, input.numberColumns, weights, numberWeightRows, numberWeightColumns)
+        val projected = project(this.inputEntries, this.numberInputRows, this.numberInputColumns, this.weights, this.numberWeightRows, this.numberWeightColumns)
 
-        return DoubleMatrix(numberWeightRows, input.numberColumns, projected)
+        return DoubleMatrix(this.numberWeightRows, this.numberInputColumns, projected)
 
     }
 
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val input = this.input!!
-        val numberInputRows = input.numberRows
-        val numberInputColumns = input.numberColumns
-
         val chainEntries = chain.entries
         val numberChainRows = chain.numberRows
 
         val gradient = backwardProjectionWrtInput(
-            numberInputRows,
-            numberInputColumns,
-            numberInputRows * numberInputColumns,
-            weights,
-            numberWeightRows,
+            this.numberInputRows,
+            this.numberInputColumns,
+            this.numberInputRows * this.numberInputColumns,
+            this.weights,
+            this.numberWeightRows,
             chainEntries,
             numberChainRows)
 
         if (seriesAccumulator != null) {
 
             val stepDifferentiation = backwardProjectionWrtWeights(
-                numberWeightEntries,
-                numberWeightRows,
-                numberWeightColumns,
-                input.entries,
-                numberInputRows,
+                this.numberWeightEntries,
+                this.numberWeightRows,
+                this.numberWeightColumns,
+                this.inputEntries,
+                this.numberInputRows,
                 chainEntries,
                 numberChainRows,
                 chain.numberColumns)
@@ -64,7 +64,7 @@ class StepProjection(
 
         }
 
-        return DoubleMatrix(numberInputRows, numberInputColumns, gradient)
+        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, gradient)
 
     }
 

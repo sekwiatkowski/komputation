@@ -49,9 +49,9 @@ class EncoderStep(
 
     }
 
-    fun backward(backwardPreviousState : DoubleMatrix?, backwardOutput: DoubleMatrix?): Pair<DoubleMatrix, DoubleMatrix> {
+    fun backward(backwardPreviousState : DoubleArray?, backwardOutput: DoubleArray?): Pair<DoubleArray, DoubleArray> {
 
-        val backwardAddition : DoubleMatrix
+        val backwardAddition : DoubleArray
 
         // Single output encoder at last step
         // Multi-output encoder at last step
@@ -68,15 +68,15 @@ class EncoderStep(
         // Multi-output encoder at prior steps
         else {
 
-            val backwardPreviousStateEntries = backwardPreviousState!!.entries
-            val backwardOutputEntries = backwardOutput!!.entries
+            val backwardPreviousStateEntries = backwardPreviousState!!
+            val backwardOutputEntries = backwardOutput!!
 
-            backwardAddition = doubleColumnVector(*add(backwardPreviousStateEntries, backwardOutputEntries))
+            backwardAddition = add(backwardPreviousStateEntries, backwardOutputEntries)
 
         }
 
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
-        val backwardStateWrtStatePreActivation = this.activationLayer.backward(backwardAddition)
+        val backwardStateWrtStatePreActivation = this.activationLayer.backward(doubleColumnVector(*backwardAddition))
 
         // d state weights * state(1) + input weights * input(2) + bias / d state(1) = state weights
         val backwardStatePreActivationWrtPreviousState = this.previousStateProjection.backward(backwardStateWrtStatePreActivation)
@@ -87,7 +87,7 @@ class EncoderStep(
         // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
         this.bias?.backwardStep(backwardStateWrtStatePreActivation)
 
-        return backwardStatePreActivationWrtPreviousState to backwardStatePreActivationWrtInput
+        return backwardStatePreActivationWrtPreviousState.entries to backwardStatePreActivationWrtInput.entries
 
     }
 

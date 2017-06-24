@@ -6,16 +6,22 @@ import shape.komputation.matrix.DoubleMatrix
 
 class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : DoubleMatrix? = null
+    private var forwardEntries : DoubleArray = DoubleArray(0)
+    private var numberForwardRows = -1
+    private var numberForwardColumns = -1
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
         val numberRows = input.numberRows
         val numberColumns = input.numberColumns
 
-        this.forwardResult = DoubleMatrix(numberRows, numberColumns, columnWiseSoftmax(input.entries, numberRows, numberColumns))
+        val result = DoubleMatrix(numberRows, numberColumns, columnWiseSoftmax(input.entries, numberRows, numberColumns))
 
-        return this.forwardResult!!
+        this.forwardEntries = result.entries
+        this.numberForwardRows = result.numberRows
+        this.numberForwardColumns = result.numberColumns
+
+        return result
 
     }
 
@@ -26,16 +32,11 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
      */
     override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        val forwardResult = this.forwardResult!!
-        val forwardEntries = forwardResult.entries
-        val numberForwardRows = forwardResult.numberRows
-        val numberForwardColumns = forwardResult.numberColumns
-
         val chainEntries = chain.entries
 
-        val gradient = backwardColumnWiseSoftmax(numberForwardRows, numberForwardColumns, forwardEntries, chainEntries)
+        val gradient = backwardColumnWiseSoftmax(this.numberForwardRows, this.numberForwardColumns, this.forwardEntries, chainEntries)
 
-        return DoubleMatrix(numberForwardRows, numberForwardColumns, gradient)
+        return DoubleMatrix(this.numberForwardRows, this.numberForwardColumns, gradient)
 
     }
 

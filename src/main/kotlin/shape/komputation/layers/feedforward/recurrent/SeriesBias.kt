@@ -17,7 +17,7 @@ class SeriesBias(
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule? = null) {
 
-    private val optimizes = updateRule != null
+    private val numberBiasEntries = bias.size
 
     fun forwardStep(input : DoubleArray) =
 
@@ -45,9 +45,9 @@ class SeriesBias(
 
         val batchAccumulator = this.batchAccumulator
 
-        if (this.optimizes) {
+        if (this.updateRule != null) {
 
-            updateDensely(this.bias, batchAccumulator.getAccumulation(), batchAccumulator.getCount(), updateRule!!)
+            updateDensely(this.bias, this.numberBiasEntries, batchAccumulator.getAccumulation(), batchAccumulator.getCount(), updateRule)
 
         }
 

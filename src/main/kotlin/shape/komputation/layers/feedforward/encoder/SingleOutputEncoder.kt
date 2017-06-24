@@ -53,7 +53,9 @@ class SingleOutputEncoder(
 
         val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, this.inputDimension)
 
-        var stateChain : DoubleMatrix? = null
+        var stateChain : DoubleArray? = null
+
+        val incomingEntries = incoming.entries
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
@@ -61,7 +63,7 @@ class SingleOutputEncoder(
 
                 if (indexStep + 1 == this.numberSteps) {
 
-                    incoming
+                    incomingEntries
 
                 }
                 else {
@@ -74,7 +76,7 @@ class SingleOutputEncoder(
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput.entries)
+            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput)
 
         }
 
@@ -83,7 +85,7 @@ class SingleOutputEncoder(
 
         this.bias?.backwardSeries()
 
-        return stateChain!!
+        return seriesBackwardWrtInput
 
     }
 

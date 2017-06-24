@@ -11,12 +11,6 @@ class BlasMatrix(private val matrix: DenseMatrix) {
 
         this.matrix.data!!
 
-    fun set(indexRow: Int, indexColumn : Int, value: Double) {
-
-        this.matrix.set(indexRow, indexColumn, value)
-
-    }
-
     fun multiply(otherMatrix : BlasMatrix) =
 
         BlasMatrix(this.matrix.mult(otherMatrix.matrix, DenseMatrix(this.numberRows(), otherMatrix.numberColumns())) as DenseMatrix)
@@ -26,10 +20,6 @@ class BlasMatrix(private val matrix: DenseMatrix) {
         BlasMatrix(this.matrix.multAdd(otherMatrix.matrix, bias.matrix) as DenseMatrix)
 
 }
-
-fun createBlasMatrix(numberRows: Int, numberColumns: Int) =
-
-    BlasMatrix(DenseMatrix(numberRows, numberColumns))
 
 fun createBlasMatrix(numberRows: Int, numberColumns: Int, entries : DoubleArray, deep : Boolean = false) =
 

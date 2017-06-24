@@ -20,6 +20,12 @@ import java.util.*
 
 fun main(args: Array<String>) {
 
+    if (args.size != 2) {
+
+        throw Exception("Please specify the path to the Glove word embeddings and the number of dimensions.")
+
+    }
+
     val embeddingFilePath = args.first()
     val dimensions = args.last().toInt()
 
@@ -39,6 +45,8 @@ class TrecTraining {
         val filterWidth = embeddingDimension
         val filterHeights = intArrayOf(3)
         val numberFilterHeights = filterHeights.size
+
+        val numberIterations = 10_000
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -113,7 +121,7 @@ class TrecTraining {
         val testData = testRepresentations.zip(testTargets)
         val numberTestExamples = testData.size
 
-        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), 10_000, maximumBatchSize) { _, _ ->
+        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), numberIterations, maximumBatchSize) { _, _ ->
 
             val accuracy = testData
                 .count { (input, target) ->

@@ -1,11 +1,10 @@
 package shape.komputation.optimization
 
-fun updateDensely(parameterEntries: DoubleArray, gradientEntries : DoubleArray, batchSize : Int, rule : UpdateRule) {
+fun updateDensely(parameterEntries: DoubleArray, numberParameters : Int, gradientEntries : DoubleArray, batchSize : Int, rule : UpdateRule) {
 
-    val numberParameterEntries = parameterEntries.size
     val scalingFactor = 1.0.div(batchSize.toDouble())
 
-    for (index in 0..numberParameterEntries - 1) {
+    for (index in 0..numberParameters - 1) {
 
         val current = parameterEntries[index]
         val derivative = scalingFactor * gradientEntries[index]

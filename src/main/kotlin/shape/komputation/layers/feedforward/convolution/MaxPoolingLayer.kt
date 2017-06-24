@@ -10,7 +10,7 @@ class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1
-    private var maxRowIndices : IntArray? = null
+    private var maxRowIndices = IntArray(0)
 
     override fun forward(input : DoubleMatrix) : DoubleMatrix {
 
@@ -30,13 +30,11 @@ class MaxPoolingLayer(name : String? = null) : ContinuationLayer(name) {
 
         val chainEntries = chain.entries
 
-        val maxRowIndices = this.maxRowIndices!!
-
         val gradient = DoubleArray(this.numberInputRows * this.numberInputColumns)
 
         for (indexRow in 0..this.numberInputRows - 1) {
 
-            gradient[maxRowIndices[indexRow]] = chainEntries[indexRow]
+            gradient[this.maxRowIndices[indexRow]] = chainEntries[indexRow]
 
         }
 

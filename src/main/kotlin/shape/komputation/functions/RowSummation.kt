@@ -1,29 +1,16 @@
 package shape.komputation.functions
 
-fun add(a: DoubleArray, b: DoubleArray) =
+fun sumRows(entries: DoubleArray, numberRows: Int, numberColumns : Int) =
 
-    DoubleArray(a.size) { index ->
+    DoubleArray(numberRows) { indexRow ->
 
-        a[index] + b[index]
+        var sum = 0.0
+        for (indexColumn in 0..numberColumns - 1) {
 
-    }
-
-fun sumRows(entries: DoubleArray, numberRows: Int, numberColumns : Int): DoubleArray {
-
-    val result = DoubleArray(numberRows)
-
-    for (indexColumn in 0..numberColumns - 1) {
-
-        val start = indexColumn * numberRows
-
-        for (indexRow in 0..numberRows - 1) {
-
-            result[indexColumn] = entries[start + indexRow]
+            sum += entries[indexColumn * numberRows + indexRow]
 
         }
 
+        sum
+
     }
-
-    return result
-
-}

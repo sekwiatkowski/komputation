@@ -54,17 +54,19 @@ class MultiOutputDecoder(
 
         val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, inputRows)
 
-        var stateChain : DoubleMatrix? = null
+        var stateChain : DoubleArray? = null
+
+        val incomingEntries = incoming.entries
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val backwardOutput = DoubleMatrix(hiddenDimension, 1, extractStep(incoming.entries, indexStep, hiddenDimension))
+            val backwardOutput = extractStep(incomingEntries, indexStep, hiddenDimension)
 
             val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.steps[indexStep].backward(stateChain, backwardOutput)
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput.entries)
+            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput)
 
         }
 
@@ -73,7 +75,7 @@ class MultiOutputDecoder(
 
         this.bias?.backwardSeries()
 
-        return stateChain!!
+        return seriesBackwardWrtInput
 
     }
 

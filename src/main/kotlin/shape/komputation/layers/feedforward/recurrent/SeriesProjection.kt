@@ -14,7 +14,7 @@ class SeriesProjection(
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule?) {
 
-    private val optimize = updateRule != null
+    private val numberWeightEntries = weights.size
 
     fun forwardStep(step : Int, input: DoubleMatrix): DoubleMatrix {
 
@@ -42,9 +42,9 @@ class SeriesProjection(
 
         val batchAccumulator = this.batchAccumulator
 
-        if (this.optimize) {
+        if (this.updateRule != null) {
 
-            updateDensely(this.weights, batchAccumulator.getAccumulation(), batchAccumulator.getCount(), this.updateRule!!)
+            updateDensely(this.weights, numberWeightEntries, batchAccumulator.getAccumulation(), batchAccumulator.getCount(), this.updateRule)
 
         }
 

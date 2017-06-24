@@ -7,26 +7,29 @@ import shape.komputation.matrix.DoubleMatrix
 
 class ReluLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : DoubleMatrix? = null
+    private var forwardEntries : DoubleArray = DoubleArray(0)
+    private var numberForwardRows = -1
+    private var numberForwardColumns = -1
 
     override fun forward(input : DoubleMatrix): DoubleMatrix {
 
-        this.forwardResult = DoubleMatrix(input.numberRows, input.numberColumns, relu(input.entries))
+        val result = DoubleMatrix(input.numberRows, input.numberColumns, relu(input.entries))
 
-        return this.forwardResult!!
+        this.forwardEntries = result.entries
+        this.numberForwardRows = result.numberRows
+        this.numberForwardColumns = result.numberColumns
+
+        return result
 
     }
 
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val forwardResult = this.forwardResult!!
-        val forwardEntries = forwardResult.entries
-
         val chainEntries = chain.entries
 
-        val backwardEntries = backwardRelu(forwardEntries, chainEntries)
+        val backwardEntries = backwardRelu(this.forwardEntries, chainEntries)
 
-        return DoubleMatrix(forwardResult.numberRows, forwardResult.numberColumns, backwardEntries)
+        return DoubleMatrix(this.numberForwardRows, this.numberForwardColumns, backwardEntries)
 
     }
 

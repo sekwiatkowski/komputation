@@ -7,13 +7,19 @@ import shape.komputation.matrix.DoubleMatrix
 
 class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
 
-    private var forwardResult : DoubleMatrix? = null
+    private var forwardEntries : DoubleArray = DoubleArray(0)
+    private var numberForwardRows = -1
+    private var numberForwardColumns = -1
 
     override fun forward(input : DoubleMatrix): DoubleMatrix {
 
-        this.forwardResult = DoubleMatrix(input.numberRows, input.numberColumns, sigmoid(input.entries))
+        val result = DoubleMatrix(input.numberRows, input.numberColumns, sigmoid(input.entries))
 
-        return this.forwardResult!!
+        this.forwardEntries = result.entries
+        this.numberForwardRows = result.numberRows
+        this.numberForwardColumns = result.numberColumns
+
+        return result
 
     }
 
@@ -27,12 +33,9 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
 
         val chainEntries = chain.entries
 
-        val forwardResult = this.forwardResult!!
-        val forwardResultEntries = forwardResult.entries
+        val entries = backwardSigmoid(this.forwardEntries, chainEntries)
 
-        val entries = backwardSigmoid(forwardResultEntries, chainEntries)
-
-        return DoubleMatrix(forwardResult.numberRows, forwardResult.numberColumns, entries)
+        return DoubleMatrix(this.numberForwardRows, this.numberForwardColumns, entries)
 
     }
 

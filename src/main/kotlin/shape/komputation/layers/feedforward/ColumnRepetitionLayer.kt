@@ -18,7 +18,13 @@ class ColumnRepetitionLayer(name : String? = null, private val n : Int) : Contin
 
     override fun backward(chain : DoubleMatrix): DoubleMatrix {
 
-        return DoubleMatrix(chain.numberRows, 1, sumRows(chain.entries, chain.numberRows, chain.numberColumns))
+        val chainEntries = chain.entries
+        val numberChainRows = chain.numberRows
+        val numberChainColumns = chain.numberColumns
+
+        val result = sumRows(chainEntries, numberChainRows, numberChainColumns)
+
+        return DoubleMatrix(numberChainRows, 1, result)
 
     }
 

@@ -24,20 +24,25 @@ class ProjectionLayer(
     private val weightUpdateRule: UpdateRule? = null,
     private val biasUpdateRule: UpdateRule? = null) : ContinuationLayer(name), OptimizableLayer {
 
-    private var input : DoubleMatrix? = null
+    private var inputEntries = DoubleArray(0)
+    private var numberInputRows = -1
+    private var numberInputColumns = -1
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
-
     private var weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
-    private var biasAccumulator = if(bias != null) DenseAccumulator(bias.size) else null
+
+    private val numberBiasEntries = if(bias != null) bias.size else -1
+    private val biasAccumulator = if(bias != null) DenseAccumulator(bias.size) else null
 
     override fun forward(input: DoubleMatrix) : DoubleMatrix {
 
-        this.input = input
+        this.inputEntries = input.entries
+        this.numberInputRows = input.numberRows
+        this.numberInputColumns = input.numberColumns
 
-        val projection = project(input.entries, input.numberRows, input.numberColumns, weights, numberWeightRows, numberWeightColumns, bias)
+        val projection = project(this.inputEntries, this.numberInputRows, this.numberInputColumns, this.weights, this.numberWeightRows, this.numberWeightColumns, this.bias)
 
-        return DoubleMatrix(numberWeightRows, input.numberColumns, projection)
+        return DoubleMatrix(this.numberWeightRows, this.numberInputColumns, projection)
 
     }
 
@@ -47,17 +52,14 @@ class ProjectionLayer(
         val numberChainRows = chain.numberRows
         val numberChainColumns = chain.numberColumns
 
-        val input = this.input!!
-        val numberInputRows = input.numberRows
-        val numberInputColumns = input.numberColumns
-        val numberInputEntries = numberInputRows * numberInputColumns
+        val numberInputEntries = this.numberInputRows * this.numberInputColumns
 
         val gradient = backwardProjectionWrtInput(
-            numberInputRows,
-            numberInputColumns,
+            this.numberInputRows,
+            this.numberInputColumns,
             numberInputEntries,
-            weights,
-            numberWeightRows,
+            this.weights,
+            this.numberWeightRows,
             chainEntries,
             numberChainRows)
 
@@ -65,24 +67,24 @@ class ProjectionLayer(
             numberWeightEntries,
             numberWeightRows,
             numberWeightColumns,
-            input.entries,
-            numberInputRows,
+            this.inputEntries,
+            this.numberInputRows,
             chainEntries,
             numberChainRows,
             numberChainColumns)
 
         this.weightAccumulator.accumulate(backwardWrtWeights)
 
-        if (bias != null && biasUpdateRule != null) {
+        if (this.biasAccumulator != null) {
 
-            val backwardWrtBias = backwardProjectionWrtBias(bias.size, chainEntries, numberChainRows, numberChainColumns)
+            val backwardWrtBias = backwardProjectionWrtBias(this.bias!!.size, chainEntries, numberChainRows, numberChainColumns)
 
-            this.biasAccumulator!!.accumulate(backwardWrtBias)
+            this.biasAccumulator.accumulate(backwardWrtBias)
 
 
         }
 
-        return DoubleMatrix(numberInputRows, numberInputColumns, gradient)
+        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, gradient)
 
     }
 
@@ -92,7 +94,7 @@ class ProjectionLayer(
 
             val weightAccumulator = this.weightAccumulator
 
-            updateDensely(this.weights, weightAccumulator.getAccumulation(), weightAccumulator.getCount(), weightUpdateRule)
+            updateDensely(this.weights, this.numberWeightEntries, weightAccumulator.getAccumulation(), weightAccumulator.getCount(), weightUpdateRule)
 
             weightAccumulator.reset()
 
@@ -102,7 +104,7 @@ class ProjectionLayer(
 
             val biasAccumulator = this.biasAccumulator!!
 
-            updateDensely(this.bias, biasAccumulator.getAccumulation(), biasAccumulator.getCount(), biasUpdateRule)
+            updateDensely(this.bias, this.numberBiasEntries, biasAccumulator.getAccumulation(), biasAccumulator.getCount(), biasUpdateRule)
 
             biasAccumulator.reset()
 
