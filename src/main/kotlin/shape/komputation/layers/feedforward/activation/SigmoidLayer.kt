@@ -1,8 +1,8 @@
 package shape.komputation.layers.feedforward.activation
 
-import shape.komputation.functions.activation.backwardSigmoid
+import shape.komputation.functions.activation.differentiateSigmoid
 import shape.komputation.functions.activation.sigmoid
-import shape.komputation.layers.ContinuationLayer
+import shape.komputation.functions.hadamard
 import shape.komputation.matrix.DoubleMatrix
 
 class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
@@ -11,6 +11,8 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
     private var numberForwardRows = -1
     private var numberForwardColumns = -1
 
+    private var differentiation : DoubleArray? = null
+
     override fun forward(input : DoubleMatrix): DoubleMatrix {
 
         val result = DoubleMatrix(input.numberRows, input.numberColumns, sigmoid(input.entries))
@@ -18,6 +20,8 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
         this.forwardEntries = result.entries
         this.numberForwardRows = result.numberRows
         this.numberForwardColumns = result.numberColumns
+
+        this.differentiation = null
 
         return result
 
@@ -31,11 +35,9 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name) {
      */
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val chainEntries = chain.entries
+        this.differentiation = differentiateSigmoid(this.forwardEntries)
 
-        val entries = backwardSigmoid(this.forwardEntries, chainEntries)
-
-        return DoubleMatrix(this.numberForwardRows, this.numberForwardColumns, entries)
+        return DoubleMatrix(this.numberForwardRows, this.numberForwardColumns, hadamard(chain.entries, differentiation!!))
 
     }
 

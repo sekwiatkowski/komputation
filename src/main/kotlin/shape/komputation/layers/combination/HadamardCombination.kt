@@ -4,7 +4,6 @@ import shape.komputation.functions.hadamard
 import shape.komputation.layers.CombinationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-// a * b
 class HadamardCombination(val name: String?) : CombinationLayer(name) {
 
     private var first = DoubleArray(0)
@@ -24,12 +23,14 @@ class HadamardCombination(val name: String?) : CombinationLayer(name) {
 
     }
 
+    // d f(x) * g(x) / d f(x) = g(x)
     override fun backwardFirst(chain: DoubleMatrix) =
 
-        DoubleMatrix(chain.numberRows, chain.numberColumns, this.second)
+        DoubleMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.second))
 
+    // d f(x) * g(x) / d g(x) = f(x)
     override fun backwardSecond(chain: DoubleMatrix) =
 
-        DoubleMatrix(chain.numberRows, chain.numberColumns, this.first)
+        DoubleMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.first))
 
 }

@@ -69,6 +69,7 @@ fun backwardProjectionWrtInput(
             derivatives[index++] = derivative
 
         }
+
     }
 
     return derivatives
