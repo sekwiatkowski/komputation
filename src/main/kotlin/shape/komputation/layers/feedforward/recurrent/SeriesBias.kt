@@ -19,9 +19,9 @@ class SeriesBias(
 
     private val numberBiasEntries = bias.size
 
-    fun forwardStep(input : DoubleArray) =
+    fun forwardStep(input : DoubleMatrix) =
 
-        add(input, bias)
+        DoubleMatrix(input.numberRows, input.numberColumns, add(input.entries, bias))
 
     fun backwardStep(chain: DoubleMatrix) {
 

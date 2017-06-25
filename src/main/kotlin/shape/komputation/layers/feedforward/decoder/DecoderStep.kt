@@ -2,6 +2,7 @@ package shape.komputation.layers.feedforward.decoder
 
 import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.matrix.DoubleMatrix
@@ -13,6 +14,7 @@ class DecoderStep(
     private val outputDimension: Int,
     private val inputProjection: ContinuationLayer,
     private val stateProjection : ContinuationLayer,
+    private val addition : AdditionCombination,
     private val stateActivation : ActivationLayer,
     private val outputProjection: ContinuationLayer,
     private val outputActivation : ActivationLayer,
@@ -31,26 +33,24 @@ class DecoderStep(
         val projectedState =  stateProjection.forward(state)
 
         // Add the two projections
-        val projectedInputEntries = projectedInput.entries
-        val projectedStateEntries = projectedState.entries
-        val additionEntries = add(projectedInputEntries, projectedStateEntries)
+        val addition = addition.forward(projectedInput, projectedState)
 
         // Add the bias (if there is one)
         val statePreActivation =
 
             if(this.bias == null) {
 
-                additionEntries
+                addition
 
             }
             else {
 
-                this.bias.forwardStep(additionEntries)
+                this.bias.forwardStep(addition)
 
             }
 
         // Apply the activation function
-        val newState = stateActivation.forward(DoubleMatrix(hiddenDimension, 1, statePreActivation))
+        val newState = stateActivation.forward(statePreActivation)
 
         // Project the state
         val outputPreActivation = outputProjection.forward(newState)

@@ -90,7 +90,7 @@ fun createStepProjections(
 
     Array(numberSteps) { indexStep ->
 
-        val stateProjectionLayerName = concatenateNames(name, "step-$indexStep")
+        val stateProjectionLayerName = concatenateNames(name, indexStep.toString())
 
         if (useIdentityAtFirstStep && indexStep == 0) {
 

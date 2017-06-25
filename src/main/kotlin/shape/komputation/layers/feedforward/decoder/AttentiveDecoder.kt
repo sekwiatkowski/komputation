@@ -5,6 +5,7 @@ import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.ColumnRepetitionLayer
 import shape.komputation.layers.feedforward.TranspositionLayer
@@ -21,21 +22,24 @@ import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
 import shape.komputation.matrix.*
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
+import java.util.*
 
 class AttentiveDecoder(
     name : String?,
     private val numberSteps : Int,
     private val encodingDimension: Int,
     private val decodingDimension: Int,
-    private val columnRepetitionLayers: Array<ColumnRepetitionLayer>,
     private val encodingProjection : ProjectionLayer,
     private val attentionPreviousStateProjection: SeriesProjection,
+    private val columnRepetitions: Array<ColumnRepetitionLayer>,
+    private val attentionAdditions : Array<AdditionCombination>,
     private val tanh: Array<TanhLayer>,
     private val scoringProjection : SeriesProjection,
     private val softmax : Array<SoftmaxVectorLayer>,
     private val transposition: Array<TranspositionLayer>,
     private val attendedEncodingProjection: SeriesProjection,
     private val decodingPreviousDecoderProjection: SeriesProjection,
+    private val decodingAdditions: Array<AdditionCombination>,
     private val activationFunctions: Array<ActivationLayer>,
     private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
 
@@ -65,13 +69,12 @@ class AttentiveDecoder(
             val attentionProjectedPreviousState = this.attentionPreviousStateProjection.forwardStep(indexStep, previousDecoderState)
 
             // expanded projected previous decoder state (for attention)
-            val expandedProjectedPreviousState = this.columnRepetitionLayers[indexStep].forward(attentionProjectedPreviousState)
+            val expandedProjectedPreviousState = this.columnRepetitions[indexStep].forward(attentionProjectedPreviousState)
 
             // pre-activation = projected encodings + expanded projected previous decoder state (for attention)
-            val attentionAdditionEntries = add(projectedEncoding.entries, expandedProjectedPreviousState.entries)
+            val attentionAddition = this.attentionAdditions[indexStep].forward(projectedEncoding, expandedProjectedPreviousState)
 
             // attention activation = tanh(pre-activation)
-            val attentionAddition = DoubleMatrix(this.encodingDimension, this.numberSteps, attentionAdditionEntries)
             val attentionActivation = this.tanh[indexStep].forward(attentionAddition)
 
             // unnormalized scores = scoring weights * attention activation << row vector
@@ -97,14 +100,14 @@ class AttentiveDecoder(
             val decodingProjectedPreviousState = this.decodingPreviousDecoderProjection.forwardStep(indexStep, previousDecoderState)
 
             // projectedAttendedEncoding + decodingProjectedPreviousState
-            val decodingAdditionEntries = add(projectedAttendedEncoding.entries, decodingProjectedPreviousState.entries)
+            val decodingAddition = this.decodingAdditions[indexStep].forward(projectedAttendedEncoding, decodingProjectedPreviousState)
 
-            val newDecoderStatePreActivation = doubleColumnVector(*(
+            val newDecoderStatePreActivation =
+
                 if(this.bias == null)
-                    decodingAdditionEntries
+                    decodingAddition
                 else
-                    this.bias.forwardStep(decodingAdditionEntries)
-                ))
+                    this.bias.forwardStep(decodingAddition)
 
             val newDecoderState = this.activationFunctions[indexStep].forward(newDecoderStatePreActivation)
 
@@ -212,7 +215,7 @@ class AttentiveDecoder(
             this.encodingAccumulator.accumulate(diffAttentionPreactivationWrtEncodings.entries)
 
             // d W^e * E + expand(W^d * d_t-1) / d W^d * d_t-1
-            val diffAttentionPreactivationWrtExpansion = this.columnRepetitionLayers[indexStep].backward(diffAttentionActivationWrtAttentionPreactivation)
+            val diffAttentionPreactivationWrtExpansion = this.columnRepetitions[indexStep].backward(diffAttentionActivationWrtAttentionPreactivation)
 
             //  d W^d * d_t-1 / d d_t-1
             val diffExpansionWrtProjectedPreviousStateForAttention = this.attentionPreviousStateProjection.backwardStep(indexStep, diffAttentionPreactivationWrtExpansion)
@@ -272,6 +275,9 @@ fun createAttentiveDecoder(
     biasInitializationStrategy: InitializationStrategy?,
     optimizationStrategy: OptimizationStrategy): AttentiveDecoder {
 
+    val encodingProjectionName = concatenateNames(name, "encoding-projection")
+    val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, false, weightInitializationStrategy, optimizationStrategy)
+
     val columnRepetitionLayers = Array(numberSteps) { indexStep ->
 
         val columnRepetitionLayerName = concatenateNames(name, "column-repetition-$indexStep")
@@ -279,26 +285,43 @@ fun createAttentiveDecoder(
         ColumnRepetitionLayer(columnRepetitionLayerName, numberSteps)
     }
 
-    val encodingProjectionName = concatenateNames(name, "encoding-projection")
-    val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, false, weightInitializationStrategy, optimizationStrategy)
+    val attentionAdditions = Array(numberSteps) { indexStep ->
 
-    val attentionPreviousStateProjectionName = concatenateNames(name, "attention-previous-state-projection")
-    val (attentionPreviousStateSeriesProjection, _) = createSeriesProjection(attentionPreviousStateProjectionName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+        val attentionAdditionName = concatenateNames(name, "attention-addition-$indexStep")
+
+        AdditionCombination(attentionAdditionName)
+
+    }
+
+    val attentionPreviousStateProjectionSeriesName = concatenateNames(name, "attention-previous-state-projection")
+    val attentionPreviousStateProjectionStepName = concatenateNames(name, "attention-previous-state-projection-step")
+    val (attentionPreviousStateSeriesProjection, _) = createSeriesProjection(attentionPreviousStateProjectionSeriesName, attentionPreviousStateProjectionStepName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val tanh = Array(numberSteps) { TanhLayer() }
 
-    val scoringProjectionName = concatenateNames(name, "scoring-projection")
-    val (scoringProjection, _) = createSeriesProjection(scoringProjectionName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
+    val scoringProjectionSeriesName = concatenateNames(name, "scoring-projection")
+    val scoringProjectionStepName = concatenateNames(name, "scoring-projection-step")
+    val (scoringProjection, _) = createSeriesProjection(scoringProjectionSeriesName, scoringProjectionStepName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
 
     val softmax = Array(numberSteps) { SoftmaxVectorLayer() }
 
     val transposition = Array(numberSteps) { TranspositionLayer() }
 
-    val attendedEncodingProjectionName = concatenateNames(name, "attended-encoding-projection")
-    val (attendedEncodingProjection, _) = createSeriesProjection(attendedEncodingProjectionName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val attendedEncodingProjectionSeriesName = concatenateNames(name, "attended-encoding-projection")
+    val attendedEncodingProjectionStepName = concatenateNames(name, "attended-encoding-projection-step")
+    val (attendedEncodingProjection, _) = createSeriesProjection(attendedEncodingProjectionSeriesName, attendedEncodingProjectionStepName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
-    val decodingPreviousStateProjectionName = concatenateNames(name, "decoding-previous-state-projection")
-    val (decodedPreviousStateProjection, _) = createSeriesProjection(decodingPreviousStateProjectionName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val decodingPreviousStateProjectionSeriesName = concatenateNames(name, "decoding-previous-state-projection")
+    val decodingPreviousStateProjectionStepName = concatenateNames(name, "decoding-previous-state-projection-step")
+    val (decodedPreviousStateProjection, _) = createSeriesProjection(decodingPreviousStateProjectionSeriesName, decodingPreviousStateProjectionStepName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
+
+    val decodingAdditions = Array(numberSteps) { indexStep ->
+
+        val decodingAdditionName = concatenateNames(name, "decoding-addition-$indexStep")
+
+        AdditionCombination(decodingAdditionName)
+
+    }
 
     val activationName = concatenateNames(name, "decoding-activation")
     val activation = createActivationLayers(numberSteps, activationName, activationFunction)
@@ -318,15 +341,17 @@ fun createAttentiveDecoder(
         numberSteps,
         encodingDimension,
         decodingDimension,
-        columnRepetitionLayers,
         encodingProjection,
         attentionPreviousStateSeriesProjection,
+        columnRepetitionLayers,
+        attentionAdditions,
         tanh,
         scoringProjection,
         softmax,
         transposition,
         attendedEncodingProjection,
         decodedPreviousStateProjection,
+        decodingAdditions,
         activation,
         bias
     )

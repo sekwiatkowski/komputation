@@ -55,7 +55,8 @@ class SeriesProjection(
 }
 
 fun createSeriesProjection(
-    name : String?,
+    seriesName: String?,
+    stepName: String?,
     numberSteps : Int,
     useIdentityAtFirstStep : Boolean,
     inputRows: Int,
@@ -69,12 +70,12 @@ fun createSeriesProjection(
     val seriesAccumulator = DenseAccumulator(numberEntries)
     val batchAccumulator = DenseAccumulator(numberEntries)
 
-    val stepProjections = createStepProjections(name, numberSteps, useIdentityAtFirstStep, weights, inputRows, outputRows, seriesAccumulator)
+    val stepProjections = createStepProjections(stepName, numberSteps, useIdentityAtFirstStep, weights, inputRows, outputRows, seriesAccumulator)
 
     val updateRule = optimizationStrategy?.invoke(inputRows, outputRows)
 
     val seriesProjection = SeriesProjection(
-        name,
+        seriesName,
         stepProjections,
         weights,
         seriesAccumulator,

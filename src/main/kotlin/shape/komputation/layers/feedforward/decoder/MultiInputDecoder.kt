@@ -5,6 +5,7 @@ import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.activation.createActivationLayer
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
@@ -145,15 +146,18 @@ fun createMultiInputDecoder(
     outputActivationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?): MultiInputDecoder {
 
-    val inputProjectionName = concatenateNames(name, "input-projection")
-    val (inputProjectionSeries, inputProjectionSteps) = createSeriesProjection(inputProjectionName, numberSteps, false, inputDimension, hiddenDimension, inputWeightInitializationStrategy, optimizationStrategy)
+    val inputProjectionSeriesName = concatenateNames(name, "input-projection")
+    val inputProjectionStepName = concatenateNames(name, "input-projection-step")
+    val (inputProjectionSeries, inputProjectionSteps) = createSeriesProjection(inputProjectionSeriesName, inputProjectionStepName, numberSteps, false, inputDimension, hiddenDimension, inputWeightInitializationStrategy, optimizationStrategy)
 
-    val previousStateProjectionName = concatenateNames(name, "previous-state-projection")
+    val previousStateProjectionSeriesName = concatenateNames(name, "previous-state-projection")
+    val previousStateProjectionStepName = concatenateNames(name, "previous-state-projection-step")
     // Don't project state at the first step
-    val (previousStateProjectionSeries, previousStateProjectionSteps) = createSeriesProjection(previousStateProjectionName, numberSteps, true, hiddenDimension, hiddenDimension, previousStateWeightInitializationStrategy, optimizationStrategy)
+    val (previousStateProjectionSeries, previousStateProjectionSteps) = createSeriesProjection(previousStateProjectionSeriesName, previousStateProjectionStepName, numberSteps, true, hiddenDimension, hiddenDimension, previousStateWeightInitializationStrategy, optimizationStrategy)
 
-    val outputProjectionName = concatenateNames(name, "output-projection")
-    val (outputProjectionSeries, outputProjectionSteps) = createSeriesProjection(outputProjectionName, numberSteps, false, hiddenDimension, outputDimension, outputProjectionInitializationStrategy, optimizationStrategy)
+    val outputProjectionSeriesName = concatenateNames(name, "output-projection")
+    val outputProjectionStepName = concatenateNames(name, "output-projection-step")
+    val (outputProjectionSeries, outputProjectionSteps) = createSeriesProjection(outputProjectionSeriesName, outputProjectionStepName, numberSteps, false, hiddenDimension, outputDimension, outputProjectionInitializationStrategy, optimizationStrategy)
 
     val bias =
 
@@ -174,8 +178,10 @@ fun createMultiInputDecoder(
         val isLastStep = indexStep + 1 == numberSteps
 
         val inputProjectionStep = inputProjectionSteps[indexStep]
-
         val previousStateProjectionStep = previousStateProjectionSteps[indexStep]
+
+        val additionName = concatenateNames(stepName, "addition")
+        val addition = AdditionCombination(additionName)
 
         val stateActivationName = concatenateNames(stepName, "state-activation")
         val stateActivation = createActivationLayer(stateActivationName, stateActivationFunction)
@@ -192,6 +198,7 @@ fun createMultiInputDecoder(
             outputDimension,
             inputProjectionStep,
             previousStateProjectionStep,
+            addition,
             stateActivation,
             outputProjection,
             outputActivation,

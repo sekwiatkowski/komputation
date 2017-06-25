@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     val batchSize = 4
     val inputDimension = 2
     val hiddenDimension = 5
-    val numberIterations = 100
+    val numberIterations = 10
 
     val inputs = Array<Matrix>(numberExamples) { generateInput(random, length) }
 

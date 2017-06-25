@@ -1,11 +1,11 @@
 package shape.komputation.functions.activation
 
-enum class ActivationFunction {
+enum class ActivationFunction(val layerName : String) {
 
-    Identity,
-    ReLU,
-    Sigmoid,
-    Softmax,
-    Tanh
+    Identity("identity"),
+    ReLU("relu"),
+    Sigmoid("sigmoid"),
+    Softmax("softmax"),
+    Tanh("tanh")
 
 }

@@ -1,6 +1,6 @@
 package shape.komputation.layers.feedforward
 
-import shape.komputation.functions.concatRows
+import shape.komputation.functions.stackRows
 import shape.komputation.functions.splitRows
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
@@ -31,7 +31,7 @@ class Branching(name : String? = null, vararg continuations: Array<ContinuationL
 
         }
 
-        return concatRows(*results)
+        return stackRows(results.first().numberColumns, *results)
 
     }
 

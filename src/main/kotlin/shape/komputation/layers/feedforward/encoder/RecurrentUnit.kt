@@ -2,15 +2,16 @@ package shape.komputation.layers.feedforward.encoder
 
 import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 
-class EncoderStep(
+class RecurrentUnit(
     private val name : String?,
-    private val hiddenDimension : Int,
     private val inputProjection: ContinuationLayer,
     private val previousStateProjection: ContinuationLayer,
+    private val addition : AdditionCombination,
     private val bias : SeriesBias?,
     private val activationLayer: ContinuationLayer) {
 
@@ -22,10 +23,8 @@ class EncoderStep(
         // projected state = state weights * state
         val projectedState =  previousStateProjection.forward(state)
 
-        val projectedInputEntries = projectedInput.entries
-        val projectedStateEntries = projectedState.entries
         // addition = projected input + projected state
-        val additionEntries = add(projectedInputEntries, projectedStateEntries)
+        val additionEntries = this.addition.forward(projectedInput, projectedState)
 
         // pre-activation = addition + bias
         val preActivation =
@@ -43,7 +42,7 @@ class EncoderStep(
 
 
         // activation = activate(pre-activation)
-        val newState = activationLayer.forward(DoubleMatrix(hiddenDimension, 1, preActivation))
+        val newState = activationLayer.forward(preActivation)
 
         return newState
 
