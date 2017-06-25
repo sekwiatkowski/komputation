@@ -11,6 +11,7 @@ import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.SeriesProjection
 import shape.komputation.layers.feedforward.recurrent.createSeriesBias
 import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
+import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.*
 import shape.komputation.optimization.OptimizationStrategy
 

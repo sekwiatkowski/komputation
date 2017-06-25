@@ -12,6 +12,7 @@ import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.SeriesProjection
 import shape.komputation.layers.feedforward.recurrent.createSeriesBias
 import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
+import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.SequenceMatrix
 import shape.komputation.matrix.doubleZeroColumnVector

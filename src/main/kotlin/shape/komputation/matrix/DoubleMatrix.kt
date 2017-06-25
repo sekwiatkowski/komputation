@@ -8,6 +8,8 @@ fun doubleColumnVector(vararg entries : Double) = DoubleMatrix(entries.size, 1, 
 
 fun doubleZeroColumnVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows))
 
+fun doubleOneColumnVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows) { 1.0 })
+
 fun doubleRowVector(vararg entries : Double) = DoubleMatrix(1, entries.size, entries)
 
 fun doubleMatrixFromRows(vararg rows: DoubleMatrix): DoubleMatrix {

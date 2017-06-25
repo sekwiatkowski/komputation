@@ -1,4 +1,4 @@
-package shape.komputation.layers.feedforward.encoder
+package shape.komputation.layers.feedforward.units
 
 import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
