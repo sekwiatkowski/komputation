@@ -1,5 +1,6 @@
 package shape.komputation.layers.feedforward.units
 
+import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
@@ -14,8 +15,8 @@ import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.optimization.DenseAccumulator
 
 class MinimalGatedUnit(
-    val name : String?,
-    val hiddenDimension : Int,
+    name : String?,
+    hiddenDimension : Int,
     private val forgetInputProjection : ContinuationLayer,
     private val forgetPreviousStateProjection : ContinuationLayer,
     private val forgetAddition : AdditionCombination,
@@ -30,9 +31,8 @@ class MinimalGatedUnit(
     private val keepSubtraction : SubtractionCombination,
     private val longTermHadamard : HadamardCombination,
     private val shortTermHadamard: HadamardCombination,
-    private val stateAddition: AdditionCombination) : ContinuationLayer(name) {
+    private val stateAddition: AdditionCombination) : RecurrentUnit(name) {
 
-    private var state = doubleZeroColumnVector(hiddenDimension)
     private val one = doubleOneColumnVector(hiddenDimension)
 
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
@@ -96,24 +96,23 @@ class MinimalGatedUnit(
         return shortTermResponse
     }
 
-    override fun forward(input : DoubleMatrix): DoubleMatrix {
+    override fun forward(state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
 
         val forget = this.forwardForget(input)
 
         val keep = this.keepSubtraction.forward(one, forget)
 
-        val longTermComponent = this.longTermHadamard.forward(keep, this.state)
+        val longTermComponent = this.longTermHadamard.forward(keep, state)
 
         val shortTermResponse = this.forwardShortTermResponse(input, forget)
 
         val shortTermComponent = this.shortTermHadamard.forward(forget, shortTermResponse)
 
-        this.state = this.stateAddition.forward(longTermComponent, shortTermComponent)
+        val newState = this.stateAddition.forward(longTermComponent, shortTermComponent)
 
-        return this.state
+        return newState
     }
 
-    // TODO: Implement caching
     fun backwardWrtForget(chain: DoubleMatrix) {
 
         // forget = sigmoid(forget pre-activation)
@@ -151,10 +150,7 @@ class MinimalGatedUnit(
 
     }
 
-
-
-    override fun backward(chain : DoubleMatrix): DoubleMatrix {
-
+    override fun backward(chain : DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
 
         // new state = long-term component + short-term component
 
@@ -233,7 +229,7 @@ class MinimalGatedUnit(
 
         }
 
-        return doubleColumnVector(*this.inputAccumulator.getAccumulation())
+        return doubleColumnVector(*this.previousStateAccumulator.getAccumulation()) to doubleColumnVector(*this.inputAccumulator.getAccumulation())
 
     }
 

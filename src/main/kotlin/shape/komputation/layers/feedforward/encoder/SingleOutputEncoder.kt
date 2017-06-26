@@ -1,6 +1,7 @@
 package shape.komputation.layers.feedforward.encoder
 
 import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.functions.add
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
@@ -12,12 +13,13 @@ import shape.komputation.layers.feedforward.recurrent.SeriesProjection
 import shape.komputation.layers.feedforward.recurrent.createSeriesBias
 import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
 import shape.komputation.layers.feedforward.units.RecurrentUnit
+import shape.komputation.layers.feedforward.units.SimpleRecurrentUnit
 import shape.komputation.matrix.*
 import shape.komputation.optimization.OptimizationStrategy
 
 class SingleOutputEncoder(
     name : String?,
-    private val steps : Array<RecurrentUnit>,
+    private val units: Array<RecurrentUnit>,
     private val numberSteps: Int,
     private val inputDimension: Int,
     private val hiddenDimension : Int,
@@ -37,7 +39,7 @@ class SingleOutputEncoder(
 
             val stepInput = input.getStep(indexStep)
 
-            state = this.steps[indexStep].forward(state, stepInput)
+            state = this.units[indexStep].forward(state, stepInput)
 
             if (indexStep == numberSteps - 1) {
 
@@ -55,30 +57,15 @@ class SingleOutputEncoder(
 
         val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, this.inputDimension)
 
-        var stateChain : DoubleArray? = null
-
-        val incomingEntries = incoming.entries
+        var stateChain = incoming
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val backwardOutput =
+            val (backwardWrtPreviousState, backwardWrtInput) = this.units[indexStep].backward(stateChain)
 
-                if (indexStep + 1 == this.numberSteps) {
+            stateChain = backwardWrtPreviousState
 
-                    incomingEntries
-
-                }
-                else {
-
-                    null
-
-                }
-
-            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.steps[indexStep].backward(stateChain, backwardOutput)
-
-            stateChain = backwardStatePreActivationWrtPreviousState
-
-            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput)
+            seriesBackwardWrtInput.setStep(indexStep, backwardWrtInput.entries)
 
         }
 
@@ -176,11 +163,10 @@ fun createSingleOutputEncoder(
     val activationName = concatenateNames(name, "state-activation")
     val activationLayers = createActivationLayers(numberSteps, activationName, activationFunction)
 
-    val encoderSteps = Array(numberSteps) { indexStep ->
+    val encoderSteps = Array<RecurrentUnit>(numberSteps) { indexStep ->
 
         val encoderStepName = concatenateNames(name, "step-$indexStep")
-
-        RecurrentUnit(encoderStepName, inputProjectionSteps[indexStep], previousStateProjectionSteps[indexStep], additions[indexStep], bias, activationLayers[indexStep])
+        SimpleRecurrentUnit(encoderStepName, inputProjectionSteps[indexStep], previousStateProjectionSteps[indexStep], additions[indexStep], bias, activationLayers[indexStep])
 
     }
 

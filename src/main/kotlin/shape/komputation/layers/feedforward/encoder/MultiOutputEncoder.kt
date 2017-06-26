@@ -1,6 +1,7 @@
 package shape.komputation.layers.feedforward.encoder
 
 import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.functions.add
 import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
@@ -12,16 +13,13 @@ import shape.komputation.layers.feedforward.recurrent.SeriesBias
 import shape.komputation.layers.feedforward.recurrent.SeriesProjection
 import shape.komputation.layers.feedforward.recurrent.createSeriesBias
 import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
-import shape.komputation.layers.feedforward.units.RecurrentUnit
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.SequenceMatrix
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.zeroSequenceMatrix
+import shape.komputation.layers.feedforward.units.SimpleRecurrentUnit
+import shape.komputation.matrix.*
 import shape.komputation.optimization.OptimizationStrategy
 
 class MultiOutputEncoder(
     name : String?,
-    private val units: Array<RecurrentUnit>,
+    private val units: Array<SimpleRecurrentUnit>,
     private val numberSteps: Int,
     private val inputRows: Int,
     private val hiddenDimension : Int,
@@ -62,13 +60,27 @@ class MultiOutputEncoder(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val backwardOutput = extractStep(incomingEntries, indexStep, hiddenDimension)
+            val isLastStep = indexStep + 1 == this.numberSteps
 
-            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.units[indexStep].backward(stateChain, backwardOutput)
+            val incomingStepEntries = extractStep(incomingEntries, indexStep, hiddenDimension)
 
-            stateChain = backwardStatePreActivationWrtPreviousState
+            val chainEntries =
 
-            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput)
+                if (isLastStep) {
+
+                    incomingStepEntries
+                }
+                else {
+
+                    add(stateChain!!, incomingStepEntries)
+
+                }
+
+            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.units[indexStep].backward(doubleColumnVector(*chainEntries))
+
+            stateChain = backwardStatePreActivationWrtPreviousState.entries
+
+            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput.entries)
 
         }
 
@@ -170,7 +182,7 @@ fun createMultiOutputEncoder(
 
         val encoderStepName = concatenateNames(name, "step-$indexStep")
 
-        RecurrentUnit(encoderStepName, inputProjectionSteps[indexStep], previousStateProjectionSteps[indexStep], additions[indexStep], bias, activationLayers[indexStep])
+        SimpleRecurrentUnit(encoderStepName, inputProjectionSteps[indexStep], previousStateProjectionSteps[indexStep], additions[indexStep], bias, activationLayers[indexStep])
 
     }
 
