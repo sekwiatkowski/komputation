@@ -104,7 +104,6 @@ fun createSeriesWeighting(
 
 }
 
-
 fun createStepWeighting(
     name : String?,
     numberWeightRows: Int,

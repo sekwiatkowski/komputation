@@ -70,32 +70,13 @@ class DecoderUnit(
     }
 
     fun backwardStep(
-        isLastStep : Boolean,
         step : Int,
-        chainStep: DoubleArray,
-        backwardStatePreActivationWrtInput: DoubleMatrix?,
+        chainStep: DoubleMatrix,
         backwardStatePreActivationWrtPreviousState : DoubleMatrix?): Pair<DoubleMatrix, DoubleMatrix> {
-
-        val backwardChainWrtOutputEntries =
-
-            if (isLastStep || backwardStatePreActivationWrtInput == null) {
-
-                chainStep
-
-            }
-            else {
-
-                // Add the gradient with regard to the input from step t+1 (which is the output of step t):
-                // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
-                val backwardStatePreActivationWrtInputEntries = backwardStatePreActivationWrtInput.entries
-
-                add(chainStep, backwardStatePreActivationWrtInputEntries)
-
-            }
 
         // Differentiate w.r.t. the output pre-activation:
         // d output / d output pre-activation = d activate(output weights * state) / d output weights * state
-        val backwardOutputWrtOutputPreActivation = this.outputActivations[step].backward(DoubleMatrix(outputDimension, 1, backwardChainWrtOutputEntries))
+        val backwardOutputWrtOutputPreActivation = this.outputActivations[step].backward(chainStep)
 
         // Differentiate w.r.t. the state:
         // d output pre-activation (Wh) / d state = d output weights * state / d state
@@ -103,19 +84,15 @@ class DecoderUnit(
 
         val stateSumEntries =
 
-            if (isLastStep) {
+            if (backwardStatePreActivationWrtPreviousState == null) {
 
                 backwardOutputPreActivationWrtState.entries
 
             }
             else {
 
-                val backwardOutputPreActivationWrtStateEntries = backwardOutputPreActivationWrtState.entries
-
                 // d chain / d output(index+1) * d output(index+1) / d state(index)
-                val backwardStatePreActivationWrtPreviousStateEntries = backwardStatePreActivationWrtPreviousState!!.entries
-
-                add(backwardOutputPreActivationWrtStateEntries, backwardStatePreActivationWrtPreviousStateEntries)
+                add(backwardOutputPreActivationWrtState.entries, backwardStatePreActivationWrtPreviousState.entries)
 
             }
 

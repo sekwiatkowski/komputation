@@ -3,10 +3,7 @@ package shape.komputation.layers.feedforward.decoder
 import shape.komputation.functions.extractStep
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.SequenceMatrix
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.zeroSequenceMatrix
+import shape.komputation.matrix.*
 
 class MultiInputDecoder(
     name : String?,
@@ -54,11 +51,9 @@ class MultiInputDecoder(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val isLastStep = indexStep + 1 == this.numberSteps
+            val chainStep = doubleColumnVector(*extractStep(chainEntries, indexStep, outputDimension))
 
-            val chainStep = extractStep(chainEntries, indexStep, outputDimension)
-
-            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = this.unit.backwardStep(isLastStep, indexStep, chainStep, backwardStatePreActivationWrtInput, backwardStatePreActivationWrtPreviousState)
+            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = this.unit.backwardStep(indexStep, chainStep, backwardStatePreActivationWrtPreviousState)
 
             backwardStatePreActivationWrtInput.setStep(indexStep, newBackwardStatePreActivationWrtInput.entries)
             backwardStatePreActivationWrtPreviousState = newBackwardStatePreActivationWrtPreviousState

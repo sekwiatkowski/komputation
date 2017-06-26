@@ -24,7 +24,7 @@ fun main(args: Array<String>) {
     val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
     val hiddenDimension = 10
     val numberIterations = 50
-    val batchSize = 10
+    val batchSize = 1
 
     val inputs = Array<Matrix>(numberExamples) {
 

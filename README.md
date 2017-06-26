@@ -10,15 +10,6 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Input](./src/main/kotlin/shape/komputation/layers/entry/InputLayer.kt)
   - [Lookup](./src/main/kotlin/shape/komputation/layers/entry/LookupLayer.kt)
 
-- Activation functions:
-  - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)
-  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
-  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
-  - Softmax:
-    - [column-wise](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
-    - [vectorial](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxVectorLayer.kt)
-  - [Tanh](./src/main/kotlin/shape/komputation/layers/feedforward/activation/TanhLayer.kt)
-
 - Standard feed-forward networks:
   - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
 
@@ -34,6 +25,15 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
     - [single input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/SingleInputDecoder.kt)
     - [multi-input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/MultiInputDecoder.kt)
     - [attentive](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/AttentiveDecoder.kt)
+
+- Activation functions:
+  - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)
+  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
+  - [Sigmoid](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SigmoidLayer.kt)
+  - Softmax:
+    - [column-wise](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxLayer.kt)
+    - [vectorial](./src/main/kotlin/shape/komputation/layers/feedforward/activation/SoftmaxVectorLayer.kt)
+  - [Tanh](./src/main/kotlin/shape/komputation/layers/feedforward/activation/TanhLayer.kt)
 
 - Other layers:
   - [Transposition](./src/main/kotlin/shape/komputation/layers/feedforward/TranspositionLayer.kt)
