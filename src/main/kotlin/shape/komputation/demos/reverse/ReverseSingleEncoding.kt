@@ -5,8 +5,10 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.feedforward.decoder.createDecoderUnit
 import shape.komputation.layers.feedforward.decoder.createSingleInputDecoder
 import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
+import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -63,13 +65,36 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoder = createSingleOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitialization, identityInitialization, zeroInitialization, ActivationFunction.Tanh, optimizationStrategy)
-    val decoder = createSingleInputDecoder(seriesLength, numberCategories, hiddenDimension, numberCategories, gaussianInitialization, identityInitialization, null, ActivationFunction.Tanh, gaussianInitialization, ActivationFunction.Softmax, optimizationStrategy)
+    val encoderUnit = createSimpleRecurrentUnit(
+        seriesLength,
+        numberCategories,
+        hiddenDimension,
+        gaussianInitialization,
+        identityInitialization,
+        zeroInitialization,
+        ActivationFunction.Tanh,
+        optimizationStrategy
+    )
+
+    val decoderUnit = createDecoderUnit(
+        seriesLength,
+        numberCategories,
+        hiddenDimension,
+        numberCategories,
+        true,
+        gaussianInitialization,
+        identityInitialization,
+        null,
+        ActivationFunction.Tanh,
+        gaussianInitialization,
+        ActivationFunction.Softmax,
+        optimizationStrategy
+    )
 
     val network = Network(
         InputLayer(),
-        encoder,
-        decoder
+        createSingleOutputEncoder(encoderUnit, seriesLength, numberCategories, hiddenDimension),
+        createSingleInputDecoder(decoderUnit, seriesLength, numberCategories)
     )
 
     network.train(

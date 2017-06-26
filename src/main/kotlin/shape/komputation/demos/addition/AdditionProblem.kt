@@ -7,6 +7,7 @@ import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
+import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -40,7 +41,7 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val recurrentLayer = createSingleOutputEncoder(
+    val encoderUnit = createSimpleRecurrentUnit(
         length,
         inputDimension,
         hiddenDimension,
@@ -51,10 +52,14 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
+    val encoder = createSingleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
+
+    val outputProjection = createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
+
     val network = Network(
         InputLayer(),
-        recurrentLayer,
-        createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
+        encoder,
+        outputProjection
     )
 
     network.train(

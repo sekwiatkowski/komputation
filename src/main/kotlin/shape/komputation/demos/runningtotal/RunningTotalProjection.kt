@@ -7,6 +7,7 @@ import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
+import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -60,9 +61,22 @@ fun main(args: Array<String>) {
 
     }
 
+    val encoderUnit = createSimpleRecurrentUnit(
+        numberSteps,
+        1,
+        hiddenDimension,
+        inputWeightInitializationStrategy,
+        previousStateWeightInitializationStrategy,
+        biasInitializationStrategy,
+        ActivationFunction.Identity,
+        optimizationStrategy
+    )
+
+    val encoder = createMultiOutputEncoder(encoderUnit, numberSteps, 1, hiddenDimension)
+
     val network = Network(
         InputLayer(),
-        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, inputWeightInitializationStrategy, previousStateWeightInitializationStrategy, biasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
+        encoder,
         createProjectionLayer(hiddenDimension, 1, false, inputWeightInitializationStrategy, optimizationStrategy)
     )
 

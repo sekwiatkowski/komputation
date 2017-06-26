@@ -5,8 +5,11 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.feedforward.decoder.createDecoderUnit
 import shape.komputation.layers.feedforward.decoder.createMultiInputDecoder
+import shape.komputation.layers.feedforward.encoder.MultiOutputEncoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
+import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -65,10 +68,50 @@ fun main(args: Array<String>) {
 
     }
 
+    val encoderUnit = createSimpleRecurrentUnit(
+        numberSteps,
+        1,
+        hiddenDimension,
+        encoderInputWeightInitializationStrategy,
+        encoderPreviousStateWeightInitializationStrategy,
+        encoderBiasInitializationStrategy,
+        ActivationFunction.Identity,
+        optimizationStrategy)
+
+    val encoder = createMultiOutputEncoder(
+        encoderUnit,
+        numberSteps,
+        1,
+        hiddenDimension)
+
+    val decoderUnit = createDecoderUnit(
+        numberSteps,
+        hiddenDimension,
+        hiddenDimension,
+        1,
+        false,
+        decoderInputWeightInitializationStrategy,
+        decoderPreviousStateWeightInitializationStrategy,
+        decoderBiasInitializationStrategy,
+        ActivationFunction.Identity,
+        decoderOutputWeightInitializationStrategy,
+        ActivationFunction.Identity,
+        optimizationStrategy
+    )
+
+    val decoder = createMultiInputDecoder(
+        decoderUnit,
+        numberSteps,
+        hiddenDimension,
+        hiddenDimension,
+        1
+
+    )
+
     val network = Network(
         InputLayer(),
-        createMultiOutputEncoder(numberSteps, 1, hiddenDimension, encoderInputWeightInitializationStrategy, encoderPreviousStateWeightInitializationStrategy, encoderBiasInitializationStrategy, ActivationFunction.Identity, optimizationStrategy),
-        createMultiInputDecoder(numberSteps, hiddenDimension, hiddenDimension, 1, decoderInputWeightInitializationStrategy, decoderPreviousStateWeightInitializationStrategy, decoderBiasInitializationStrategy, ActivationFunction.Identity, decoderOutputWeightInitializationStrategy, ActivationFunction.Identity, optimizationStrategy)
+        encoder,
+        decoder
     )
 
     network.train(

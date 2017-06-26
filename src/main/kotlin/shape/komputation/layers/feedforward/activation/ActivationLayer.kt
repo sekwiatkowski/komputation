@@ -11,27 +11,23 @@ fun createActivationLayers(number: Int, name: String?, function: ActivationFunct
 
     Array(number) { index ->
 
-        createActivationLayer(name, function)
+        createActivationLayer(concatenateNames(name, index.toString()), function)
 
     }
 
-fun createActivationLayer(name: String?, function: ActivationFunction) : ActivationLayer {
+fun createActivationLayer(name: String?, function: ActivationFunction) =
 
-    val layerName = concatenateNames(name, function.layerName)
-
-    return when (function) {
+    when (function) {
 
         ActivationFunction.ReLU ->
-            ReluLayer(layerName)
+            ReluLayer(name)
         ActivationFunction.Identity ->
-            IdentityLayer(layerName)
+            IdentityLayer(name)
         ActivationFunction.Sigmoid ->
-            SigmoidLayer(layerName)
+            SigmoidLayer(name)
         ActivationFunction.Softmax ->
-            SoftmaxLayer(layerName)
+            SoftmaxLayer(name)
         ActivationFunction.Tanh ->
-            TanhLayer(layerName)
+            TanhLayer(name)
 
     }
-
-}

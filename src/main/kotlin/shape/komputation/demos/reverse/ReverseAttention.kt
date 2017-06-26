@@ -7,6 +7,7 @@ import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.decoder.createAttentiveDecoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
+import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -62,8 +63,31 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoder = createMultiOutputEncoder(seriesLength, numberCategories, hiddenDimension, gaussianInitializationStrategy, identityInitializationStrategy, gaussianInitializationStrategy, ActivationFunction.ReLU, optimizationStrategy)
-    val decoder = createAttentiveDecoder(null, seriesLength, hiddenDimension, hiddenDimension, ActivationFunction.Sigmoid, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
+    val encoderUnit = createSimpleRecurrentUnit(
+        seriesLength,
+        numberCategories,
+        hiddenDimension,
+        gaussianInitializationStrategy,
+        identityInitializationStrategy,
+        gaussianInitializationStrategy,
+        ActivationFunction.ReLU,
+        optimizationStrategy)
+
+    val encoder = createMultiOutputEncoder(
+        encoderUnit,
+        seriesLength,
+        numberCategories,
+        hiddenDimension
+    )
+
+    val decoder = createAttentiveDecoder(
+        seriesLength,
+        hiddenDimension,
+        hiddenDimension,
+        ActivationFunction.Sigmoid,
+        gaussianInitializationStrategy,
+        gaussianInitializationStrategy,
+        optimizationStrategy)
 
     val network = Network(
         InputLayer(),

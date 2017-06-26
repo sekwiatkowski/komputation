@@ -12,10 +12,10 @@ fun tanh(x: Double) =
 
     (2.0 / (1.0 + Math.exp(-2.0*x))) - 1.0
 
-fun differentiateTanh(forwardEntries: DoubleArray) =
+fun differentiateTanh(input: DoubleArray) =
 
-    DoubleArray(forwardEntries.size) { index ->
+    DoubleArray(input.size) { index ->
 
-        1 - Math.pow(forwardEntries[index], 2.0)
+        1 - Math.pow(input[index], 2.0)
 
     }

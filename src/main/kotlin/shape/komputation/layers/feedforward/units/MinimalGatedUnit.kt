@@ -1,17 +1,15 @@
 package shape.komputation.layers.feedforward.units
 
-import shape.komputation.functions.add
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.SubtractionCombination
 import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.activation.TanhLayer
-import shape.komputation.layers.feedforward.recurrent.SeriesBias
+import shape.komputation.layers.feedforward.projection.SeriesBias
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleOneColumnVector
-import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.optimization.DenseAccumulator
 
 class MinimalGatedUnit(
@@ -31,7 +29,7 @@ class MinimalGatedUnit(
     private val keepSubtraction : SubtractionCombination,
     private val longTermHadamard : HadamardCombination,
     private val shortTermHadamard: HadamardCombination,
-    private val stateAddition: AdditionCombination) : RecurrentUnit(name) {
+    private val stateAddition: AdditionCombination)  {
 
     private val one = doubleOneColumnVector(hiddenDimension)
 
@@ -96,7 +94,7 @@ class MinimalGatedUnit(
         return shortTermResponse
     }
 
-    override fun forward(state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
+    fun forwardStep(step : Int, state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
 
         val forget = this.forwardForget(input)
 
@@ -150,7 +148,7 @@ class MinimalGatedUnit(
 
     }
 
-    override fun backward(chain : DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
+    fun backwardStep(step : Int, chain : DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
 
         // new state = long-term component + short-term component
 
@@ -234,4 +232,3 @@ class MinimalGatedUnit(
     }
 
 }
-

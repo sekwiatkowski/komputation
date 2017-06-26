@@ -15,14 +15,13 @@ import shape.komputation.layers.feedforward.activation.TanhLayer
 import shape.komputation.layers.feedforward.activation.createActivationLayers
 import shape.komputation.layers.feedforward.projection.ProjectionLayer
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.feedforward.recurrent.SeriesBias
-import shape.komputation.layers.feedforward.recurrent.SeriesProjection
-import shape.komputation.layers.feedforward.recurrent.createSeriesBias
-import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
+import shape.komputation.layers.feedforward.projection.SeriesBias
+import shape.komputation.layers.feedforward.projection.SeriesWeighting
+import shape.komputation.layers.feedforward.projection.createSeriesBias
+import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.*
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
-import java.util.*
 
 class AttentiveDecoder(
     name : String?,
@@ -30,15 +29,15 @@ class AttentiveDecoder(
     private val encodingDimension: Int,
     private val decodingDimension: Int,
     private val encodingProjection : ProjectionLayer,
-    private val attentionPreviousStateProjection: SeriesProjection,
+    private val attentionPreviousStateProjection: SeriesWeighting,
     private val columnRepetitions: Array<ColumnRepetitionLayer>,
     private val attentionAdditions : Array<AdditionCombination>,
     private val tanh: Array<TanhLayer>,
-    private val scoringProjection : SeriesProjection,
+    private val scoringProjection : SeriesWeighting,
     private val softmax : Array<SoftmaxVectorLayer>,
     private val transposition: Array<TranspositionLayer>,
-    private val attendedEncodingProjection: SeriesProjection,
-    private val decodingPreviousDecoderProjection: SeriesProjection,
+    private val attendedEncodingProjection: SeriesWeighting,
+    private val decodingPreviousDecoderProjection: SeriesWeighting,
     private val decodingAdditions: Array<AdditionCombination>,
     private val activationFunctions: Array<ActivationLayer>,
     private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
@@ -240,7 +239,7 @@ class AttentiveDecoder(
         val encodingAccumulation = encodingAccumulator.getAccumulation().copyOf()
         val result = DoubleMatrix(this.encodingDimension, this.numberSteps, encodingAccumulation)
 
-        encodingAccumulator.reset()
+        this.encodingAccumulator.reset()
 
         return result
 
@@ -264,6 +263,26 @@ class AttentiveDecoder(
     }
 
 }
+
+fun createAttentiveDecoder(
+    numberSteps : Int,
+    encodingDimension : Int,
+    decodingDimension: Int,
+    activationFunction: ActivationFunction,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy: OptimizationStrategy) =
+
+    createAttentiveDecoder(
+        null,
+        numberSteps,
+        encodingDimension,
+        decodingDimension,
+        activationFunction,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        optimizationStrategy
+    )
 
 fun createAttentiveDecoder(
     name : String?,
@@ -295,13 +314,13 @@ fun createAttentiveDecoder(
 
     val attentionPreviousStateProjectionSeriesName = concatenateNames(name, "attention-previous-state-projection")
     val attentionPreviousStateProjectionStepName = concatenateNames(name, "attention-previous-state-projection-step")
-    val (attentionPreviousStateSeriesProjection, _) = createSeriesProjection(attentionPreviousStateProjectionSeriesName, attentionPreviousStateProjectionStepName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val attentionPreviousStateSeriesProjection = createSeriesWeighting(attentionPreviousStateProjectionSeriesName, attentionPreviousStateProjectionStepName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val tanh = Array(numberSteps) { TanhLayer() }
 
     val scoringProjectionSeriesName = concatenateNames(name, "scoring-projection")
     val scoringProjectionStepName = concatenateNames(name, "scoring-projection-step")
-    val (scoringProjection, _) = createSeriesProjection(scoringProjectionSeriesName, scoringProjectionStepName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
+    val scoringProjection = createSeriesWeighting(scoringProjectionSeriesName, scoringProjectionStepName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
 
     val softmax = Array(numberSteps) { SoftmaxVectorLayer() }
 
@@ -309,11 +328,11 @@ fun createAttentiveDecoder(
 
     val attendedEncodingProjectionSeriesName = concatenateNames(name, "attended-encoding-projection")
     val attendedEncodingProjectionStepName = concatenateNames(name, "attended-encoding-projection-step")
-    val (attendedEncodingProjection, _) = createSeriesProjection(attendedEncodingProjectionSeriesName, attendedEncodingProjectionStepName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val attendedEncodingProjection = createSeriesWeighting(attendedEncodingProjectionSeriesName, attendedEncodingProjectionStepName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val decodingPreviousStateProjectionSeriesName = concatenateNames(name, "decoding-previous-state-projection")
     val decodingPreviousStateProjectionStepName = concatenateNames(name, "decoding-previous-state-projection-step")
-    val (decodedPreviousStateProjection, _) = createSeriesProjection(decodingPreviousStateProjectionSeriesName, decodingPreviousStateProjectionStepName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val decodedPreviousStateProjection = createSeriesWeighting(decodingPreviousStateProjectionSeriesName, decodingPreviousStateProjectionStepName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val decodingAdditions = Array(numberSteps) { indexStep ->
 

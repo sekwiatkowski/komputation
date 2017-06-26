@@ -1,46 +1,28 @@
 package shape.komputation.layers.feedforward.decoder
 
-import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.functions.add
 import shape.komputation.functions.extractStep
-import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.OptimizableLayer
-import shape.komputation.layers.combination.AdditionCombination
-import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.feedforward.activation.createActivationLayer
-import shape.komputation.layers.feedforward.recurrent.SeriesBias
-import shape.komputation.layers.feedforward.recurrent.SeriesProjection
-import shape.komputation.layers.feedforward.recurrent.createSeriesBias
-import shape.komputation.layers.feedforward.recurrent.createSeriesProjection
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.matrix.zeroSequenceMatrix
-import shape.komputation.optimization.OptimizationStrategy
 
 class SingleInputDecoder(
     name : String?,
+    private val unit : DecoderUnit,
     private val numberSteps : Int,
-    private val decoderSteps : Array<DecoderStep>,
-    private val inputDimension: Int,
-    private val outputDimension : Int,
-    private val previousOutputProjection: SeriesProjection,
-    private val stateProjection: SeriesProjection,
-    private val outputProjection: SeriesProjection,
-    private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
+    private val outputDimension : Int) : ContinuationLayer(name), OptimizableLayer {
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
-        val seriesOutput = zeroSequenceMatrix(this.numberSteps, this.inputDimension)
+        val seriesOutput = zeroSequenceMatrix(this.numberSteps, this.outputDimension)
 
         var state = input
         var previousOutput = doubleZeroColumnVector(outputDimension)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
-            val decoderStep = this.decoderSteps[indexStep]
-
-            val (newState, newOutput) = decoderStep.forward(state, previousOutput)
+            val (newState, newOutput) = this.unit.forward(indexStep, state, previousOutput)
 
             seriesOutput.setStep(indexStep, newOutput.entries)
 
@@ -58,27 +40,23 @@ class SingleInputDecoder(
 
         val chainEntries = chain.entries
 
-        var backwardStatePreActivationWrtPreviousOutput : DoubleMatrix? = null
+        var backwardStatePreActivationWrtInput : DoubleMatrix? = null
         var backwardStatePreActivationWrtPreviousState : DoubleMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
             val stepChain = extractStep(chainEntries, indexStep, outputDimension)
 
-            val decoderStep = this.decoderSteps[indexStep]
+            val isLastStep = indexStep + 1 == this.numberSteps
 
-            val (newBackwardStatePreActivationWrtPreviousOutput, newBackwardStatePreActivationWrtPreviousState) = decoderStep.backward(stepChain, backwardStatePreActivationWrtPreviousOutput, backwardStatePreActivationWrtPreviousState)
+            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = this.unit.backwardStep(isLastStep, indexStep, stepChain, backwardStatePreActivationWrtInput, backwardStatePreActivationWrtPreviousState)
 
-            backwardStatePreActivationWrtPreviousOutput = newBackwardStatePreActivationWrtPreviousOutput
+            backwardStatePreActivationWrtInput = newBackwardStatePreActivationWrtInput
             backwardStatePreActivationWrtPreviousState = newBackwardStatePreActivationWrtPreviousState
 
         }
 
-        this.outputProjection.backwardSeries()
-        this.stateProjection.backwardSeries()
-        this.previousOutputProjection.backwardSeries()
-
-        this.bias?.backwardSeries()
+        this.unit.backwardSeries()
 
         return backwardStatePreActivationWrtPreviousState!!
 
@@ -86,130 +64,32 @@ class SingleInputDecoder(
 
     override fun optimize() {
 
-        this.outputProjection.optimize()
-        this.stateProjection.optimize()
-        this.previousOutputProjection.optimize()
-
-        this.bias?.optimize()
+        this.unit.optimize()
 
     }
 
 }
 
 fun createSingleInputDecoder(
+    unit : DecoderUnit,
     numberSteps: Int,
-    inputDimension: Int,
-    hiddenDimension: Int,
-    outputDimension: Int,
-    previousOutputProjectionInitializationStrategy: InitializationStrategy,
-    previousStateProjectionInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
-    stateActivation: ActivationFunction,
-    outputProjectionInitializationStrategy: InitializationStrategy,
-    outputActivation: ActivationFunction,
-    optimizationStrategy: OptimizationStrategy?) =
+    outputDimension: Int) =
 
     createSingleInputDecoder(
         null,
+        unit,
         numberSteps,
-        inputDimension,
-        hiddenDimension,
-        outputDimension,
-        previousOutputProjectionInitializationStrategy,
-        previousStateProjectionInitializationStrategy,
-        biasInitializationStrategy,
-        stateActivation,
-        outputProjectionInitializationStrategy,
-        outputActivation,
-        optimizationStrategy)
+        outputDimension)
 
 
 fun createSingleInputDecoder(
     name : String?,
+    unit : DecoderUnit,
     numberSteps: Int,
-    inputDimension: Int,
-    hiddenDimension: Int,
-    outputDimension: Int,
-    previousOutputProjectionInitializationStrategy: InitializationStrategy,
-    previousStateProjectionInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
-    stateActivationFunction: ActivationFunction,
-    outputProjectionInitializationStrategy: InitializationStrategy,
-    outputActivationFunction: ActivationFunction,
-    optimizationStrategy: OptimizationStrategy?): SingleInputDecoder {
+    outputDimension: Int) =
 
-    val previousOutputProjectionSeriesName = concatenateNames(name, "previous-output-projection")
-    val previousOutputProjectionStepName = concatenateNames(name, "previous-output-projection-step")
-    val (previousOutputProjectionSeries, previousOutputProjectionSteps) = createSeriesProjection(previousOutputProjectionSeriesName, previousOutputProjectionStepName, numberSteps, true, outputDimension, hiddenDimension, previousOutputProjectionInitializationStrategy, optimizationStrategy)
-
-    val previousStateProjectionSeriesName = concatenateNames(name, "previous-state-projection")
-    val previousStateProjectionStepName = concatenateNames(name, "previous-state-projection-step")
-    val (previousStateProjectionSeries, previousStateProjectionSteps) = createSeriesProjection(previousStateProjectionSeriesName, previousStateProjectionStepName, numberSteps, false, hiddenDimension, hiddenDimension, previousStateProjectionInitializationStrategy, optimizationStrategy)
-
-    val outputProjectionSeriesName = concatenateNames(name, "output-projection")
-    val outputProjectionStepName = concatenateNames(name, "output-projection-step")
-    val (outputProjectionSeries, outputProjectionSteps) = createSeriesProjection(outputProjectionSeriesName, outputProjectionStepName, numberSteps, false, hiddenDimension, outputDimension, outputProjectionInitializationStrategy, optimizationStrategy)
-
-    val bias =
-
-        if(biasInitializationStrategy == null)
-            null
-        else {
-
-            val biasName = concatenateNames(name, "bias")
-
-            createSeriesBias(biasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
-
-        }
-
-
-    val decoderSteps = Array(numberSteps) { indexStep ->
-
-        val stepName = concatenateNames(name, "step-$indexStep")
-        val isLastStep = indexStep + 1 == numberSteps
-
-        val previousOutputProjectionStep = previousOutputProjectionSteps[indexStep]
-        val previousStateProjectionStep = previousStateProjectionSteps[indexStep]
-
-        val additionName = concatenateNames(stepName, "addition")
-        val addition = AdditionCombination(additionName)
-
-        val stateActivationName = concatenateNames(stepName, "state-activation")
-        val stateActivation = createActivationLayer(stateActivationName, stateActivationFunction)
-
-        val outputProjection = outputProjectionSteps[indexStep]
-
-        val outputActivationName = concatenateNames(stepName, "output-activation")
-        val outputActivation = createActivationLayer(outputActivationName, outputActivationFunction)
-
-        DecoderStep(
-            stepName,
-            isLastStep,
-            hiddenDimension,
-            outputDimension,
-            previousOutputProjectionStep,
-            previousStateProjectionStep,
-            addition,
-            stateActivation,
-            outputProjection,
-            outputActivation,
-            bias
-        )
-
-    }
-
-
-    val decoder = SingleInputDecoder(
+    SingleInputDecoder(
         name,
+        unit,
         numberSteps,
-        decoderSteps,
-        inputDimension,
-        outputDimension,
-        previousOutputProjectionSeries,
-        previousStateProjectionSeries,
-        outputProjectionSeries,
-        bias)
-
-    return decoder
-
-}
+        outputDimension)
