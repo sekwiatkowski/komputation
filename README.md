@@ -17,7 +17,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Convolution](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/ConvolutionalLayer.kt)
   - [Max-pooling](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/MaxPoolingLayer.kt)
 
-- Recurrent neural networks:
+- Recurrent neural networks (RNNs):
   - Encoder
     - [single output](./src/main/kotlin/shape/komputation/layers/feedforward/encoder/SingleOutputEncoder.kt)
     - [multi-output](./src/main/kotlin/shape/komputation/layers/feedforward/encoder/MultiOutputEncoder.kt)
@@ -25,6 +25,10 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
     - [single input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/SingleInputDecoder.kt)
     - [multi-input](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/MultiInputDecoder.kt)
     - [attentive](./src/main/kotlin/shape/komputation/layers/feedforward/decoder/AttentiveDecoder.kt)
+
+- RNN units:
+  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/layers/feedforward/units/SimpleRecurrentUnit.kt)
+  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/layers/feedforward/units/MinimalGatedUnit.kt)
 
 - Activation functions:
   - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)

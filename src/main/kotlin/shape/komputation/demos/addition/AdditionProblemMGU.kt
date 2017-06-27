@@ -1,13 +1,12 @@
 package shape.komputation.demos.addition
 
-import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
 import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
+import shape.komputation.layers.feedforward.units.createMinimalGatedUnit
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.*
 import shape.komputation.networks.Network
@@ -18,11 +17,11 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val length = 8
+    val length = 20
     val numberExamples = 100_000
-    val batchSize = 4
+    val batchSize = 1
     val inputDimension = 2
-    val hiddenDimension = 5
+    val hiddenDimension = 20
     val numberIterations = 10
 
     val inputs = Array<Matrix>(numberExamples) { generateInput(random, length) }
@@ -33,26 +32,28 @@ fun main(args: Array<String>) {
 
     }
 
-    val previousStateProjectionInitializationStrategy = createIdentityInitializer()
-    val inputProjectionInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val previousStateWeightInitializationStrategy = createIdentityInitializer()
+    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
     val biasInitializationStrategy = createZeroInitializer()
-
-    val projectionWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val encoderUnit = createSimpleRecurrentUnit(
+    val encoderUnit = createMinimalGatedUnit(
         length,
         inputDimension,
         hiddenDimension,
-        inputProjectionInitializationStrategy,
-        previousStateProjectionInitializationStrategy,
+        previousStateWeightInitializationStrategy,
+        inputWeightInitializationStrategy,
         biasInitializationStrategy,
-        ActivationFunction.ReLU,
+        previousStateWeightInitializationStrategy,
+        inputWeightInitializationStrategy,
+        biasInitializationStrategy,
         optimizationStrategy
     )
 
     val encoder = createSingleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
+
+    val projectionWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
 
     val outputProjection = createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
 

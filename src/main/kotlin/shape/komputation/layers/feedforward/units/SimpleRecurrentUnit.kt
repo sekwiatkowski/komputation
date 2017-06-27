@@ -57,6 +57,7 @@ class SimpleRecurrentUnit(
 
     override fun backwardStep(step : Int, chain: DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
 
+        // d new state / state pre-activation
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
         val backwardStateWrtStatePreActivation = this.activations[step].backward(chain)
 
@@ -97,8 +98,8 @@ fun createSimpleRecurrentUnit(
     numberSteps : Int,
     numberStepRows : Int,
     hiddenDimension: Int,
-    inputWeightInitializationStrategy: InitializationStrategy,
     stateWeightInitializationStrategy: InitializationStrategy,
+    inputWeightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
     activationFunction : ActivationFunction,
     optimizationStrategy : OptimizationStrategy? = null) =
@@ -108,8 +109,8 @@ fun createSimpleRecurrentUnit(
         numberSteps,
         numberStepRows,
         hiddenDimension,
-        inputWeightInitializationStrategy,
         stateWeightInitializationStrategy,
+        inputWeightInitializationStrategy,
         biasInitializationStrategy,
         activationFunction,
         optimizationStrategy)
@@ -119,11 +120,23 @@ fun createSimpleRecurrentUnit(
     numberSteps : Int,
     inputDimension : Int,
     hiddenDimension: Int,
-    inputWeightingInitializationStrategy: InitializationStrategy,
     previousStateWeightingInitializationStrategy: InitializationStrategy,
+    inputWeightingInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
     activationFunction : ActivationFunction,
     optimizationStrategy : OptimizationStrategy? = null): RecurrentUnit {
+
+    val previousStateWeightingSeriesName = concatenateNames(name, "previous-state-weighting")
+    val previousStateWeightingStepName = concatenateNames(name, "previous-state-weighting-step")
+
+    val previousStateWeighting = createSeriesWeighting(
+        previousStateWeightingSeriesName,
+        previousStateWeightingStepName,
+        numberSteps,
+        true,
+        hiddenDimension, hiddenDimension,
+        previousStateWeightingInitializationStrategy,
+        optimizationStrategy)
 
     val inputWeightingSeriesName = concatenateNames(name, "input-weighting")
     val inputWeightingStepName = concatenateNames(name, "input-weighting-step")
@@ -136,18 +149,6 @@ fun createSimpleRecurrentUnit(
         inputDimension,
         hiddenDimension,
         inputWeightingInitializationStrategy,
-        optimizationStrategy)
-
-    val previousStateWeightingSeriesName = concatenateNames(name, "previous-state-weighting")
-    val previousStateWeightingStepName = concatenateNames(name, "previous-state-weighting-step")
-
-    val previousStateWeighting = createSeriesWeighting(
-        previousStateWeightingSeriesName,
-        previousStateWeightingStepName,
-        numberSteps,
-        true,
-        hiddenDimension, hiddenDimension,
-        previousStateWeightingInitializationStrategy,
         optimizationStrategy)
 
     val additions = Array(numberSteps) { indexStep ->

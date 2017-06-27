@@ -16,17 +16,17 @@ class SingleOutputEncoder(
 
         input as SequenceMatrix
 
-        var output = doubleZeroColumnVector(hiddenDimension)
+        var currentState = doubleZeroColumnVector(hiddenDimension)
 
         for (indexStep in 0..numberSteps - 1) {
 
             val stepInput = input.getStep(indexStep)
 
-            output = this.unit.forwardStep(indexStep, output, stepInput)
+            currentState = this.unit.forwardStep(indexStep, currentState, stepInput)
 
         }
 
-        return output
+        return currentState
 
     }
 

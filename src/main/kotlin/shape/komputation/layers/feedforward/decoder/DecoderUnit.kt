@@ -13,16 +13,15 @@ import shape.komputation.layers.feedforward.projection.SeriesWeighting
 import shape.komputation.layers.feedforward.projection.createSeriesBias
 import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.optimization.OptimizationStrategy
 
 class DecoderUnit(
     private val name : String?,
-    private val hiddenDimension : Int,
-    private val outputDimension: Int,
     private val inputWeighting: SeriesWeighting,
     private val stateWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
-    private val stateActivation : Array<ActivationLayer>,
+    private val stateActivations: Array<ActivationLayer>,
     private val outputWeighting: SeriesWeighting,
     private val outputActivations: Array<ActivationLayer>,
     private val bias : SeriesBias?) : OptimizableLayer {
@@ -57,7 +56,7 @@ class DecoderUnit(
             }
 
         // Apply the activation function
-        val newState = this.stateActivation[step].forward(statePreActivation)
+        val newState = this.stateActivations[step].forward(statePreActivation)
 
         // Weigh the state
         val outputPreActivation = this.outputWeighting.forwardStep(step, newState)
@@ -71,12 +70,12 @@ class DecoderUnit(
 
     fun backwardStep(
         step : Int,
-        chainStep: DoubleMatrix,
-        backwardStatePreActivationWrtPreviousState : DoubleMatrix?): Pair<DoubleMatrix, DoubleMatrix> {
+        outputChain: DoubleMatrix,
+        stateChain: DoubleMatrix?): Pair<DoubleMatrix, DoubleMatrix> {
 
         // Differentiate w.r.t. the output pre-activation:
         // d output / d output pre-activation = d activate(output weights * state) / d output weights * state
-        val backwardOutputWrtOutputPreActivation = this.outputActivations[step].backward(chainStep)
+        val backwardOutputWrtOutputPreActivation = this.outputActivations[step].backward(outputChain)
 
         // Differentiate w.r.t. the state:
         // d output pre-activation (Wh) / d state = d output weights * state / d state
@@ -84,7 +83,7 @@ class DecoderUnit(
 
         val stateSumEntries =
 
-            if (backwardStatePreActivationWrtPreviousState == null) {
+            if (stateChain == null) {
 
                 backwardOutputPreActivationWrtState.entries
 
@@ -92,15 +91,15 @@ class DecoderUnit(
             else {
 
                 // d chain / d output(index+1) * d output(index+1) / d state(index)
-                add(backwardOutputPreActivationWrtState.entries, backwardStatePreActivationWrtPreviousState.entries)
+                add(backwardOutputPreActivationWrtState.entries, stateChain.entries)
 
             }
 
-        val stateSum = DoubleMatrix(hiddenDimension, 1, stateSumEntries)
+        val stateSum = doubleColumnVector(*stateSumEntries)
 
         // Differentiate w.r.t. the state pre-activation:
         // d state / d state pre-activation = d activate(state weights * state(index-1) + previous output weights * output(index-1) + bias) / d state weights * state(index-1) + previous output weights * output(index-1)
-        val backwardStateWrtStatePreActivation = this.stateActivation[step].backward(stateSum)
+        val backwardStateWrtStatePreActivation = this.stateActivations[step].backward(stateSum)
 
         // Differentiate w.r.t. the previous output:
         // d state pre-activation / d previous output = d [ state weights * state(index-1) + previous output weights * output(index-1) + bias ] / d output(index-1)
@@ -222,8 +221,6 @@ fun createDecoderUnit(
 
     val unit = DecoderUnit(
         name,
-        hiddenDimension,
-        outputDimension,
         inputWeighting,
         previousStateWeighting,
         additions,

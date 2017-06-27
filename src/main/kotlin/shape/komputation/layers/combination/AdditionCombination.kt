@@ -4,7 +4,16 @@ import shape.komputation.functions.add
 import shape.komputation.layers.CombinationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class AdditionCombination(name : String?) : CombinationLayer(name) {
+/*
+   Ex:
+   f(x) = (g(x)+h(x))^2 = g(x)^2 + 2*g(x)*h(x) + h(x)^2
+   d f(x) / g(x) = 2*g(x) + 2*h(x)
+   d f(x) / h(x) = 2*h(x) + 2*g(x)
+   chain = d (g(x)+h(x))^2 / d g(x)+h(x) = 2 * (g(x)+h(x)) = 2*g(x) + 2*h(x)
+   chain * d g(x)+h(x) / d g(x) = chain
+   chain * d g(x)+h(x) / d h(x) = chain
+*/
+class AdditionCombination(name : String? = null) : CombinationLayer(name) {
 
     override fun forward(first: DoubleMatrix, second: DoubleMatrix) =
 
