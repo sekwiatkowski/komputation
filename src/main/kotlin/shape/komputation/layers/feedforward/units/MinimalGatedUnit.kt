@@ -6,6 +6,7 @@ import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.SubtractionCombination
 import shape.komputation.layers.concatenateNames
+import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.activation.TanhLayer
 import shape.komputation.layers.feedforward.projection.SeriesBias
@@ -15,7 +16,6 @@ import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleOneColumnVector
-import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 
@@ -23,11 +23,7 @@ class MinimalGatedUnit(
     name : String?,
     inputDimension : Int,
     hiddenDimension : Int,
-    private val forgetPreviousStateWeighting: SeriesWeighting,
-    private val forgetInputWeighting: SeriesWeighting,
-    private val forgetAdditions: Array<AdditionCombination>,
-    private val forgetBias : SeriesBias?,
-    private val forgetActivations: Array<SigmoidLayer>,
+    private val forgetUnit : RecurrentUnit,
     private val shortTermForgetting : Array<HadamardCombination>,
     private val shortTermMemoryWeighting: SeriesWeighting,
     private val shortTermInputWeighting: SeriesWeighting,
@@ -43,36 +39,6 @@ class MinimalGatedUnit(
 
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
-
-    fun forwardForget(step : Int, state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
-
-        // forget weighted previous state = forget previous state weights * previous state
-        val forgetWeightedPreviousState = this.forgetPreviousStateWeighting.forwardStep(step, state)
-
-        // forget weighted input = forget input weights * input
-        val forgetWeightedInput = this.forgetInputWeighting.forwardStep(step, input)
-
-        // forget addition = forget weighted input + forget weighted previous state
-        val forgetAddition = this.forgetAdditions[step].forward(forgetWeightedPreviousState, forgetWeightedInput)
-
-        // forget pre-activation = forget addition (+ forget bias)
-        val forgetPreActivation =
-
-            if (this.forgetBias == null) {
-
-                forgetAddition
-
-            }
-            else {
-
-                this.forgetBias.forwardStep(forgetAddition)
-            }
-
-        // forget = sigmoid(forget pre-activation)
-        val forget = this.forgetActivations[step].forward(forgetPreActivation)
-
-        return forget
-    }
 
     fun forwardShortTermResponse(step : Int, state : DoubleMatrix, input : DoubleMatrix, forget : DoubleMatrix): DoubleMatrix {
 
@@ -104,7 +70,7 @@ class MinimalGatedUnit(
 
     override fun forwardStep(step : Int, state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
 
-        val forget = this.forwardForget(step, state, input)
+        val forget = this.forgetUnit.forwardStep(step, state, input)
 
         val oneMinusForget = this.keepSubtractions[step].forward(this.one, forget)
 
@@ -119,42 +85,6 @@ class MinimalGatedUnit(
         return newState
     }
 
-    fun backwardWrtForget(step : Int, chain: DoubleMatrix) {
-
-        // forget = sigmoid(forget pre-activation)
-
-        // d forget / d forget pre-activation
-        val diffForgetWrtPreActivation = this.forgetActivations[step].backward(chain)
-
-        // forget pre-activation = forget addition (+ forget bias)
-        // forget addition = forget projected input + forget projected previous state
-
-        // d forget pre-activation / d forget addition = 1
-
-        // d forget addition / d projected previous state
-        val diffForgetPreActivationWrtProjectedPreviousState = this.forgetAdditions[step].backwardFirst(diffForgetWrtPreActivation)
-
-        // d projected previous state / d previous state
-        val diffForgetWeightedPreviousStateWrtPreviousState = this.forgetPreviousStateWeighting.backwardStep(step, diffForgetPreActivationWrtProjectedPreviousState)
-
-        this.previousStateAccumulator.accumulate(diffForgetWeightedPreviousStateWrtPreviousState.entries)
-
-        // d forget addition / d weighted input
-        val diffForgetPreActivationWrtWeightedInput = this.forgetAdditions[step].backwardSecond(diffForgetWrtPreActivation)
-
-        // d weighted input / d input
-        val diffForgetWeightedInputWrtInput = this.forgetInputWeighting.backwardStep(step, diffForgetPreActivationWrtWeightedInput)
-
-        this.inputAccumulator.accumulate(diffForgetWeightedInputWrtInput.entries)
-
-        if (this.forgetBias != null) {
-
-            // d forget addition / d projected input
-            this.forgetBias.backwardStep(diffForgetWrtPreActivation)
-
-        }
-
-    }
 
     private fun backwardLongTermComponent(step: Int, diffChainWrtLongTermComponent: DoubleMatrix) {
 
@@ -163,12 +93,13 @@ class MinimalGatedUnit(
 
         // d (1 - forget) / d forget = -1
         val diffKeepWrtForget = this.keepSubtractions[step].backwardSecond(diffLongTermComponentWrtKeep)
+        val (diffForgetWrtPreviousState, diffForgetWrtInput) = this.forgetUnit.backwardStep(step, diffKeepWrtForget)
 
-        this.backwardWrtForget(step, diffKeepWrtForget)
+        this.previousStateAccumulator.accumulate(diffForgetWrtPreviousState.entries)
+        this.inputAccumulator.accumulate(diffForgetWrtInput.entries)
 
         // (1 - forget) (.) previous state / d previous state = (1 - forget)
         val diffLongTermComponentWrtPreviousState = this.longTermHadamards[step].backwardSecond(diffChainWrtLongTermComponent)
-
         this.previousStateAccumulator.accumulate(diffLongTermComponentWrtPreviousState.entries)
     }
 
@@ -179,7 +110,10 @@ class MinimalGatedUnit(
         // d short-term component / forget = short-term response
         val diffShortTermComponentWrtForget = this.shortTermHadamards[step].backwardFirst(diffChainWrtShortTermComponent)
 
-        this.backwardWrtForget(step, diffShortTermComponentWrtForget)
+        // d forget / d previous state, d forget / input
+        val (diffShortTermComponentForgetWrtPreviousState, diffShortTermComponentForgetWrtInput) = this.forgetUnit.backwardStep(step, diffShortTermComponentWrtForget)
+        this.previousStateAccumulator.accumulate(diffShortTermComponentForgetWrtPreviousState.entries)
+        this.inputAccumulator.accumulate(diffShortTermComponentForgetWrtInput.entries)
 
         // d short-term component / short-term response = forget
         val diffShortTermComponentWrtShortTermResponse = this.shortTermHadamards[step].backwardSecond(diffChainWrtShortTermComponent)
@@ -199,7 +133,10 @@ class MinimalGatedUnit(
         // d short-term memory / d forget
         val diffShortTermMemoryWrtForget = this.shortTermForgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
 
-        this.backwardWrtForget(step, diffShortTermMemoryWrtForget)
+        // d forget / d previous state, d forget / input
+        val (diffShortTermMemoryForgetWrtPreviousState, diffShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(step, diffShortTermMemoryWrtForget)
+        this.previousStateAccumulator.accumulate(diffShortTermMemoryForgetWrtPreviousState.entries)
+        this.inputAccumulator.accumulate(diffShortTermMemoryForgetWrtInput.entries)
 
         // d short-term memory / d previous state
         val diffShortTermMemoryWrtPreviousState = this.shortTermForgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
@@ -242,9 +179,7 @@ class MinimalGatedUnit(
 
     override fun backwardSeries() {
 
-        this.forgetPreviousStateWeighting.backwardSeries()
-        this.forgetInputWeighting.backwardSeries()
-        this.forgetBias?.backwardSeries()
+        this.forgetUnit.backwardSeries()
 
         this.shortTermMemoryWeighting.backwardSeries()
         this.shortTermInputWeighting.backwardSeries()
@@ -254,9 +189,11 @@ class MinimalGatedUnit(
 
     override fun optimize() {
 
-        this.forgetPreviousStateWeighting.optimize()
-        this.forgetInputWeighting.optimize()
-        this.forgetBias?.optimize()
+        if (this.forgetUnit is OptimizableLayer) {
+
+            this.forgetUnit.optimize()
+
+        }
 
         this.shortTermMemoryWeighting.optimize()
         this.shortTermInputWeighting.optimize()
@@ -333,12 +270,14 @@ fun createMinimalGatedUnit(
 
         }
 
-    val forgetActivations = Array(numberSteps) { indexStep ->
+    val forgetActivations = Array<ActivationLayer>(numberSteps) { indexStep ->
 
         val forgetActivationName = concatenateNames(name, "forget-activation-step-$indexStep")
         SigmoidLayer(forgetActivationName)
 
     }
+
+    val forgetUnit = SimpleRecurrentUnit(name, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
 
     val shortTermForgetting = Array(numberSteps) { indexStep ->
 
@@ -413,11 +352,7 @@ fun createMinimalGatedUnit(
         name,
         inputDimension,
         hiddenDimension,
-        forgetPreviousStateWeighting,
-        forgetInputWeighting,
-        forgetAdditions,
-        forgetBias,
-        forgetActivations,
+        forgetUnit,
         shortTermForgetting,
         shortTermMemoryWeighting,
         shortTermInputWeighting,

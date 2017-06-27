@@ -15,23 +15,23 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.OptimizationStrategy
 
 class SimpleRecurrentUnit(
-    name : String?,
-    private val inputWeighting: SeriesWeighting,
+    name: String?,
     private val previousStateWeighting: SeriesWeighting,
-    private val additions : Array<AdditionCombination>,
-    private val bias : SeriesBias?,
+    private val inputWeighting: SeriesWeighting,
+    private val additions: Array<AdditionCombination>,
+    private val bias: SeriesBias?,
     private val activations: Array<ActivationLayer>) : RecurrentUnit(name), OptimizableLayer {
 
     override fun forwardStep(step : Int, state: DoubleMatrix, input: DoubleMatrix): DoubleMatrix {
 
-        // weighted input = input weights * input
-        val weightedInput = this.inputWeighting.forwardStep(step, input)
-
         // weighted state = state weights * state
         val weightedState =  this.previousStateWeighting.forwardStep(step, state)
 
+        // weighted input = input weights * input
+        val weightedInput = this.inputWeighting.forwardStep(step, input)
+
         // addition = weighted input + weighted state
-        val additionEntries = this.additions[step].forward(weightedInput, weightedState)
+        val additionEntries = this.additions[step].forward(weightedState, weightedInput)
 
         // pre-activation = addition + bias
         val preActivation =
@@ -96,7 +96,7 @@ class SimpleRecurrentUnit(
 
 fun createSimpleRecurrentUnit(
     numberSteps : Int,
-    numberStepRows : Int,
+    inputDimension: Int,
     hiddenDimension: Int,
     stateWeightInitializationStrategy: InitializationStrategy,
     inputWeightInitializationStrategy: InitializationStrategy,
@@ -107,7 +107,7 @@ fun createSimpleRecurrentUnit(
    createSimpleRecurrentUnit(
         null,
         numberSteps,
-        numberStepRows,
+        inputDimension,
         hiddenDimension,
         stateWeightInitializationStrategy,
         inputWeightInitializationStrategy,
@@ -169,7 +169,7 @@ fun createSimpleRecurrentUnit(
     val activationLayers = createActivationLayers(numberSteps, activationName, activationFunction)
 
     val unitName = concatenateNames(name, "unit")
-    val unit = SimpleRecurrentUnit(unitName, inputWeighting, previousStateWeighting, additions, bias, activationLayers)
+    val unit = SimpleRecurrentUnit(unitName, previousStateWeighting, inputWeighting, additions, bias, activationLayers)
 
     return unit
 

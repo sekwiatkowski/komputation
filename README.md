@@ -52,7 +52,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - Sequential data:
   - [Running total](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
-  - [Addition problem](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblem.kt)
+  - [Addition problem](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemRecurrentUnit.kt)
   - [Reverse](./src/main/kotlin/shape/komputation/demos/reverse/ReverseSingleEncoding.kt)
   - [Reverse with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
 
