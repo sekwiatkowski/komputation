@@ -9,8 +9,6 @@ import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.activation.TanhLayer
-import shape.komputation.layers.feedforward.projection.SeriesBias
-import shape.komputation.layers.feedforward.projection.SeriesWeighting
 import shape.komputation.layers.feedforward.projection.createSeriesBias
 import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.DoubleMatrix
@@ -24,49 +22,16 @@ class MinimalGatedUnit(
     inputDimension : Int,
     hiddenDimension : Int,
     private val forgetUnit : RecurrentUnit,
-    private val shortTermForgetting : Array<HadamardCombination>,
-    private val shortTermMemoryWeighting: SeriesWeighting,
-    private val shortTermInputWeighting: SeriesWeighting,
-    private val shortTermAdditions: Array<AdditionCombination>,
-    private val shortTermBias : SeriesBias?,
-    private val shortTermActivations: Array<TanhLayer>,
-    private val keepSubtractions: Array<SubtractionCombination>,
-    private val longTermHadamards: Array<HadamardCombination>,
-    private val shortTermHadamards: Array<HadamardCombination>,
-    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), OptimizableLayer {
+    private val shortTermResponse : ShortTermResponse,
+    private val keepSubtractions : Array<SubtractionCombination>,
+    private val longTermHadamards : Array<HadamardCombination>,
+    private val shortTermHadamards : Array<HadamardCombination>,
+    private val stateAdditions : Array<AdditionCombination>) : RecurrentUnit(name), OptimizableLayer {
 
     private val one = doubleOneColumnVector(hiddenDimension)
 
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
-
-    fun forwardShortTermResponse(step : Int, state : DoubleMatrix, input : DoubleMatrix, forget : DoubleMatrix): DoubleMatrix {
-
-        val shortTermMemory = this.shortTermForgetting[step].forward(state, forget)
-
-        val shortTermWeightedMemory = this.shortTermMemoryWeighting.forwardStep(step, shortTermMemory)
-
-        val shortTermWeightedInput = this.shortTermInputWeighting.forwardStep(step, input)
-
-        val shortTermAddition = this.shortTermAdditions[step].forward(shortTermWeightedMemory, shortTermWeightedInput)
-
-        // forget pre-activation = forget addition (+ forget bias)
-        val shortTermPreActivation =
-
-            if (this.shortTermBias == null) {
-
-                shortTermAddition
-
-            }
-            else {
-
-                this.shortTermBias.forwardStep(shortTermAddition)
-            }
-
-        val shortTermResponse = this.shortTermActivations[step].forward(shortTermPreActivation)
-
-        return shortTermResponse
-    }
 
     override fun forwardStep(step : Int, state : DoubleMatrix, input : DoubleMatrix): DoubleMatrix {
 
@@ -76,7 +41,7 @@ class MinimalGatedUnit(
 
         val longTermComponent = this.longTermHadamards[step].forward(oneMinusForget, state)
 
-        val shortTermResponse = this.forwardShortTermResponse(step, state, input, forget)
+        val shortTermResponse = this.shortTermResponse.forward(step, state, input, forget)
 
         val shortTermComponent = this.shortTermHadamards[step].forward(forget, shortTermResponse)
 
@@ -118,42 +83,16 @@ class MinimalGatedUnit(
         // d short-term component / short-term response = forget
         val diffShortTermComponentWrtShortTermResponse = this.shortTermHadamards[step].backwardSecond(diffChainWrtShortTermComponent)
 
-        // short-term response = tanh(short-term response pre-activation)
-        // d short-term response / d short-term response pre-activation
-        val diffShortTermResponseWrtPreActivation = this.shortTermActivations[step].backward(diffShortTermComponentWrtShortTermResponse)
-
-        // short-term response pre-activation = weighted short-term memory + weighted input (+ short-term bias)
-
-        // d short-term response pre-activation / d weighted short-term memory
-        val diffShortTermResponsePreActivationWrtWeightedShortTermMemory = this.shortTermAdditions[step].backwardFirst(diffShortTermResponseWrtPreActivation)
-
-        // d weighted short-term memory / d short-term memory
-        val diffWeightedShortTermMemoryWrtShortTermMemory = this.shortTermMemoryWeighting.backwardStep(step, diffShortTermResponsePreActivationWrtWeightedShortTermMemory)
-
-        // d short-term memory / d forget
-        val diffShortTermMemoryWrtForget = this.shortTermForgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
+        val (diffShortTermMemoryWrtForget, shortTermResponsePair) = this.shortTermResponse.backward(step, diffShortTermComponentWrtShortTermResponse)
+        val (diffShortTermMemoryWrtPreviousState, diffShortTermWeightedInputWrtInput) = shortTermResponsePair
 
         // d forget / d previous state, d forget / input
         val (diffShortTermMemoryForgetWrtPreviousState, diffShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(step, diffShortTermMemoryWrtForget)
         this.previousStateAccumulator.accumulate(diffShortTermMemoryForgetWrtPreviousState.entries)
         this.inputAccumulator.accumulate(diffShortTermMemoryForgetWrtInput.entries)
 
-        // d short-term memory / d previous state
-        val diffShortTermMemoryWrtPreviousState = this.shortTermForgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
         this.previousStateAccumulator.accumulate(diffShortTermMemoryWrtPreviousState.entries)
-
-        // d short-term response pre-activation / d short-term weighted input
-        val diffShortTermResponsePreActivationWrtWeightedInput = this.shortTermAdditions[step].backwardSecond(diffShortTermResponseWrtPreActivation)
-
-        // d short-term weighted input / d weighted input
-        val diffShortTermWeightedInputWrtInput = this.shortTermInputWeighting.backwardStep(step, diffShortTermResponsePreActivationWrtWeightedInput)
         this.inputAccumulator.accumulate(diffShortTermWeightedInputWrtInput.entries)
-
-        if (this.shortTermBias != null) {
-
-            shortTermBias.backwardStep(diffShortTermResponseWrtPreActivation)
-
-        }
 
     }
 
@@ -180,10 +119,7 @@ class MinimalGatedUnit(
     override fun backwardSeries() {
 
         this.forgetUnit.backwardSeries()
-
-        this.shortTermMemoryWeighting.backwardSeries()
-        this.shortTermInputWeighting.backwardSeries()
-        this.shortTermBias?.backwardSeries()
+        this.shortTermResponse.backwardSeries()
 
     }
 
@@ -195,9 +131,7 @@ class MinimalGatedUnit(
 
         }
 
-        this.shortTermMemoryWeighting.optimize()
-        this.shortTermInputWeighting.optimize()
-        this.shortTermBias?.optimize()
+        this.shortTermResponse.optimize()
 
     }
 
@@ -320,6 +254,8 @@ fun createMinimalGatedUnit(
 
     }
 
+    val shortTermResponse = ShortTermResponse(shortTermForgetting, shortTermMemoryWeighting, shortTermInputWeighting, shortTermAdditions, shortTermBias, shortTermActivations)
+
     val keepSubtractions = Array(numberSteps) { indexStep ->
 
         val keepSubtractionName = concatenateNames(name, "keep-subtraction-$indexStep")
@@ -353,12 +289,7 @@ fun createMinimalGatedUnit(
         inputDimension,
         hiddenDimension,
         forgetUnit,
-        shortTermForgetting,
-        shortTermMemoryWeighting,
-        shortTermInputWeighting,
-        shortTermAdditions,
-        shortTermBias,
-        shortTermActivations,
+        shortTermResponse,
         keepSubtractions,
         shortTermHadamards,
         longTermHadamards,
