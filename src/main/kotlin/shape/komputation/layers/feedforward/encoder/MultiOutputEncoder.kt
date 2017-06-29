@@ -3,16 +3,22 @@ package shape.komputation.layers.feedforward.encoder
 import shape.komputation.functions.add
 import shape.komputation.functions.extractStep
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.*
+import shape.komputation.optimization.Optimizable
 
 class MultiOutputEncoder(
     name : String?,
+    isReversed : Boolean,
     private val unit: RecurrentUnit,
     private val numberSteps: Int,
     private val inputDimension: Int,
-    private val hiddenDimension : Int) : ContinuationLayer(name), OptimizableLayer {
+    private val hiddenDimension : Int) : ContinuationLayer(name), Optimizable {
+
+    private val startAtTheBeginning = 0..numberSteps - 1
+    private val startAtTheEnd = this.numberSteps - 1 downTo 0
+
+    private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
@@ -22,9 +28,9 @@ class MultiOutputEncoder(
 
         val output = zeroSequenceMatrix(numberSteps, hiddenDimension, 1)
 
-        for (indexStep in 0..numberSteps - 1) {
+        for (indexStep in this.startAtTheBeginning) {
 
-            val stepInput = input.getStep(indexStep)
+            val stepInput = input.getStep(this.stepIndices[indexStep])
 
             state = this.unit.forwardStep(indexStep, state, stepInput)
 
@@ -45,7 +51,7 @@ class MultiOutputEncoder(
 
         val incomingEntries = incoming.entries
 
-        for (indexStep in this.numberSteps - 1 downTo 0) {
+        for (indexStep in this.startAtTheEnd) {
 
             val isLastStep = indexStep + 1 == this.numberSteps
 
@@ -67,7 +73,7 @@ class MultiOutputEncoder(
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            seriesBackwardWrtInput.setStep(indexStep, backwardStatePreActivationWrtInput.entries)
+            seriesBackwardWrtInput.setStep(this.stepIndices[indexStep], backwardStatePreActivationWrtInput.entries)
 
         }
 
@@ -79,7 +85,7 @@ class MultiOutputEncoder(
 
     override fun optimize() {
 
-        if (this.unit is OptimizableLayer) {
+        if (this.unit is Optimizable) {
 
             this.unit.optimize()
 
@@ -93,14 +99,16 @@ fun createMultiOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
     inputDimension : Int,
-    hiddenDimension: Int) =
+    hiddenDimension: Int,
+    isReversed : Boolean = false) =
 
     createMultiOutputEncoder(
         null,
         unit,
         numberSteps,
         inputDimension,
-        hiddenDimension
+        hiddenDimension,
+        isReversed
     )
 
 fun createMultiOutputEncoder(
@@ -108,10 +116,12 @@ fun createMultiOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
     inputDimension : Int,
-    hiddenDimension: Int) =
+    hiddenDimension : Int,
+    isReversed : Boolean = false) =
 
     MultiOutputEncoder(
         name,
+        isReversed,
         unit,
         numberSteps,
         inputDimension,

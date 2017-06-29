@@ -1,10 +1,12 @@
 package shape.komputation.layers.feedforward.decoder
 
-import shape.komputation.functions.*
 import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.functions.add
+import shape.komputation.functions.backwardProjectionWrtInput
+import shape.komputation.functions.backwardProjectionWrtWeights
+import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.ColumnRepetitionLayer
@@ -13,14 +15,10 @@ import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.activation.SoftmaxVectorLayer
 import shape.komputation.layers.feedforward.activation.TanhLayer
 import shape.komputation.layers.feedforward.activation.createActivationLayers
-import shape.komputation.layers.feedforward.projection.ProjectionLayer
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.feedforward.projection.SeriesBias
-import shape.komputation.layers.feedforward.projection.SeriesWeighting
-import shape.komputation.layers.feedforward.projection.createSeriesBias
-import shape.komputation.layers.feedforward.projection.createSeriesWeighting
+import shape.komputation.layers.feedforward.projection.*
 import shape.komputation.matrix.*
 import shape.komputation.optimization.DenseAccumulator
+import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
 class AttentiveDecoder(
@@ -40,7 +38,7 @@ class AttentiveDecoder(
     private val decodingPreviousDecoderWeighting: SeriesWeighting,
     private val decodingAdditions: Array<AdditionCombination>,
     private val activationFunctions: Array<ActivationLayer>,
-    private val bias : SeriesBias?) : ContinuationLayer(name), OptimizableLayer {
+    private val bias : SeriesBias?) : ContinuationLayer(name), Optimizable {
 
     private var attentionDistributionEntries = DoubleArray(this.numberSteps)
 

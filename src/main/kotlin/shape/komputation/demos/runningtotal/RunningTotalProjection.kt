@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
     val exclusiveUpperLimit = 10
     val hiddenDimension = 4
     val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
-    val numberIterations = 100
+    val numberIterations = 30
     val batchSize = 4
 
     val random = Random(1)
@@ -63,8 +63,8 @@ fun main(args: Array<String>) {
 
     val encoderUnit = createSimpleRecurrentUnit(
         numberSteps,
-        1,
         hiddenDimension,
+        1,
         inputWeightInitializationStrategy,
         previousStateWeightInitializationStrategy,
         biasInitializationStrategy,

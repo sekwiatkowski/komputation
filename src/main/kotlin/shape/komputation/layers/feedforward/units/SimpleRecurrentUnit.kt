@@ -2,7 +2,6 @@ package shape.komputation.layers.feedforward.units
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.activation.ActivationLayer
@@ -12,6 +11,7 @@ import shape.komputation.layers.feedforward.projection.SeriesWeighting
 import shape.komputation.layers.feedforward.projection.createSeriesBias
 import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
 class SimpleRecurrentUnit(
@@ -20,12 +20,12 @@ class SimpleRecurrentUnit(
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<ActivationLayer>) : RecurrentUnit(name), OptimizableLayer {
+    private val activations: Array<ActivationLayer>) : RecurrentUnit(name), Optimizable {
 
     override fun forwardStep(step : Int, state: DoubleMatrix, input: DoubleMatrix): DoubleMatrix {
 
         // weighted state = state weights * state
-        val weightedState =  this.previousStateWeighting.forwardStep(step, state)
+        val weightedState = this.previousStateWeighting.forwardStep(step, state)
 
         // weighted input = input weights * input
         val weightedInput = this.inputWeighting.forwardStep(step, input)
@@ -95,20 +95,20 @@ class SimpleRecurrentUnit(
 }
 
 fun createSimpleRecurrentUnit(
-    numberSteps : Int,
-    inputDimension: Int,
+    numberSteps: Int,
     hiddenDimension: Int,
+    inputDimension: Int,
     stateWeightInitializationStrategy: InitializationStrategy,
     inputWeightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    activationFunction : ActivationFunction,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    activationFunction: ActivationFunction,
+    optimizationStrategy: OptimizationStrategy? = null) =
 
-   createSimpleRecurrentUnit(
+    createSimpleRecurrentUnit(
         null,
         numberSteps,
-        inputDimension,
         hiddenDimension,
+        inputDimension,
         stateWeightInitializationStrategy,
         inputWeightInitializationStrategy,
         biasInitializationStrategy,
@@ -116,15 +116,15 @@ fun createSimpleRecurrentUnit(
         optimizationStrategy)
 
 fun createSimpleRecurrentUnit(
-    name : String?,
-    numberSteps : Int,
-    inputDimension : Int,
+    name: String?,
+    numberSteps: Int,
     hiddenDimension: Int,
+    inputDimension: Int,
     previousStateWeightingInitializationStrategy: InitializationStrategy,
     inputWeightingInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    activationFunction : ActivationFunction,
-    optimizationStrategy : OptimizationStrategy? = null): RecurrentUnit {
+    activationFunction: ActivationFunction,
+    optimizationStrategy: OptimizationStrategy? = null): RecurrentUnit {
 
     val previousStateWeightingSeriesName = concatenateNames(name, "previous-state-weighting")
     val previousStateWeightingStepName = concatenateNames(name, "previous-state-weighting-step")
@@ -134,7 +134,8 @@ fun createSimpleRecurrentUnit(
         previousStateWeightingStepName,
         numberSteps,
         true,
-        hiddenDimension, hiddenDimension,
+        hiddenDimension,
+        hiddenDimension,
         previousStateWeightingInitializationStrategy,
         optimizationStrategy)
 

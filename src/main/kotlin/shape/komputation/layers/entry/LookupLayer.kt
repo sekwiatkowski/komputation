@@ -1,9 +1,9 @@
 package shape.komputation.layers.entry
 
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
+import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.SparseAccumulator
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateSparsely
@@ -13,7 +13,7 @@ class LookupLayer(
     private val data: Array<DoubleArray>,
     private val dimension : Int,
     maximumBatchSize: Int,
-    private val update: UpdateRule? = null) : EntryPoint(name), OptimizableLayer {
+    private val update: UpdateRule? = null) : EntryPoint(name), Optimizable {
 
     private var input : IntArray? = null
 

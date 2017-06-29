@@ -1,22 +1,36 @@
 package shape.komputation.layers.feedforward.decoder
 
+import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.functions.add
 import shape.komputation.functions.extractStep
+import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.OptimizableLayer
+import shape.komputation.layers.concatenateNames
+import shape.komputation.layers.feedforward.activation.ActivationLayer
+import shape.komputation.layers.feedforward.activation.createActivationLayers
+import shape.komputation.layers.feedforward.projection.SeriesBias
+import shape.komputation.layers.feedforward.projection.SeriesWeighting
+import shape.komputation.layers.feedforward.projection.createSeriesBias
+import shape.komputation.layers.feedforward.projection.createSeriesWeighting
+import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.matrix.zeroSequenceMatrix
+import shape.komputation.optimization.Optimizable
+import shape.komputation.optimization.OptimizationStrategy
 
 
 // The first input is empty.
 // Starting with the second input, the input at step t is the output of step t-1.
 class SingleInputDecoder(
     name : String?,
-    private val unit : DecoderUnit,
     private val numberSteps : Int,
-    private val outputDimension : Int) : ContinuationLayer(name), OptimizableLayer {
+    private val outputDimension : Int,
+    private val unit : RecurrentUnit,
+    private val weighting: SeriesWeighting,
+    private val bias: SeriesBias?,
+    private val activations: Array<ActivationLayer>) : ContinuationLayer(name), Optimizable {
 
     override fun forward(encoderOutput: DoubleMatrix): DoubleMatrix {
 
@@ -25,21 +39,46 @@ class SingleInputDecoder(
         // Use the encoder output as the first state
         var state = encoderOutput
         // The first input is empty since there is no previous output
-        var input = doubleZeroColumnVector(outputDimension)
+        var input = doubleZeroColumnVector(this.outputDimension)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
-            val (newState, newOutput) = this.unit.forward(indexStep, state, input)
+            val newState = this.unit.forwardStep(indexStep, state, input)
 
-            seriesOutput.setStep(indexStep, newOutput.entries)
+            val output = this.forwardOutput(indexStep, newState)
+
+            seriesOutput.setStep(indexStep, output.entries)
 
             state = newState
+
             // The output of step t-1 is the input for step t.
-            input = newOutput
+            input = output
 
         }
 
         return seriesOutput
+
+    }
+
+    private fun forwardOutput(indexStep: Int, newState: DoubleMatrix): DoubleMatrix {
+
+        val weighting = this.weighting.forwardStep(indexStep, newState)
+
+        val biased =
+
+            if (this.bias != null) {
+
+                this.bias.forwardStep(weighting)
+
+            }
+            else {
+
+                weighting
+            }
+
+        val output = this.activations[indexStep].forward(biased)
+
+        return output
 
     }
 
@@ -49,73 +88,153 @@ class SingleInputDecoder(
         val chainEntries = chain.entries
 
         // Differentiate the chain w.r.t. input
-        var backwardStatePreActivationWrtInput : DoubleMatrix? = null
+        var diffStatePreActivationWrtInput : DoubleMatrix? = null
 
         // Differentiate the chain w.r.t previous state.
         // This is done at each step. For the first step (t=1), the chain is differentiated w.r.t. to the initial state (t=0).
-        var backwardStatePreActivationWrtPreviousState : DoubleMatrix? = null
+        var diffStatePreActivationWrtPreviousState : DoubleMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
             val chainStep = extractStep(chainEntries, indexStep, outputDimension)
 
-            val outputSum = doubleColumnVector(*
+            val diffOutputPreActivationWrtState = backwardOutput(indexStep, chainStep, diffStatePreActivationWrtInput?.entries)
 
-                // The input gradient for step t+1 is added to the chain step t ...
-                if (backwardStatePreActivationWrtInput != null) {
+            val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                    // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
-                    add(chainStep, backwardStatePreActivationWrtInput.entries)
+                doubleColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
 
-                }
-                // ... except in the case of the last step (t = T)
-                else {
+            }
+            else {
+                diffOutputPreActivationWrtState
 
-                    chainStep
+            }
 
-                })
+            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
 
-            val (newBackwardStatePreActivationWrtInput, newBackwardStatePreActivationWrtPreviousState) = this.unit.backwardStep(indexStep, outputSum, backwardStatePreActivationWrtPreviousState)
-
-            backwardStatePreActivationWrtInput = newBackwardStatePreActivationWrtInput
-            backwardStatePreActivationWrtPreviousState = newBackwardStatePreActivationWrtPreviousState
+            diffStatePreActivationWrtInput = newDiffStatePreActivationWrtInput
+            diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
 
         }
 
         this.unit.backwardSeries()
 
-        return backwardStatePreActivationWrtPreviousState!!
+        this.weighting.backwardSeries()
+        this.bias?.backwardSeries()
+
+        return diffStatePreActivationWrtPreviousState!!
+
+    }
+
+    private fun backwardOutput(indexStep: Int, chainStep: DoubleArray, diffStatePreActivationWrtInput: DoubleArray?): DoubleMatrix {
+
+        val outputSum = doubleColumnVector(*
+
+            // The input gradient for step t+1 is added to the chain step t ...
+            if (diffStatePreActivationWrtInput != null) {
+
+                // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
+                add(chainStep, diffStatePreActivationWrtInput)
+
+            }
+            // ... except in the case of the last step (t = T)
+            else {
+
+                chainStep
+
+            })
+
+        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(outputSum)
+
+        this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
+
+        val diffOutputPreActivationWrtState = this.weighting.backwardStep(indexStep, diffOutputWrtOutputPreActivation)
+
+        return diffOutputPreActivationWrtState
 
     }
 
     override fun optimize() {
 
-        this.unit.optimize()
+        if (this.unit is Optimizable) {
+
+            this.unit.optimize()
+
+        }
+
+        this.weighting.optimize()
+        this.bias?.optimize()
 
     }
 
 }
 
 fun createSingleInputDecoder(
-    unit : DecoderUnit,
     numberSteps: Int,
-    outputDimension: Int) =
+    hiddenDimension : Int,
+    outputDimension: Int,
+    unit : RecurrentUnit,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    activationFunction: ActivationFunction,
+    optimizationStrategy: OptimizationStrategy?) =
 
     createSingleInputDecoder(
         null,
-        unit,
         numberSteps,
-        outputDimension)
+        hiddenDimension,
+        outputDimension,
+        unit,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        activationFunction,
+        optimizationStrategy)
 
 
 fun createSingleInputDecoder(
     name : String?,
-    unit : DecoderUnit,
     numberSteps: Int,
-    outputDimension: Int) =
+    hiddenDimension : Int,
+    outputDimension: Int,
+    unit : RecurrentUnit,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    activationFunction: ActivationFunction,
+    optimizationStrategy: OptimizationStrategy?): SingleInputDecoder {
 
-    SingleInputDecoder(
-        name,
-        unit,
+    val weightingSeriesName = concatenateNames(name, "weighting")
+    val weightingStepName = concatenateNames(name, "weighting-step")
+    val weighting = createSeriesWeighting(weightingSeriesName, weightingStepName, numberSteps, false, hiddenDimension, outputDimension, weightInitializationStrategy, optimizationStrategy)
+
+    val bias =
+        if (biasInitializationStrategy != null) {
+
+            val biasSeriesName = concatenateNames(name, "bias")
+            createSeriesBias(biasSeriesName, outputDimension, biasInitializationStrategy, optimizationStrategy)
+
+        }
+        else {
+
+            null
+
+        }
+
+    val activationName = concatenateNames(name, "activation")
+    val activations = createActivationLayers(
         numberSteps,
-        outputDimension)
+        activationName,
+        activationFunction
+    )
+
+    val decoder = SingleInputDecoder(
+        name,
+        numberSteps,
+        outputDimension,
+        unit,
+        weighting,
+        bias,
+        activations)
+
+    return decoder
+
+}

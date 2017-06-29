@@ -40,6 +40,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Tanh](./src/main/kotlin/shape/komputation/layers/feedforward/activation/TanhLayer.kt)
 
 - Other layers:
+  - [Concatenation](./src/main/kotlin/shape/komputation/layers/feedforward/Concatenation.kt)
   - [Transposition](./src/main/kotlin/shape/komputation/layers/feedforward/TranspositionLayer.kt)
   - [Column repetition](./src/main/kotlin/shape/komputation/layers/feedforward/ColumnRepetitionLayer.kt)
 
@@ -50,11 +51,18 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Negation](./src/main/kotlin/shape/komputation/demos/negation/Negation.kt)
   - [XOR](./src/main/kotlin/shape/komputation/demos/xor/Xor.kt)
 
-- Sequential data:
-  - [Running total](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
-  - [Addition problem](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemRecurrentUnit.kt)
-  - [Reverse](./src/main/kotlin/shape/komputation/demos/reverse/ReverseSingleEncoding.kt)
-  - [Reverse with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
+- Addition problem:
+  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemRecurrentUnit.kt)
+  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemMGU.kt)
+
+- Reverse function:
+  - [Unidirectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseUnidirectional.kt)
+  - [Bidirrectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseBidirectional.kt)
+  - [RNN with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
+
+- Running total:
+  - [Projection](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalProjection.kt)
+  - [Multi-input decoder](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
 
 - Toy problems:
   - [Image classification](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)

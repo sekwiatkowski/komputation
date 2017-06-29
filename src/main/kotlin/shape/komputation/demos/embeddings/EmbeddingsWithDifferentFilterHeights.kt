@@ -2,15 +2,17 @@ package shape.komputation.demos.embeddings
 
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.initialization.initializeColumnVector
+import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.layers.feedforward.activation.ReluLayer
-import shape.komputation.layers.feedforward.*
+import shape.komputation.layers.feedforward.activation.SoftmaxLayer
 import shape.komputation.layers.feedforward.convolution.MaxPoolingLayer
 import shape.komputation.layers.feedforward.convolution.createConvolutionalLayer
-import shape.komputation.layers.entry.createLookupLayer
-import shape.komputation.layers.feedforward.activation.SoftmaxLayer
+import shape.komputation.layers.feedforward.createConcatenation
 import shape.komputation.layers.feedforward.projection.createProjectionLayer
 import shape.komputation.loss.SquaredLoss
-import shape.komputation.matrix.*
+import shape.komputation.matrix.Matrix
+import shape.komputation.matrix.intVector
+import shape.komputation.matrix.oneHotVector
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.momentum
@@ -130,7 +132,7 @@ fun main(args: Array<String>) {
 
     val network = Network(
         createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        createBranching(
+        createConcatenation(
             *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
         ),
         createProjectionLayer(numberFilters * filterHeights.size, numberClasses, true, initializationStrategy, optimizationStrategy),

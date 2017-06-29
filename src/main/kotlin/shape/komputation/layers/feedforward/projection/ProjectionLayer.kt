@@ -8,12 +8,8 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeMatrix
 import shape.komputation.initialization.initializeRowVector
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.optimization.DenseAccumulator
-import shape.komputation.optimization.OptimizationStrategy
-import shape.komputation.optimization.UpdateRule
-import shape.komputation.optimization.updateDensely
+import shape.komputation.optimization.*
 
 class ProjectionLayer(
     name : String? = null,
@@ -25,7 +21,7 @@ class ProjectionLayer(
 
     private val bias : DoubleArray? = null,
     private val biasUpdateRule: UpdateRule? = null,
-    private val biasAccumulator: DenseAccumulator? = null) : ContinuationLayer(name), OptimizableLayer {
+    private val biasAccumulator: DenseAccumulator? = null) : ContinuationLayer(name), Optimizable {
 
     private var inputEntries = DoubleArray(0)
     private var numberInputRows = -1
@@ -114,13 +110,13 @@ class ProjectionLayer(
 }
 
 fun createProjectionLayer(
-    numberInputRows: Int,
-    numberResultRows: Int,
+    inputDimension: Int,
+    outputDimension: Int,
     withBias : Boolean,
     initializationStrategy : InitializationStrategy,
     optimizationStrategy : OptimizationStrategy? = null) =
 
-    createProjectionLayer(null, numberInputRows, numberResultRows, withBias, initializationStrategy, optimizationStrategy)
+    createProjectionLayer(null, inputDimension, outputDimension, withBias, initializationStrategy, optimizationStrategy)
 
 fun createProjectionLayer(
     name : String?,

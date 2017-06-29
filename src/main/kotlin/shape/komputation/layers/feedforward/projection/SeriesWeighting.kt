@@ -6,7 +6,10 @@ import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.feedforward.createIdentityLayer
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.optimization.*
+import shape.komputation.optimization.DenseAccumulator
+import shape.komputation.optimization.OptimizationStrategy
+import shape.komputation.optimization.UpdateRule
+import shape.komputation.optimization.updateDensely
 
 class SeriesWeighting(
     private val name : String?,
@@ -20,13 +23,13 @@ class SeriesWeighting(
 
     fun forwardStep(step : Int, input: DoubleMatrix): DoubleMatrix {
 
-        return weightings[step].forward(input)
+        return this.weightings[step].forward(input)
 
     }
 
     fun backwardStep(step: Int, chain: DoubleMatrix) : DoubleMatrix {
 
-        val backward = weightings[step].backward(chain)
+        val backward = this.weightings[step].backward(chain)
 
         return backward
 

@@ -5,9 +5,7 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.decoder.createDecoderUnit
 import shape.komputation.layers.feedforward.decoder.createMultiInputDecoder
-import shape.komputation.layers.feedforward.encoder.MultiOutputEncoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.SquaredLoss
@@ -25,19 +23,14 @@ fun main(args: Array<String>) {
     val exclusiveUpperLimit = 10
     val hiddenDimension = 4
     val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
-    val numberIterations = 10
+    val numberIterations = 30
     val batchSize = 4
 
     val random = Random(1)
 
-    val encoderPreviousStateWeightInitializationStrategy = createIdentityInitializer()
-    val encoderInputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val encoderBiasInitializationStrategy = createZeroInitializer()
-
-    val decoderPreviousStateWeightInitializationStrategy = createIdentityInitializer()
-    val decoderInputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val decoderBiasInitializationStrategy = createZeroInitializer()
-    val decoderOutputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val identityInitializationStrategy = createIdentityInitializer()
+    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val zeroInitializationStrategy = createZeroInitializer()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
@@ -70,11 +63,11 @@ fun main(args: Array<String>) {
 
     val encoderUnit = createSimpleRecurrentUnit(
         numberSteps,
-        1,
         hiddenDimension,
-        encoderInputWeightInitializationStrategy,
-        encoderPreviousStateWeightInitializationStrategy,
-        encoderBiasInitializationStrategy,
+        1,
+        gaussianInitializationStrategy,
+        identityInitializationStrategy,
+        zeroInitializationStrategy,
         ActivationFunction.Identity,
         optimizationStrategy)
 
@@ -84,28 +77,27 @@ fun main(args: Array<String>) {
         1,
         hiddenDimension)
 
-    val decoderUnit = createDecoderUnit(
+    val decoderUnit = createSimpleRecurrentUnit(
         numberSteps,
         hiddenDimension,
         hiddenDimension,
-        1,
-        false,
-        decoderInputWeightInitializationStrategy,
-        decoderPreviousStateWeightInitializationStrategy,
-        decoderBiasInitializationStrategy,
-        ActivationFunction.Identity,
-        decoderOutputWeightInitializationStrategy,
+        identityInitializationStrategy,
+        gaussianInitializationStrategy,
+        zeroInitializationStrategy,
         ActivationFunction.Identity,
         optimizationStrategy
     )
 
     val decoder = createMultiInputDecoder(
-        decoderUnit,
         numberSteps,
         hiddenDimension,
         hiddenDimension,
-        1
-
+        1,
+        decoderUnit,
+        gaussianInitializationStrategy,
+        zeroInitializationStrategy,
+        ActivationFunction.Identity,
+        optimizationStrategy
     )
 
     val network = Network(

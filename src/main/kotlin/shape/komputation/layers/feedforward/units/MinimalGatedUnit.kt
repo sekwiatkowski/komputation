@@ -1,7 +1,6 @@
 package shape.komputation.layers.feedforward.units
 
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.SubtractionCombination
@@ -15,18 +14,19 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleOneColumnVector
 import shape.komputation.optimization.DenseAccumulator
+import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
 class MinimalGatedUnit(
-    name : String?,
-    inputDimension : Int,
-    hiddenDimension : Int,
-    private val forgetUnit : RecurrentUnit,
-    private val shortTermResponse : ShortTermResponse,
-    private val keepSubtractions : Array<SubtractionCombination>,
-    private val longTermHadamards : Array<HadamardCombination>,
-    private val shortTermHadamards : Array<HadamardCombination>,
-    private val stateAdditions : Array<AdditionCombination>) : RecurrentUnit(name), OptimizableLayer {
+    name: String?,
+    hiddenDimension: Int,
+    inputDimension: Int,
+    private val forgetUnit: RecurrentUnit,
+    private val shortTermResponse: ShortTermResponse,
+    private val keepSubtractions: Array<SubtractionCombination>,
+    private val longTermHadamards: Array<HadamardCombination>,
+    private val shortTermHadamards: Array<HadamardCombination>,
+    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
 
     private val one = doubleOneColumnVector(hiddenDimension)
 
@@ -125,7 +125,7 @@ class MinimalGatedUnit(
 
     override fun optimize() {
 
-        if (this.forgetUnit is OptimizableLayer) {
+        if (this.forgetUnit is Optimizable) {
 
             this.forgetUnit.optimize()
 
@@ -138,22 +138,22 @@ class MinimalGatedUnit(
 }
 
 fun createMinimalGatedUnit(
-    numberSteps : Int,
-    inputDimension : Int,
+    numberSteps: Int,
     hiddenDimension: Int,
+    inputDimension: Int,
     forgetPreviousStateWeightInitializationStrategy: InitializationStrategy,
     forgetInputWeightInitializationStrategy: InitializationStrategy,
     forgetBiasInitializationStrategy: InitializationStrategy?,
-    shortTermMemoryWeightInitializationStrategy : InitializationStrategy,
-    shortTermInputWeightInitializationStrategy : InitializationStrategy,
-    shortTermBiasInitializationStrategy : InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    shortTermMemoryWeightInitializationStrategy: InitializationStrategy,
+    shortTermInputWeightInitializationStrategy: InitializationStrategy,
+    shortTermBiasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy: OptimizationStrategy? = null) =
 
     createMinimalGatedUnit(
         null,
         numberSteps,
-        inputDimension,
         hiddenDimension,
+        inputDimension,
         forgetPreviousStateWeightInitializationStrategy,
         forgetInputWeightInitializationStrategy,
         forgetBiasInitializationStrategy,
@@ -163,17 +163,17 @@ fun createMinimalGatedUnit(
         optimizationStrategy)
 
 fun createMinimalGatedUnit(
-    name : String?,
-    numberSteps : Int,
-    inputDimension : Int,
+    name: String?,
+    numberSteps: Int,
     hiddenDimension: Int,
+    inputDimension: Int,
     forgetPreviousStateWeightInitializationStrategy: InitializationStrategy,
     forgetInputWeightInitializationStrategy: InitializationStrategy,
     forgetBiasInitializationStrategy: InitializationStrategy?,
-    shortTermMemoryWeightInitializationStrategy : InitializationStrategy,
-    shortTermInputWeightInitializationStrategy : InitializationStrategy,
-    shortTermBiasInitializationStrategy : InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null): RecurrentUnit {
+    shortTermMemoryWeightInitializationStrategy: InitializationStrategy,
+    shortTermInputWeightInitializationStrategy: InitializationStrategy,
+    shortTermBiasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy: OptimizationStrategy? = null): RecurrentUnit {
 
     val forgetPreviousStateWeightingSeriesName = concatenateNames(name, "forget-previous-state-weighting")
     val forgetPreviousStateWeightingStepName = concatenateNames(name, "forget-previous-state-weighting-step")
@@ -286,8 +286,8 @@ fun createMinimalGatedUnit(
 
     val minimalGatedUnit = MinimalGatedUnit(
         name,
-        inputDimension,
         hiddenDimension,
+        inputDimension,
         forgetUnit,
         shortTermResponse,
         keepSubtractions,

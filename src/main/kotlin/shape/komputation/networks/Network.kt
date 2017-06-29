@@ -1,19 +1,19 @@
 package shape.komputation.networks
 
 import shape.komputation.layers.ContinuationLayer
-import shape.komputation.layers.OptimizableLayer
 import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
+import shape.komputation.optimization.Optimizable
 
 val printLoss = { _ : Int, loss : Double -> println(loss) }
 
 class Network(private val entryPoint: EntryPoint, private vararg val layers: ContinuationLayer) {
 
     private val numberLayers = layers.size
-    private val optimizables = listOf(entryPoint).plus(layers).filterIsInstance(OptimizableLayer::class.java).reversed()
+    private val optimizables = listOf(entryPoint).plus(layers).filterIsInstance(Optimizable::class.java).reversed()
 
     fun forward(input : Matrix) : DoubleMatrix {
 

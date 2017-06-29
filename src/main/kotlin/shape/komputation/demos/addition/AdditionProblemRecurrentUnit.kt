@@ -18,12 +18,12 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val length = 20
-    val numberExamples = 100_000
+    val length = 40
+    val numberExamples = 10_000
     val batchSize = 1
     val inputDimension = 2
     val hiddenDimension = 20
-    val numberIterations = 10
+    val numberIterations = 100
 
     val inputs = Array<Matrix>(numberExamples) { generateInput(random, length) }
 
@@ -37,12 +37,12 @@ fun main(args: Array<String>) {
     val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
     val biasInitializationStrategy = createZeroInitializer()
 
-    val optimizationStrategy = stochasticGradientDescent(0.01)
+    val optimizationStrategy = stochasticGradientDescent(0.001)
 
     val encoderUnit = createSimpleRecurrentUnit(
         length,
-        inputDimension,
         hiddenDimension,
+        inputDimension,
         previousStateWeightInitializationStrategy,
         inputWeightInitializationStrategy,
         biasInitializationStrategy,
