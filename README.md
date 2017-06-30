@@ -13,7 +13,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 - Standard feed-forward networks:
   - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
 
-- Convolutional neural networks:
+- Convolutional neural networks (CNNs):
   - [Convolution](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/ConvolutionalLayer.kt)
   - [Max-pooling](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/MaxPoolingLayer.kt)
 
@@ -57,19 +57,20 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - Reverse function:
   - [Unidirectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseUnidirectional.kt)
-  - [Bidirrectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseBidirectional.kt)
+  - [Bidirectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseBidirectional.kt)
   - [RNN with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
 
 - Running total:
   - [Projection](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalProjection.kt)
   - [Multi-input decoder](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
 
-- Toy problems:
-  - [Image classification](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)
-  - [Word embeddings](./src/main/kotlin/shape/komputation/demos/embeddings/Embeddings.kt)
+- [Computer vision toy problem](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)
 
-- NLP:
-  - [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
+- Word embedding toy problem:
+  - [CNN with one filter height](./src/main/kotlin/shape/komputation/demos/embeddings/Embeddings.kt)
+  - [CNN with two filter heights](./src/main/kotlin/shape/komputation/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
+
+- [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
 
 ## Sample code
 
