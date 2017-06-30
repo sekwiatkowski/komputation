@@ -3,9 +3,8 @@ package shape.komputation.layers.feedforward.encoder
 import shape.komputation.layers.ContinuationLayer
 import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.SequenceMatrix
 import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.zeroSequenceMatrix
+import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class SingleOutputEncoder(
@@ -23,13 +22,11 @@ class SingleOutputEncoder(
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
-        input as SequenceMatrix
-
         var currentState = doubleZeroColumnVector(this.hiddenDimension)
 
         for (indexStep in this.startAtTheBeginning) {
 
-            val stepInput = input.getStep(this.stepIndices[indexStep])
+            val stepInput = input.getColumn(this.stepIndices[indexStep])
 
             currentState = this.unit.forwardStep(indexStep, currentState, stepInput)
 
@@ -41,7 +38,7 @@ class SingleOutputEncoder(
 
     override fun backward(incoming: DoubleMatrix): DoubleMatrix {
 
-        val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, this.inputDimension)
+        val seriesBackwardWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
 
         var stateChain = incoming
 
@@ -51,7 +48,7 @@ class SingleOutputEncoder(
 
             stateChain = diffWrtPreviousState
 
-            seriesBackwardWrtInput.setStep(this.stepIndices[indexStep], diffWrtInput.entries)
+            seriesBackwardWrtInput.setColumn(this.stepIndices[indexStep], diffWrtInput.entries)
 
         }
 

@@ -13,7 +13,10 @@ import shape.komputation.layers.feedforward.projection.SeriesWeighting
 import shape.komputation.layers.feedforward.projection.createSeriesBias
 import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.layers.feedforward.units.RecurrentUnit
-import shape.komputation.matrix.*
+import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.doubleZeroColumnVector
+import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
@@ -30,9 +33,7 @@ class MultiInputDecoder(
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
-        input as SequenceMatrix
-
-        val seriesOutput = zeroSequenceMatrix(this.numberSteps, this.outputDimension)
+        val seriesOutput = doubleZeroMatrix(this.outputDimension, this.numberSteps)
 
         // Start with a zero state
         var state = doubleZeroColumnVector(this.hiddenDimension)
@@ -40,7 +41,7 @@ class MultiInputDecoder(
         for (indexStep in 0..this.numberSteps - 1) {
 
             // Extract the n-th step input
-            val stepInput = input.getStep(indexStep)
+            val stepInput = input.getColumn(indexStep)
 
             // Compute the new state
             state = this.unit.forwardStep(indexStep, state, stepInput)
@@ -48,7 +49,7 @@ class MultiInputDecoder(
             val output = this.forwardOutput(indexStep, state)
 
             // Store the n-th output
-            seriesOutput.setStep(indexStep, output.entries)
+            seriesOutput.setColumn(indexStep, output.entries)
 
         }
 
@@ -83,7 +84,7 @@ class MultiInputDecoder(
 
         val chainEntries = chain.entries
 
-        val diffStatePreActivationWrtInput = zeroSequenceMatrix(this.numberSteps, this.inputDimension)
+        val diffStatePreActivationWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
         var diffStatePreActivationWrtPreviousState : DoubleMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
@@ -105,7 +106,7 @@ class MultiInputDecoder(
 
             val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
 
-            diffStatePreActivationWrtInput.setStep(indexStep, newDiffStatePreActivationWrtInput.entries)
+            diffStatePreActivationWrtInput.setColumn(indexStep, newDiffStatePreActivationWrtInput.entries)
             diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
 
         }

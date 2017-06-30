@@ -4,30 +4,33 @@ import java.util.*
 
 sealed class Matrix
 
-open class DoubleMatrix(val numberRows : Int, val numberColumns : Int, val entries : DoubleArray) : Matrix()
+open class DoubleMatrix(val numberRows: Int, val numberColumns: Int, val entries: DoubleArray) : Matrix() {
 
-class SequenceMatrix(val numberSteps : Int, val numberStepRows: Int, val numberStepColumns: Int, entries : DoubleArray) : DoubleMatrix(numberStepRows, numberSteps * numberStepColumns, entries) {
+    fun getEntry(indexRow: Int, indexColumn: Int): Double {
 
-    private val stepSize = numberStepRows * numberStepColumns
-
-    fun setEntry(step: Int, indexRow: Int, indexColumn: Int, entry : Double) {
-
-        entries[step * stepSize + indexColumn * numberStepRows + indexRow] = entry
+        return this.entries[indexColumn * this.numberRows + indexRow]
 
     }
 
-    fun getStep(step: Int) : DoubleMatrix {
 
-        val start = step * stepSize
-        val end = start + stepSize
+    fun setEntry(indexRow: Int, indexColumn: Int, entry : Double) {
 
-        return DoubleMatrix(numberStepRows, numberStepColumns, Arrays.copyOfRange(this.entries, start, end))
+        this.entries[indexColumn * this.numberRows + indexRow] = entry
 
     }
 
-    fun setStep(step: Int, entries: DoubleArray) {
+    fun getColumn(index: Int) : DoubleMatrix {
 
-        System.arraycopy(entries, 0, this.entries, step * stepSize, entries.size)
+        val start = index * this.numberRows
+        val end = start + this.numberRows
+
+        return doubleColumnVector(*Arrays.copyOfRange(this.entries, start, end))
+
+    }
+
+    fun setColumn(index: Int, entries: DoubleArray) {
+
+        System.arraycopy(entries, 0, this.entries, index * this.numberRows, entries.size)
 
     }
 

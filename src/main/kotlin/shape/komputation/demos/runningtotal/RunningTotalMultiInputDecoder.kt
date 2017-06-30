@@ -9,9 +9,6 @@ import shape.komputation.layers.feedforward.decoder.createMultiInputDecoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.SquaredLoss
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.SequenceMatrix
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -19,10 +16,10 @@ import java.util.*
 
 fun main(args: Array<String>) {
 
-    val numberSteps = 4
     val exclusiveUpperLimit = 10
-    val hiddenDimension = 4
+    val numberSteps = 4
     val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
+    val hiddenDimension = 4
     val numberIterations = 30
     val batchSize = 4
 
@@ -34,32 +31,9 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val inputs = Array<Matrix>(numberExamples) {
+    val inputs = RunningTotalData.generateInputs(random, numberExamples, numberSteps, exclusiveUpperLimit)
 
-        SequenceMatrix(numberSteps, 1, 1, DoubleArray(numberSteps) { random.nextInt(exclusiveUpperLimit).toDouble() })
-
-    }
-
-    val targets = Array<DoubleMatrix>(numberExamples) { indexExample ->
-
-        val input = inputs[indexExample]
-
-        input as SequenceMatrix
-
-        val targetEntries = input
-            .entries
-            .foldIndexed(arrayListOf<Double>()) { index, list, current ->
-
-                list.add(list.getOrElse(index-1, { 0.0 }) + current)
-
-                list
-
-            }
-            .toDoubleArray()
-
-        SequenceMatrix(numberSteps, 1, 1, targetEntries)
-
-    }
+    val targets = RunningTotalData.generateTargets(inputs, numberSteps)
 
     val encoderUnit = createSimpleRecurrentUnit(
         numberSteps,

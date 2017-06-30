@@ -22,19 +22,17 @@ class MultiOutputEncoder(
 
     override fun forward(input: DoubleMatrix): DoubleMatrix {
 
-        var state = doubleZeroColumnVector(hiddenDimension)
+        var state = doubleZeroColumnVector(this.hiddenDimension)
 
-        input as SequenceMatrix
-
-        val output = zeroSequenceMatrix(numberSteps, hiddenDimension, 1)
+        val output = doubleZeroMatrix(this.hiddenDimension, this.numberSteps)
 
         for (indexStep in this.startAtTheBeginning) {
 
-            val stepInput = input.getStep(this.stepIndices[indexStep])
+            val stepInput = input.getColumn(this.stepIndices[indexStep])
 
             state = this.unit.forwardStep(indexStep, state, stepInput)
 
-            output.setStep(indexStep, state.entries)
+            output.setColumn(indexStep, state.entries)
 
 
         }
@@ -45,7 +43,7 @@ class MultiOutputEncoder(
 
     override fun backward(incoming: DoubleMatrix): DoubleMatrix {
 
-        val seriesBackwardWrtInput = zeroSequenceMatrix(this.numberSteps, inputDimension)
+        val seriesBackwardWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
 
         var stateChain = EMPTY_DOUBLE_MATRIX
 
@@ -53,13 +51,11 @@ class MultiOutputEncoder(
 
         for (indexStep in this.startAtTheEnd) {
 
-            val isLastStep = indexStep + 1 == this.numberSteps
-
-            val incomingStepEntries = extractStep(incomingEntries, indexStep, hiddenDimension)
+            val incomingStepEntries = extractStep(incomingEntries, indexStep, this.hiddenDimension)
 
             val chainEntries =
 
-                if (isLastStep) {
+                if (indexStep + 1 == this.numberSteps) {
 
                     incomingStepEntries
                 }
@@ -73,7 +69,7 @@ class MultiOutputEncoder(
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            seriesBackwardWrtInput.setStep(this.stepIndices[indexStep], backwardStatePreActivationWrtInput.entries)
+            seriesBackwardWrtInput.setColumn(this.stepIndices[indexStep], backwardStatePreActivationWrtInput.entries)
 
         }
 

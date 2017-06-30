@@ -16,7 +16,7 @@ import shape.komputation.layers.feedforward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.zeroSequenceMatrix
+import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
@@ -34,7 +34,7 @@ class SingleInputDecoder(
 
     override fun forward(encoderOutput: DoubleMatrix): DoubleMatrix {
 
-        val seriesOutput = zeroSequenceMatrix(this.numberSteps, this.outputDimension)
+        val seriesOutput = doubleZeroMatrix(this.outputDimension, this.numberSteps)
 
         // Use the encoder output as the first state
         var state = encoderOutput
@@ -47,7 +47,7 @@ class SingleInputDecoder(
 
             val output = this.forwardOutput(indexStep, newState)
 
-            seriesOutput.setStep(indexStep, output.entries)
+            seriesOutput.setColumn(indexStep, output.entries)
 
             state = newState
 

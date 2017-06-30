@@ -2,14 +2,13 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.doubleRowVector
 import shape.komputation.matrix.doubleMatrixFromRows
 
 class RowSplitTest {
 
-    val firstRow = doubleRowVector(1.0, 2.0)
-    val secondRow = doubleRowVector(3.0, 4.0)
-    val thirdRow = doubleRowVector(5.0, 6.0)
+    val firstRow = doubleArrayOf(1.0, 2.0)
+    val secondRow = doubleArrayOf(3.0, 4.0)
+    val thirdRow = doubleArrayOf(5.0, 6.0)
 
     val matrix = doubleMatrixFromRows(
         firstRow,

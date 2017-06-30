@@ -8,7 +8,6 @@ import shape.komputation.layers.feedforward.decoder.createAttentiveDecoder
 import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
 import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.LogisticLoss
-import shape.komputation.matrix.*
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -24,38 +23,8 @@ fun main(args: Array<String>) {
     val numberIterations = 10
     val batchSize = 1
 
-    val inputs = Array<Matrix>(numberExamples) {
-
-        val sequenceMatrix = zeroSequenceMatrix(seriesLength, numberCategories, 1)
-
-        for (indexStep in 0..seriesLength - 1) {
-
-            sequenceMatrix.setStep(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0))
-
-        }
-
-        sequenceMatrix
-
-    }
-
-    val targets = Array<DoubleMatrix>(numberExamples) { index ->
-
-        val sequenceMatrix = inputs[index] as SequenceMatrix
-
-        val reversedSequenceMatrix = zeroSequenceMatrix(seriesLength, numberCategories, 1)
-
-        for (indexStep in 0..seriesLength - 1) {
-
-            val reverseStep = seriesLength - indexStep - 1
-
-            val originalStep = sequenceMatrix.getStep(reverseStep).entries
-
-            reversedSequenceMatrix.setStep(indexStep, originalStep)
-        }
-
-        reversedSequenceMatrix
-
-    }
+    val inputs = ReverseData.generateInputs(random, numberExamples, seriesLength, numberCategories)
+    val targets = ReverseData.generateTargets(inputs, seriesLength, numberCategories)
 
     val identityInitializationStrategy = createIdentityInitializer()
     val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)

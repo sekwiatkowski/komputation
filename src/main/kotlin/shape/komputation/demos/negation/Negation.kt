@@ -12,9 +12,9 @@ import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
-fun main(args: Array<String>) {
+object NegationData {
 
-    val input = arrayOf<Matrix>(
+    val inputs = arrayOf<Matrix>(
         doubleScalar(0.0),
         doubleScalar(1.0)
     )
@@ -23,6 +23,10 @@ fun main(args: Array<String>) {
         doubleScalar(1.0),
         doubleScalar(0.0)
     )
+
+}
+
+fun main(args: Array<String>) {
 
     val random = Random(1)
     val initialize = createUniformInitializer(random, -0.5, 0.5)
@@ -38,6 +42,6 @@ fun main(args: Array<String>) {
         sigmoidLayer
     )
 
-    network.train(input, targets, SquaredLoss(), 10_000, 1, printLoss)
+    network.train(NegationData.inputs, NegationData.targets, SquaredLoss(), 10_000, 1, printLoss)
 
 }

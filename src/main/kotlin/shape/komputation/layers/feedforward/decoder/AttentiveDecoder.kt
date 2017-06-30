@@ -48,10 +48,8 @@ class AttentiveDecoder(
 
     override fun forward(encodings : DoubleMatrix): DoubleMatrix {
 
-        encodings as SequenceMatrix
-
         var previousDecoderState = doubleZeroColumnVector(this.decodingDimension)
-        val output = zeroSequenceMatrix(this.numberSteps, this.encodingDimension)
+        val output = doubleZeroMatrix(this.encodingDimension, this.numberSteps)
 
         this.encodingEntries = encodings.entries
 
@@ -108,7 +106,7 @@ class AttentiveDecoder(
 
             val newDecoderState = this.activationFunctions[indexStep].forward(newDecoderStatePreActivation)
 
-            output.setStep(indexStep, newDecoderState.entries)
+            output.setColumn(indexStep, newDecoderState.entries)
 
             previousDecoderState = newDecoderState
 
