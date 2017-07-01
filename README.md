@@ -31,6 +31,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Simple recurrent unit](./src/main/kotlin/shape/komputation/layers/feedforward/units/SimpleRecurrentUnit.kt)
   - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/layers/feedforward/units/MinimalGatedUnit.kt)
 
+- [Highway layer](./src/main/kotlin/shape/komputation/layers/feedforward/HighwayLayer.kt)
+
 - Activation functions:
   - [Identity](./src/main/kotlin/shape/komputation/layers/feedforward/IdentityLayer.kt)
   - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/feedforward/activation/ReluLayer.kt)
