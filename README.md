@@ -12,6 +12,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - Standard feed-forward networks:
   - [Projection](./src/main/kotlin/shape/komputation/layers/feedforward/projection/ProjectionLayer.kt)
+  - [Dense](./src/main/kotlin/shape/komputation/layers/feedforward/DenseLayer.kt)
 
 - Convolutional neural networks (CNNs):
   - [Convolution](./src/main/kotlin/shape/komputation/layers/feedforward/convolution/ConvolutionalLayer.kt)
@@ -42,6 +43,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 - Other layers:
   - [Concatenation](./src/main/kotlin/shape/komputation/layers/feedforward/Concatenation.kt)
   - [Transposition](./src/main/kotlin/shape/komputation/layers/feedforward/TranspositionLayer.kt)
+  - [Counter-probability](./src/main/kotlin/shape/komputation/layers/feedforward/CounterProbabilityLayer.kt)
   - [Column repetition](./src/main/kotlin/shape/komputation/layers/feedforward/ColumnRepetitionLayer.kt)
 
 ## Demos
@@ -65,6 +67,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Multi-input decoder](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
 
 - [Computer vision toy problem](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)
+
+- [MNIST](./src/main/kotlin/shape/komputation/demos/mnist/Mnist.kt)
 
 - Word embedding toy problem:
   - [CNN with one filter height](./src/main/kotlin/shape/komputation/demos/embeddings/Embeddings.kt)

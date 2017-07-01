@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
 
     val optimizer = stochasticGradientDescent(0.03)
 
-    val projectionLayer = createProjectionLayer(2, 2, true, initialize, optimizer)
+    val projectionLayer = createProjectionLayer(2, 2, initialize, initialize, optimizer)
     val softmaxLayer = SoftmaxLayer()
 
     val network = Network(

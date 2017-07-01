@@ -39,10 +39,10 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.1)
 
-    val hiddenPreactivationLayer = createProjectionLayer(2, 2, true, initialize, optimizationStrategy)
+    val hiddenPreactivationLayer = createProjectionLayer(2, 2, initialize, initialize, optimizationStrategy)
     val hiddenLayer = SigmoidLayer()
 
-    val outputPreactivationLayer = createProjectionLayer(2, 1, true, initialize, optimizationStrategy)
+    val outputPreactivationLayer = createProjectionLayer(2, 1, initialize, initialize, optimizationStrategy)
     val outputLayer = SigmoidLayer()
 
     val network = Network(

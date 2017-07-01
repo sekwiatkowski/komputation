@@ -291,7 +291,7 @@ fun createAttentiveDecoder(
     optimizationStrategy: OptimizationStrategy): AttentiveDecoder {
 
     val encodingProjectionName = concatenateNames(name, "encoding-projection")
-    val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, false, weightInitializationStrategy, optimizationStrategy)
+    val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, weightInitializationStrategy, null, optimizationStrategy)
 
     val columnRepetitionLayers = Array(numberSteps) { indexStep ->
 

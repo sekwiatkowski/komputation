@@ -65,7 +65,7 @@ fun createConvolutionalLayer(
     val expansionLayer = createExpansionLayer(expansionLayerName, filterWidth, filterHeight)
 
     val projectionLayerName = concatenateNames(name, "projection")
-    val projectionLayer = createProjectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, true, initializationStrategy, optimizationStrategy)
+    val projectionLayer = createProjectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, initializationStrategy, initializationStrategy, optimizationStrategy)
 
     return ConvolutionalLayer(name, expansionLayer, projectionLayer)
 

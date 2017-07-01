@@ -106,6 +106,29 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Con
 
         }
 
+    }
+
+    fun test(
+        inputs: Array<Matrix>,
+        targets: Array<DoubleMatrix>,
+        isCorrect: (DoubleMatrix, DoubleMatrix) -> Boolean) : BooleanArray {
+
+        val size = inputs.size
+
+        val results = BooleanArray(size)
+
+        for(index in 0..size -1) {
+
+            val input = inputs[index]
+            val target = targets[index]
+
+            val prediction = this.forward(input)
+
+            results[index] = isCorrect(prediction, target)
+
+        }
+
+        return results
 
     }
 

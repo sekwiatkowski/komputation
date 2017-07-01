@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
         createConcatenation(
             *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
         ),
-        createProjectionLayer(numberFilters * filterHeights.size, numberClasses, true, initializationStrategy, optimizationStrategy),
+        createProjectionLayer(numberFilters * filterHeights.size, numberClasses, initializationStrategy, initializationStrategy, optimizationStrategy),
         SoftmaxLayer()
     )
 

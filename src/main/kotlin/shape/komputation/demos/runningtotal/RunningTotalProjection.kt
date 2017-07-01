@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
     val network = Network(
         InputLayer(),
         encoder,
-        createProjectionLayer(hiddenDimension, 1, false, inputWeightInitializationStrategy, optimizationStrategy)
+        createProjectionLayer(hiddenDimension, 1, inputWeightInitializationStrategy, inputWeightInitializationStrategy, optimizationStrategy)
     )
 
     network.train(

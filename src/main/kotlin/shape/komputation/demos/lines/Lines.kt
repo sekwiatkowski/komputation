@@ -79,7 +79,7 @@ fun main(args: Array<String>) {
         createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
         MaxPoolingLayer(),
         ReluLayer(),
-        createProjectionLayer(numberFilters, 2, true, initialize, optimization),
+        createProjectionLayer(numberFilters, 2, initialize, initialize, optimization),
         SoftmaxLayer()
     )
 

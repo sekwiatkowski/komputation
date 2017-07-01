@@ -27,9 +27,9 @@ fun main(args: Array<String>) {
 
     val targets = AdditionProblemData.generateTarget(inputs)
 
-    val previousStateWeightInitializationStrategy = createIdentityInitializer()
-    val inputWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val biasInitializationStrategy = createZeroInitializer()
+    val identityInitializationStrategy = createIdentityInitializer()
+    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val zeroInitializationStrategy = createZeroInitializer()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
@@ -37,20 +37,18 @@ fun main(args: Array<String>) {
         length,
         hiddenDimension,
         inputDimension,
-        previousStateWeightInitializationStrategy,
-        inputWeightInitializationStrategy,
-        biasInitializationStrategy,
-        previousStateWeightInitializationStrategy,
-        inputWeightInitializationStrategy,
-        biasInitializationStrategy,
+        identityInitializationStrategy,
+        gaussianInitializationStrategy,
+        zeroInitializationStrategy,
+        identityInitializationStrategy,
+        gaussianInitializationStrategy,
+        zeroInitializationStrategy,
         optimizationStrategy
     )
 
     val encoder = createSingleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
 
-    val projectionWeightInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-
-    val outputProjection = createProjectionLayer(hiddenDimension, 1, true, projectionWeightInitializationStrategy, optimizationStrategy)
+    val outputProjection = createProjectionLayer(hiddenDimension, 1, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
 
     val network = Network(
         InputLayer(),

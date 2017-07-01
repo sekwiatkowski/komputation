@@ -3,8 +3,8 @@ package shape.komputation.layers.feedforward.units
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
-import shape.komputation.layers.combination.SubtractionCombination
 import shape.komputation.layers.concatenateNames
+import shape.komputation.layers.feedforward.CounterProbabilityLayer
 import shape.komputation.layers.feedforward.activation.ActivationLayer
 import shape.komputation.layers.feedforward.activation.SigmoidLayer
 import shape.komputation.layers.feedforward.activation.TanhLayer
@@ -12,7 +12,6 @@ import shape.komputation.layers.feedforward.projection.createSeriesBias
 import shape.komputation.layers.feedforward.projection.createSeriesWeighting
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleOneColumnVector
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
@@ -23,12 +22,12 @@ class MinimalGatedUnit(
     inputDimension: Int,
     private val forgetUnit: RecurrentUnit,
     private val shortTermResponse: ShortTermResponse,
-    private val keepSubtractions: Array<SubtractionCombination>,
+    private val counterProbabilities: Array<CounterProbabilityLayer>,
     private val longTermHadamards: Array<HadamardCombination>,
     private val shortTermHadamards: Array<HadamardCombination>,
     private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
 
-    private val one = doubleOneColumnVector(hiddenDimension)
+
 
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
@@ -37,7 +36,7 @@ class MinimalGatedUnit(
 
         val forget = this.forgetUnit.forwardStep(step, state, input)
 
-        val oneMinusForget = this.keepSubtractions[step].forward(this.one, forget)
+        val oneMinusForget = this.counterProbabilities[step].forward(forget)
 
         val longTermComponent = this.longTermHadamards[step].forward(oneMinusForget, state)
 
@@ -57,7 +56,7 @@ class MinimalGatedUnit(
         val diffLongTermComponentWrtKeep = this.longTermHadamards[step].backwardFirst(diffChainWrtLongTermComponent)
 
         // d (1 - forget) / d forget = -1
-        val diffKeepWrtForget = this.keepSubtractions[step].backwardSecond(diffLongTermComponentWrtKeep)
+        val diffKeepWrtForget = this.counterProbabilities[step].backward(diffLongTermComponentWrtKeep)
         val (diffForgetWrtPreviousState, diffForgetWrtInput) = this.forgetUnit.backwardStep(step, diffKeepWrtForget)
 
         this.previousStateAccumulator.accumulate(diffForgetWrtPreviousState.entries)
@@ -259,7 +258,7 @@ fun createMinimalGatedUnit(
     val keepSubtractions = Array(numberSteps) { indexStep ->
 
         val keepSubtractionName = concatenateNames(name, "keep-subtraction-$indexStep")
-        SubtractionCombination(keepSubtractionName)
+        CounterProbabilityLayer(keepSubtractionName, hiddenDimension)
 
     }
 

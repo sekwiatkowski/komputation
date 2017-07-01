@@ -1,6 +1,6 @@
 package shape.komputation.demos.trec
 
-import shape.komputation.functions.findMaxIndicesInColumns
+import shape.komputation.functions.findMaxIndex
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.entry.createLookupLayer
 import shape.komputation.layers.feedforward.activation.ReluLayer
@@ -46,7 +46,7 @@ class TrecTraining {
         val filterHeights = intArrayOf(3)
         val numberFilterHeights = filterHeights.size
 
-        val numberIterations = 10_000
+        val numberIterations = 30
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -88,6 +88,7 @@ class TrecTraining {
 
         val trainingTargets = createTargets(trainingCategories, indexedCategories)
         val testTargets = createTargets(testCategories, indexedCategories)
+        val numberTestExamples = testTargets.size
 
         val missing = vocabulary.minus(embeddingMap.keys)
 
@@ -114,32 +115,30 @@ class TrecTraining {
                     }
                     .toTypedArray()
             ),
-            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, true, initializationStrategy, optimizationStrategy),
+            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
             SoftmaxLayer()
         )
 
-        val testData = testRepresentations.zip(testTargets)
-        val numberTestExamples = testData.size
+        val afterEachIteration = { _ : Int, _ : Double ->
 
-        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), numberIterations, maximumBatchSize) { _, _ ->
+            val accuracyRate = network
+                .test(
+                    testRepresentations,
+                    testTargets,
+                    { prediction, target ->
 
-            val accuracy = testData
-                .count { (input, target) ->
+                        findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
 
-                    val output = network.forward(input)
-
-                    val predictedCategory = findMaxIndicesInColumns(output.entries, output.numberRows, output.numberColumns).first()
-                    val actualCategory = findMaxIndicesInColumns(target.entries, target.numberRows, target.numberColumns).first()
-
-                    predictedCategory == actualCategory
-
-                }
-                .toDouble()
+                    }
+                )
+                .count { correct -> correct }
                 .div(numberTestExamples.toDouble())
 
-            println(accuracy)
+            println(accuracyRate)
 
         }
+
+        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), numberIterations, maximumBatchSize, afterEachIteration)
 
     }
 

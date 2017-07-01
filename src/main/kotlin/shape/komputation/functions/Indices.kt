@@ -26,6 +26,28 @@ fun findMaxIndicesInRows(input: DoubleArray, numberRows : Int, numberColumns : I
 
     }
 
+fun findMaxIndex(input: DoubleArray): Int {
+
+    var maxIndex = -1
+    var maxValue = Double.NEGATIVE_INFINITY
+
+    for(index in 0..input.size - 1) {
+
+        val value = input[index]
+
+        if (value > maxValue) {
+
+            maxValue = value
+            maxIndex = index
+
+        }
+
+    }
+
+    return maxIndex
+
+}
+
 fun findMaxIndicesInColumns(input: DoubleArray, numberRows : Int, numberColumns : Int) =
 
     IntArray(numberColumns) { indexColumn ->
