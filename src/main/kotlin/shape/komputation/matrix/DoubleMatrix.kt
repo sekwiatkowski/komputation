@@ -8,9 +8,9 @@ fun doubleRowVector(vararg entries : Double) = DoubleMatrix(1, entries.size, ent
 
 fun doubleColumnVector(vararg entries : Double) = DoubleMatrix(entries.size, 1, entries)
 
-fun doubleZeroColumnVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows))
+fun doubleConstantColumnVector(numberRows : Int, constant : Double) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows) { constant })
 
-fun doubleOneColumnVector(numberRows : Int) = DoubleMatrix(numberRows, 1, DoubleArray(numberRows) { 1.0 })
+fun doubleZeroColumnVector(numberRows : Int) = doubleConstantColumnVector(numberRows, 0.0)
 
 fun doubleScalar(value: Double) = DoubleMatrix(1, 1, doubleArrayOf(value))
 

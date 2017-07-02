@@ -2,8 +2,8 @@ package shape.komputation.demos.and
 
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.activation.SoftmaxLayer
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
+import shape.komputation.layers.forward.activation.SoftmaxLayer
+import shape.komputation.layers.forward.projection.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector

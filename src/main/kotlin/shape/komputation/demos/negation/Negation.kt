@@ -2,8 +2,8 @@ package shape.komputation.demos.negation
 
 import shape.komputation.initialization.createUniformInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.activation.SigmoidLayer
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
+import shape.komputation.layers.forward.activation.SigmoidLayer
+import shape.komputation.layers.forward.projection.createProjectionLayer
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleScalar

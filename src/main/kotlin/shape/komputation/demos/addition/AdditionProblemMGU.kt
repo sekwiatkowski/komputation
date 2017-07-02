@@ -4,9 +4,9 @@ import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.initialization.createZeroInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.encoder.createSingleOutputEncoder
-import shape.komputation.layers.feedforward.projection.createProjectionLayer
-import shape.komputation.layers.feedforward.units.createMinimalGatedUnit
+import shape.komputation.layers.forward.encoder.createSingleOutputEncoder
+import shape.komputation.layers.forward.projection.createProjectionLayer
+import shape.komputation.layers.forward.units.createMinimalGatedUnit
 import shape.komputation.loss.SquaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss

@@ -1,6 +1,6 @@
 package shape.komputation.networks
 
-import shape.komputation.layers.ContinuationLayer
+import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
@@ -10,18 +10,18 @@ import shape.komputation.optimization.Optimizable
 
 val printLoss = { _ : Int, loss : Double -> println(loss) }
 
-class Network(private val entryPoint: EntryPoint, private vararg val layers: ContinuationLayer) {
+class Network(private val entryPoint: EntryPoint, private vararg val layers: ForwardLayer) {
 
     private val numberLayers = layers.size
     private val optimizables = listOf(entryPoint).plus(layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(input : Matrix) : DoubleMatrix {
+    fun forward(input : Matrix, isTraining : Boolean) : DoubleMatrix {
 
         var output = entryPoint.forward(input)
 
-        for (continuationLayer in layers) {
+        for (layer in layers) {
 
-            output = continuationLayer.forward(output)
+            output = layer.forward(output, isTraining)
 
         }
 
@@ -80,7 +80,7 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Con
                     val input = inputs[indexExample]
                     val target = targets[indexExample]
 
-                    val prediction = this.forward(input)
+                    val prediction = this.forward(input, true)
 
                     val loss = lossFunction.forward(prediction, target)
 
@@ -122,7 +122,7 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: Con
             val input = inputs[index]
             val target = targets[index]
 
-            val prediction = this.forward(input)
+            val prediction = this.forward(input, false)
 
             results[index] = isCorrect(prediction, target)
 

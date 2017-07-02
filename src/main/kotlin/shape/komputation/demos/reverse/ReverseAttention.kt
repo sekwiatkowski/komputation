@@ -4,9 +4,9 @@ import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.createGaussianInitializer
 import shape.komputation.initialization.createIdentityInitializer
 import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.feedforward.decoder.createAttentiveDecoder
-import shape.komputation.layers.feedforward.encoder.createMultiOutputEncoder
-import shape.komputation.layers.feedforward.units.createSimpleRecurrentUnit
+import shape.komputation.layers.forward.decoder.createAttentiveDecoder
+import shape.komputation.layers.forward.encoder.createMultiOutputEncoder
+import shape.komputation.layers.forward.units.createSimpleRecurrentUnit
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
