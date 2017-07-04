@@ -124,3 +124,4 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
 
 - [Stochastic Gradient Descent](./src/main/kotlin/shape/komputation/optimization/StochasticGradientDescent.kt)
 - [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)
+- [Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/optimization/Nesterov.kt)

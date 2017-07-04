@@ -9,15 +9,15 @@ fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
     }
 }
 
-class Momentum(private val learningRate: Double, private val momentum: Double, val numberRows : Int, val numberColumns : Int) : UpdateRule {
+class Momentum(private val learningRate: Double, private val momentum: Double, numberRows : Int, numberColumns : Int) : UpdateRule {
 
-    val state = DoubleArray(numberRows * numberColumns)
+    private val history = DoubleArray(numberRows * numberColumns)
 
     override fun apply(index : Int, current: Double, derivative: Double): Double {
 
-        val newStateEntry = momentum * state[index] + learningRate * derivative
+        val newStateEntry = this.momentum * this.history[index] + this.learningRate * derivative
 
-        state[index] = newStateEntry
+        this.history[index] = newStateEntry
 
         val result = current - newStateEntry
 

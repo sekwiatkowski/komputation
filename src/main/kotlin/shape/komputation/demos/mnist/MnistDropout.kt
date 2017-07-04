@@ -34,11 +34,11 @@ fun main(args: Array<String>) {
 
     val optimizer = momentum(0.01, 0.1)
 
-    val firstHiddenDimension = 500
+    val hiddenDimension = 500
 
     val firstProjection = createProjectionLayer(
         784,
-        firstHiddenDimension,
+        hiddenDimension,
         gaussianInitialization,
         gaussianInitialization,
         optimizer
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
 
 
     val outputLayer = createDenseLayer(
-        firstHiddenDimension,
+        hiddenDimension,
         MnistData.numberCategories,
         gaussianInitialization,
         gaussianInitialization,
@@ -57,7 +57,7 @@ fun main(args: Array<String>) {
     val network = Network(
         InputLayer(),
         firstProjection,
-        createDropoutLayer(firstHiddenDimension, random, 0.9, ReluLayer()),
+        createDropoutLayer(hiddenDimension, random, 0.9, ReluLayer()),
         outputLayer
     )
 
