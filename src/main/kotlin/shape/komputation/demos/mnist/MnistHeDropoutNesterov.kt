@@ -2,15 +2,15 @@ package shape.komputation.demos.mnist
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.functions.findMaxIndex
-import shape.komputation.initialization.createConstantInitializer
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.initialization.createZeroInitializer
+import shape.komputation.initialization.createHeInitialization
 import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.forward.activation.ReluLayer
 import shape.komputation.layers.forward.createDenseLayer
-import shape.komputation.layers.forward.createHighwayLayer
+import shape.komputation.layers.forward.dropout.createDropoutLayer
+import shape.komputation.layers.forward.projection.createProjectionLayer
 import shape.komputation.loss.LogisticLoss
 import shape.komputation.networks.Network
-import shape.komputation.optimization.momentum
+import shape.komputation.optimization.*
 import java.io.File
 import java.util.*
 
@@ -33,38 +33,32 @@ fun main(args: Array<String>) {
     val inputDimension = 784
     val hiddenDimension = 100
 
-    val gaussianInitialization = createGaussianInitializer(random, 0.0,0.0001)
-    val zeroInitialization = createZeroInitializer()
-    val constantInitialization = createConstantInitializer(-2.0)
+    val hiddenInitialization = createHeInitialization(random, inputDimension)
+    val outputInitialization = createHeInitialization(random, hiddenDimension)
 
-    val optimizer = momentum(0.01, 0.1)
+    val optimizer = nesterov(0.003, 0.3)
 
-    val dimensionalityReductionLayer = createDenseLayer(
+    val firstProjection = createProjectionLayer(
         inputDimension,
         hiddenDimension,
-        gaussianInitialization,
-        gaussianInitialization,
-        ActivationFunction.Tanh,
+        hiddenInitialization,
+        hiddenInitialization,
         optimizer
     )
 
     val outputLayer = createDenseLayer(
         hiddenDimension,
         MnistData.numberCategories,
-        gaussianInitialization,
-        gaussianInitialization,
+        outputInitialization,
+        outputInitialization,
         ActivationFunction.Softmax,
         optimizer
     )
 
-    val createHiddenLayer = { createHighwayLayer(hiddenDimension, gaussianInitialization, zeroInitialization, constantInitialization, ActivationFunction.Tanh, optimizer) }
-
     val network = Network(
         InputLayer(),
-        dimensionalityReductionLayer,
-        createHiddenLayer(),
-        createHiddenLayer(),
-        createHiddenLayer(),
+        firstProjection,
+        createDropoutLayer(hiddenDimension, random, 0.9, ReluLayer()),
         outputLayer
     )
 

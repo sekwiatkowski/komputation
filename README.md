@@ -78,6 +78,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - MNIST:
   - [Dropout](./src/main/kotlin/shape/komputation/demos/mnist/MnistDropout.kt)
+  - [He initialization, dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/demos/mnist/MnistHeDropoutNesterov.kt)
   - [Highway layers](./src/main/kotlin/shape/komputation/demos/mnist/MnistHighway.kt)
 
 - [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
@@ -111,6 +112,7 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
 
 - [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
 - [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
+- [He](./src/main/kotlin/shape/komputation/initialization/HeInitialization.kt)
 - [Identity](./src/main/kotlin/shape/komputation/initialization/IdentityInitialization.kt)
 - [Uniform](./src/main/kotlin/shape/komputation/initialization/UniformInitialization.kt)
 - [Zero](./src/main/kotlin/shape/komputation/initialization/ZeroInitialization.kt)
@@ -123,5 +125,10 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
 ## Optimization
 
 - [Stochastic Gradient Descent](./src/main/kotlin/shape/komputation/optimization/StochasticGradientDescent.kt)
-- [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)
-- [Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/optimization/Nesterov.kt)
+- Momentum-based:
+  - [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)
+  - [Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/optimization/Nesterov.kt)
+- Adaptive learning rates:
+  - [Adagrad](./src/main/kotlin/shape/komputation/optimization/Adagrad.kt)
+  - [Adadelta](./src/main/kotlin/shape/komputation/optimization/Adadelta.kt)
+  - [RMSProp](./src/main/kotlin/shape/komputation/optimization/RMSProp.kt)

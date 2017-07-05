@@ -34,12 +34,15 @@ object MnistData {
 
     }
 
+    val numberTrainingExamples = 60_000
+    val numberTestExamples = 10_000
+
     fun loadMnistTraining(csvFile: File) =
 
-        loadMnist(csvFile, 60_000)
+        loadMnist(csvFile, this.numberTrainingExamples)
 
     fun loadMnistTest(csvFile: File) =
 
-        loadMnist(csvFile, 10_000)
+        loadMnist(csvFile, this.numberTestExamples)
 
 }

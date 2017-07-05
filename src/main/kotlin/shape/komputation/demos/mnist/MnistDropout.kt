@@ -30,14 +30,15 @@ fun main(args: Array<String>) {
     val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()))
     val (testInputs, testTargets) = MnistData.loadMnistTest(File(args.last()))
 
+    val inputDimension = 784
+    val hiddenDimension = 500
+
     val gaussianInitialization = createGaussianInitializer(random, 0.0,0.01)
 
     val optimizer = momentum(0.01, 0.1)
 
-    val hiddenDimension = 500
-
     val firstProjection = createProjectionLayer(
-        784,
+        inputDimension,
         hiddenDimension,
         gaussianInitialization,
         gaussianInitialization,
@@ -74,11 +75,12 @@ fun main(args: Array<String>) {
                 }
             )
             .count { correct -> correct }
-            .div(10_000.0)
+            .div(MnistData.numberTestExamples.toDouble())
 
         println(accuracy)
 
     }
+
     network.train(trainingInputs, trainingTargets, LogisticLoss(), numberIterations, batchSize, afterEachIteration)
 
 }
