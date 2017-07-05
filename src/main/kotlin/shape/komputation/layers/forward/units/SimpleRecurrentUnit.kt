@@ -3,18 +3,19 @@ package shape.komputation.layers.forward.units
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.combination.AdditionCombination
+import shape.komputation.layers.combination.additionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.createActivationLayers
+import shape.komputation.layers.forward.activation.activationLayers
 import shape.komputation.layers.forward.projection.SeriesBias
 import shape.komputation.layers.forward.projection.SeriesWeighting
-import shape.komputation.layers.forward.projection.createSeriesBias
-import shape.komputation.layers.forward.projection.createSeriesWeighting
+import shape.komputation.layers.forward.projection.seriesBias
+import shape.komputation.layers.forward.projection.seriesWeighting
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class SimpleRecurrentUnit(
+class SimpleRecurrentUnit internal constructor(
     name: String?,
     private val previousStateWeighting: SeriesWeighting,
     private val inputWeighting: SeriesWeighting,
@@ -94,7 +95,7 @@ class SimpleRecurrentUnit(
 
 }
 
-fun createSimpleRecurrentUnit(
+fun simpleRecurrentUnit(
     numberSteps: Int,
     hiddenDimension: Int,
     inputDimension: Int,
@@ -104,7 +105,7 @@ fun createSimpleRecurrentUnit(
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy? = null) =
 
-    createSimpleRecurrentUnit(
+    simpleRecurrentUnit(
         null,
         numberSteps,
         hiddenDimension,
@@ -115,7 +116,7 @@ fun createSimpleRecurrentUnit(
         activationFunction,
         optimizationStrategy)
 
-fun createSimpleRecurrentUnit(
+fun simpleRecurrentUnit(
     name: String?,
     numberSteps: Int,
     hiddenDimension: Int,
@@ -129,7 +130,7 @@ fun createSimpleRecurrentUnit(
     val previousStateWeightingSeriesName = concatenateNames(name, "previous-state-weighting")
     val previousStateWeightingStepName = concatenateNames(name, "previous-state-weighting-step")
 
-    val previousStateWeighting = createSeriesWeighting(
+    val previousStateWeighting = seriesWeighting(
         previousStateWeightingSeriesName,
         previousStateWeightingStepName,
         numberSteps,
@@ -142,7 +143,7 @@ fun createSimpleRecurrentUnit(
     val inputWeightingSeriesName = concatenateNames(name, "input-weighting")
     val inputWeightingStepName = concatenateNames(name, "input-weighting-step")
 
-    val inputWeighting = createSeriesWeighting(
+    val inputWeighting = seriesWeighting(
         inputWeightingSeriesName,
         inputWeightingStepName,
         numberSteps,
@@ -155,7 +156,7 @@ fun createSimpleRecurrentUnit(
     val additions = Array(numberSteps) { indexStep ->
 
         val additionName = concatenateNames(name, "addition-step-$indexStep")
-        AdditionCombination(additionName)
+        additionCombination(additionName)
 
     }
 
@@ -164,10 +165,10 @@ fun createSimpleRecurrentUnit(
         if(biasInitializationStrategy == null)
             null
         else
-            createSeriesBias(concatenateNames(name, "bias"), hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+            seriesBias(concatenateNames(name, "bias"), hiddenDimension, biasInitializationStrategy, optimizationStrategy)
 
     val activationName = concatenateNames(name, "activation")
-    val activationLayers = createActivationLayers(numberSteps, activationName, activationFunction)
+    val activationLayers = activationLayers(numberSteps, activationName, activationFunction)
 
     val unitName = concatenateNames(name, "unit")
     val unit = SimpleRecurrentUnit(unitName, previousStateWeighting, inputWeighting, additions, bias, activationLayers)

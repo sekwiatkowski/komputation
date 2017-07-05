@@ -56,3 +56,5 @@ class LogisticLoss : LossFunction {
     }
 
 }
+
+fun logisticLoss() = LogisticLoss()

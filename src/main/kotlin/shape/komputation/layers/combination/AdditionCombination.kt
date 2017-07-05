@@ -13,7 +13,7 @@ import shape.komputation.matrix.DoubleMatrix
    chain * d g(x)+h(x) / d g(x) = chain
    chain * d g(x)+h(x) / d h(x) = chain
 */
-class AdditionCombination(name : String? = null) : CombinationLayer(name) {
+class AdditionCombination internal constructor(name : String? = null) : CombinationLayer(name) {
 
     override fun forward(first: DoubleMatrix, second: DoubleMatrix) =
 
@@ -30,3 +30,5 @@ class AdditionCombination(name : String? = null) : CombinationLayer(name) {
         chain
 
 }
+
+fun additionCombination(name : String? = null) = AdditionCombination(name)

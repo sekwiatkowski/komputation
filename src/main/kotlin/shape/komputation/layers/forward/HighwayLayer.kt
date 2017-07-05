@@ -5,13 +5,15 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
+import shape.komputation.layers.combination.additionCombination
+import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class HighwayLayer(
+class HighwayLayer internal constructor(
     name : String?,
     inputDimension : Int,
     private val transformation : DenseLayer,
@@ -116,7 +118,7 @@ class HighwayLayer(
 
 }
 
-fun createHighwayLayer(
+fun highwayLayer(
     dimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     transformationBiasInitializationStrategy: InitializationStrategy?,
@@ -124,9 +126,9 @@ fun createHighwayLayer(
     transformationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?) =
 
-    createHighwayLayer(null, dimension, weightInitializationStrategy, transformationBiasInitializationStrategy, transformationFractionBiasInitializationStrategy, transformationFunction, optimizationStrategy)
+    highwayLayer(null, dimension, weightInitializationStrategy, transformationBiasInitializationStrategy, transformationFractionBiasInitializationStrategy, transformationFunction, optimizationStrategy)
 
-fun createHighwayLayer(
+fun highwayLayer(
     name : String?,
     dimension: Int,
     weightInitializationStrategy: InitializationStrategy,
@@ -135,17 +137,17 @@ fun createHighwayLayer(
     transformationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?): HighwayLayer {
 
-    val transformation = createDenseLayer(name, dimension, dimension, weightInitializationStrategy, transformationBiasInitializationStrategy, transformationFunction, optimizationStrategy)
+    val transformation = denseLayer(name, dimension, dimension, weightInitializationStrategy, transformationBiasInitializationStrategy, transformationFunction, optimizationStrategy)
 
-    val transformationFraction = createDenseLayer(name, dimension, dimension, weightInitializationStrategy, transformationFractionBiasInitializationStrategy, ActivationFunction.Sigmoid, optimizationStrategy)
+    val transformationFraction = denseLayer(name, dimension, dimension, weightInitializationStrategy, transformationFractionBiasInitializationStrategy, ActivationFunction.Sigmoid, optimizationStrategy)
 
-    val transformationHadamard = HadamardCombination(name)
+    val transformationHadamard = hadamardCombination(name)
 
-    val counterProbability = CounterProbabilityLayer(name, dimension)
+    val counterProbability = counterProbabilityLayer(name, dimension)
 
-    val carryHadamard = HadamardCombination(name)
+    val carryHadamard = hadamardCombination(name)
 
-    val addition = AdditionCombination(name)
+    val addition = additionCombination(name)
 
     val highwayLayer = HighwayLayer(name, dimension, transformation, transformationFraction, transformationHadamard, counterProbability, carryHadamard, addition)
 

@@ -1,14 +1,14 @@
 package shape.komputation.demos.addition
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.initialization.createIdentityInitializer
-import shape.komputation.initialization.createZeroInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.encoder.createSingleOutputEncoder
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.layers.forward.units.createSimpleRecurrentUnit
-import shape.komputation.loss.SquaredLoss
+import shape.komputation.initialization.gaussianInitialization
+import shape.komputation.initialization.identityInitialization
+import shape.komputation.initialization.zeroInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.encoder.singleOutputEncoder
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.units.simpleRecurrentUnit
+import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -28,13 +28,13 @@ fun main(args: Array<String>) {
 
     val targets = AdditionProblemData.generateTarget(inputs)
 
-    val identityInitializationStrategy = createIdentityInitializer()
-    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val zeroInitializationStrategy = createZeroInitializer()
+    val identityInitializationStrategy = identityInitialization()
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
+    val zeroInitializationStrategy = zeroInitialization()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoderUnit = createSimpleRecurrentUnit(
+    val encoderUnit = simpleRecurrentUnit(
         length,
         hiddenDimension,
         inputDimension,
@@ -45,12 +45,12 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val encoder = createSingleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
+    val encoder = singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
 
-    val outputProjection = createProjectionLayer(hiddenDimension, 1, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
+    val outputProjection = projectionLayer(hiddenDimension, 1, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         encoder,
         outputProjection
     )
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        SquaredLoss(),
+        squaredLoss(),
         numberIterations,
         batchSize,
         printLoss

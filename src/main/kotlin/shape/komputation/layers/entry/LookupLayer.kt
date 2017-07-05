@@ -8,7 +8,7 @@ import shape.komputation.optimization.SparseAccumulator
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateSparsely
 
-class LookupLayer(
+class LookupLayer internal constructor(
     name : String?,
     private val data: Array<DoubleArray>,
     private val dimension : Int,
@@ -75,16 +75,16 @@ class LookupLayer(
 
 }
 
-fun createLookupLayer(
+fun lookupLayer(
     data: Array<DoubleArray>,
     dimension : Int,
     maximumBatchSize : Int,
     optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): LookupLayer {
 
-    return createLookupLayer(null, data, dimension, maximumBatchSize, optimizationStrategy)
+    return lookupLayer(null, data, dimension, maximumBatchSize, optimizationStrategy)
 }
 
-fun createLookupLayer(
+fun lookupLayer(
     name : String? = null,
     data: Array<DoubleArray>,
     dimension : Int,

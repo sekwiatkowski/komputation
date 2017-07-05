@@ -11,7 +11,7 @@ import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
-class ProjectionLayer(
+class ProjectionLayer internal constructor(
     name : String? = null,
     private val weights : DoubleArray,
     private val numberWeightRows: Int,
@@ -109,16 +109,16 @@ class ProjectionLayer(
 
 }
 
-fun createProjectionLayer(
+fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
     optimizationStrategy : OptimizationStrategy? = null) =
 
-    createProjectionLayer(null, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
+    projectionLayer(null, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
 
-fun createProjectionLayer(
+fun projectionLayer(
     name : String?,
     inputDimension: Int,
     outputDimension: Int,

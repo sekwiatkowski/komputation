@@ -4,7 +4,7 @@ import shape.komputation.functions.activation.backwardVectorSoftmax
 import shape.komputation.functions.activation.vectorSoftmax
 import shape.komputation.matrix.DoubleMatrix
 
-class SoftmaxVectorLayer(name : String? = null) : ActivationLayer(name) {
+class SoftmaxVectorLayer internal constructor (name : String? = null) : ActivationLayer(name) {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -32,3 +32,5 @@ class SoftmaxVectorLayer(name : String? = null) : ActivationLayer(name) {
     }
 
 }
+
+fun softmaxVectorLayer(name : String? = null) = SoftmaxVectorLayer(name)

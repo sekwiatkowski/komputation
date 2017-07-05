@@ -1,5 +1,5 @@
 package shape.komputation.initialization
 
-fun createZeroInitializer() =
+fun zeroInitialization() =
 
-    createConstantInitializer(0.0)
+    constantInitialization(0.0)

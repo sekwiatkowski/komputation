@@ -1,15 +1,15 @@
 package shape.komputation.demos.reverse
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.initialization.createIdentityInitializer
-import shape.komputation.initialization.createZeroInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.createConcatenation
-import shape.komputation.layers.forward.decoder.createSingleInputDecoder
-import shape.komputation.layers.forward.encoder.createSingleOutputEncoder
-import shape.komputation.layers.forward.units.createSimpleRecurrentUnit
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.gaussianInitialization
+import shape.komputation.initialization.identityInitialization
+import shape.komputation.initialization.zeroInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.concatenation
+import shape.komputation.layers.forward.decoder.singleInputDecoder
+import shape.komputation.layers.forward.encoder.singleOutputEncoder
+import shape.komputation.layers.forward.units.simpleRecurrentUnit
+import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -28,13 +28,13 @@ fun main(args: Array<String>) {
     val inputs = ReverseData.generateInputs(random, numberExamples, seriesLength, numberCategories)
     val targets = ReverseData.generateTargets(inputs, seriesLength, numberCategories)
 
-    val identityInitialization = createIdentityInitializer()
-    val gaussianInitialization = createGaussianInitializer(random, 0.0, 0.001)
-    val zeroInitialization = createZeroInitializer()
+    val identityInitialization = identityInitialization()
+    val gaussianInitialization = gaussianInitialization(random, 0.0, 0.001)
+    val zeroInitialization = zeroInitialization()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val forwardEncoderUnit = createSimpleRecurrentUnit(
+    val forwardEncoderUnit = simpleRecurrentUnit(
         seriesLength,
         hiddenDimension,
         numberCategories,
@@ -45,7 +45,7 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val backwardEncoderUnit = createSimpleRecurrentUnit(
+    val backwardEncoderUnit = simpleRecurrentUnit(
         seriesLength,
         hiddenDimension,
         numberCategories,
@@ -56,7 +56,7 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val decoderUnit = createSimpleRecurrentUnit(
+    val decoderUnit = simpleRecurrentUnit(
         seriesLength,
         2 * hiddenDimension,
         numberCategories,
@@ -68,18 +68,18 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        InputLayer(),
-        createConcatenation(
-            createSingleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
-            createSingleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
+        inputLayer(),
+        concatenation(
+            singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
+            singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
         ),
-        createSingleInputDecoder(seriesLength, 2 * hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
+        singleInputDecoder(seriesLength, 2 * hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
     )
 
     network.train(
         inputs,
         targets,
-        LogisticLoss(),
+        logisticLoss(),
         numberIterations,
         batchSize,
         printLoss

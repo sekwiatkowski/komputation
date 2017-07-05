@@ -43,3 +43,5 @@ class SquaredLoss : LossFunction {
     }
 
 }
+
+fun squaredLoss() = SquaredLoss()

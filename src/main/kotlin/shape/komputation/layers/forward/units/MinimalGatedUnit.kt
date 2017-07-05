@@ -3,20 +3,23 @@ package shape.komputation.layers.forward.units
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
+import shape.komputation.layers.combination.additionCombination
+import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.CounterProbabilityLayer
 import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.SigmoidLayer
-import shape.komputation.layers.forward.activation.TanhLayer
-import shape.komputation.layers.forward.projection.createSeriesBias
-import shape.komputation.layers.forward.projection.createSeriesWeighting
+import shape.komputation.layers.forward.activation.sigmoidLayer
+import shape.komputation.layers.forward.activation.tanhLayer
+import shape.komputation.layers.forward.counterProbabilityLayer
+import shape.komputation.layers.forward.projection.seriesBias
+import shape.komputation.layers.forward.projection.seriesWeighting
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class MinimalGatedUnit(
+class MinimalGatedUnit internal constructor(
     name: String?,
     hiddenDimension: Int,
     inputDimension: Int,
@@ -26,8 +29,6 @@ class MinimalGatedUnit(
     private val longTermHadamards: Array<HadamardCombination>,
     private val shortTermHadamards: Array<HadamardCombination>,
     private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
-
-
 
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
@@ -136,7 +137,7 @@ class MinimalGatedUnit(
 
 }
 
-fun createMinimalGatedUnit(
+fun minimalGatedUnit(
     numberSteps: Int,
     hiddenDimension: Int,
     inputDimension: Int,
@@ -148,7 +149,7 @@ fun createMinimalGatedUnit(
     shortTermBiasInitializationStrategy: InitializationStrategy?,
     optimizationStrategy: OptimizationStrategy? = null) =
 
-    createMinimalGatedUnit(
+    minimalGatedUnit(
         null,
         numberSteps,
         hiddenDimension,
@@ -161,7 +162,7 @@ fun createMinimalGatedUnit(
         shortTermBiasInitializationStrategy,
         optimizationStrategy)
 
-fun createMinimalGatedUnit(
+fun minimalGatedUnit(
     name: String?,
     numberSteps: Int,
     hiddenDimension: Int,
@@ -176,16 +177,16 @@ fun createMinimalGatedUnit(
 
     val forgetPreviousStateWeightingSeriesName = concatenateNames(name, "forget-previous-state-weighting")
     val forgetPreviousStateWeightingStepName = concatenateNames(name, "forget-previous-state-weighting-step")
-    val forgetPreviousStateWeighting = createSeriesWeighting(forgetPreviousStateWeightingSeriesName, forgetPreviousStateWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, forgetPreviousStateWeightInitializationStrategy, optimizationStrategy)
+    val forgetPreviousStateWeighting = seriesWeighting(forgetPreviousStateWeightingSeriesName, forgetPreviousStateWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, forgetPreviousStateWeightInitializationStrategy, optimizationStrategy)
 
     val forgetInputWeightingSeriesName = concatenateNames(name, "forget-input-weighting")
     val forgetInputWeightingStepName = concatenateNames(name, "forget-input-weighting-step")
-    val forgetInputWeighting = createSeriesWeighting(forgetInputWeightingSeriesName, forgetInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, forgetInputWeightInitializationStrategy, optimizationStrategy)
+    val forgetInputWeighting = seriesWeighting(forgetInputWeightingSeriesName, forgetInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, forgetInputWeightInitializationStrategy, optimizationStrategy)
 
     val forgetAdditions = Array(numberSteps) { indexStep ->
 
         val forgetAdditionName = concatenateNames(name, "forget-addition-step-$indexStep")
-        AdditionCombination(forgetAdditionName)
+        additionCombination(forgetAdditionName)
 
     }
 
@@ -194,7 +195,7 @@ fun createMinimalGatedUnit(
         if (forgetBiasInitializationStrategy != null) {
 
             val forgetBiasName = concatenateNames(name, "forget-bias")
-            createSeriesBias(forgetBiasName, hiddenDimension, forgetBiasInitializationStrategy, optimizationStrategy)
+            seriesBias(forgetBiasName, hiddenDimension, forgetBiasInitializationStrategy, optimizationStrategy)
 
         }
         else {
@@ -206,80 +207,39 @@ fun createMinimalGatedUnit(
     val forgetActivations = Array<ActivationLayer>(numberSteps) { indexStep ->
 
         val forgetActivationName = concatenateNames(name, "forget-activation-step-$indexStep")
-        SigmoidLayer(forgetActivationName)
+        sigmoidLayer(forgetActivationName)
 
     }
 
     val forgetUnit = SimpleRecurrentUnit(name, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
 
-    val shortTermForgetting = Array(numberSteps) { indexStep ->
-
-        val shortTermForgettingName = concatenateNames(name, "short-term-forgetting-step-$indexStep")
-        HadamardCombination(shortTermForgettingName)
-
-    }
-
-    val shortTermMemoryWeightingSeriesName = concatenateNames(name, "short-term-memory-weighting")
-    val shortTermMemoryWeightingStepName = concatenateNames(name, "short-term-memory-weighting-step")
-    val shortTermMemoryWeighting = createSeriesWeighting(shortTermMemoryWeightingSeriesName, shortTermMemoryWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, shortTermMemoryWeightInitializationStrategy, optimizationStrategy)
-
-    val shortTermInputWeightingSeriesName = concatenateNames(name, "short-term-input-weighting")
-    val shortTermInputWeightingStepName = concatenateNames(name, "short-term-input-weighting-step")
-    val shortTermInputWeighting = createSeriesWeighting(shortTermInputWeightingSeriesName, shortTermInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, shortTermInputWeightInitializationStrategy, optimizationStrategy)
-
-    val shortTermAdditions = Array(numberSteps) { indexStep ->
-
-        val shortTermAdditionName = concatenateNames(name, "short-term-addition-step-$indexStep")
-        AdditionCombination(shortTermAdditionName)
-
-    }
-
-    val shortTermBias =
-
-        if (shortTermBiasInitializationStrategy != null) {
-
-            val shortTermBiasName = concatenateNames(name, "short-term-bias")
-            createSeriesBias(shortTermBiasName, hiddenDimension, shortTermBiasInitializationStrategy, optimizationStrategy)
-        }
-        else {
-            null
-        }
-
-
-    val shortTermActivations = Array(numberSteps) { indexStep ->
-
-        val shortTermActivationName = concatenateNames(name, "short-term-activation-step-$indexStep")
-        TanhLayer(shortTermActivationName)
-
-    }
-
-    val shortTermResponse = ShortTermResponse(shortTermForgetting, shortTermMemoryWeighting, shortTermInputWeighting, shortTermAdditions, shortTermBias, shortTermActivations)
+    val shortTermResponse = shortTermResponse("short-term-response", numberSteps, hiddenDimension, inputDimension, shortTermMemoryWeightInitializationStrategy, shortTermInputWeightInitializationStrategy, shortTermBiasInitializationStrategy, optimizationStrategy)
 
     val keepSubtractions = Array(numberSteps) { indexStep ->
 
         val keepSubtractionName = concatenateNames(name, "keep-subtraction-$indexStep")
-        CounterProbabilityLayer(keepSubtractionName, hiddenDimension)
+        counterProbabilityLayer(keepSubtractionName, hiddenDimension)
 
     }
 
     val shortTermHadamards = Array(numberSteps) { indexStep ->
 
         val shortTermHadamardName = concatenateNames(name, "short-term-hadamard-step-$indexStep")
-        HadamardCombination(shortTermHadamardName)
+        hadamardCombination(shortTermHadamardName)
 
     }
 
     val longTermHadamards = Array(numberSteps) { indexStep ->
 
-        val shortTermHadamardName = concatenateNames(name, "short-term-hadamard-step-$indexStep")
-        HadamardCombination(shortTermHadamardName)
+        val shortTermHadamardName = concatenateNames(name, "long-term-hadamard-step-$indexStep")
+        hadamardCombination(shortTermHadamardName)
 
     }
 
     val stateAdditions = Array(numberSteps) { indexStep ->
 
-        val shortTermAdditionName = concatenateNames(name, "short-term-addition-step-$indexStep")
-        AdditionCombination(shortTermAdditionName)
+        val shortTermAdditionName = concatenateNames(name, "state-addition-step-$indexStep")
+        additionCombination(shortTermAdditionName)
 
     }
 

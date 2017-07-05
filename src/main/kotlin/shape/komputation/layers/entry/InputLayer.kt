@@ -3,7 +3,7 @@ package shape.komputation.layers.entry
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
 
-class InputLayer(name : String? = null) : EntryPoint(name) {
+class InputLayer internal constructor(name : String? = null) : EntryPoint(name) {
 
     override fun forward(input: Matrix) =
 
@@ -14,3 +14,5 @@ class InputLayer(name : String? = null) : EntryPoint(name) {
         chain
 
 }
+
+fun inputLayer(name : String? = null) = InputLayer(name)

@@ -2,15 +2,15 @@ package shape.komputation.demos.mnist
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.functions.findMaxIndex
-import shape.komputation.initialization.createHeInitialization
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.activation.ReluLayer
-import shape.komputation.layers.forward.createDenseLayer
-import shape.komputation.layers.forward.dropout.createDropoutLayer
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.heInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.reluLayer
+import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.dropout.dropoutLayer
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
-import shape.komputation.optimization.*
+import shape.komputation.optimization.nesterov
 import java.io.File
 import java.util.*
 
@@ -33,12 +33,12 @@ fun main(args: Array<String>) {
     val inputDimension = 784
     val hiddenDimension = 100
 
-    val hiddenInitialization = createHeInitialization(random, inputDimension)
-    val outputInitialization = createHeInitialization(random, hiddenDimension)
+    val hiddenInitialization = heInitialization(random, inputDimension)
+    val outputInitialization = heInitialization(random, hiddenDimension)
 
     val optimizer = nesterov(0.003, 0.3)
 
-    val firstProjection = createProjectionLayer(
+    val firstProjection = projectionLayer(
         inputDimension,
         hiddenDimension,
         hiddenInitialization,
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
         optimizer
     )
 
-    val outputLayer = createDenseLayer(
+    val outputLayer = denseLayer(
         hiddenDimension,
         MnistData.numberCategories,
         outputInitialization,
@@ -56,9 +56,9 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         firstProjection,
-        createDropoutLayer(hiddenDimension, random, 0.9, ReluLayer()),
+        dropoutLayer(hiddenDimension, random, 0.9, reluLayer()),
         outputLayer
     )
 
@@ -81,6 +81,6 @@ fun main(args: Array<String>) {
 
     }
 
-    network.train(trainingInputs, trainingTargets, LogisticLoss(), numberIterations, batchSize, afterEachIteration)
+    network.train(trainingInputs, trainingTargets, logisticLoss(), numberIterations, batchSize, afterEachIteration)
 
 }

@@ -6,7 +6,7 @@ import shape.komputation.functions.hadamard
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class TanhLayer(name : String? = null) : ActivationLayer(name), DropoutCompliant {
+class TanhLayer internal constructor(name: String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -57,3 +57,5 @@ class TanhLayer(name : String? = null) : ActivationLayer(name), DropoutCompliant
     }
 
 }
+
+fun tanhLayer(name : String? = null) = TanhLayer(name)

@@ -4,7 +4,7 @@ import shape.komputation.functions.activation.backwardColumnWiseSoftmax
 import shape.komputation.functions.activation.columnWiseSoftmax
 import shape.komputation.matrix.DoubleMatrix
 
-class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
+class SoftmaxLayer internal constructor(name : String? = null) : ActivationLayer(name) {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -40,3 +40,5 @@ class SoftmaxLayer(name : String? = null) : ActivationLayer(name) {
     }
 
 }
+
+fun softmaxLayer(name : String? = null) = SoftmaxLayer(name)

@@ -8,20 +8,20 @@ import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.combination.AdditionCombination
+import shape.komputation.layers.combination.additionCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.TranspositionLayer
-import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.SoftmaxVectorLayer
-import shape.komputation.layers.forward.activation.TanhLayer
-import shape.komputation.layers.forward.activation.createActivationLayers
+import shape.komputation.layers.forward.activation.*
+import shape.komputation.layers.forward.columnRepetitionLayer
 import shape.komputation.layers.forward.projection.*
+import shape.komputation.layers.forward.transpositionLayer
 import shape.komputation.matrix.*
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class AttentiveDecoder(
-    name : String?,
+class AttentiveDecoder internal constructor(
+    private val name : String?,
     private val numberSteps : Int,
     private val encodingDimension: Int,
     private val decodingDimension: Int,
@@ -259,7 +259,7 @@ class AttentiveDecoder(
 
 }
 
-fun createAttentiveDecoder(
+fun attentiveDecoder(
     numberSteps : Int,
     encodingDimension : Int,
     decodingDimension: Int,
@@ -268,7 +268,7 @@ fun createAttentiveDecoder(
     biasInitializationStrategy: InitializationStrategy?,
     optimizationStrategy: OptimizationStrategy) =
 
-    createAttentiveDecoder(
+    attentiveDecoder(
         null,
         numberSteps,
         encodingDimension,
@@ -279,7 +279,7 @@ fun createAttentiveDecoder(
         optimizationStrategy
     )
 
-fun createAttentiveDecoder(
+fun attentiveDecoder(
     name : String?,
     numberSteps : Int,
     encodingDimension : Int,
@@ -290,44 +290,44 @@ fun createAttentiveDecoder(
     optimizationStrategy: OptimizationStrategy): AttentiveDecoder {
 
     val encodingProjectionName = concatenateNames(name, "encoding-projection")
-    val encodingProjection = createProjectionLayer(encodingProjectionName, encodingDimension, encodingDimension, weightInitializationStrategy, null, optimizationStrategy)
+    val encodingProjection = projectionLayer(encodingProjectionName, encodingDimension, encodingDimension, weightInitializationStrategy, null, optimizationStrategy)
 
     val columnRepetitionLayers = Array(numberSteps) { indexStep ->
 
         val columnRepetitionLayerName = concatenateNames(name, "column-repetition-$indexStep")
 
-        shape.komputation.layers.forward.ColumnRepetitionLayer(columnRepetitionLayerName, numberSteps)
+        columnRepetitionLayer(columnRepetitionLayerName, numberSteps)
     }
 
     val attentionAdditions = Array(numberSteps) { indexStep ->
 
         val attentionAdditionName = concatenateNames(name, "attention-addition-$indexStep")
 
-        AdditionCombination(attentionAdditionName)
+        additionCombination(attentionAdditionName)
 
     }
 
     val attentionPreviousStateWeightingSeriesName = concatenateNames(name, "attention-previous-state-weighting")
     val attentionPreviousStateWeightingStepName = concatenateNames(name, "attention-previous-state-weighting-step")
-    val attentionPreviousStateWeighting = createSeriesWeighting(attentionPreviousStateWeightingSeriesName, attentionPreviousStateWeightingStepName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val attentionPreviousStateWeighting = seriesWeighting(attentionPreviousStateWeightingSeriesName, attentionPreviousStateWeightingStepName, numberSteps, true, decodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
-    val tanh = Array(numberSteps) { TanhLayer() }
+    val tanh = Array(numberSteps) { tanhLayer() }
 
     val scoringWeightingSeriesName = concatenateNames(name, "scoring-weighting")
     val scoringWeightingStepName = concatenateNames(name, "scoring-weighting-step")
-    val scoringWeighting = createSeriesWeighting(scoringWeightingSeriesName, scoringWeightingStepName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
+    val scoringWeighting = seriesWeighting(scoringWeightingSeriesName, scoringWeightingStepName, numberSteps, false, encodingDimension, 1, weightInitializationStrategy, optimizationStrategy)
 
-    val softmax = Array(numberSteps) { SoftmaxVectorLayer() }
+    val softmax = Array(numberSteps) { softmaxVectorLayer() }
 
-    val transposition = Array(numberSteps) { TranspositionLayer() }
+    val transposition = Array(numberSteps) { transpositionLayer() }
 
     val attendedEncodingWeightingSeriesName = concatenateNames(name, "attended-encoding-weighting")
     val attendedEncodingWeightingStepName = concatenateNames(name, "attended-encoding-weighting-step")
-    val attendedEncodingWeighting = createSeriesWeighting(attendedEncodingWeightingSeriesName, attendedEncodingWeightingStepName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val attendedEncodingWeighting = seriesWeighting(attendedEncodingWeightingSeriesName, attendedEncodingWeightingStepName, numberSteps, false, encodingDimension, encodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val decodingPreviousStateWeightingSeriesName = concatenateNames(name, "decoding-previous-state-weighting")
     val decodingPreviousStateWeightingStepName = concatenateNames(name, "decoding-previous-state-weighting-step")
-    val decodingPreviousStateWeighting = createSeriesWeighting(decodingPreviousStateWeightingSeriesName, decodingPreviousStateWeightingStepName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
+    val decodingPreviousStateWeighting = seriesWeighting(decodingPreviousStateWeightingSeriesName, decodingPreviousStateWeightingStepName, numberSteps, true, decodingDimension, decodingDimension, weightInitializationStrategy, optimizationStrategy)
 
     val decodingAdditions = Array(numberSteps) { indexStep ->
 
@@ -338,7 +338,7 @@ fun createAttentiveDecoder(
     }
 
     val activationName = concatenateNames(name, "decoding-activation")
-    val activation = createActivationLayers(numberSteps, activationName, activationFunction)
+    val activation = activationLayers(numberSteps, activationName, activationFunction)
 
     val bias =
         if(biasInitializationStrategy == null)
@@ -347,7 +347,7 @@ fun createAttentiveDecoder(
 
             val biasName =  concatenateNames(name, "bias")
 
-            createSeriesBias(biasName, decodingDimension, biasInitializationStrategy, optimizationStrategy)
+            seriesBias(biasName, decodingDimension, biasInitializationStrategy, optimizationStrategy)
         }
 
     val attentiveDecoder = AttentiveDecoder(

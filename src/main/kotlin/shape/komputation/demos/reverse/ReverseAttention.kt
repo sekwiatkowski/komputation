@@ -1,13 +1,13 @@
 package shape.komputation.demos.reverse
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.initialization.createIdentityInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.decoder.createAttentiveDecoder
-import shape.komputation.layers.forward.encoder.createMultiOutputEncoder
-import shape.komputation.layers.forward.units.createSimpleRecurrentUnit
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.gaussianInitialization
+import shape.komputation.initialization.identityInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.decoder.attentiveDecoder
+import shape.komputation.layers.forward.encoder.multiOutputEncoder
+import shape.komputation.layers.forward.units.simpleRecurrentUnit
+import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -26,12 +26,12 @@ fun main(args: Array<String>) {
     val inputs = ReverseData.generateInputs(random, numberExamples, seriesLength, numberCategories)
     val targets = ReverseData.generateTargets(inputs, seriesLength, numberCategories)
 
-    val identityInitializationStrategy = createIdentityInitializer()
-    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
+    val identityInitializationStrategy = identityInitialization()
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoderUnit = createSimpleRecurrentUnit(
+    val encoderUnit = simpleRecurrentUnit(
         seriesLength,
         hiddenDimension,
         numberCategories,
@@ -41,14 +41,14 @@ fun main(args: Array<String>) {
         ActivationFunction.ReLU,
         optimizationStrategy)
 
-    val encoder = createMultiOutputEncoder(
+    val encoder = multiOutputEncoder(
         encoderUnit,
         seriesLength,
         numberCategories,
         hiddenDimension
     )
 
-    val decoder = createAttentiveDecoder(
+    val decoder = attentiveDecoder(
         seriesLength,
         hiddenDimension,
         hiddenDimension,
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
         optimizationStrategy)
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         encoder,
         decoder
     )
@@ -66,7 +66,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        LogisticLoss(),
+        logisticLoss(),
         numberIterations,
         batchSize,
         printLoss

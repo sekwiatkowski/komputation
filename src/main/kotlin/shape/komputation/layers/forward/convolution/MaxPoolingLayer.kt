@@ -6,7 +6,7 @@ import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 
-class MaxPoolingLayer(name : String? = null) : ForwardLayer(name) {
+class MaxPoolingLayer internal constructor(name : String? = null) : ForwardLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1
@@ -43,3 +43,5 @@ class MaxPoolingLayer(name : String? = null) : ForwardLayer(name) {
     }
 
 }
+
+fun maxPoolingLayer(name : String? = null) = MaxPoolingLayer(name)

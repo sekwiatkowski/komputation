@@ -1,13 +1,13 @@
 package shape.komputation.layers.forwarding.activation
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import shape.komputation.layers.forward.activation.ReluLayer
+import org.junit.jupiter.api.Test
+import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.matrix.doubleColumnVector
 
 class ReluLayerTest {
 
-    private val layer = ReluLayer()
+    private val layer = reluLayer()
 
     @Test
     fun testSparseForwarding() {

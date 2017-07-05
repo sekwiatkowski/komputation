@@ -7,11 +7,11 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.createActivationLayers
+import shape.komputation.layers.forward.activation.activationLayers
 import shape.komputation.layers.forward.projection.SeriesBias
 import shape.komputation.layers.forward.projection.SeriesWeighting
-import shape.komputation.layers.forward.projection.createSeriesBias
-import shape.komputation.layers.forward.projection.createSeriesWeighting
+import shape.komputation.layers.forward.projection.seriesBias
+import shape.komputation.layers.forward.projection.seriesWeighting
 import shape.komputation.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
@@ -20,7 +20,7 @@ import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class MultiInputDecoder(
+class MultiInputDecoder internal constructor(
     name : String?,
     private val numberSteps : Int,
     private val inputDimension: Int,
@@ -147,7 +147,7 @@ class MultiInputDecoder(
 
 }
 
-fun createMultiInputDecoder(
+fun multiInputDecoder(
     numberSteps: Int,
     inputDimension: Int,
     hiddenDimension: Int,
@@ -158,7 +158,7 @@ fun createMultiInputDecoder(
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?) =
 
-    createMultiInputDecoder(
+    multiInputDecoder(
         null,
         numberSteps,
         inputDimension,
@@ -170,7 +170,7 @@ fun createMultiInputDecoder(
         activationFunction,
         optimizationStrategy)
 
-fun createMultiInputDecoder(
+fun multiInputDecoder(
     name : String?,
     numberSteps: Int,
     inputDimension: Int,
@@ -184,13 +184,13 @@ fun createMultiInputDecoder(
 
     val weightingSeriesName = concatenateNames(name, "weighting")
     val weightingStepName = concatenateNames(name, "weighting-step")
-    val weighting = createSeriesWeighting(weightingSeriesName, weightingStepName, numberSteps, false, hiddenDimension, outputDimension, weightInitializationStrategy, optimizationStrategy)
+    val weighting = seriesWeighting(weightingSeriesName, weightingStepName, numberSteps, false, hiddenDimension, outputDimension, weightInitializationStrategy, optimizationStrategy)
 
     val bias =
         if (biasInitializationStrategy != null) {
 
             val biasSeriesName = concatenateNames(name, "bias")
-            createSeriesBias(biasSeriesName, outputDimension, biasInitializationStrategy, optimizationStrategy)
+            seriesBias(biasSeriesName, outputDimension, biasInitializationStrategy, optimizationStrategy)
 
         }
         else {
@@ -200,7 +200,7 @@ fun createMultiInputDecoder(
         }
 
     val activationName = concatenateNames(name, "activation")
-    val activations = createActivationLayers(
+    val activations = activationLayers(
         numberSteps,
         activationName,
         activationFunction

@@ -2,13 +2,13 @@ package shape.komputation.demos.mnist
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.functions.findMaxIndex
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.activation.ReluLayer
-import shape.komputation.layers.forward.createDenseLayer
-import shape.komputation.layers.forward.dropout.createDropoutLayer
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.gaussianInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.reluLayer
+import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.dropout.dropoutLayer
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.optimization.momentum
 import java.io.File
@@ -33,11 +33,11 @@ fun main(args: Array<String>) {
     val inputDimension = 784
     val hiddenDimension = 500
 
-    val gaussianInitialization = createGaussianInitializer(random, 0.0,0.01)
+    val gaussianInitialization = gaussianInitialization(random, 0.0,0.01)
 
     val optimizer = momentum(0.01, 0.1)
 
-    val firstProjection = createProjectionLayer(
+    val firstProjection = projectionLayer(
         inputDimension,
         hiddenDimension,
         gaussianInitialization,
@@ -46,7 +46,7 @@ fun main(args: Array<String>) {
     )
 
 
-    val outputLayer = createDenseLayer(
+    val outputLayer = denseLayer(
         hiddenDimension,
         MnistData.numberCategories,
         gaussianInitialization,
@@ -56,9 +56,9 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         firstProjection,
-        createDropoutLayer(hiddenDimension, random, 0.9, ReluLayer()),
+        dropoutLayer(hiddenDimension, random, 0.9, reluLayer()),
         outputLayer
     )
 
@@ -81,6 +81,6 @@ fun main(args: Array<String>) {
 
     }
 
-    network.train(trainingInputs, trainingTargets, LogisticLoss(), numberIterations, batchSize, afterEachIteration)
+    network.train(trainingInputs, trainingTargets, logisticLoss(), numberIterations, batchSize, afterEachIteration)
 
 }

@@ -4,14 +4,14 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeMatrix
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.createIdentityLayer
+import shape.komputation.layers.forward.identityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateDensely
 
-class SeriesWeighting(
+class SeriesWeighting internal constructor(
     private val name : String?,
     private val weightings: Array<ForwardLayer>,
     private val weights: DoubleArray,
@@ -56,7 +56,26 @@ class SeriesWeighting(
 
 }
 
-fun createSeriesWeighting(
+fun seriesWeighting(
+    numberSteps : Int,
+    useIdentityAtFirstStep : Boolean,
+    inputDimension: Int,
+    outputDimension: Int,
+    initializationStrategy: InitializationStrategy,
+    optimizationStrategy: OptimizationStrategy?) =
+
+    seriesWeighting(
+        null,
+        null,
+        numberSteps,
+        useIdentityAtFirstStep,
+        inputDimension,
+        outputDimension,
+        initializationStrategy,
+        optimizationStrategy
+    )
+
+fun seriesWeighting(
     seriesName: String?,
     stepName: String?,
     numberSteps : Int,
@@ -77,37 +96,37 @@ fun createSeriesWeighting(
     val seriesAccumulator = DenseAccumulator(numberEntries)
     val batchAccumulator = DenseAccumulator(numberEntries)
 
-    val stepProjections = Array(numberSteps) { indexStep ->
+    val stepWeightings = Array(numberSteps) { indexStep ->
 
         val stepProjectionName = concatenateNames(stepName, indexStep.toString())
 
         if (useIdentityAtFirstStep && indexStep == 0) {
 
-            createIdentityLayer(stepProjectionName)
+            identityLayer(stepProjectionName)
 
         }
         else {
 
-            createStepWeighting(stepProjectionName, numberWeightRows, numberWeightColumns, weights, seriesAccumulator, weightUpdateRule)
+            stepWeighting(stepProjectionName, numberWeightRows, numberWeightColumns, weights, seriesAccumulator, weightUpdateRule)
         }
 
     }
 
     val updateRule = optimizationStrategy?.invoke(inputDimension, outputDimension)
 
-    val seriesProjection = SeriesWeighting(
+    val seriesWeighting = SeriesWeighting(
         seriesName,
-        stepProjections,
+        stepWeightings,
         weights,
         seriesAccumulator,
         batchAccumulator,
         updateRule)
 
-    return seriesProjection
+    return seriesWeighting
 
 }
 
-fun createStepWeighting(
+private fun stepWeighting(
     name : String?,
     numberWeightRows: Int,
     numberWeightColumns: Int,

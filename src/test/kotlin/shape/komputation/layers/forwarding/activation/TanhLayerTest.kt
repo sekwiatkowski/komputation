@@ -3,12 +3,12 @@ package shape.komputation.layers.forwarding.activation
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.functions.activation.tanh
-import shape.komputation.layers.forward.activation.TanhLayer
+import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.matrix.doubleColumnVector
 
 class TanhLayerTest {
 
-    private val layer = TanhLayer()
+    private val layer = tanhLayer()
 
     @Test
     fun testSparseForwarding() {

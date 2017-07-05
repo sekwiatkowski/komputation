@@ -1,10 +1,11 @@
 package shape.komputation.demos.xor
 
-import shape.komputation.initialization.createUniformInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.activation.SigmoidLayer
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.loss.SquaredLoss
+import shape.komputation.initialization.heInitialization
+import shape.komputation.initialization.uniformInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.sigmoidLayer
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleScalar
@@ -33,17 +34,17 @@ object XorData {
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val initialize = createUniformInitializer(random, -0.5, 0.5)
 
-    val inputLayer = InputLayer()
+    val inputLayer = inputLayer()
 
+    val initialize = heInitialization(random, 2)
     val optimizationStrategy = stochasticGradientDescent(0.1)
 
-    val hiddenPreactivationLayer = createProjectionLayer(2, 2, initialize, initialize, optimizationStrategy)
-    val hiddenLayer = SigmoidLayer()
+    val hiddenPreactivationLayer = projectionLayer(2, 2, initialize, initialize, optimizationStrategy)
+    val hiddenLayer = sigmoidLayer()
 
-    val outputPreactivationLayer = createProjectionLayer(2, 1, initialize, initialize, optimizationStrategy)
-    val outputLayer = SigmoidLayer()
+    val outputPreactivationLayer = projectionLayer(2, 1, initialize, initialize, optimizationStrategy)
+    val outputLayer = sigmoidLayer()
 
     val network = Network(
         inputLayer,
@@ -53,6 +54,6 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    network.train(XorData.input, XorData.targets, SquaredLoss(), 30_000, 1, printLoss)
+    network.train(XorData.input, XorData.targets, squaredLoss(), 30_000, 1, printLoss)
 
 }

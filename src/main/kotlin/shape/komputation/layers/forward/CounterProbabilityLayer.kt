@@ -5,7 +5,7 @@ import shape.komputation.functions.subtract
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class CounterProbabilityLayer(
+class CounterProbabilityLayer internal constructor(
     name : String?,
     dimension : Int) : ForwardLayer(name) {
 
@@ -20,3 +20,11 @@ class CounterProbabilityLayer(
         DoubleMatrix(chain.numberRows, chain.numberColumns, negate(chain.entries))
 
 }
+
+fun counterProbabilityLayer(dimension: Int) =
+
+    counterProbabilityLayer(null, dimension)
+
+fun counterProbabilityLayer(name : String?, dimension: Int) =
+
+    CounterProbabilityLayer(name, dimension)

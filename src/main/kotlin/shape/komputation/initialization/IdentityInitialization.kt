@@ -1,6 +1,6 @@
 package shape.komputation.initialization
 
-fun createIdentityInitializer(): InitializationStrategy {
+fun identityInitialization(): InitializationStrategy {
 
     return { indexRow : Int, indexColumn : Int ->
 

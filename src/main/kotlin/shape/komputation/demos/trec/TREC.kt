@@ -1,15 +1,15 @@
 package shape.komputation.demos.trec
 
 import shape.komputation.functions.findMaxIndex
-import shape.komputation.initialization.createUniformInitializer
-import shape.komputation.layers.entry.createLookupLayer
-import shape.komputation.layers.forward.activation.ReluLayer
-import shape.komputation.layers.forward.activation.SoftmaxLayer
-import shape.komputation.layers.forward.convolution.MaxPoolingLayer
-import shape.komputation.layers.forward.convolution.createConvolutionalLayer
-import shape.komputation.layers.forward.createConcatenation
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.uniformInitialization
+import shape.komputation.layers.entry.lookupLayer
+import shape.komputation.layers.forward.activation.reluLayer
+import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.layers.forward.concatenation
+import shape.komputation.layers.forward.convolution.convolutionalLayer
+import shape.komputation.layers.forward.convolution.maxPoolingLayer
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.intVector
 import shape.komputation.matrix.oneHotVector
@@ -97,26 +97,26 @@ class TrecTraining {
             .toTypedArray()
 
         val random = Random(1)
-        val initializationStrategy = createUniformInitializer(random, -0.05, 0.05)
+        val initializationStrategy = uniformInitialization(random, -0.05, 0.05)
 
         val optimizationStrategy = momentum(0.01, 0.1)
 
         val network = Network(
-            createLookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
-            createConcatenation(
+            lookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
+            concatenation(
                 *filterHeights
                     .map { filterHeight ->
 
                         arrayOf(
-                            createConvolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-                            ReluLayer(),
-                            MaxPoolingLayer()
+                            convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
+                            reluLayer(),
+                            maxPoolingLayer()
                         )
                     }
                     .toTypedArray()
             ),
-            createProjectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
-            SoftmaxLayer()
+            projectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
+            softmaxLayer()
         )
 
         val afterEachIteration = { _ : Int, _ : Double ->
@@ -138,7 +138,7 @@ class TrecTraining {
 
         }
 
-        network.train(trainingRepresentations, trainingTargets, LogisticLoss(), numberIterations, maximumBatchSize, afterEachIteration)
+        network.train(trainingRepresentations, trainingTargets, logisticLoss(), numberIterations, maximumBatchSize, afterEachIteration)
 
     }
 

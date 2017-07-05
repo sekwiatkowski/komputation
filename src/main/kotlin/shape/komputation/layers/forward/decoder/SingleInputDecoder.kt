@@ -7,11 +7,11 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.createActivationLayers
+import shape.komputation.layers.forward.activation.activationLayers
 import shape.komputation.layers.forward.projection.SeriesBias
 import shape.komputation.layers.forward.projection.SeriesWeighting
-import shape.komputation.layers.forward.projection.createSeriesBias
-import shape.komputation.layers.forward.projection.createSeriesWeighting
+import shape.komputation.layers.forward.projection.seriesBias
+import shape.komputation.layers.forward.projection.seriesWeighting
 import shape.komputation.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
@@ -23,7 +23,7 @@ import shape.komputation.optimization.OptimizationStrategy
 
 // The first input is empty.
 // Starting with the second input, the input at step t is the output of step t-1.
-class SingleInputDecoder(
+class SingleInputDecoder internal constructor(
     name : String?,
     private val numberSteps : Int,
     private val outputDimension : Int,
@@ -169,7 +169,7 @@ class SingleInputDecoder(
 
 }
 
-fun createSingleInputDecoder(
+fun singleInputDecoder(
     numberSteps: Int,
     hiddenDimension : Int,
     outputDimension: Int,
@@ -179,7 +179,7 @@ fun createSingleInputDecoder(
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?) =
 
-    createSingleInputDecoder(
+    singleInputDecoder(
         null,
         numberSteps,
         hiddenDimension,
@@ -191,7 +191,7 @@ fun createSingleInputDecoder(
         optimizationStrategy)
 
 
-fun createSingleInputDecoder(
+fun singleInputDecoder(
     name : String?,
     numberSteps: Int,
     hiddenDimension : Int,
@@ -204,13 +204,13 @@ fun createSingleInputDecoder(
 
     val weightingSeriesName = concatenateNames(name, "weighting")
     val weightingStepName = concatenateNames(name, "weighting-step")
-    val weighting = createSeriesWeighting(weightingSeriesName, weightingStepName, numberSteps, false, hiddenDimension, outputDimension, weightInitializationStrategy, optimizationStrategy)
+    val weighting = seriesWeighting(weightingSeriesName, weightingStepName, numberSteps, false, hiddenDimension, outputDimension, weightInitializationStrategy, optimizationStrategy)
 
     val bias =
         if (biasInitializationStrategy != null) {
 
             val biasSeriesName = concatenateNames(name, "bias")
-            createSeriesBias(biasSeriesName, outputDimension, biasInitializationStrategy, optimizationStrategy)
+            seriesBias(biasSeriesName, outputDimension, biasInitializationStrategy, optimizationStrategy)
 
         }
         else {
@@ -220,7 +220,7 @@ fun createSingleInputDecoder(
         }
 
     val activationName = concatenateNames(name, "activation")
-    val activations = createActivationLayers(
+    val activations = activationLayers(
         numberSteps,
         activationName,
         activationFunction

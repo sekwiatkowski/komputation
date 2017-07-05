@@ -10,7 +10,7 @@ import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
 import shape.komputation.optimization.updateDensely
 
-class SeriesBias(
+class SeriesBias internal constructor(
     private val name : String?,
     private val bias: DoubleArray,
     private val seriesAccumulator: DenseAccumulator,
@@ -57,7 +57,14 @@ class SeriesBias(
 
 }
 
-fun createSeriesBias(
+fun seriesBias(
+    dimension: Int,
+    initializationStrategy: InitializationStrategy,
+    optimizationStrategy: OptimizationStrategy?) =
+
+    seriesBias(null, dimension, initializationStrategy, optimizationStrategy)
+
+fun seriesBias(
     name : String?,
     dimension: Int,
     initializationStrategy: InitializationStrategy,

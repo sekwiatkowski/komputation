@@ -4,7 +4,7 @@ import shape.komputation.functions.transpose
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class TranspositionLayer(name : String? = null) : ForwardLayer(name)  {
+class TranspositionLayer internal constructor(name : String? = null) : ForwardLayer(name)  {
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) =
 
@@ -15,3 +15,5 @@ class TranspositionLayer(name : String? = null) : ForwardLayer(name)  {
         DoubleMatrix(chain.numberColumns, chain.numberRows, transpose(chain.numberRows, chain.numberColumns, chain.entries))
 
 }
+
+fun transpositionLayer(name : String? = null) = TranspositionLayer(name)

@@ -5,7 +5,7 @@ import shape.komputation.functions.sumRows
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class ColumnRepetitionLayer(name : String? = null, private val n : Int) : ForwardLayer(name) {
+class ColumnRepetitionLayer internal constructor(name : String? = null, private val n : Int) : ForwardLayer(name) {
 
     override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 
@@ -29,3 +29,11 @@ class ColumnRepetitionLayer(name : String? = null, private val n : Int) : Forwar
     }
 
 }
+
+fun columnRepetitionLayer(n : Int) =
+
+    ColumnRepetitionLayer(null, n)
+
+fun columnRepetitionLayer(name : String? = null, n : Int) =
+
+    ColumnRepetitionLayer(name, n)

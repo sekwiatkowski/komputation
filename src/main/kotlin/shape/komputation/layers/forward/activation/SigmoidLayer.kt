@@ -6,7 +6,7 @@ import shape.komputation.functions.hadamard
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class SigmoidLayer(name : String? = null) : ActivationLayer(name), DropoutCompliant {
+class SigmoidLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -59,3 +59,5 @@ class SigmoidLayer(name : String? = null) : ActivationLayer(name), DropoutCompli
     }
 
 }
+
+fun sigmoidLayer(name : String? = null) = SigmoidLayer(name)

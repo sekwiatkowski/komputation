@@ -1,14 +1,14 @@
 package shape.komputation.demos.runningtotal
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.initialization.createIdentityInitializer
-import shape.komputation.initialization.createZeroInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.decoder.createMultiInputDecoder
-import shape.komputation.layers.forward.encoder.createMultiOutputEncoder
-import shape.komputation.layers.forward.units.createSimpleRecurrentUnit
-import shape.komputation.loss.SquaredLoss
+import shape.komputation.initialization.gaussianInitialization
+import shape.komputation.initialization.identityInitialization
+import shape.komputation.initialization.zeroInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.decoder.multiInputDecoder
+import shape.komputation.layers.forward.encoder.multiOutputEncoder
+import shape.komputation.layers.forward.units.simpleRecurrentUnit
+import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -25,9 +25,9 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val identityInitializationStrategy = createIdentityInitializer()
-    val gaussianInitializationStrategy = createGaussianInitializer(random, 0.0, 0.001)
-    val zeroInitializationStrategy = createZeroInitializer()
+    val identityInitializationStrategy = identityInitialization()
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
+    val zeroInitializationStrategy = zeroInitialization()
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
 
     val targets = RunningTotalData.generateTargets(inputs, numberSteps)
 
-    val encoderUnit = createSimpleRecurrentUnit(
+    val encoderUnit = simpleRecurrentUnit(
         numberSteps,
         hiddenDimension,
         1,
@@ -45,13 +45,13 @@ fun main(args: Array<String>) {
         ActivationFunction.Identity,
         optimizationStrategy)
 
-    val encoder = createMultiOutputEncoder(
+    val encoder = multiOutputEncoder(
         encoderUnit,
         numberSteps,
         1,
         hiddenDimension)
 
-    val decoderUnit = createSimpleRecurrentUnit(
+    val decoderUnit = simpleRecurrentUnit(
         numberSteps,
         hiddenDimension,
         hiddenDimension,
@@ -62,7 +62,7 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val decoder = createMultiInputDecoder(
+    val decoder = multiInputDecoder(
         numberSteps,
         hiddenDimension,
         hiddenDimension,
@@ -75,7 +75,7 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         encoder,
         decoder
     )
@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        SquaredLoss(),
+        squaredLoss(),
         numberIterations,
         batchSize,
         printLoss

@@ -3,15 +3,15 @@ package shape.komputation.layers.forward
 import shape.komputation.functions.splitRows
 import shape.komputation.functions.stackRows
 import shape.komputation.layers.ForwardLayer
-import shape.komputation.layers.entry.InputLayer
+import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 import shape.komputation.optimization.Optimizable
 
-class Concatenation(name : String? = null, vararg continuations: Array<ForwardLayer>) : ForwardLayer(name), Optimizable {
+class Concatenation internal constructor(name : String? = null, vararg continuations: Array<ForwardLayer>) : ForwardLayer(name), Optimizable {
 
-    private val networks = continuations.map { layers -> Network(InputLayer(), *layers) }
+    private val networks = continuations.map { layers -> Network(inputLayer(), *layers) }
 
     private val results = Array(continuations.size) { EMPTY_DOUBLE_MATRIX }
 
@@ -78,18 +78,18 @@ class Concatenation(name : String? = null, vararg continuations: Array<ForwardLa
 
 }
 
-fun createConcatenation(vararg continuations: Array<ForwardLayer>) =
+fun concatenation(vararg continuations: Array<ForwardLayer>) =
 
-    createConcatenation(null, *continuations)
+    concatenation(null, *continuations)
 
-fun createConcatenation(vararg continuations: ForwardLayer) =
+fun concatenation(vararg continuations: ForwardLayer) =
 
-    createConcatenation(null, *continuations)
+    concatenation(null, *continuations)
 
-fun createConcatenation(name : String?, vararg continuations: ForwardLayer) =
+fun concatenation(name : String?, vararg continuations: ForwardLayer) =
 
-    Concatenation(name, *continuations.map { layer -> arrayOf<ForwardLayer>(layer) }.toTypedArray())
+    concatenation(name, *continuations.map { layer -> arrayOf<ForwardLayer>(layer) }.toTypedArray())
 
-fun createConcatenation(name : String?, vararg continuations: Array<ForwardLayer>) =
+fun concatenation(name : String?, vararg continuations: Array<ForwardLayer>) =
 
     Concatenation(name, *continuations)

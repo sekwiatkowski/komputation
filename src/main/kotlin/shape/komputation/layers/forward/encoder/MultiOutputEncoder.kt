@@ -7,7 +7,7 @@ import shape.komputation.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.*
 import shape.komputation.optimization.Optimizable
 
-class MultiOutputEncoder(
+class MultiOutputEncoder internal constructor(
     name : String?,
     isReversed : Boolean,
     private val unit: RecurrentUnit,
@@ -91,14 +91,14 @@ class MultiOutputEncoder(
 
 }
 
-fun createMultiOutputEncoder(
+fun multiOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
     inputDimension : Int,
     hiddenDimension: Int,
     isReversed : Boolean = false) =
 
-    createMultiOutputEncoder(
+    multiOutputEncoder(
         null,
         unit,
         numberSteps,
@@ -107,7 +107,7 @@ fun createMultiOutputEncoder(
         isReversed
     )
 
-fun createMultiOutputEncoder(
+fun multiOutputEncoder(
     name : String?,
     unit : RecurrentUnit,
     numberSteps : Int,

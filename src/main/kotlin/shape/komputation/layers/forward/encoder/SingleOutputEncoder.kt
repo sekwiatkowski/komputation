@@ -7,7 +7,7 @@ import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 
-class SingleOutputEncoder(
+class SingleOutputEncoder internal constructor(
     name : String?,
     isReversed : Boolean,
     private val unit: RecurrentUnit,
@@ -70,14 +70,14 @@ class SingleOutputEncoder(
 
 }
 
-fun createSingleOutputEncoder(
+fun singleOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
     inputDimension : Int,
     hiddenDimension: Int,
     isReversed: Boolean = false) =
 
-    createSingleOutputEncoder(
+    singleOutputEncoder(
         null,
         unit,
         numberSteps,
@@ -86,7 +86,7 @@ fun createSingleOutputEncoder(
         isReversed
     )
 
-fun createSingleOutputEncoder(
+fun singleOutputEncoder(
     name : String?,
     unit : RecurrentUnit,
     numberSteps : Int,

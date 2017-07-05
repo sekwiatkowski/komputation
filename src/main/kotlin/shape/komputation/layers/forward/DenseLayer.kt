@@ -5,14 +5,14 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.createActivationLayer
+import shape.komputation.layers.forward.activation.activationLayer
 import shape.komputation.layers.forward.projection.ProjectionLayer
-import shape.komputation.layers.forward.projection.createProjectionLayer
+import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class DenseLayer(
+class DenseLayer internal constructor(
     name : String?,
     private val projection : ProjectionLayer,
     private val activation: ActivationLayer) : ForwardLayer(name), Optimizable {
@@ -44,7 +44,7 @@ class DenseLayer(
 
 }
 
-fun createDenseLayer(
+fun denseLayer(
     inputDimension : Int,
     outputDimension : Int,
     weightInitializationStrategy: InitializationStrategy,
@@ -52,7 +52,7 @@ fun createDenseLayer(
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationStrategy?) =
 
-    createDenseLayer(
+    denseLayer(
         null,
         inputDimension,
         outputDimension,
@@ -62,7 +62,7 @@ fun createDenseLayer(
         optimizationStrategy
     )
 
-fun createDenseLayer(
+fun denseLayer(
     name : String?,
     inputDimension : Int,
     outputDimension : Int,
@@ -72,12 +72,11 @@ fun createDenseLayer(
     optimizationStrategy: OptimizationStrategy?): DenseLayer {
 
     val projectionName = concatenateNames(name, "projection")
-    val projection = createProjectionLayer(projectionName, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
+    val projection = projectionLayer(projectionName, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
 
     val activationName = concatenateNames(name, "activation")
-    val activation = createActivationLayer(activationName, activationFunction)
+    val activation = activationLayer(activationName, activationFunction)
 
     return DenseLayer(name, projection, activation)
-
 
 }

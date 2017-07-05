@@ -4,7 +4,7 @@ import shape.komputation.functions.hadamard
 import shape.komputation.layers.CombinationLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class HadamardCombination(val name: String?) : CombinationLayer(name) {
+class HadamardCombination internal constructor(val name: String?) : CombinationLayer(name) {
 
     private var first = DoubleArray(0)
     private var second = DoubleArray(0)
@@ -29,3 +29,5 @@ class HadamardCombination(val name: String?) : CombinationLayer(name) {
         DoubleMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.first))
 
 }
+
+fun hadamardCombination(name : String? = null) = HadamardCombination(name)

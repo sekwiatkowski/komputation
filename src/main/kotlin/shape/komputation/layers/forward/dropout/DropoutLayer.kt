@@ -3,12 +3,13 @@ package shape.komputation.layers.forward.dropout
 import shape.komputation.functions.generateMask
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.combination.HadamardCombination
+import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.layers.concatenateNames
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleConstantColumnVector
 import java.util.*
 
-class DropoutLayer(
+class DropoutLayer internal constructor(
     name : String?,
     private val dimension : Int,
     private val random : Random,
@@ -61,14 +62,14 @@ class DropoutLayer(
 
 }
 
-fun createDropoutLayer(dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant) =
+fun dropoutLayer(dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant) =
 
-    createDropoutLayer(null, dimension, random, keepProbability, activation)
+    dropoutLayer(null, dimension, random, keepProbability, activation)
 
-fun createDropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant): DropoutLayer {
+fun dropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant): DropoutLayer {
 
     val takeExpectationName = concatenateNames(name, "take-expectation")
-    val takeExpectation = HadamardCombination(takeExpectationName)
+    val takeExpectation = hadamardCombination(takeExpectationName)
 
     return DropoutLayer(name, dimension, random, keepProbability, activation, takeExpectation)
 

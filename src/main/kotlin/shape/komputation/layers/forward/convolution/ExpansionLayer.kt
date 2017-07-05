@@ -5,7 +5,7 @@ import shape.komputation.functions.expandForConvolution
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class ExpansionLayer(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ForwardLayer(name) {
+class ExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ForwardLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1
@@ -30,14 +30,14 @@ class ExpansionLayer(name : String? = null, private val filterWidth: Int, privat
 }
 
 
-fun createExpansionLayer(
+fun expansionLayer(
     filterWidth: Int,
     filterHeight: Int): ExpansionLayer {
 
-    return createExpansionLayer(null, filterWidth, filterHeight)
+    return expansionLayer(null, filterWidth, filterHeight)
 }
 
-fun createExpansionLayer(
+fun expansionLayer(
     name : String?,
     filterWidth: Int,
     filterHeight: Int): ExpansionLayer {

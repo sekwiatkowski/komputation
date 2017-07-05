@@ -2,11 +2,10 @@ package shape.komputation.layers.forward.activation
 
 import shape.komputation.functions.activation.backwardRelu
 import shape.komputation.functions.activation.relu
-import shape.komputation.layers.SparseForwarding
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class ReluLayer(name : String? = null) : ActivationLayer(name), DropoutCompliant {
+class ReluLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -54,3 +53,5 @@ class ReluLayer(name : String? = null) : ActivationLayer(name), DropoutCompliant
     }
 
 }
+
+fun reluLayer(name : String? = null) = ReluLayer(name)

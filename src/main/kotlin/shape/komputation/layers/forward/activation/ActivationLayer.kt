@@ -3,31 +3,31 @@ package shape.komputation.layers.forward.activation
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.IdentityLayer
+import shape.komputation.layers.forward.identityLayer
 
 abstract class ActivationLayer(name : String?) : ForwardLayer(name)
 
-fun createActivationLayers(number: Int, name: String?, function: ActivationFunction) =
+fun activationLayers(number: Int, name: String?, function: ActivationFunction) =
 
     Array(number) { index ->
 
-        createActivationLayer(concatenateNames(name, index.toString()), function)
+        activationLayer(concatenateNames(name, index.toString()), function)
 
     }
 
-fun createActivationLayer(name: String?, function: ActivationFunction) =
+fun activationLayer(name: String?, function: ActivationFunction) =
 
     when (function) {
 
         ActivationFunction.ReLU ->
-            ReluLayer(name)
+            reluLayer(name)
         ActivationFunction.Identity ->
-            IdentityLayer(name)
+            identityLayer(name)
         ActivationFunction.Sigmoid ->
-            SigmoidLayer(name)
+            sigmoidLayer(name)
         ActivationFunction.Softmax ->
-            SoftmaxLayer(name)
+            softmaxLayer(name)
         ActivationFunction.Tanh ->
-            TanhLayer(name)
+            tanhLayer(name)
 
     }

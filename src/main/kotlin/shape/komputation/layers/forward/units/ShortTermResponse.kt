@@ -1,12 +1,18 @@
 package shape.komputation.layers.forward.units
 
+import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
+import shape.komputation.layers.combination.hadamardCombination
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.TanhLayer
+import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.projection.SeriesBias
 import shape.komputation.layers.forward.projection.SeriesWeighting
+import shape.komputation.layers.forward.projection.seriesBias
+import shape.komputation.layers.forward.projection.seriesWeighting
 import shape.komputation.matrix.DoubleMatrix
-
+import shape.komputation.optimization.OptimizationStrategy
 
 class ShortTermResponse(
     private val forgetting: Array<HadamardCombination>,
@@ -95,5 +101,60 @@ class ShortTermResponse(
         this.bias?.optimize()
 
     }
+
+}
+
+fun shortTermResponse(
+    name : String,
+    numberSteps : Int,
+    hiddenDimension : Int,
+    inputDimension : Int,
+    memoryWeightInitializationStrategy : InitializationStrategy,
+    inputWeightInitializationStrategy : InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy : OptimizationStrategy?): ShortTermResponse {
+
+    val shortTermForgetting = Array(numberSteps) { indexStep ->
+
+        val shortTermForgettingName = concatenateNames(name, "forgetting-step-$indexStep")
+        hadamardCombination(shortTermForgettingName)
+
+    }
+
+    val shortTermMemoryWeightingSeriesName = concatenateNames(name, "memory-weighting")
+    val shortTermMemoryWeightingStepName = concatenateNames(name, "memory-weighting-step")
+    val shortTermMemoryWeighting = seriesWeighting(shortTermMemoryWeightingSeriesName, shortTermMemoryWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, memoryWeightInitializationStrategy, optimizationStrategy)
+
+    val shortTermInputWeightingSeriesName = concatenateNames(name, "input-weighting")
+    val shortTermInputWeightingStepName = concatenateNames(name, "input-weighting-step")
+    val shortTermInputWeighting = seriesWeighting(shortTermInputWeightingSeriesName, shortTermInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, inputWeightInitializationStrategy, optimizationStrategy)
+
+    val shortTermAdditions = Array(numberSteps) { indexStep ->
+
+        val shortTermAdditionName = concatenateNames(name, "addition-step-$indexStep")
+        AdditionCombination(shortTermAdditionName)
+
+    }
+
+    val shortTermBias =
+
+        if (biasInitializationStrategy != null) {
+
+            val shortTermBiasName = concatenateNames(name, "bias")
+            seriesBias(shortTermBiasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+        }
+        else {
+            null
+        }
+
+
+    val shortTermActivations = Array(numberSteps) { indexStep ->
+
+        val shortTermActivationName = concatenateNames(name, "activation-step-$indexStep")
+        tanhLayer(shortTermActivationName)
+
+    }
+
+    return ShortTermResponse(shortTermForgetting, shortTermMemoryWeighting, shortTermInputWeighting, shortTermAdditions, shortTermBias, shortTermActivations)
 
 }

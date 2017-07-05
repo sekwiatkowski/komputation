@@ -16,7 +16,7 @@ import shape.komputation.matrix.DoubleMatrix
    chain * d (g(x)-h(x)) / d g(x) = chain
    chain * d (g(x)-h(x)) / d h(x) = chain * (-1) = -chain
 */
-class SubtractionCombination(val name : String?) : CombinationLayer(name) {
+class SubtractionCombination internal constructor(val name : String?) : CombinationLayer(name) {
 
     override fun forward(first: DoubleMatrix, second: DoubleMatrix) =
 
@@ -33,3 +33,5 @@ class SubtractionCombination(val name : String?) : CombinationLayer(name) {
         DoubleMatrix(chain.numberRows, chain.numberColumns, negate(chain.entries))
 
 }
+
+fun subtractionCombination(name : String? = null) = SubtractionCombination(name)

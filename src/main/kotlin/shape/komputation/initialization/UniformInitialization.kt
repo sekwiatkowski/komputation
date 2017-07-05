@@ -2,7 +2,7 @@ package shape.komputation.initialization
 
 import java.util.*
 
-fun createUniformInitializer(random: Random, min: Double = 0.0, max: Double = 1.0): InitializationStrategy {
+fun uniformInitialization(random: Random, min: Double = 0.0, max: Double = 1.0): InitializationStrategy {
 
     val difference = max - min
 

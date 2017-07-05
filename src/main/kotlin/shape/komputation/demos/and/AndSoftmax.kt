@@ -1,10 +1,10 @@
 package shape.komputation.demos.and
 
-import shape.komputation.initialization.createGaussianInitializer
-import shape.komputation.layers.entry.InputLayer
-import shape.komputation.layers.forward.activation.SoftmaxLayer
-import shape.komputation.layers.forward.projection.createProjectionLayer
-import shape.komputation.loss.LogisticLoss
+import shape.komputation.initialization.heInitialization
+import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.networks.Network
@@ -29,19 +29,19 @@ fun main(args: Array<String>) {
     )
 
     val random = Random(1)
-    val initialize = createGaussianInitializer(random)
+    val initialize = heInitialization(random, 2)
 
     val optimizer = stochasticGradientDescent(0.03)
 
-    val projectionLayer = createProjectionLayer(2, 2, initialize, initialize, optimizer)
-    val softmaxLayer = SoftmaxLayer()
+    val projectionLayer = projectionLayer(2, 2, initialize, initialize, optimizer)
+    val softmaxLayer = softmaxLayer()
 
     val network = Network(
-        InputLayer(),
+        inputLayer(),
         projectionLayer,
         softmaxLayer
     )
 
-    network.train(input, targets, LogisticLoss(), 10_000, 1, printLoss)
+    network.train(input, targets, logisticLoss(), 10_000, 1, printLoss)
 
 }
