@@ -6,7 +6,7 @@ import shape.komputation.functions.backwardProjectionWrtWeights
 import shape.komputation.functions.project
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
-import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
@@ -129,7 +129,7 @@ fun projectionLayer(
     val numberWeightRows = outputDimension
     val numberWeightColumns = inputDimension
 
-    val weights = initializeMatrix(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
+    val weights = initializeWeights(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
     val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
 
     val bias : DoubleArray?
@@ -138,7 +138,7 @@ fun projectionLayer(
 
     if (biasInitializationStrategy != null) {
 
-        bias = initializeMatrix(biasInitializationStrategy, numberWeightRows, 1, numberWeightRows)
+        bias = initializeColumnVector(biasInitializationStrategy, outputDimension)
         biasUpdateRule = optimizationStrategy?.invoke(bias.size, 1)
         biasAccumulator = DenseAccumulator(bias.size)
 

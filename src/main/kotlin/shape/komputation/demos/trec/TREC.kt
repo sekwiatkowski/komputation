@@ -10,6 +10,7 @@ import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
+import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.intVector
 import shape.komputation.matrix.oneHotVector
@@ -72,6 +73,11 @@ class TrecTraining {
         val trainingRepresentations = represent(embeddableTrainingExamples, embeddableVocabulary)
         val testRepresentations = represent(embeddableTestExamples, embeddableVocabulary)
 
+        val maximumLength = trainingRepresentations.plus(testRepresentations)
+            .map { it as IntMatrix }
+            .map { it.numberRows }
+            .max()!!
+
         val trainingCategories = embeddableTrainingExamples
             .map { ex -> ex.category }
 
@@ -102,7 +108,7 @@ class TrecTraining {
         val optimizationStrategy = momentum(0.01, 0.1)
 
         val network = Network(
-            lookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
+            lookupLayer(embeddings, embeddingDimension, maximumBatchSize, maximumLength, optimizationStrategy),
             concatenation(
                 *filterHeights
                     .map { filterHeight ->

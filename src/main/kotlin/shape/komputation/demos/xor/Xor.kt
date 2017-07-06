@@ -1,7 +1,6 @@
 package shape.komputation.demos.xor
 
 import shape.komputation.initialization.heInitialization
-import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer

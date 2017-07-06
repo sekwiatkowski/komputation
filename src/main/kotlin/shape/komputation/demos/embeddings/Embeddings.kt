@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
     val numberClasses = EmbeddingData.numberClasses
 
     val network = Network(
-        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
+        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
         maxPoolingLayer(),
         reluLayer(),

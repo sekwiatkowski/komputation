@@ -3,7 +3,7 @@ package shape.komputation.layers.forward.projection
 import shape.komputation.functions.add
 import shape.komputation.functions.backwardProjectionWrtBias
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
@@ -70,7 +70,7 @@ fun seriesBias(
     initializationStrategy: InitializationStrategy,
     optimizationStrategy: OptimizationStrategy?) : SeriesBias {
 
-    val bias = initializeMatrix(initializationStrategy, dimension, dimension, dimension * dimension)
+    val bias = initializeColumnVector(initializationStrategy, dimension)
 
     val seriesAccumulator = DenseAccumulator(dimension)
     val batchAccumulator = DenseAccumulator(dimension)

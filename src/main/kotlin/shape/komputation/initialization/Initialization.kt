@@ -2,11 +2,11 @@ package shape.komputation.initialization
 
 fun initializeColumnVector(strategy: InitializationStrategy, numberRows: Int): DoubleArray {
 
-    return initializeMatrix(strategy, numberRows,1, numberRows)
+    return initializeWeights(strategy, numberRows,1, numberRows)
 
 }
 
-fun initializeMatrix(strategy: InitializationStrategy, numberRows: Int, numberColumns : Int, numberIncoming : Int): DoubleArray {
+fun initializeWeights(strategy: InitializationStrategy, numberRows: Int, numberColumns : Int, numberIncoming : Int): DoubleArray {
 
     val array = DoubleArray(numberRows * numberColumns)
 

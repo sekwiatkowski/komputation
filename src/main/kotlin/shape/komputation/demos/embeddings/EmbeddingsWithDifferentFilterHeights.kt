@@ -51,7 +51,7 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
 
     val network = Network(
-        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
+        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
         concatenation(
             *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
         ),

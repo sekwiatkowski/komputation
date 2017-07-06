@@ -1,42 +1,24 @@
 package shape.komputation.optimization
 
-import shape.komputation.matrix.DoubleMatrix
+fun updateSparsely(vectors: Array<DoubleArray>, numberVectors : Int, dimension : Int, size : Int, ids: IntArray, counts : DoubleArray, gradients: Array<DoubleArray>, rule : UpdateRule) {
 
+    for (index in 0..size - 1) {
 
-/*
-    ids: 0, 1, 0
+        val id = ids[index]
+        val count = counts[index]
+        val scalingFactor = 1.0.div(count)
+        val vector = vectors[id]
+        val gradient = gradients[index]
 
-    gradients: emb(0)_0, emb(0)_1, emb(1)_0, emb(1)_1, emb(2)_0, emb(2)_1
- */
+        for (indexDimension in 0..dimension - 1) {
 
-fun updateSparsely(data: Array<DoubleArray>, dimension : Int, idBatch: Array<IntArray>, gradientBatch: Array<DoubleArray>, rule : UpdateRule) {
+            val indexEntry = id + indexDimension * numberVectors
+            val current = vector[indexDimension]
+            val derivative = scalingFactor * gradient[indexDimension]
 
-    val batchSize = idBatch.size
-    val scalingFactor = 1.0.div(batchSize)
+            val updated = rule.apply(indexEntry, current, derivative)
 
-    for (index in 0..batchSize - 1) {
-
-        val ids = idBatch[index]
-        val gradients = gradientBatch[index]
-
-        val numberInstances = ids.size
-
-        for (indexInstance in 0..numberInstances -1) {
-
-            val id = ids[indexInstance]
-            val instance = data[id]
-
-            for (indexDimension in 0..dimension - 1) {
-
-                val current = instance[indexDimension]
-
-                val derivative = gradients[indexInstance + indexDimension * numberInstances]
-
-                val updated = rule.apply(id + indexDimension * data.size, current, scalingFactor * derivative)
-
-                instance[indexDimension] = updated
-
-            }
+            vector[indexDimension] = updated
 
         }
 

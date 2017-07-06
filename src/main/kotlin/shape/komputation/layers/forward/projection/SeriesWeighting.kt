@@ -1,7 +1,7 @@
 package shape.komputation.layers.forward.projection
 
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.initialization.initializeMatrix
+import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.identityLayer
@@ -85,7 +85,7 @@ fun seriesWeighting(
     initializationStrategy: InitializationStrategy,
     optimizationStrategy: OptimizationStrategy?) : SeriesWeighting {
 
-    val weights = initializeMatrix(initializationStrategy, outputDimension, inputDimension, inputDimension)
+    val weights = initializeWeights(initializationStrategy, outputDimension, inputDimension, inputDimension)
 
     val numberWeightRows = outputDimension
     val numberWeightColumns = inputDimension
