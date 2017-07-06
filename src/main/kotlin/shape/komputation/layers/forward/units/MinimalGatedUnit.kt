@@ -123,15 +123,15 @@ class MinimalGatedUnit internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         if (this.forgetUnit is Optimizable) {
 
-            this.forgetUnit.optimize()
+            this.forgetUnit.optimize(scalingFactor)
 
         }
 
-        this.shortTermResponse.optimize()
+        this.shortTermResponse.optimize(scalingFactor)
 
     }
 

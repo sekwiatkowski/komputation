@@ -94,11 +94,11 @@ class ShortTermResponse(
 
     }
 
-    fun optimize() {
+    fun optimize(scalingFactor : Double) {
 
-        this.memoryWeighting.optimize()
-        this.inputWeighting.optimize()
-        this.bias?.optimize()
+        this.memoryWeighting.optimize(scalingFactor)
+        this.inputWeighting.optimize(scalingFactor)
+        this.bias?.optimize(scalingFactor)
 
     }
 

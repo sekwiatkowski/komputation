@@ -66,11 +66,11 @@ class Concatenation internal constructor(name : String? = null, vararg continuat
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         for (network in this.networks) {
 
-            network.optimize()
+            network.optimize(scalingFactor)
 
         }
 

@@ -109,10 +109,10 @@ class HighwayLayer internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
-        this.transformation.optimize()
-        this.transformationFraction.optimize()
+        this.transformation.optimize(scalingFactor)
+        this.transformationFraction.optimize(scalingFactor)
 
     }
 

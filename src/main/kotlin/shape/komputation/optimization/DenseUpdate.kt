@@ -1,8 +1,6 @@
 package shape.komputation.optimization
 
-fun updateDensely(parameterEntries: DoubleArray, numberParameters : Int, gradientEntries : DoubleArray, batchSize : Int, rule : UpdateRule) {
-
-    val scalingFactor = 1.0.div(batchSize.toDouble())
+fun updateDensely(parameterEntries: DoubleArray, numberParameters : Int, gradientEntries : DoubleArray, scalingFactor : Double, rule : UpdateRule) {
 
     for (index in 0..numberParameters - 1) {
 

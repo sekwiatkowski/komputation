@@ -84,12 +84,12 @@ class SimpleRecurrentUnit internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
-        this.previousStateWeighting.optimize()
-        this.inputWeighting.optimize()
+        this.previousStateWeighting.optimize(scalingFactor)
+        this.inputWeighting.optimize(scalingFactor)
 
-        this.bias?.optimize()
+        this.bias?.optimize(scalingFactor)
 
     }
 

@@ -240,20 +240,20 @@ class AttentiveDecoder internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         // W^e
-        this.encodingProjection.optimize()
+        this.encodingProjection.optimize(scalingFactor)
         // W^d
-        this.attentionPreviousStateWeighting.optimize()
+        this.attentionPreviousStateWeighting.optimize(scalingFactor)
         // s
-        this.scoringWeighting.optimize()
+        this.scoringWeighting.optimize(scalingFactor)
         // U^e
-        this.attendedEncodingWeighting.optimize()
+        this.attendedEncodingWeighting.optimize(scalingFactor)
         // U^d
-        this.decodingPreviousDecoderWeighting.optimize()
+        this.decodingPreviousDecoderWeighting.optimize(scalingFactor)
         // b
-        this.bias?.optimize()
+        this.bias?.optimize(scalingFactor)
 
     }
 

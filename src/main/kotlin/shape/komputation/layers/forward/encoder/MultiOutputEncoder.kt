@@ -79,11 +79,11 @@ class MultiOutputEncoder internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         if (this.unit is Optimizable) {
 
-            this.unit.optimize()
+            this.unit.optimize(scalingFactor)
 
         }
 

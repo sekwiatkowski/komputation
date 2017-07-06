@@ -57,7 +57,7 @@ class LookupLayer internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         if (update != null) {
 

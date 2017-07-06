@@ -36,9 +36,9 @@ class DenseLayer internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
-        this.projection.optimize()
+        this.projection.optimize(scalingFactor)
 
     }
 

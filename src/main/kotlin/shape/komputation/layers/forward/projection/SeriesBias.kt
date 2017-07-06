@@ -41,13 +41,13 @@ class SeriesBias internal constructor(
 
     }
 
-    fun optimize() {
+    fun optimize(scalingFactor : Double) {
 
         val batchAccumulator = this.batchAccumulator
 
         if (this.updateRule != null) {
 
-            updateDensely(this.bias, this.numberBiasEntries, batchAccumulator.getAccumulation(), batchAccumulator.getCount(), updateRule)
+            updateDensely(this.bias, this.numberBiasEntries, batchAccumulator.getAccumulation(), scalingFactor, updateRule)
 
         }
 

@@ -83,13 +83,13 @@ class ProjectionLayer internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
         if (this.weightUpdateRule != null) {
 
             val weightAccumulator = this.weightAccumulator
 
-            updateDensely(this.weights, this.numberWeightEntries, weightAccumulator.getAccumulation(), weightAccumulator.getCount(), weightUpdateRule)
+            updateDensely(this.weights, this.numberWeightEntries, weightAccumulator.getAccumulation(), scalingFactor, weightUpdateRule)
 
             weightAccumulator.reset()
 
@@ -99,7 +99,7 @@ class ProjectionLayer internal constructor(
 
             val biasAccumulator = this.biasAccumulator!!
 
-            updateDensely(this.bias, this.numberBiasEntries, biasAccumulator.getAccumulation(), biasAccumulator.getCount(), biasUpdateRule)
+            updateDensely(this.bias, this.numberBiasEntries, biasAccumulator.getAccumulation(), scalingFactor, biasUpdateRule)
 
             biasAccumulator.reset()
 

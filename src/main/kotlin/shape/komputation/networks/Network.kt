@@ -45,11 +45,11 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
 
     }
 
-    fun optimize() {
+    fun optimize(scalingFactor : Double) {
 
         for (optimizable in optimizables) {
 
-            optimizable.optimize()
+            optimizable.optimize(scalingFactor)
 
         }
 
@@ -94,7 +94,9 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
 
                 iterationLoss += batchLoss
 
-                this.optimize()
+                val scalingFactor = 1.0.div(batch.size.toDouble())
+
+                this.optimize(scalingFactor)
 
             }
 

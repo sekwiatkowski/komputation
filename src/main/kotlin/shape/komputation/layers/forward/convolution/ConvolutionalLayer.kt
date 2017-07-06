@@ -34,9 +34,9 @@ class ConvolutionalLayer internal constructor(
 
     }
 
-    override fun optimize() {
+    override fun optimize(scalingFactor : Double) {
 
-        this.projectionLayer.optimize()
+        this.projectionLayer.optimize(scalingFactor)
 
     }
 
