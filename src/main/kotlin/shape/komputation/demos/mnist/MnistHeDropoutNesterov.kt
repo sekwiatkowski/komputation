@@ -33,8 +33,8 @@ fun main(args: Array<String>) {
     val inputDimension = 784
     val hiddenDimension = 100
 
-    val hiddenInitialization = heInitialization(random, inputDimension)
-    val outputInitialization = heInitialization(random, hiddenDimension)
+    val hiddenInitialization = heInitialization(random)
+    val outputInitialization = heInitialization(random)
 
     val optimizer = nesterov(0.003, 0.3)
 

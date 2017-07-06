@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
 
     val inputLayer = inputLayer()
 
-    val initialize = heInitialization(random, 2)
+    val initialize = heInitialization(random)
     val optimizationStrategy = stochasticGradientDescent(0.1)
 
     val hiddenPreactivationLayer = projectionLayer(2, 2, initialize, initialize, optimizationStrategy)

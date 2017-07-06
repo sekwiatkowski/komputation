@@ -1,7 +1,10 @@
 package shape.komputation.initialization
 
-fun constantInitialization(constant: Double) : InitializationStrategy {
+class ConstantInitialization internal constructor(private val constant: Double) : InitializationStrategy {
 
-    return { _, _ -> constant }
+    override fun initialize(indexRow: Int, indexColumn: Int, numberIncoming: Int)  =
 
+        constant
 }
+
+fun constantInitialization(constant: Double) = ConstantInitialization(constant)

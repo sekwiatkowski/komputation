@@ -85,7 +85,7 @@ fun seriesWeighting(
     initializationStrategy: InitializationStrategy,
     optimizationStrategy: OptimizationStrategy?) : SeriesWeighting {
 
-    val weights = initializeMatrix(initializationStrategy, outputDimension, inputDimension)
+    val weights = initializeMatrix(initializationStrategy, outputDimension, inputDimension, inputDimension)
 
     val numberWeightRows = outputDimension
     val numberWeightColumns = inputDimension

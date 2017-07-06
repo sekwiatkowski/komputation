@@ -1,8 +1,8 @@
 package shape.komputation.initialization
 
-fun identityInitialization(): InitializationStrategy {
+class IdentityInitialization internal constructor(): InitializationStrategy {
 
-    return { indexRow : Int, indexColumn : Int ->
+    override fun initialize(indexRow: Int, indexColumn: Int, numberIncoming: Int) =
 
         if (indexRow == indexColumn) {
             1.0
@@ -11,6 +11,6 @@ fun identityInitialization(): InitializationStrategy {
             0.0
         }
 
-    }
-
 }
+
+fun identityInitialization() = IdentityInitialization()

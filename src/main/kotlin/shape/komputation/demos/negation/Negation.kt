@@ -31,7 +31,7 @@ object NegationData {
 fun main(args: Array<String>) {
 
     val random = Random(1)
-    val initialize = heInitialization(random, 1)
+    val initialize = heInitialization(random)
 
     val optimizationStrategy = stochasticGradientDescent(0.01)
 

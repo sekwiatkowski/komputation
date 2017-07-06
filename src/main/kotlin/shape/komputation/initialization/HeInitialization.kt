@@ -2,11 +2,14 @@ package shape.komputation.initialization
 
 import java.util.*
 
-fun heInitialization(random: Random, inputDimension : Int): InitializationStrategy {
+class HeInitialization internal constructor(private val random: Random) : InitializationStrategy {
 
-    val variance = 1.0.div(inputDimension.toDouble())
-    val standardDeviation = Math.sqrt(variance)
+    override fun initialize(indexRow: Int, indexColumn: Int, numberIncoming: Int) =
 
-    return { _, _ -> random.nextGaussian() * standardDeviation }
+        random.nextGaussian() * Math.sqrt(1.0.div(numberIncoming.toDouble()))
 
 }
+
+fun heInitialization(random: Random) =
+
+    HeInitialization(random)

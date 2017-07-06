@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val initialize = heInitialization(random, 2)
+    val initialize = heInitialization(random)
     val optimizer = stochasticGradientDescent(0.03)
 
     val projectionLayer = projectionLayer(2, 1, initialize, initialize, optimizer)

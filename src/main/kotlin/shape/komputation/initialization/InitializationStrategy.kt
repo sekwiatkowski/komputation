@@ -1,3 +1,7 @@
 package shape.komputation.initialization
 
-typealias InitializationStrategy = (indexRow : Int, indexColumn : Int) -> Double
+interface InitializationStrategy {
+
+    fun initialize(indexRow : Int, indexColumn : Int, numberIncoming : Int) : Double
+
+}

@@ -2,10 +2,19 @@ package shape.komputation.initialization
 
 import java.util.*
 
-fun uniformInitialization(random: Random, min: Double = 0.0, max: Double = 1.0): InitializationStrategy {
+class UniformInitialization internal constructor(
+    private val random: Random,
+    private val min: Double = 0.0,
+    max: Double = 1.0) : InitializationStrategy {
 
-    val difference = max - min
+    private val difference = max - min
 
-    return { _, _ -> random.nextDouble() * difference - Math.abs(min) }
+    override fun initialize(indexRow: Int, indexColumn: Int, numberIncoming: Int) =
+
+        random.nextDouble() * difference - Math.abs(min)
 
 }
+
+fun uniformInitialization(random: Random, min: Double = 0.0, max: Double = 1.0) =
+
+    UniformInitialization(random, min, max)
