@@ -31,8 +31,8 @@ fun main(args: Array<String>) {
 
     val numberFilters = 2
 
-    val filterWidth = embeddingDimension
-    val filterHeight = 2
+    val filterWidth = 2
+    val filterHeight = embeddingDimension
 
     val inputs = EmbeddingData.inputs
     val targets = EmbeddingData.targets

@@ -53,7 +53,7 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 2.1, 1.2, 2.2))
+        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
 
         check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(1.0, 1.0), arrayOf(doubleArrayOf(1.1, 1.2), doubleArrayOf(2.1, 2.2)))
 
@@ -64,20 +64,20 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 2.1, 1.2, 2.2))
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.3, 2.3, 1.4, 2.4))
+        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
+        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.3, 1.4, 2.3, 2.4))
 
         check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(2.0, 2.0), arrayOf(doubleArrayOf(2.4, 2.6), doubleArrayOf(4.4, 4.6)))
 
     }
 
     @Test
-    fun testTwoVectorsTwoDimensionsBatchesOfTwoAndLengthsOfTwoInReverse() {
+    fun testTwoVectorsTwoDimensionsBatchesOfTwoAndLengthsOfTwoReversed() {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 2.1, 1.2, 2.2))
-        accumulator.accumulate(intArrayOf(1, 0), doubleArrayOf(2.3, 1.3, 2.4, 1.4))
+        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
+        accumulator.accumulate(intArrayOf(1, 0), doubleArrayOf(2.3, 2.4, 1.3, 1.4))
 
         check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(2.0, 2.0), arrayOf(doubleArrayOf(2.4, 2.6), doubleArrayOf(4.4, 4.6)))
 

@@ -7,6 +7,7 @@ fun findMaxIndicesInRows(input: DoubleArray, numberRows : Int, numberColumns : I
         var maxValue = input[indexRow]
         var maxIndex = indexRow
 
+        // Go through the columns in the given row
         for (indexColumn in 1..numberColumns - 1) {
 
             val index = indexRow + indexColumn * numberRows
@@ -47,35 +48,3 @@ fun findMaxIndex(input: DoubleArray): Int {
     return maxIndex
 
 }
-
-fun findMaxIndicesInColumns(input: DoubleArray, numberRows : Int, numberColumns : Int) =
-
-    IntArray(numberColumns) { indexColumn ->
-
-        val startIndex = indexColumn * numberRows
-
-        var maxValue = input[startIndex]
-        var maxIndex = startIndex
-
-        for (indexRow in 1..numberRows - 1) {
-
-            val index = startIndex + indexRow
-
-            val entry = input[index]
-
-            if (entry > maxValue) {
-
-                maxValue = entry
-                maxIndex = index
-
-            }
-
-        }
-
-        maxIndex
-
-    }
-
-fun selectEntries(input: DoubleArray, indices : IntArray) =
-
-    DoubleArray(indices.size) { index -> input[indices[index]] }

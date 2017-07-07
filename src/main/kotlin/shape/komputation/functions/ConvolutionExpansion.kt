@@ -10,10 +10,13 @@ fun convolutionsPerRow(numberColumns : Int, filterWidth: Int) =
 
     numberColumns - filterWidth + 1
 
-fun expandForConvolution(inputEntries : DoubleArray, numberInputRows : Int, numberInputColumns : Int, filterWidth : Int, filterHeight: Int): DoubleMatrix {
-
-    val convolutionsPerRow = convolutionsPerRow(numberInputColumns, filterWidth)
-    val convolutionsPerColumn = convolutionsPerColumn(numberInputRows, filterHeight)
+fun expandForConvolution(
+    inputEntries : DoubleArray,
+    numberInputRows : Int,
+    convolutionsPerRow : Int,
+    convolutionsPerColumn : Int,
+    filterWidth : Int,
+    filterHeight: Int): DoubleMatrix {
 
     val numberConvolutions = convolutionsPerRow * convolutionsPerColumn
 
@@ -28,9 +31,9 @@ fun expandForConvolution(inputEntries : DoubleArray, numberInputRows : Int, numb
 
         for (indexConvolutionStartColumn in 0..convolutionsPerRow - 1) {
 
-            for (indexRow in indexConvolutionStartRow..indexConvolutionStartRow + filterHeight - 1) {
+            for (indexColumn in indexConvolutionStartColumn..indexConvolutionStartColumn + filterWidth - 1) {
 
-                for (indexColumn in indexConvolutionStartColumn..indexConvolutionStartColumn + filterWidth - 1) {
+                for (indexRow in indexConvolutionStartRow..indexConvolutionStartRow + filterHeight - 1) {
 
                     expandedInputMatrix[counter++] = inputEntries[indexRow + indexColumn * numberInputRows]
 
@@ -46,31 +49,34 @@ fun expandForConvolution(inputEntries : DoubleArray, numberInputRows : Int, numb
 
 }
 
-
 fun backwardExpansionForConvolution(
     numberInputRows: Int,
     numberInputColumns: Int,
-    filterWidth: Int,
+    filterHeight: Int,
+    convolutionsPerRow: Int,
     chain: DoubleArray,
     numberChainRows: Int,
     numberChainColumns: Int): DoubleArray {
 
     val sums = DoubleArray(numberInputRows * numberInputColumns)
 
-    val convolutionsPerRow = convolutionsPerRow(numberInputColumns, filterWidth)
-
     var count = 0
 
     for (indexConvolution in 0..numberChainColumns - 1) {
 
+        val firstColumnOfConvolution = firstColumnOfConvolution(indexConvolution, convolutionsPerRow)
+        val firstRowOfConvolution = firstRowOfConvolution(indexConvolution, convolutionsPerRow)
+
         for (indexConvolutionEntry in 0..numberChainRows - 1) {
 
+            val columnInConvolution = columnInConvolution(indexConvolutionEntry, filterHeight)
+            val column = firstColumnOfConvolution + columnInConvolution
+
+            val rowInConvolution = rowInConvolution(indexConvolutionEntry, filterHeight)
+            val row = firstRowOfConvolution + rowInConvolution
+
             val derivative = chain[count++]
-
-            val inputRow = expandedRowToOriginalRow(indexConvolution, indexConvolutionEntry, convolutionsPerRow, filterWidth)
-            val inputColumn = expandedColumnToOriginalColumn(indexConvolution, indexConvolutionEntry, convolutionsPerRow, filterWidth)
-
-            sums[inputColumn * numberInputRows + inputRow] += derivative
+            sums[row + column * numberInputRows] += derivative
 
         }
 
@@ -80,10 +86,18 @@ fun backwardExpansionForConvolution(
 
 }
 
-fun expandedRowToOriginalRow(indexConvolution : Int, indexConvolutionEntry : Int, perRow : Int, filterWidth : Int) =
+fun firstColumnOfConvolution(indexConvolution: Int, convolutionsPerRow: Int) =
 
-    indexConvolution / perRow + indexConvolutionEntry / filterWidth
+    indexConvolution % convolutionsPerRow
 
-fun expandedColumnToOriginalColumn(indexConvolution: Int, indexConvolutionEntry: Int, perRow: Int, filterWidth: Int) =
+fun firstRowOfConvolution(indexConvolution: Int, convolutionsPerColumn: Int) =
 
-    indexConvolution % perRow + indexConvolutionEntry % filterWidth
+    indexConvolution / convolutionsPerColumn
+
+fun columnInConvolution(indexConvolutionEntry : Int, filterHeight: Int) =
+
+    indexConvolutionEntry / filterHeight
+
+fun rowInConvolution(indexConvolutionEntry: Int, filterHeight: Int) =
+
+    indexConvolutionEntry % filterHeight

@@ -89,19 +89,19 @@ The following code instantiates a convolutional neural network for sentence clas
 
  ```kotlin
 val network = Network(
-    lookupLayer(embeddings, embeddingDimension, maximumBatchSize, optimizationStrategy),
+    lookupLayer(embeddings, embeddingDimension, maximumBatchSize, maximumLength, optimizationStrategy),
     concatenation(
-        *filterHeights
-            .map { filterHeight ->
+        *filterWidths
+            .map { filterWidth ->
                 arrayOf(
                     convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-                    reluLayer(),
-                    maxPoolingLayer()
+                    maxPoolingLayer(),
+                    dropoutLayer(numberFilters, random, 0.8, reluLayer())
                 )
             }
             .toTypedArray()
     ),
-    projectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
+    projectionLayer(numberFilterWidths * numberFilters, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
     softmaxLayer()
 )
 ```

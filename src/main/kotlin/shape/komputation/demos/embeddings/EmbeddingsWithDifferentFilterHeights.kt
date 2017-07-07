@@ -32,10 +32,10 @@ fun main(args: Array<String>) {
 
     val numberFilters = 2
 
-    val filterWidth = embeddingDimension
-    val filterHeights = arrayOf(1, 2)
+    val filterWidths = arrayOf(1, 2)
+    val filterHeight = embeddingDimension
 
-    val createConvolutionSubnetwork = { filterHeight : Int ->
+    val createConvolutionSubnetwork = { filterWidth : Int ->
 
         arrayOf(
             convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
@@ -53,9 +53,9 @@ fun main(args: Array<String>) {
     val network = Network(
         lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
         concatenation(
-            *filterHeights.map { filterHeight -> createConvolutionSubnetwork(filterHeight) }.toTypedArray()
+            *filterWidths.map { filterWidth -> createConvolutionSubnetwork(filterWidth) }.toTypedArray()
         ),
-        projectionLayer(numberFilters * filterHeights.size, numberClasses, initializationStrategy, initializationStrategy, optimizationStrategy),
+        projectionLayer(numberFilters * filterHeight, numberClasses, initializationStrategy, initializationStrategy, optimizationStrategy),
         softmaxLayer()
     )
 

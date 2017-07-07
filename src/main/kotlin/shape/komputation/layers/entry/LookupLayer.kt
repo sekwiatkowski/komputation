@@ -12,42 +12,47 @@ class LookupLayer internal constructor(
     name : String?,
     private val vectors: Array<DoubleArray>,
     private val dimension : Int,
-    maximumBatchSize: Int,
-    maximumLength : Int,
+    private val gradientAccumulator: SparseAccumulator,
     private val update: UpdateRule? = null) : EntryPoint(name), Optimizable {
 
-    private val numberVectors = this.vectors.size
-
     private var input : IntArray? = null
-
-    private val gradientAccumulator = SparseAccumulator(this.vectors.size, maximumBatchSize, maximumLength, this.dimension)
 
     override fun forward(input: Matrix) : DoubleMatrix {
 
         input as IntMatrix
 
         val inputEntries = input.entries
-        val numberRows = input.numberRows
+        val inputSize = inputEntries.size
 
         this.input = inputEntries
 
-        val result = DoubleArray(inputEntries.size * this.dimension)
+        /*
+            word^(1)_1   word^(2)_1   ...   word^(T)_1
+            word^(1)_2   word^(2)_2   ...   word^(T)_2
+            ...          ...                ....
+            word^(1)_d   word^(2)_d   ...   word^(T)_d
+        */
 
-        for (indexRow in 0..numberRows - 1) {
 
-            val id = inputEntries[indexRow]
+        val result = DoubleArray(inputSize * this.dimension)
 
-            val instance = this.vectors[id]
+        var start = 0
 
-            for (indexColumn in 0..this.dimension - 1) {
+        for (indexInput in 0..inputSize - 1) {
 
-                result[indexRow + indexColumn * numberRows] = instance[indexColumn]
+            val id = inputEntries[indexInput]
+
+            val vector = this.vectors[id]
+
+            for (indexDimension in 0..this.dimension - 1) {
+
+                result[start++] = vector[indexDimension]
 
             }
 
         }
 
-        return DoubleMatrix(numberRows, this.dimension, result)
+        return DoubleMatrix(this.dimension, inputSize, result)
 
     }
 
@@ -71,7 +76,7 @@ class LookupLayer internal constructor(
             val counts = gradientAccumulator.getCounts()
             val gradients = gradientAccumulator.getSums()
 
-            updateSparsely(this.vectors, this.numberVectors, this.dimension, size, ids, counts, gradients, update)
+            updateSparsely(this.vectors, this.dimension, size, ids, counts, gradients, update)
 
         }
 
@@ -86,10 +91,9 @@ fun lookupLayer(
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength : Int,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): LookupLayer {
+    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null) =
 
-    return lookupLayer(null, vectors, dimension, maximumBatchSize, maximumLength, optimizationStrategy)
-}
+    lookupLayer(null, vectors, dimension, maximumBatchSize, maximumLength, optimizationStrategy)
 
 fun lookupLayer(
     name : String? = null,
@@ -109,6 +113,8 @@ fun lookupLayer(
         null
     }
 
-    return LookupLayer(name, vectors, dimension, maximumBatchSize, maximumLength, updateRule)
+    val sparseAccumulator = SparseAccumulator(vectors.size, maximumBatchSize, maximumLength, dimension)
+
+    return LookupLayer(name, vectors, dimension, sparseAccumulator, updateRule)
 
 }

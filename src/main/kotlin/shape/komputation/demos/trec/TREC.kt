@@ -1,6 +1,7 @@
 package shape.komputation.demos.trec
 
 import shape.komputation.functions.findMaxIndex
+import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -8,6 +9,7 @@ import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
+import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.IntMatrix
@@ -15,7 +17,7 @@ import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.intVector
 import shape.komputation.matrix.oneHotVector
 import shape.komputation.networks.Network
-import shape.komputation.optimization.momentum
+import shape.komputation.optimization.*
 import java.io.File
 import java.util.*
 
@@ -38,14 +40,14 @@ class TrecTraining {
 
     fun run(embeddingFilePath: String, embeddingDimension: Int) {
 
-        val maximumBatchSize = 10
+        val maximumBatchSize = 1
 
         val embeddingFile = File(embeddingFilePath)
 
         val numberFilters = 100
-        val filterWidth = embeddingDimension
-        val filterHeights = intArrayOf(3)
-        val numberFilterHeights = filterHeights.size
+        val filterWidths = intArrayOf(2, 3)
+        val filterHeight = embeddingDimension
+        val numberFilterWidths = filterWidths.size
 
         val numberIterations = 30
 
@@ -65,10 +67,10 @@ class TrecTraining {
 
         val embeddableVocabulary = embeddingMap.keys.sorted()
 
-        val maximumFilterHeight = filterHeights.max()!!
+        val maximumFilterWidth = filterWidths.max()!!
 
-        val embeddableTrainingExamples = filterExamles(trainingExamples, embeddableVocabulary, maximumFilterHeight)
-        val embeddableTestExamples = filterExamles(testExamples, embeddableVocabulary, maximumFilterHeight)
+        val embeddableTrainingExamples = filterExamples(trainingExamples, embeddableVocabulary, maximumFilterWidth)
+        val embeddableTestExamples = filterExamples(testExamples, embeddableVocabulary, maximumFilterWidth)
 
         val trainingRepresentations = represent(embeddableTrainingExamples, embeddableVocabulary)
         val testRepresentations = represent(embeddableTestExamples, embeddableVocabulary)
@@ -105,23 +107,22 @@ class TrecTraining {
         val random = Random(1)
         val initializationStrategy = uniformInitialization(random, -0.05, 0.05)
 
-        val optimizationStrategy = momentum(0.01, 0.1)
+        val optimizationStrategy = rmsprop(0.001)
 
         val network = Network(
             lookupLayer(embeddings, embeddingDimension, maximumBatchSize, maximumLength, optimizationStrategy),
             concatenation(
-                *filterHeights
-                    .map { filterHeight ->
-
+                *filterWidths
+                    .map { filterWidth ->
                         arrayOf(
                             convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-                            reluLayer(),
-                            maxPoolingLayer()
+                            maxPoolingLayer(),
+                            dropoutLayer(numberFilters, random, 0.8, reluLayer())
                         )
                     }
                     .toTypedArray()
             ),
-            projectionLayer(numberFilters * numberFilterHeights, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
+            projectionLayer(numberFilterWidths * numberFilters, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
             softmaxLayer()
         )
 
@@ -199,7 +200,7 @@ private fun embedVocabulary(vocabulary: Set<String>, embeddingFile: File): Map<S
 
 }
 
-private fun filterExamles(examples: Iterable<TrecExample>, vocabulary: Collection<String>, minLength : Int) =
+private fun filterExamples(examples: Iterable<TrecExample>, vocabulary: Collection<String>, minLength : Int) =
 
     examples
         .map { (category, text) -> TrecExample(category, text.filter { vocabulary.contains(it) }) }
