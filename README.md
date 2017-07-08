@@ -131,3 +131,4 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
   - [Adagrad](./src/main/kotlin/shape/komputation/optimization/adaptive/Adagrad.kt)
   - [Adadelta](./src/main/kotlin/shape/komputation/optimization/adaptive/Adadelta.kt)
   - [RMSProp](./src/main/kotlin/shape/komputation/optimization/adaptive/RMSProp.kt)
+  - [Adam](./src/main/kotlin/shape/komputation/optimization/adaptive/Adam.kt)

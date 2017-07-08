@@ -24,11 +24,11 @@ fun hadamard(a: DoubleArray, b: DoubleArray) =
 
     }
 
-fun negate(a: DoubleArray) =
+fun negate(vector: DoubleArray) =
 
-    DoubleArray(a.size) { index ->
+    DoubleArray(vector.size) { index ->
 
-        -a[index]
+        -vector[index]
 
     }
 

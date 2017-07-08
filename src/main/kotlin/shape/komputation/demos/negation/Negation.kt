@@ -1,9 +1,7 @@
 package shape.komputation.demos.negation
 
 import shape.komputation.initialization.heInitialization
-import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.layers.forward.activation.TanhLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.squaredLoss
