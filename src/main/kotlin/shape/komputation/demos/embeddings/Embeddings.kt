@@ -11,7 +11,7 @@ import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
-import shape.komputation.optimization.momentum
+import shape.komputation.optimization.historical.momentum
 import java.util.*
 
 fun main(args: Array<String>) {

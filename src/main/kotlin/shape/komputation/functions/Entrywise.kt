@@ -31,3 +31,11 @@ fun negate(a: DoubleArray) =
         -a[index]
 
     }
+
+fun scale(vector: DoubleArray, scalar : Double) =
+
+    DoubleArray(vector.size) { index ->
+
+        scalar * vector[index]
+
+    }

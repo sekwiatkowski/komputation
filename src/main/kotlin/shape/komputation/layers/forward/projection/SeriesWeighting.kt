@@ -46,7 +46,7 @@ class SeriesWeighting internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.weights, this.numberWeightEntries, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
+            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
 
         }
 

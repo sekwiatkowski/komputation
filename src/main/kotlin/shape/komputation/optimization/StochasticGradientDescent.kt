@@ -12,9 +12,13 @@ fun stochasticGradientDescent(learningRate: Double): (Int, Int) -> UpdateRule {
 
 class StochasticGradientDescent(private val learningRate: Double) : UpdateRule {
 
-    override fun apply(index : Int, current: Double, derivative: Double): Double {
+    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
 
-        return current - learningRate * derivative
+        for(index in 0..gradientSize-1) {
+
+            parameters[index] -= learningRate * gradient[index]
+
+        }
 
     }
 

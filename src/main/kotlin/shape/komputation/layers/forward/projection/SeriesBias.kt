@@ -47,7 +47,7 @@ class SeriesBias internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.bias, this.numberBiasEntries, batchAccumulator.getAccumulation(), scalingFactor, updateRule)
+            updateDensely(this.bias, batchAccumulator.getAccumulation(), scalingFactor, updateRule)
 
         }
 

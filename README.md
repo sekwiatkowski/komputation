@@ -77,8 +77,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [RNN with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
 
 - MNIST:
-  - [Dropout](./src/main/kotlin/shape/komputation/demos/mnist/MnistDropout.kt)
-  - [He initialization, dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/demos/mnist/MnistHeDropoutNesterov.kt)
+  - [Dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/demos/mnist/MnistDropoutNesterov.kt)
   - [Highway layers](./src/main/kotlin/shape/komputation/demos/mnist/MnistHighway.kt)
 
 - [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
@@ -125,10 +124,10 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
 ## Optimization
 
 - [Stochastic Gradient Descent](./src/main/kotlin/shape/komputation/optimization/StochasticGradientDescent.kt)
-- Momentum-based:
-  - [Momentum](./src/main/kotlin/shape/komputation/optimization/Momentum.kt)
-  - [Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/optimization/Nesterov.kt)
-- Adaptive learning rates:
-  - [Adagrad](./src/main/kotlin/shape/komputation/optimization/Adagrad.kt)
-  - [Adadelta](./src/main/kotlin/shape/komputation/optimization/Adadelta.kt)
-  - [RMSProp](./src/main/kotlin/shape/komputation/optimization/RMSProp.kt)
+- Historical:
+  - [Momentum](./src/main/kotlin/shape/komputation/optimization/historical/Momentum.kt)
+  - [Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/optimization/historical/Nesterov.kt)
+- Adaptive:
+  - [Adagrad](./src/main/kotlin/shape/komputation/optimization/adaptive/Adagrad.kt)
+  - [Adadelta](./src/main/kotlin/shape/komputation/optimization/adaptive/Adadelta.kt)
+  - [RMSProp](./src/main/kotlin/shape/komputation/optimization/adaptive/RMSProp.kt)

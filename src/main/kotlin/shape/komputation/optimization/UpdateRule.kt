@@ -2,6 +2,10 @@ package shape.komputation.optimization
 
 interface UpdateRule {
 
-    fun apply (index : Int, current : Double, derivative : Double): Double
+    fun updateDensely(parameters : DoubleArray, gradient : DoubleArray, gradientSize : Int) =
+
+        updateSparsely(0, parameters, gradient, gradientSize)
+
+    fun updateSparsely(start : Int, parameters : DoubleArray, gradient : DoubleArray, gradientSize : Int)
 
 }

@@ -1,14 +1,11 @@
 package shape.komputation.optimization
 
-fun updateDensely(parameterEntries: DoubleArray, numberParameters : Int, gradientEntries : DoubleArray, scalingFactor : Double, rule : UpdateRule) {
+import shape.komputation.functions.scale
 
-    for (index in 0..numberParameters - 1) {
+fun updateDensely(parameters: DoubleArray, gradient : DoubleArray, scalingFactor : Double, rule : UpdateRule) {
 
-        val current = parameterEntries[index]
-        val derivative = scalingFactor * gradientEntries[index]
+    val scaledGradient = scale(gradient, scalingFactor)
 
-        parameterEntries[index] = rule.apply(index, current, derivative)
-
-    }
+    rule.updateDensely(parameters, scaledGradient, scaledGradient.size)
 
 }

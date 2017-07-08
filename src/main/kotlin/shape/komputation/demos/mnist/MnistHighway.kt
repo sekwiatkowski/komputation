@@ -10,7 +10,7 @@ import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.highwayLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
-import shape.komputation.optimization.momentum
+import shape.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
 

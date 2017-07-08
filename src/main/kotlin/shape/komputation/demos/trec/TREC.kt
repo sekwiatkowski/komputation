@@ -1,7 +1,6 @@
 package shape.komputation.demos.trec
 
 import shape.komputation.functions.findMaxIndex
-import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -17,7 +16,7 @@ import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.intVector
 import shape.komputation.matrix.oneHotVector
 import shape.komputation.networks.Network
-import shape.komputation.optimization.*
+import shape.komputation.optimization.adaptive.rmsprop
 import java.io.File
 import java.util.*
 

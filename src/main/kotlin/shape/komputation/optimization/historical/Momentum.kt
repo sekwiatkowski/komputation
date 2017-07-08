@@ -1,10 +1,12 @@
-package shape.komputation.optimization
+package shape.komputation.optimization.historical
+
+import shape.komputation.optimization.UpdateRule
 
 fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
 
     return { numberRows : Int, numberColumns : Int ->
 
-        Momentum(learningRate, momentum, numberRows, numberColumns)
+        Momentum(learningRate, momentum,numberRows * numberColumns)
 
     }
 }
@@ -21,19 +23,31 @@ fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
               = momentum * (- momentum * learning_rate * gradient_1 - learning_rate * gradient_2) - learning_rate * gradient_3
               = - momentum^2 * learning_rate * gradient_1 - momentum * learning_rate * gradient 2 - learning_rate * gradient_3
  */
-class Momentum(private val learningRate: Double, private val momentum: Double, numberRows : Int, numberColumns : Int) : UpdateRule {
+class Momentum(private val learningRate: Double, private val momentum: Double, historySize: Int) : UpdateRule {
 
-    private val history = DoubleArray(numberRows * numberColumns)
+    private val history = DoubleArray(historySize)
 
-    override fun apply(index : Int, current: Double, derivative: Double): Double {
+    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
 
-        val newStateEntry = this.momentum * this.history[index] - this.learningRate * derivative
+        for(localIndex in 0..gradientSize - 1) {
 
-        this.history[index] = newStateEntry
+            val historyIndex = start + localIndex
 
-        val result = current + newStateEntry
+            val derivative = gradient[localIndex]
 
-        return result
+            parameters[localIndex] += this.updateHistory(derivative, historyIndex)
+
+        }
+
+    }
+
+    private fun updateHistory(derivative: Double, historyIndex : Int): Double {
+
+        val newStateEntry = this.momentum * this.history[historyIndex] - this.learningRate * derivative
+
+        this.history[historyIndex] = newStateEntry
+
+        return newStateEntry
 
     }
 

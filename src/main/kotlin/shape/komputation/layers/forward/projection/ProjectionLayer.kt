@@ -89,7 +89,7 @@ class ProjectionLayer internal constructor(
 
             val weightAccumulator = this.weightAccumulator
 
-            updateDensely(this.weights, this.numberWeightEntries, weightAccumulator.getAccumulation(), scalingFactor, weightUpdateRule)
+            updateDensely(this.weights, weightAccumulator.getAccumulation(), scalingFactor, this.weightUpdateRule)
 
             weightAccumulator.reset()
 
@@ -99,7 +99,7 @@ class ProjectionLayer internal constructor(
 
             val biasAccumulator = this.biasAccumulator!!
 
-            updateDensely(this.bias, this.numberBiasEntries, biasAccumulator.getAccumulation(), scalingFactor, biasUpdateRule)
+            updateDensely(this.bias, biasAccumulator.getAccumulation(), scalingFactor, this.biasUpdateRule)
 
             biasAccumulator.reset()
 

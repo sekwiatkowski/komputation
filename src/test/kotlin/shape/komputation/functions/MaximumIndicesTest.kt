@@ -2,8 +2,9 @@ package shape.komputation.functions
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 
-class MaximumIndicesTest {
+class FindMaxIndicesInRowsTest {
 
     @Test
     fun testOneByOne() {
@@ -45,5 +46,24 @@ class MaximumIndicesTest {
 
     }
 
+
+}
+
+class FindMaxIndex {
+
+    @Test
+    fun testOneDimension() {
+
+        assertEquals(findMaxIndex(doubleArrayOf(1.0)), 0)
+
+    }
+
+    @Test
+    fun testTwoDimensions() {
+
+        assertEquals(findMaxIndex(doubleArrayOf(1.0, 2.0)), 1)
+        assertEquals(findMaxIndex(doubleArrayOf(2.0, 1.0)), 0)
+
+    }
 
 }
