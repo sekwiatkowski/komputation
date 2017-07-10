@@ -3,16 +3,26 @@ package shape.komputation.layers.forward.projection
 import jcuda.Pointer
 import jcuda.Sizeof
 import jcuda.jcublas.JCublas.*
+import shape.komputation.functions.cublasBackwardProjectionWrtInput
+import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.initialization.initializeColumnVector
+import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.optimization.Optimizable
+import shape.komputation.optimization.*
 
 class CublasProjectionLayer internal constructor(
     name : String?,
+
     private val weights : DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
-    private val bias : DoubleArray? = null) : ForwardLayer(name), Optimizable {
+    private val weightAccumulator : DenseAccumulator,
+    private val weightUpdateRule: UpdateRule? = null,
+
+    private val bias : DoubleArray? = null,
+    private val biasAccumulator: DenseAccumulator? = null,
+    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
@@ -75,16 +85,126 @@ class CublasProjectionLayer internal constructor(
 
     }
 
+    /*
+                          x_1
+                          x_2
+                          x_3
+        w_11 w_12 w_13    w_11 * x_1 + w_12 * x_2 + w_13 * x_3
+        w_21 w_22 w_23    w_21 * x_1 + w_22 * x_2 + w_23 * x_3
+
+        Differentiation w.r.t input:
+
+        d Wx / d x = w_11 + w_21
+                     w_12 + w_22
+                     w_13 + w_23
+
+        gemv solution:
+                                  chain_1
+                                  chain_2
+        transposed W >> w_11 w_21
+                        w_12 w_22
+                        w_13 w_23
+
+        Differentiation w.r.t weights:
+
+        d Wx / d W = x_1 x_2 x_3
+                     x_1 x_2 x_3
+
+        gemv solution:
+                x1 x2 x3 << transposed x
+        chain_1
+        chain_2
+
+     */
+
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
+        val backwardProjectionWrtInput = cublasBackwardProjectionWrtInput(this.weights, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, chain.entries)
+
         TODO()
+
+        return DoubleMatrix(this.numberWeightRows, 1, backwardProjectionWrtInput)
 
     }
 
     override fun optimize(scalingFactor : Double) {
 
-        TODO()
+        if (this.weightUpdateRule != null) {
+
+            val weightAccumulator = this.weightAccumulator
+
+            updateDensely(this.weights, weightAccumulator.getAccumulation(), scalingFactor, this.weightUpdateRule)
+
+            weightAccumulator.reset()
+
+        }
+
+        if (this.bias != null && this.biasUpdateRule != null) {
+
+            val biasAccumulator = this.biasAccumulator!!
+
+            updateDensely(this.bias, biasAccumulator.getAccumulation(), scalingFactor, this.biasUpdateRule)
+
+            biasAccumulator.reset()
+
+        }
 
     }
+
+}
+
+fun cublasProjectionLayer(
+    inputDimension: Int,
+    outputDimension: Int,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy : OptimizationStrategy? = null) =
+
+    cublasProjectionLayer(
+        null,
+        inputDimension,
+        outputDimension,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        optimizationStrategy
+    )
+
+
+fun cublasProjectionLayer(
+    name : String?,
+    inputDimension: Int,
+    outputDimension: Int,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy?,
+    optimizationStrategy : OptimizationStrategy? = null): CublasProjectionLayer {
+
+    val numberWeightRows = outputDimension
+    val numberWeightColumns = inputDimension
+
+    val weights = initializeWeights(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
+    val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
+
+    val bias : DoubleArray?
+    val biasUpdateRule: UpdateRule?
+    val biasAccumulator: DenseAccumulator?
+
+    if (biasInitializationStrategy != null) {
+
+        bias = initializeColumnVector(biasInitializationStrategy, outputDimension)
+        biasUpdateRule = optimizationStrategy?.invoke(bias.size, 1)
+        biasAccumulator = DenseAccumulator(bias.size)
+
+    }
+    else {
+
+        bias = null
+        biasUpdateRule = null
+        biasAccumulator = null
+
+    }
+
+    val weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
+
+    return CublasProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasAccumulator, biasUpdateRule)
 
 }

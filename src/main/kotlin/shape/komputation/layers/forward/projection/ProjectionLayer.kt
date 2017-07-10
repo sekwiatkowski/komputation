@@ -13,6 +13,7 @@ import shape.komputation.optimization.*
 
 class ProjectionLayer internal constructor(
     name : String? = null,
+
     private val weights : DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
@@ -20,8 +21,8 @@ class ProjectionLayer internal constructor(
     private val weightUpdateRule: UpdateRule? = null,
 
     private val bias : DoubleArray? = null,
-    private val biasUpdateRule: UpdateRule? = null,
-    private val biasAccumulator: DenseAccumulator? = null) : ForwardLayer(name), Optimizable {
+    private val biasAccumulator: DenseAccumulator? = null,
+    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable {
 
     private var inputEntries = DoubleArray(0)
     private var numberInputRows = -1
@@ -49,7 +50,7 @@ class ProjectionLayer internal constructor(
 
         val numberInputEntries = this.numberInputRows * this.numberInputColumns
 
-        val gradient = backwardProjectionWrtInput(
+        val backwardWrtInput = backwardProjectionWrtInput(
             this.numberInputRows,
             this.numberInputColumns,
             numberInputEntries,
@@ -78,7 +79,7 @@ class ProjectionLayer internal constructor(
 
         }
 
-        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, gradient)
+        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, backwardWrtInput)
 
     }
 
@@ -152,6 +153,6 @@ fun projectionLayer(
 
     val weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
 
-    return ProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasUpdateRule, biasAccumulator)
+    return ProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasAccumulator, biasUpdateRule)
 
 }

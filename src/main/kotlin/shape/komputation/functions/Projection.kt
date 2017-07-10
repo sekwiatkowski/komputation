@@ -1,5 +1,8 @@
 package shape.komputation.functions
 
+import jcuda.Pointer
+import jcuda.Sizeof
+import jcuda.jcublas.JCublas.*
 import shape.komputation.matrix.createBlasMatrix
 import shape.komputation.matrix.createBlasVector
 
@@ -73,6 +76,64 @@ fun backwardProjectionWrtInput(
     }
 
     return derivatives
+
+}
+
+/*
+        Differentiation w.r.t input:
+
+        d Wx / d x = w_11 + w_21
+                     w_12 + w_22
+                     w_13 + w_23
+
+        gemv solution:
+                                  chain_1
+                                  chain_2
+        transposed W >> w_11 w_21
+                        w_12 w_22
+                        w_13 w_23
+ */
+fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows: Int, numberWeightColumns: Int, numberWeightEntries: Int, hostChain: DoubleArray): DoubleArray {
+
+    cublasInit()
+
+    val deviceWeights = Pointer()
+    val deviceChain = Pointer()
+    val deviceResult = Pointer()
+
+    cublasAlloc(numberWeightEntries, Sizeof.DOUBLE, deviceWeights)
+    cublasAlloc(numberWeightRows, Sizeof.DOUBLE, deviceChain)
+    cublasAlloc(numberWeightColumns, Sizeof.DOUBLE, deviceResult)
+
+    val hostResult = DoubleArray(numberWeightColumns)
+
+    cublasSetVector(numberWeightEntries, Sizeof.DOUBLE, Pointer.to(hostWeights), 1, deviceWeights, 1)
+    cublasSetVector(numberWeightRows, Sizeof.DOUBLE, Pointer.to(hostChain), 1, deviceChain, 1)
+    cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+
+    cublasDgemv(
+        't', // transpose
+        numberWeightRows, // number of rows of matrix A
+        numberWeightColumns, // number of columns of matrix A
+        1.0, // alpha
+        deviceWeights, // weight pointer
+        numberWeightRows, // number weight rows
+        deviceChain, // input pointer
+        1, // storage spacing between elements of x
+        0.0, // beta
+        deviceResult, // result pointer
+        1 // specifies the storage spacing between elements of y
+    )
+
+    cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
+
+    cublasFree(deviceWeights)
+    cublasFree(deviceChain)
+    cublasFree(deviceResult)
+
+    cublasShutdown()
+
+    return hostResult
 
 }
 

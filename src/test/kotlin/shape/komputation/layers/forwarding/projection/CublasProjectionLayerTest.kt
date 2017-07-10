@@ -5,6 +5,7 @@ import shape.komputation.assertMatrixEquality
 import shape.komputation.layers.forward.projection.CublasProjectionLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleScalar
+import shape.komputation.optimization.DenseAccumulator
 
 class CublasProjectionLayerTest {
 
@@ -34,7 +35,6 @@ class CublasProjectionLayerTest {
 
     }
 
-
     @Test
     fun testOneByTwoTimesTwoByOne() {
 
@@ -63,19 +63,24 @@ class CublasProjectionLayerTest {
 
     private fun check(weightMatrix : DoubleMatrix, inputMatrix: DoubleMatrix, expected : DoubleMatrix) {
 
-        val layer = CublasProjectionLayer(null, weightMatrix.entries, weightMatrix.numberRows, weightMatrix.numberColumns)
+        val weightAccumulator = DenseAccumulator(weightMatrix.numberRows * weightMatrix.numberColumns)
+
+        val layer = CublasProjectionLayer(null, weightMatrix.entries, weightMatrix.numberRows, weightMatrix.numberColumns, weightAccumulator)
         val actual = layer.forward(inputMatrix, false)
 
         assertMatrixEquality(expected, actual, 0.001)
+
     }
 
     private fun checkWithBias(weightMatrix : DoubleMatrix, bias : DoubleArray, inputMatrix: DoubleMatrix, expected : DoubleMatrix) {
 
-        val layer = CublasProjectionLayer(null, weightMatrix.entries, weightMatrix.numberRows, weightMatrix.numberColumns, bias)
+        val weightAccumulator = DenseAccumulator(weightMatrix.numberRows * weightMatrix.numberColumns)
+
+        val layer = CublasProjectionLayer(null, weightMatrix.entries, weightMatrix.numberRows, weightMatrix.numberColumns, weightAccumulator, null, bias)
         val actual = layer.forward(inputMatrix, false)
 
         assertMatrixEquality(expected, actual, 0.001)
-    }
 
+    }
 
 }
