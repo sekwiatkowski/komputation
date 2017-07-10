@@ -11,53 +11,53 @@ class CublasProjectionLayerTest {
     @Test
     fun testOneByOne() {
 
-        val A = doubleScalar(2.0)
-        val B = doubleScalar(3.0)
+        val weights = doubleScalar(2.0)
+        val input = doubleScalar(3.0)
         val expected = doubleScalar(6.0)
 
-        check(A, B, expected)
-        check(B, A, expected)
+        check(weights, input, expected)
+        check(input, weights, expected)
 
     }
 
     @Test
-    fun testTwoByTwo() {
+    fun testOneByOneWithBias() {
 
-        val A = DoubleMatrix(2, 2, doubleArrayOf(1.0, 3.0, 2.0, 4.0))
-        val B = DoubleMatrix(2, 2, doubleArrayOf(5.0, 7.0, 6.0, 8.0))
+        val weights = doubleScalar(2.0)
+        val input = doubleScalar(3.0)
+        val bias = doubleArrayOf(2.0)
 
-        check(A, B, DoubleMatrix(2, 2, doubleArrayOf(19.0, 43.0, 22.0, 50.0)))
-        check(B, A, DoubleMatrix(2, 2, doubleArrayOf(23.0, 31.0, 34.0, 46.0)))
+        val expected = doubleScalar(8.0)
+
+        checkWithBias(weights, bias, input, expected)
+        checkWithBias(input, bias, weights, expected)
 
     }
 
+
     @Test
-    fun testOneByTwo_TwoByOne() {
+    fun testOneByTwoTimesTwoByOne() {
 
         /*
                     3.0
                     4.0
             1.0 2.0 11.0
          */
-        val A = DoubleMatrix(1, 2, doubleArrayOf(1.0, 2.0))
-        val B = DoubleMatrix(2, 1, doubleArrayOf(3.0, 4.0))
+        val weights = DoubleMatrix(1, 2, doubleArrayOf(1.0, 2.0))
+        val input = DoubleMatrix(2, 1, doubleArrayOf(3.0, 4.0))
 
-        check(A, B, DoubleMatrix(1, 1, doubleArrayOf(11.0)))
+        check(weights, input, DoubleMatrix(1, 1, doubleArrayOf(11.0)))
 
     }
 
     @Test
-    fun testTwoByOne_OneByTwo() {
+    fun testOneByTwoTimesTwoByOneWithBias() {
 
-        /*
-                3.0 4.0
-            1.0 3.0 4.0
-            2.0 6.0 8.0
-        */
-        val A = DoubleMatrix(2, 1, doubleArrayOf(1.0, 2.0))
-        val B = DoubleMatrix(1, 2, doubleArrayOf(3.0, 4.0))
+        val weights = DoubleMatrix(1, 2, doubleArrayOf(1.0, 2.0))
+        val bias = doubleArrayOf(5.0)
+        val input = DoubleMatrix(2, 1, doubleArrayOf(3.0, 4.0))
 
-        check(A, B, DoubleMatrix(2, 2, doubleArrayOf(3.0, 6.0, 4.0, 8.0)))
+        checkWithBias(weights, bias, input, DoubleMatrix(1, 1, doubleArrayOf(16.0)))
 
     }
 
@@ -68,5 +68,14 @@ class CublasProjectionLayerTest {
 
         assertMatrixEquality(expected, actual, 0.001)
     }
+
+    private fun checkWithBias(weightMatrix : DoubleMatrix, bias : DoubleArray, inputMatrix: DoubleMatrix, expected : DoubleMatrix) {
+
+        val layer = CublasProjectionLayer(null, weightMatrix.entries, weightMatrix.numberRows, weightMatrix.numberColumns, bias)
+        val actual = layer.forward(inputMatrix, false)
+
+        assertMatrixEquality(expected, actual, 0.001)
+    }
+
 
 }

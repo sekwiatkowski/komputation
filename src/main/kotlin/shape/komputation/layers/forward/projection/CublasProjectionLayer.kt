@@ -2,78 +2,76 @@ package shape.komputation.layers.forward.projection
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.jcublas.JCublas
+import jcuda.jcublas.JCublas.*
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
-import java.util.*
 
 class CublasProjectionLayer internal constructor(
     name : String?,
     private val weights : DoubleArray,
     private val numberWeightRows: Int,
-    private val numberWeightColumns: Int) : ForwardLayer(name), Optimizable {
+    private val numberWeightColumns: Int,
+    private val bias : DoubleArray? = null) : ForwardLayer(name), Optimizable {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
+    /*
+                       i_1
+                       i_2
+                       i_3
+        w_11 w_12 w_13
+        w_21 w_22 w_23
+
+        input dimension = number of weight columns
+        result dimension = number of weight rows
+     */
+
     override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 
-        // Initialize JCublas
-        JCublas.cublasInit()
+        cublasInit()
 
-        val numberInputColumns = input.numberColumns
-        val numberInputRows = input.numberRows
+        val hostResult = DoubleArray(this.numberWeightRows)
 
-        val numberResultEntries = numberWeightRows * numberInputColumns
-        val numberInputEntries = numberInputRows * numberInputColumns
-
-        /* Allocate host memory for the matrices */
-        val hostResult = DoubleArray(numberResultEntries)
-
-        /* Allocate device memory for the matrices */
-        val deviceFirst = Pointer()
-        val deviceSecond = Pointer()
+        val deviceWeights = Pointer()
+        val deviceInputs = Pointer()
         val deviceResult = Pointer()
 
-        JCublas.cublasAlloc(this.numberWeightEntries, Sizeof.DOUBLE, deviceFirst)
-        JCublas.cublasAlloc(numberInputEntries, Sizeof.DOUBLE, deviceSecond)
-        JCublas.cublasAlloc(numberResultEntries, Sizeof.DOUBLE, deviceResult)
+        // Allocate memory
+        cublasAlloc(this.numberWeightEntries, Sizeof.DOUBLE, deviceWeights)
+        cublasAlloc(this.numberWeightColumns, Sizeof.DOUBLE, deviceInputs)
+        cublasAlloc(this.numberWeightRows, Sizeof.DOUBLE, deviceResult)
 
-        /* Initialize the device matrices with the host matrices */
-        JCublas.cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceFirst, 1)
-        JCublas.cublasSetVector(numberInputEntries, Sizeof.DOUBLE, Pointer.to(input.entries), 1, deviceSecond, 1)
-        JCublas.cublasSetVector(numberResultEntries, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+        // Set the vectors on the device
+        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceWeights, 1)
+        cublasSetVector(this.numberWeightColumns, Sizeof.DOUBLE, Pointer.to(input.entries), 1, deviceInputs, 1)
+        cublasSetVector(this.numberWeightRows, Sizeof.DOUBLE, Pointer.to(this.bias ?: hostResult), 1, deviceResult, 1)
 
-        /* Performs operation using JCublas */
-        // C = alpha * op(A) * op(B) + beta * C,
-        JCublas.cublasDgemm(
+        // C = alpha * op(A) * op(B) + beta * C
+        val beta = if (this.bias != null) 1.0 else 0.0
+        cublasDgemv(
             'n', // no transposition
-            'n', // no transposition
-            this.numberWeightRows, // number of rows of matrices A and C
-            numberInputColumns, // number of columns of matrices B and C
-            this.numberWeightColumns, // number of columns of matrix A and number of rows of matrix B
+            this.numberWeightRows, // number of rows of matrix A
+            this.numberWeightColumns, // number of columns of matrix A
             1.0, // alpha
-            deviceFirst, // first pointer
+            deviceWeights, // weight pointer
             this.numberWeightRows, // number weight rows
-            deviceSecond, // second pointer
-            numberInputRows, // number input rows
-            0.0, // beta
+            deviceInputs, // input pointer
+            1, // storage spacing between elements of x
+            beta, // beta
             deviceResult, // result pointer
-            numberWeightRows // number result rows
+            this.numberWeightRows // number result rows
         )
 
-        /* Read the result back */
-        JCublas.cublasGetVector(numberResultEntries, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
+        cublasGetVector(this.numberWeightRows, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
-        /* Memory clean up */
-        JCublas.cublasFree(deviceFirst)
-        JCublas.cublasFree(deviceSecond)
-        JCublas.cublasFree(deviceResult)
+        cublasFree(deviceWeights)
+        cublasFree(deviceInputs)
+        cublasFree(deviceResult)
 
-        /* Shutdown */
-        JCublas.cublasShutdown()
+        cublasShutdown()
 
-        return DoubleMatrix(this.numberWeightRows, numberInputColumns, hostResult)
+        return DoubleMatrix(this.numberWeightRows, 1, hostResult)
 
     }
 
