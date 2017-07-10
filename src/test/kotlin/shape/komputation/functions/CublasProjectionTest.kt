@@ -4,9 +4,10 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.doubleRowVector
 import shape.komputation.matrix.doubleScalar
 
-class CublasProjectionLayerTest {
+class CublasProjectionTest {
 
     @Test
     fun testBackwardProjectionWrtInput1() {
@@ -64,11 +65,59 @@ class CublasProjectionLayerTest {
 
     }
 
+    /*
+    gemv solution:
+            x1 x2 x3 << transposed x
+    chain_1
+    chain_2
+    */
+    @Test
+    fun testBackwardProjectionWrtWeight1() {
+
+        val weights = doubleScalar(2.0)
+        val chain = doubleArrayOf(3.0)
+        val expected = doubleArrayOf(6.0)
+
+        checkBackwardProjectionWrtWeights(weights, chain, expected)
+
+    }
+
+    /*
+           2  3
+        4  8 12
+        5 10 15
+     */
+
+    @Test
+    fun testBackwardProjectionWrtWeight2() {
+
+        val weights = doubleRowVector(2.0, 3.0)
+        val chain = doubleArrayOf(4.0, 5.0)
+        val expected = doubleArrayOf(8.0, 10.0, 12.0, 15.0)
+
+        checkBackwardProjectionWrtWeights(weights, chain, expected)
+
+    }
+
     private fun checkBackwardProjectionWrtInput(weights: DoubleMatrix, chain: DoubleArray, expected: DoubleArray) {
 
         val actual = cublasBackwardProjectionWrtInput(weights.entries, weights.numberRows, weights.numberColumns, weights.numberRows * weights.numberColumns, chain)
         assertArrayEquals(expected, actual, 0.001)
 
     }
+
+    private fun checkBackwardProjectionWrtWeights(input : DoubleMatrix, chain : DoubleArray, expected: DoubleArray) {
+
+        val inputEntries = input.entries
+        val inputDimension = inputEntries.size
+
+        val chainDimension = chain.size
+
+        val actual = cublasBackwardProjectionWrtWeights(inputEntries, inputDimension, chain, chainDimension, inputDimension * chainDimension)
+
+        assertArrayEquals(expected, actual, 0.001)
+
+    }
+
 
 }

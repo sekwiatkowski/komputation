@@ -4,11 +4,13 @@ import jcuda.Pointer
 import jcuda.Sizeof
 import jcuda.jcublas.JCublas.*
 import shape.komputation.functions.cublasBackwardProjectionWrtInput
+import shape.komputation.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.optimization.*
 
 class CublasProjectionLayer internal constructor(
@@ -26,6 +28,11 @@ class CublasProjectionLayer internal constructor(
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
+    private val inputDimension = this.numberWeightColumns
+    private val chainDimension = this.numberWeightRows
+
+    private var inputEntries = DoubleArray(inputDimension)
+
     /*
                        i_1
                        i_2
@@ -38,6 +45,8 @@ class CublasProjectionLayer internal constructor(
      */
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+
+        this.inputEntries = input.entries
 
         cublasInit()
 
@@ -110,7 +119,7 @@ class CublasProjectionLayer internal constructor(
         d Wx / d W = x_1 x_2 x_3
                      x_1 x_2 x_3
 
-        gemv solution:
+        ger solution:
                 x1 x2 x3 << transposed x
         chain_1
         chain_2
@@ -119,11 +128,15 @@ class CublasProjectionLayer internal constructor(
 
     override fun backward(chain : DoubleMatrix) : DoubleMatrix {
 
-        val backwardProjectionWrtInput = cublasBackwardProjectionWrtInput(this.weights, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, chain.entries)
+        val backwardWrtInput = cublasBackwardProjectionWrtInput(this.weights, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, chain.entries)
+
+        val backwardWrtWeights = cublasBackwardProjectionWrtWeights(this.inputEntries, this.inputDimension, chain.entries, this.chainDimension, this.numberWeightEntries)
+
+        this.weightAccumulator.accumulate(backwardWrtWeights)
 
         TODO()
 
-        return DoubleMatrix(this.numberWeightRows, 1, backwardProjectionWrtInput)
+        return DoubleMatrix(this.numberWeightRows, 1, backwardWrtInput)
 
     }
 
