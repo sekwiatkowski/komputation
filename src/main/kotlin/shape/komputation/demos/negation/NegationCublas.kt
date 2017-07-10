@@ -3,7 +3,7 @@ package shape.komputation.demos.negation
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
-import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.projection.cublasProjectionLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
@@ -17,7 +17,7 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
-    val projectionLayer = projectionLayer(1, 1, initialize, initialize, optimizationStrategy)
+    val projectionLayer = cublasProjectionLayer(1, 1, initialize, initialize, optimizationStrategy)
     val sigmoidLayer = sigmoidLayer()
 
     val network = Network(

@@ -127,7 +127,7 @@ fun backwardProjectionWrtBias(numberBiasRows : Int, chain: DoubleArray, numberCh
 
         for (indexChainColumn in 0..numberChainColumns - 1) {
 
-            derivative += chain[numberChainRows * indexChainColumn + indexRow]
+            derivative += chain[indexRow + numberChainRows * indexChainColumn]
 
         }
 

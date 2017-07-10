@@ -10,7 +10,6 @@ import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.optimization.*
 
 class CublasProjectionLayer internal constructor(
@@ -134,9 +133,13 @@ class CublasProjectionLayer internal constructor(
 
         this.weightAccumulator.accumulate(backwardWrtWeights)
 
-        TODO()
+        if (this.biasAccumulator != null) {
 
-        return DoubleMatrix(this.numberWeightRows, 1, backwardWrtInput)
+            this.biasAccumulator.accumulate(chain.entries)
+
+        }
+
+        return DoubleMatrix(this.inputDimension, 1, backwardWrtInput)
 
     }
 
