@@ -34,7 +34,6 @@ class MultiOutputEncoder internal constructor(
 
             output.setColumn(indexStep, state.entries)
 
-
         }
 
         return output

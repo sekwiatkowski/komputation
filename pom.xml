@@ -32,6 +32,19 @@
             <version>5.0.0-M4</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jcuda</groupId>
+            <artifactId>jcuda</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jcuda</groupId>
+            <artifactId>jcublas</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+
+
     </dependencies>
 
     <repositories>
