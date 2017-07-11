@@ -70,6 +70,7 @@ class CublasProjectionForwardTest {
         val actual = cublasProject(
             cublasHandle,
             inputMatrix.entries,
+            inputMatrix.entries.size,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
             weightMatrix.numberRows * weightMatrix.numberColumns,
@@ -89,6 +90,7 @@ class CublasProjectionForwardTest {
         val actual = cublasProject(
             cublasHandle,
             inputMatrix.entries,
+            inputMatrix.entries.size,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
             weightMatrix.numberRows * weightMatrix.numberColumns,

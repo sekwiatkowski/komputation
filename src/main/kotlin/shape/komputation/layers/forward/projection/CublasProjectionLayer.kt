@@ -14,6 +14,7 @@ import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.copyFromHostToDevice
 import shape.komputation.optimization.*
 
 class CublasProjectionLayer internal constructor(
@@ -54,7 +55,7 @@ class CublasProjectionLayer internal constructor(
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val result = cublasProject(cublasHandle, input.entries, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
+        val result = cublasProject(cublasHandle, input.entries, this.inputEntries.size, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
 
         cublasDestroy(cublasHandle)
 
@@ -99,27 +100,15 @@ class CublasProjectionLayer internal constructor(
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val deviceInput = Pointer()
-        cudaMalloc(deviceInput, (this.inputDimension * Sizeof.DOUBLE).toLong())
-        cublasSetVector(this.inputDimension, Sizeof.DOUBLE, Pointer.to(this.inputEntries), 1, deviceInput, 1)
+        val deviceInput = copyFromHostToDevice(this.inputEntries, this.inputDimension)
+        val deviceWeights = copyFromHostToDevice(this.weights, this.numberWeightEntries)
+        val deviceChain = copyFromHostToDevice(chain.entries, this.numberWeightRows)
 
-        val deviceWeights = Pointer()
-        cudaMalloc(deviceWeights, (this.numberWeightEntries * Sizeof.DOUBLE).toLong())
-        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceWeights, 1)
-
-        val deviceChain = Pointer()
-        cudaMalloc(deviceChain, (this.numberWeightRows * Sizeof.DOUBLE).toLong())
-        cublasSetVector(this.numberWeightRows, Sizeof.DOUBLE, Pointer.to(chain.entries), 1, deviceChain, 1)
-
-        val deviceInputResult = Pointer()
-        cudaMalloc(deviceInputResult, (this.numberWeightColumns * Sizeof.DOUBLE).toLong())
         val hostInputResult = DoubleArray(this.numberWeightColumns)
-        cublasSetVector(this.numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostInputResult), 1, deviceInputResult, 1)
+        val deviceInputResult = copyFromHostToDevice(hostInputResult, this.numberWeightColumns)
 
-        val deviceWeightResult = Pointer()
-        cudaMalloc(deviceWeightResult, (this.numberWeightEntries * Sizeof.DOUBLE).toLong())
         val hostWeightResult = DoubleArray(this.numberWeightEntries)
-        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(hostWeightResult), 1, deviceWeightResult, 1)
+        val deviceWeightResult = copyFromHostToDevice(hostWeightResult, this.numberWeightEntries)
 
         val inputStream = cudaStream_t()
         cudaStreamCreate(inputStream)

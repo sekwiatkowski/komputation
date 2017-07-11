@@ -6,26 +6,17 @@ import jcuda.jcublas.JCublas2.*
 import jcuda.runtime.JCuda.cudaFree
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
-import jcuda.runtime.JCuda.cudaMalloc
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
+import shape.komputation.matrix.copyFromHostToDevice
 
-fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
+fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, inputDimension : Int, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
+
+    val deviceWeights = copyFromHostToDevice(weights, numberWeightEntries)
+
+    val deviceInputs = copyFromHostToDevice(input, inputDimension)
 
     val hostResult = DoubleArray(numberWeightRows)
-
-    val deviceWeights = Pointer()
-    val deviceInputs = Pointer()
-    val deviceResult = Pointer()
-
-    // Allocate memory
-    cudaMalloc(deviceWeights,(numberWeightEntries * Sizeof.DOUBLE).toLong())
-    cudaMalloc(deviceInputs, (numberWeightColumns * Sizeof.DOUBLE).toLong())
-    cudaMalloc(deviceResult, (numberWeightRows * Sizeof.DOUBLE).toLong())
-
-    // Set the vectors on the device
-    cublasSetVector(numberWeightEntries, Sizeof.DOUBLE, Pointer.to(weights), 1, deviceWeights, 1)
-    cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(input), 1, deviceInputs, 1)
-    cublasSetVector(numberWeightRows, Sizeof.DOUBLE, Pointer.to(bias ?: hostResult), 1, deviceResult, 1)
+    val deviceResult = copyFromHostToDevice(bias ?: hostResult, numberWeightRows)
 
     // C = alpha * op(A) * op(B) + beta * C
     val beta = if (bias != null) 1.0 else 0.0
