@@ -7,7 +7,7 @@ import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleRowVector
 import shape.komputation.matrix.doubleScalar
 
-class CublasProjectionTest {
+class CublasProjectionBackwardTest {
 
     @Test
     fun testBackwardProjectionWrtInput1() {

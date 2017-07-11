@@ -5,6 +5,7 @@ import jcuda.Sizeof
 import jcuda.jcublas.JCublas.*
 import shape.komputation.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.functions.cublasBackwardProjectionWrtWeights
+import shape.komputation.functions.cublasProject
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
@@ -47,49 +48,9 @@ class CublasProjectionLayer internal constructor(
 
         this.inputEntries = input.entries
 
-        cublasInit()
+        val result = cublasProject(input.entries, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
 
-        val hostResult = DoubleArray(this.numberWeightRows)
-
-        val deviceWeights = Pointer()
-        val deviceInputs = Pointer()
-        val deviceResult = Pointer()
-
-        // Allocate memory
-        cublasAlloc(this.numberWeightEntries, Sizeof.DOUBLE, deviceWeights)
-        cublasAlloc(this.numberWeightColumns, Sizeof.DOUBLE, deviceInputs)
-        cublasAlloc(this.numberWeightRows, Sizeof.DOUBLE, deviceResult)
-
-        // Set the vectors on the device
-        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceWeights, 1)
-        cublasSetVector(this.numberWeightColumns, Sizeof.DOUBLE, Pointer.to(input.entries), 1, deviceInputs, 1)
-        cublasSetVector(this.numberWeightRows, Sizeof.DOUBLE, Pointer.to(this.bias ?: hostResult), 1, deviceResult, 1)
-
-        // C = alpha * op(A) * op(B) + beta * C
-        val beta = if (this.bias != null) 1.0 else 0.0
-        cublasDgemv(
-            'n', // no transposition
-            this.numberWeightRows, // number of rows of matrix A
-            this.numberWeightColumns, // number of columns of matrix A
-            1.0, // alpha
-            deviceWeights, // weight pointer
-            this.numberWeightRows, // number weight rows
-            deviceInputs, // input pointer
-            1, // storage spacing between elements of x
-            beta, // beta
-            deviceResult, // result pointer
-            this.numberWeightRows // number result rows
-        )
-
-        cublasGetVector(this.numberWeightRows, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
-
-        cublasFree(deviceWeights)
-        cublasFree(deviceInputs)
-        cublasFree(deviceResult)
-
-        cublasShutdown()
-
-        return DoubleMatrix(this.numberWeightRows, 1, hostResult)
+        return DoubleMatrix(this.numberWeightRows, 1, result)
 
     }
 

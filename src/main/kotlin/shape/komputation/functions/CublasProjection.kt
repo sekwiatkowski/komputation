@@ -2,7 +2,62 @@ package shape.komputation.functions
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.jcublas.JCublas.*
+import jcuda.jcublas.JCublas2.*
+import jcuda.runtime.JCuda.cudaFree
+import jcuda.jcublas.cublasHandle
+import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
+import jcuda.runtime.JCuda.cudaMalloc
+import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
+
+fun cublasProject(input: DoubleArray, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
+
+    val cublasHandle = cublasHandle()
+    cublasCreate(cublasHandle)
+
+    val hostResult = DoubleArray(numberWeightRows)
+
+    val deviceWeights = Pointer()
+    val deviceInputs = Pointer()
+    val deviceResult = Pointer()
+
+    // Allocate memory
+    cudaMalloc(deviceWeights,(numberWeightEntries * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceInputs, (numberWeightColumns * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceResult, (numberWeightRows * Sizeof.DOUBLE).toLong())
+
+    // Set the vectors on the device
+    cublasSetVector(numberWeightEntries, Sizeof.DOUBLE, Pointer.to(weights), 1, deviceWeights, 1)
+    cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(input), 1, deviceInputs, 1)
+    cublasSetVector(numberWeightRows, Sizeof.DOUBLE, Pointer.to(bias ?: hostResult), 1, deviceResult, 1)
+
+    // C = alpha * op(A) * op(B) + beta * C
+    val beta = if (bias != null) 1.0 else 0.0
+    cublasDgemv(
+        cublasHandle,
+        CUBLAS_OP_N, // no transposition
+        numberWeightRows, // number of rows of matrix A
+        numberWeightColumns, // number of columns of matrix A
+        Pointer.to(doubleArrayOf(1.0)), // alpha
+        deviceWeights, // weight pointer
+        numberWeightRows, // number weight rows
+        deviceInputs, // input pointer
+        1, // storage spacing between elements of x
+        Pointer.to(doubleArrayOf(beta)), // beta
+        deviceResult, // result pointer
+        numberWeightRows // number result rows
+    )
+
+    cublasGetVector(numberWeightRows, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
+
+    cudaFree(deviceWeights)
+    cudaFree(deviceInputs)
+    cudaFree(deviceResult)
+
+    cublasDestroy(cublasHandle)
+
+    return hostResult
+
+}
 
 /*
     Differentiation w.r.t input:
@@ -20,15 +75,16 @@ import jcuda.jcublas.JCublas.*
  */
 fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows: Int, numberWeightColumns: Int, numberWeightEntries: Int, hostChain: DoubleArray): DoubleArray {
 
-    cublasInit()
+    val cublasHandle = cublasHandle()
+    cublasCreate(cublasHandle)
 
     val deviceWeights = Pointer()
     val deviceChain = Pointer()
     val deviceResult = Pointer()
 
-    cublasAlloc(numberWeightEntries, Sizeof.DOUBLE, deviceWeights)
-    cublasAlloc(numberWeightRows, Sizeof.DOUBLE, deviceChain)
-    cublasAlloc(numberWeightColumns, Sizeof.DOUBLE, deviceResult)
+    cudaMalloc(deviceWeights, (numberWeightEntries * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceChain, (numberWeightRows * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceResult, (numberWeightColumns * Sizeof.DOUBLE).toLong())
 
     val hostResult = DoubleArray(numberWeightColumns)
 
@@ -37,26 +93,27 @@ fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows:
     cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
 
     cublasDgemv(
-        't', // transpose
+        cublasHandle,
+        CUBLAS_OP_T, // transpose
         numberWeightRows, // number of rows of matrix A
         numberWeightColumns, // number of columns of matrix A
-        1.0, // alpha
+        Pointer.to(doubleArrayOf(1.0)), // alpha
         deviceWeights, // weight pointer
         numberWeightRows, // number weight rows
         deviceChain, // input pointer
         1, // storage spacing between elements of x
-        0.0, // beta
+        Pointer.to(doubleArrayOf(0.0)), // beta
         deviceResult, // result pointer
         1 // specifies the storage spacing between elements of y
     )
 
     cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
-    cublasFree(deviceWeights)
-    cublasFree(deviceChain)
-    cublasFree(deviceResult)
+    cudaFree(deviceWeights)
+    cudaFree(deviceChain)
+    cudaFree(deviceResult)
 
-    cublasShutdown()
+    cublasDestroy(cublasHandle)
 
     return hostResult
 
@@ -75,15 +132,16 @@ fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows:
  */
 fun cublasBackwardProjectionWrtWeights(hostInput: DoubleArray, inputDimension : Int, hostChain: DoubleArray, chainDimension : Int, size : Int): DoubleArray {
 
-    cublasInit()
+    val cublasHandle = cublasHandle()
+    cublasCreate(cublasHandle)
 
     val deviceChain = Pointer()
     val deviceInput = Pointer()
     val deviceResult = Pointer()
 
-    cublasAlloc(chainDimension, Sizeof.DOUBLE, deviceChain)
-    cublasAlloc(inputDimension, Sizeof.DOUBLE, deviceInput)
-    cublasAlloc(size, Sizeof.DOUBLE, deviceResult)
+    cudaMalloc(deviceChain, (chainDimension * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceInput, (inputDimension * Sizeof.DOUBLE).toLong())
+    cudaMalloc(deviceResult, (size * Sizeof.DOUBLE).toLong())
 
     val hostResult = DoubleArray(size)
 
@@ -92,9 +150,10 @@ fun cublasBackwardProjectionWrtWeights(hostInput: DoubleArray, inputDimension : 
     cublasSetVector(size, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
 
     cublasDger(
+        cublasHandle,
         chainDimension, // rows of matrix A
         chainDimension, // columns of matrix A
-        1.0, // alpha
+        Pointer.to(doubleArrayOf(1.0)), // alpha
         deviceChain,
         1,
         deviceInput,
@@ -105,11 +164,11 @@ fun cublasBackwardProjectionWrtWeights(hostInput: DoubleArray, inputDimension : 
 
     cublasGetVector(size, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
-    cublasFree(deviceInput)
-    cublasFree(deviceChain)
-    cublasFree(deviceResult)
+    cudaFree(deviceInput)
+    cudaFree(deviceChain)
+    cudaFree(deviceResult)
 
-    cublasShutdown()
+    cublasDestroy(cublasHandle)
 
     return hostResult
 
