@@ -2,12 +2,10 @@ package shape.komputation.layers.forward.projection
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.jcublas.JCublas2.cublasCreate
-import jcuda.jcublas.JCublas2.cublasDestroy
-import jcuda.jcublas.JCublas2.cublasSetVector
+import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
-import jcuda.runtime.JCuda.cudaMalloc
-import jcuda.runtime.JCuda.cudaFree
+import jcuda.runtime.JCuda.*
+import jcuda.runtime.cudaStream_t
 import shape.komputation.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.functions.cublasProject
@@ -102,28 +100,55 @@ class CublasProjectionLayer internal constructor(
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        val deviceWeights = Pointer()
-        val deviceChain = Pointer()
-
-        cudaMalloc(deviceWeights, (this.numberWeightEntries * Sizeof.DOUBLE).toLong())
         cudaMalloc(deviceInput, (this.inputDimension * Sizeof.DOUBLE).toLong())
-        cudaMalloc(deviceChain, (this.numberWeightRows * Sizeof.DOUBLE).toLong())
-
-        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceWeights, 1)
-        cublasSetVector(this.numberWeightRows, Sizeof.DOUBLE, Pointer.to(chain.entries), 1, deviceChain, 1)
         cublasSetVector(this.inputDimension, Sizeof.DOUBLE, Pointer.to(this.inputEntries), 1, deviceInput, 1)
 
-        val backwardWrtInput = cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, this.numberWeightRows, this.numberWeightColumns, deviceChain)
+        val deviceWeights = Pointer()
+        cudaMalloc(deviceWeights, (this.numberWeightEntries * Sizeof.DOUBLE).toLong())
+        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(this.weights), 1, deviceWeights, 1)
 
-        val backwardWrtWeights = cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, this.chainDimension, this.numberWeightEntries)
+        val deviceChain = Pointer()
+        cudaMalloc(deviceChain, (this.numberWeightRows * Sizeof.DOUBLE).toLong())
+        cublasSetVector(this.numberWeightRows, Sizeof.DOUBLE, Pointer.to(chain.entries), 1, deviceChain, 1)
 
+        val deviceInputResult = Pointer()
+        cudaMalloc(deviceInputResult, (this.numberWeightColumns * Sizeof.DOUBLE).toLong())
+        val hostInputResult = DoubleArray(this.numberWeightColumns)
+        cublasSetVector(this.numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostInputResult), 1, deviceInputResult, 1)
+
+        val deviceWeightResult = Pointer()
+        cudaMalloc(deviceWeightResult, (this.numberWeightEntries * Sizeof.DOUBLE).toLong())
+        val hostWeightResult = DoubleArray(this.numberWeightEntries)
+        cublasSetVector(this.numberWeightEntries, Sizeof.DOUBLE, Pointer.to(hostWeightResult), 1, deviceWeightResult, 1)
+
+        val inputStream = cudaStream_t()
+        cudaStreamCreate(inputStream)
+
+        val weightStream = cudaStream_t()
+        cudaStreamCreate(weightStream)
+
+        cublasSetStream(cublasHandle, inputStream)
+        cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, this.numberWeightRows, this.numberWeightColumns, deviceChain, deviceInputResult)
+
+        cublasSetStream(cublasHandle, weightStream)
+        cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, this.chainDimension, deviceWeightResult)
+
+        cublasGetVector(this.numberWeightColumns, Sizeof.DOUBLE, deviceInputResult, 1, Pointer.to(hostInputResult), 1)
+        cublasGetVector(this.numberWeightEntries, Sizeof.DOUBLE, deviceWeightResult, 1, Pointer.to(hostWeightResult), 1)
+
+        cudaFree(deviceInput)
         cudaFree(deviceWeights)
         cudaFree(deviceChain)
-        cudaFree(deviceInput)
+
+        cudaFree(deviceInputResult)
+        cudaFree(deviceWeightResult)
+
+        cudaStreamDestroy(inputStream)
+        cudaStreamDestroy(weightStream)
 
         cublasDestroy(cublasHandle)
 
-        this.weightAccumulator.accumulate(backwardWrtWeights)
+        this.weightAccumulator.accumulate(hostWeightResult)
 
         if (this.biasAccumulator != null) {
 
@@ -131,7 +156,7 @@ class CublasProjectionLayer internal constructor(
 
         }
 
-        return DoubleMatrix(this.inputDimension, 1, backwardWrtInput)
+        return DoubleMatrix(this.inputDimension, 1, hostInputResult)
 
     }
 

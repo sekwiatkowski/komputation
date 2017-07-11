@@ -68,13 +68,7 @@ fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, numberWeightRo
                     w_12 w_22
                     w_13 w_23
  */
-fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer): DoubleArray {
-
-    val deviceResult = Pointer()
-    cudaMalloc(deviceResult, (numberWeightColumns * Sizeof.DOUBLE).toLong())
-
-    val hostResult = DoubleArray(numberWeightColumns)
-    cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer, deviceResult : Pointer) {
 
     cublasDgemv(
         cublasHandle,
@@ -91,12 +85,6 @@ fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: 
         1 // specifies the storage spacing between elements of y
     )
 
-    cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
-
-    cudaFree(deviceResult)
-
-    return hostResult
-
 }
 
 /*
@@ -110,15 +98,7 @@ fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: 
     chain_1
     chain_2
  */
-fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, chainDimension : Int, size : Int): DoubleArray {
-
-    val deviceResult = Pointer()
-
-    cudaMalloc(deviceResult, (size * Sizeof.DOUBLE).toLong())
-
-    val hostResult = DoubleArray(size)
-
-    cublasSetVector(size, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, chainDimension : Int, deviceResult: Pointer) {
 
     cublasDger(
         cublasHandle,
@@ -132,11 +112,5 @@ fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: 
         deviceResult,
         chainDimension // rows of matrix A
     )
-
-    cublasGetVector(size, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
-
-    cudaFree(deviceResult)
-
-    return hostResult
 
 }

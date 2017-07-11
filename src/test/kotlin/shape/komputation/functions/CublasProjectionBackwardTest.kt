@@ -107,28 +107,37 @@ class CublasProjectionBackwardTest {
 
     private fun checkBackwardProjectionWrtInput(weights: DoubleMatrix, chain: DoubleArray, expected: DoubleArray) {
 
-        val numberWeightEntries = weights.numberRows * weights.numberColumns
+        val numberWeightRows = weights.numberRows
+        val numberWeightColumns = weights.numberColumns
+        val numberWeightEntries = numberWeightRows * numberWeightColumns
 
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
         val deviceWeights = Pointer()
-        val deviceChain = Pointer()
-
         cudaMalloc(deviceWeights, (numberWeightEntries * Sizeof.DOUBLE).toLong())
-        cudaMalloc(deviceChain, (chain.size * Sizeof.DOUBLE).toLong())
-
         cublasSetVector(numberWeightEntries, Sizeof.DOUBLE, Pointer.to(weights.entries), 1, deviceWeights, 1)
-        cublasSetVector(weights.numberRows, Sizeof.DOUBLE, Pointer.to(chain), 1, deviceChain, 1)
 
-        val actual = cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, weights.numberRows, weights.numberColumns, deviceChain)
+        val deviceChain = Pointer()
+        cudaMalloc(deviceChain, (chain.size * Sizeof.DOUBLE).toLong())
+        cublasSetVector(numberWeightRows, Sizeof.DOUBLE, Pointer.to(chain), 1, deviceChain, 1)
+
+        val deviceResult = Pointer()
+        cudaMalloc(deviceResult, (numberWeightColumns * Sizeof.DOUBLE).toLong())
+        val hostResult = DoubleArray(numberWeightColumns)
+        cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+
+        cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
+
+        cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
         cudaFree(deviceWeights)
         cudaFree(deviceChain)
+        cudaFree(deviceResult)
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, hostResult, 0.001)
 
     }
 
@@ -143,22 +152,31 @@ class CublasProjectionBackwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        val deviceChain = Pointer()
-
         cudaMalloc(deviceInput, (inputDimension * Sizeof.DOUBLE).toLong())
-        cudaMalloc(deviceChain, (chainDimension * Sizeof.DOUBLE).toLong())
-
-        cublasSetVector(chainDimension, Sizeof.DOUBLE, Pointer.to(chain), 1, deviceChain, 1)
         cublasSetVector(inputDimension, Sizeof.DOUBLE, Pointer.to(inputEntries), 1, deviceInput, 1)
 
-        val actual = cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, chainDimension, inputDimension * chainDimension)
+        val deviceChain = Pointer()
+        cudaMalloc(deviceChain, (chainDimension * Sizeof.DOUBLE).toLong())
+        cublasSetVector(chainDimension, Sizeof.DOUBLE, Pointer.to(chain), 1, deviceChain, 1)
+
+        val resultDimension = inputDimension * chainDimension
+
+        val deviceResult = Pointer()
+        cudaMalloc(deviceResult, (resultDimension * Sizeof.DOUBLE).toLong())
+        val hostResult = DoubleArray(resultDimension)
+        cublasSetVector(resultDimension, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
+
+        cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, chainDimension, deviceResult)
+
+        cublasGetVector(resultDimension, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)
+        cudaFree(deviceResult)
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, hostResult, 0.001)
 
     }
 
