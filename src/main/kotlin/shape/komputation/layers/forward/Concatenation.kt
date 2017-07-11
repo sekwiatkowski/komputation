@@ -3,13 +3,14 @@ package shape.komputation.layers.forward
 import shape.komputation.functions.splitRows
 import shape.komputation.functions.stackRows
 import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 import shape.komputation.optimization.Optimizable
 
-class Concatenation internal constructor(name : String? = null, vararg continuations: Array<ForwardLayer>) : ForwardLayer(name), Optimizable {
+class Concatenation internal constructor(name : String? = null, vararg continuations: Array<ForwardLayer>) : ForwardLayer(name), Optimizable, Resourceful {
 
     private val networks = continuations.map { layers -> Network(inputLayer(), *layers) }
 
@@ -71,6 +72,26 @@ class Concatenation internal constructor(name : String? = null, vararg continuat
         for (network in this.networks) {
 
             network.optimize(scalingFactor)
+
+        }
+
+    }
+
+    override fun acquire() {
+
+        for (network in this.networks) {
+
+            network.acquireLayerResources()
+
+        }
+
+    }
+
+    override fun release() {
+
+        for (network in this.networks) {
+
+            network.releaseLayerResources()
 
         }
 

@@ -10,7 +10,6 @@ import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
-import shape.komputation.optimization.adaptive.adam
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*

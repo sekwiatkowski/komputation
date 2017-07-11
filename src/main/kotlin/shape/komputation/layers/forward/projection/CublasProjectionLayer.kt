@@ -12,23 +12,24 @@ import shape.komputation.functions.cublasProject
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.copyFromHostToDevice
 import shape.komputation.optimization.*
 
 class CublasProjectionLayer internal constructor(
-    name : String?,
+    name: String?,
 
-    private val weights : DoubleArray,
+    private val weights: DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
-    private val weightAccumulator : DenseAccumulator,
+    private val weightAccumulator: DenseAccumulator,
     private val weightUpdateRule: UpdateRule? = null,
 
-    private val bias : DoubleArray? = null,
+    private val bias: DoubleArray? = null,
     private val biasAccumulator: DenseAccumulator? = null,
-    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable {
+    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
@@ -48,16 +49,23 @@ class CublasProjectionLayer internal constructor(
         result dimension = number of weight rows
      */
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+    val forwardHandle = cublasHandle()
+    val inputHandle = cublasHandle()
+    val weightHandle = cublasHandle()
+
+    override fun acquire() {
+
+        cublasCreate(this.forwardHandle)
+        cublasCreate(this.inputHandle)
+        cublasCreate(this.weightHandle)
+
+    }
+
+    override fun forward(input: DoubleMatrix, isTraining: Boolean): DoubleMatrix {
 
         this.inputEntries = input.entries
 
-        val cublasHandle = cublasHandle()
-        cublasCreate(cublasHandle)
-
-        val result = cublasProject(cublasHandle, input.entries, this.inputEntries.size, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
-
-        cublasDestroy(cublasHandle)
+        val result = cublasProject(this.forwardHandle, input.entries, this.inputEntries.size, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
 
         return DoubleMatrix(this.numberWeightRows, 1, result)
 
@@ -95,10 +103,7 @@ class CublasProjectionLayer internal constructor(
 
      */
 
-    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
-
-        val cublasHandle = cublasHandle()
-        cublasCreate(cublasHandle)
+    override fun backward(chain: DoubleMatrix): DoubleMatrix {
 
         val deviceInput = copyFromHostToDevice(this.inputEntries, this.inputDimension)
         val deviceWeights = copyFromHostToDevice(this.weights, this.numberWeightEntries)
@@ -116,11 +121,11 @@ class CublasProjectionLayer internal constructor(
         val weightStream = cudaStream_t()
         cudaStreamCreate(weightStream)
 
-        cublasSetStream(cublasHandle, inputStream)
-        cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, this.numberWeightRows, this.numberWeightColumns, deviceChain, deviceInputResult)
+        cublasSetStream(this.inputHandle, inputStream)
+        cublasBackwardProjectionWrtInput(this.inputHandle, deviceWeights, this.numberWeightRows, this.numberWeightColumns, deviceChain, deviceInputResult)
 
-        cublasSetStream(cublasHandle, weightStream)
-        cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, this.chainDimension, deviceWeightResult)
+        cublasSetStream(this.weightHandle, weightStream)
+        cublasBackwardProjectionWrtWeights(this.weightHandle, deviceInput, deviceChain, this.chainDimension, deviceWeightResult)
 
         cublasGetVector(this.numberWeightColumns, Sizeof.DOUBLE, deviceInputResult, 1, Pointer.to(hostInputResult), 1)
         cublasGetVector(this.numberWeightEntries, Sizeof.DOUBLE, deviceWeightResult, 1, Pointer.to(hostWeightResult), 1)
@@ -135,8 +140,6 @@ class CublasProjectionLayer internal constructor(
         cudaStreamDestroy(inputStream)
         cudaStreamDestroy(weightStream)
 
-        cublasDestroy(cublasHandle)
-
         this.weightAccumulator.accumulate(hostWeightResult)
 
         if (this.biasAccumulator != null) {
@@ -149,7 +152,7 @@ class CublasProjectionLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor: Double) {
 
         if (this.weightUpdateRule != null) {
 
@@ -170,6 +173,14 @@ class CublasProjectionLayer internal constructor(
             biasAccumulator.reset()
 
         }
+
+    }
+
+    override fun release() {
+
+        cublasDestroy(this.forwardHandle)
+        cublasDestroy(this.inputHandle)
+        cublasDestroy(this.weightHandle)
 
     }
 

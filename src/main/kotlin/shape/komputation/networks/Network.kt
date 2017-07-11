@@ -1,6 +1,7 @@
 package shape.komputation.networks
 
 import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
@@ -12,14 +13,14 @@ val printLoss = { _ : Int, loss : Double -> println(loss) }
 
 class Network(private val entryPoint: EntryPoint, private vararg val layers: ForwardLayer) {
 
-    private val numberLayers = layers.size
-    private val optimizables = listOf(entryPoint).plus(layers).filterIsInstance(Optimizable::class.java).reversed()
+    private val numberLayers = this.layers.size
+    private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
     fun forward(input : Matrix, isTraining : Boolean) : DoubleMatrix {
 
-        var output = entryPoint.forward(input)
+        var output = this.entryPoint.forward(input)
 
-        for (layer in layers) {
+        for (layer in this.layers) {
 
             output = layer.forward(output, isTraining)
 
@@ -33,21 +34,21 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
 
         var chain = lossGradient
 
-        for(indexLayer in numberLayers - 1 downTo 0) {
+        for(indexLayer in this.numberLayers - 1 downTo 0) {
 
-            val layer = layers[indexLayer]
+            val layer = this.layers[indexLayer]
 
             chain = layer.backward(chain)
 
         }
 
-        return entryPoint.backward(chain)
+        return this.entryPoint.backward(chain)
 
     }
 
     fun optimize(scalingFactor : Double) {
 
-        for (optimizable in optimizables) {
+        for (optimizable in this.optimizables) {
 
             optimizable.optimize(scalingFactor)
 
@@ -66,6 +67,8 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
         val numberExamples = inputs.size
 
         val batches = partitionIndices(numberExamples, batchSize)
+
+        this.acquireLayerResources()
 
         repeat(numberIterations) { indexIteration ->
 
@@ -108,6 +111,8 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
 
         }
 
+        this.releaseLayerResources()
+
     }
 
     fun test(
@@ -118,6 +123,8 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
         val size = inputs.size
 
         val results = BooleanArray(size)
+
+        this.acquireLayerResources()
 
         for(index in 0..size -1) {
 
@@ -130,7 +137,37 @@ class Network(private val entryPoint: EntryPoint, private vararg val layers: For
 
         }
 
+        this.releaseLayerResources()
+
         return results
+
+    }
+
+    fun acquireLayerResources() {
+
+        for (layer in this.layers) {
+
+            if (layer is Resourceful) {
+
+                layer.acquire()
+
+            }
+
+        }
+
+    }
+
+    fun releaseLayerResources() {
+
+        for (layer in this.layers) {
+
+            if (layer is Resourceful) {
+
+                layer.release()
+
+            }
+
+        }
 
     }
 
