@@ -9,10 +9,7 @@ import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.runtime.JCuda.cudaMalloc
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
 
-fun cublasProject(input: DoubleArray, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
-
-    val cublasHandle = cublasHandle()
-    cublasCreate(cublasHandle)
+fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
 
     val hostResult = DoubleArray(numberWeightRows)
 
@@ -53,8 +50,6 @@ fun cublasProject(input: DoubleArray, numberWeightRows : Int, numberWeightColumn
     cudaFree(deviceInputs)
     cudaFree(deviceResult)
 
-    cublasDestroy(cublasHandle)
-
     return hostResult
 
 }
@@ -73,23 +68,12 @@ fun cublasProject(input: DoubleArray, numberWeightRows : Int, numberWeightColumn
                     w_12 w_22
                     w_13 w_23
  */
-fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows: Int, numberWeightColumns: Int, numberWeightEntries: Int, hostChain: DoubleArray): DoubleArray {
+fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer): DoubleArray {
 
-    val cublasHandle = cublasHandle()
-    cublasCreate(cublasHandle)
-
-    val deviceWeights = Pointer()
-    val deviceChain = Pointer()
     val deviceResult = Pointer()
-
-    cudaMalloc(deviceWeights, (numberWeightEntries * Sizeof.DOUBLE).toLong())
-    cudaMalloc(deviceChain, (numberWeightRows * Sizeof.DOUBLE).toLong())
     cudaMalloc(deviceResult, (numberWeightColumns * Sizeof.DOUBLE).toLong())
 
     val hostResult = DoubleArray(numberWeightColumns)
-
-    cublasSetVector(numberWeightEntries, Sizeof.DOUBLE, Pointer.to(hostWeights), 1, deviceWeights, 1)
-    cublasSetVector(numberWeightRows, Sizeof.DOUBLE, Pointer.to(hostChain), 1, deviceChain, 1)
     cublasSetVector(numberWeightColumns, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
 
     cublasDgemv(
@@ -109,11 +93,7 @@ fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows:
 
     cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
-    cudaFree(deviceWeights)
-    cudaFree(deviceChain)
     cudaFree(deviceResult)
-
-    cublasDestroy(cublasHandle)
 
     return hostResult
 
@@ -130,23 +110,14 @@ fun cublasBackwardProjectionWrtInput(hostWeights: DoubleArray, numberWeightRows:
     chain_1
     chain_2
  */
-fun cublasBackwardProjectionWrtWeights(hostInput: DoubleArray, inputDimension : Int, hostChain: DoubleArray, chainDimension : Int, size : Int): DoubleArray {
+fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, chainDimension : Int, size : Int): DoubleArray {
 
-    val cublasHandle = cublasHandle()
-    cublasCreate(cublasHandle)
-
-    val deviceChain = Pointer()
-    val deviceInput = Pointer()
     val deviceResult = Pointer()
 
-    cudaMalloc(deviceChain, (chainDimension * Sizeof.DOUBLE).toLong())
-    cudaMalloc(deviceInput, (inputDimension * Sizeof.DOUBLE).toLong())
     cudaMalloc(deviceResult, (size * Sizeof.DOUBLE).toLong())
 
     val hostResult = DoubleArray(size)
 
-    cublasSetVector(chainDimension, Sizeof.DOUBLE, Pointer.to(hostChain), 1, deviceChain, 1)
-    cublasSetVector(inputDimension, Sizeof.DOUBLE, Pointer.to(hostInput), 1, deviceInput, 1)
     cublasSetVector(size, Sizeof.DOUBLE, Pointer.to(hostResult), 1, deviceResult, 1)
 
     cublasDger(
@@ -164,11 +135,7 @@ fun cublasBackwardProjectionWrtWeights(hostInput: DoubleArray, inputDimension : 
 
     cublasGetVector(size, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 
-    cudaFree(deviceInput)
-    cudaFree(deviceChain)
     cudaFree(deviceResult)
-
-    cublasDestroy(cublasHandle)
 
     return hostResult
 

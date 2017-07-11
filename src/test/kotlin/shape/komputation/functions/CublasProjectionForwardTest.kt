@@ -1,5 +1,8 @@
 package shape.komputation.functions
 
+import jcuda.jcublas.JCublas2.cublasCreate
+import jcuda.jcublas.JCublas2.cublasDestroy
+import jcuda.jcublas.cublasHandle
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.matrix.DoubleMatrix
@@ -61,12 +64,18 @@ class CublasProjectionForwardTest {
 
     private fun check(weightMatrix : DoubleMatrix, inputMatrix: DoubleMatrix, expected : DoubleArray) {
 
+        val cublasHandle = cublasHandle()
+        cublasCreate(cublasHandle)
+
         val actual = cublasProject(
+            cublasHandle,
             inputMatrix.entries,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
             weightMatrix.numberRows * weightMatrix.numberColumns,
             weightMatrix.entries)
+
+        cublasDestroy(cublasHandle)
 
         assertArrayEquals(expected, actual, 0.001)
 
@@ -74,13 +83,19 @@ class CublasProjectionForwardTest {
 
     private fun checkWithBias(weightMatrix : DoubleMatrix, bias : DoubleArray, inputMatrix: DoubleMatrix, expected : DoubleArray) {
 
+        val cublasHandle = cublasHandle()
+        cublasCreate(cublasHandle)
+
         val actual = cublasProject(
+            cublasHandle,
             inputMatrix.entries,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
             weightMatrix.numberRows * weightMatrix.numberColumns,
             weightMatrix.entries,
             bias)
+
+        cublasDestroy(cublasHandle)
 
         assertArrayEquals(expected, actual, 0.001)
 
