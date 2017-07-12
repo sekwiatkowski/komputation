@@ -3,9 +3,12 @@ package shape.komputation.functions
 import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
+import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.allocateDeviceMemory
+import shape.komputation.matrix.copyFromHostToDevice
 import shape.komputation.matrix.doubleScalar
 
 class CublasProjectionForwardTest {
@@ -67,14 +70,21 @@ class CublasProjectionForwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
+        val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
+        val deviceResult = allocateDeviceMemory(weightMatrix.numberRows)
+        val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
+
         val actual = cublasProject(
             cublasHandle,
-            inputMatrix.entries,
-            inputMatrix.entries.size,
+            deviceInput,
+            deviceResult,
+            deviceWeights,
             weightMatrix.numberRows,
-            weightMatrix.numberColumns,
-            weightMatrix.numberRows * weightMatrix.numberColumns,
-            weightMatrix.entries)
+            weightMatrix.numberColumns)
+
+        cudaFree(deviceInput)
+        cudaFree(deviceResult)
+        cudaFree(deviceWeights)
 
         cublasDestroy(cublasHandle)
 
@@ -87,15 +97,25 @@ class CublasProjectionForwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
+        val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
+        val deviceResult = allocateDeviceMemory(weightMatrix.numberRows)
+        val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
+        val deviceBias = copyFromHostToDevice(bias, bias.size)
+
         val actual = cublasProject(
             cublasHandle,
-            inputMatrix.entries,
-            inputMatrix.entries.size,
+            deviceInput,
+            deviceResult,
+            deviceWeights,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
-            weightMatrix.numberRows * weightMatrix.numberColumns,
-            weightMatrix.entries,
-            bias)
+            deviceBias,
+            bias.size)
+
+        cudaFree(deviceInput)
+        cudaFree(deviceResult)
+        cudaFree(deviceWeights)
+        cudaFree(deviceBias)
 
         cublasDestroy(cublasHandle)
 

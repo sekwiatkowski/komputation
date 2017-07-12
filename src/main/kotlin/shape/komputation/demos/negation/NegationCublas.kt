@@ -7,7 +7,7 @@ import shape.komputation.layers.forward.projection.cublasProjectionLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
-import shape.komputation.optimization.stochasticGradientDescent
+import shape.komputation.optimization.cublasStochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialize = heInitialization(random)
 
-    val optimizationStrategy = stochasticGradientDescent(0.01)
+    val optimizationStrategy = cublasStochasticGradientDescent(0.01)
 
     val projectionLayer = cublasProjectionLayer(1, 1, initialize, initialize, optimizationStrategy)
     val sigmoidLayer = sigmoidLayer()

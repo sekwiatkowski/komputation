@@ -1,40 +1,42 @@
 package shape.komputation.layers.forward.projection
 
 import jcuda.Pointer
-import jcuda.Sizeof
-import jcuda.jcublas.JCublas2.*
+import jcuda.jcublas.JCublas2.cublasCreate
+import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
-import jcuda.runtime.JCuda.*
-import jcuda.runtime.cudaStream_t
+import jcuda.runtime.JCuda.cudaFree
+import shape.komputation.functions.cublasBackwardProjectionWrtBias
 import shape.komputation.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.functions.cublasProject
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.ForwardLayer
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.copyFromHostToDevice
-import shape.komputation.optimization.*
+import shape.komputation.layers.Resourceful
+import shape.komputation.matrix.*
+import shape.komputation.optimization.CublasOptimizationStrategy
+import shape.komputation.optimization.CublasUpdateRule
+import shape.komputation.optimization.Optimizable
 
 class CublasProjectionLayer internal constructor(
     name: String?,
-
-    private val weights: DoubleArray,
+    private val cublasHandle: cublasHandle,
+    private val initialWeights: DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
-    private val weightAccumulator: DenseAccumulator,
-    private val weightUpdateRule: UpdateRule? = null,
+    private val weightUpdateRule: CublasUpdateRule? = null,
 
-    private val bias: DoubleArray? = null,
-    private val biasAccumulator: DenseAccumulator? = null,
-    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable, Resourceful {
+    private val initialBias: DoubleArray? = null,
+    private val biasUpdateRule: CublasUpdateRule? = null) : ForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
+    private val numberBiasEntries = if(this.initialBias != null) this.initialBias.size else 0
+
     private val inputDimension = this.numberWeightColumns
-    private val chainDimension = this.numberWeightRows
+    private val resultDimension = this.numberWeightRows
+    private val chainDimension = resultDimension
 
     private var inputEntries = DoubleArray(inputDimension)
 
@@ -47,17 +49,39 @@ class CublasProjectionLayer internal constructor(
 
         input dimension = number of weight columns
         result dimension = number of weight rows
-     */
+    */
 
-    val forwardHandle = cublasHandle()
-    val inputHandle = cublasHandle()
-    val weightHandle = cublasHandle()
+    var deviceInput = Pointer()
+    var deviceResult = Pointer()
+    var deviceChain = Pointer()
+
+    var deviceWeights = Pointer()
+    var deviceWeightGradientAccumulator = Pointer()
+
+    var deviceBias = Pointer()
+    var deviceBiasGradientAccumulator = Pointer()
+
+    var deviceBackwardWrtInput = Pointer()
 
     override fun acquire() {
 
-        cublasCreate(this.forwardHandle)
-        cublasCreate(this.inputHandle)
-        cublasCreate(this.weightHandle)
+        cublasCreate(this.cublasHandle)
+
+        this.deviceInput = allocateDeviceMemory(this.inputDimension)
+        this.deviceResult = allocateDeviceMemory(this.numberWeightRows)
+        this.deviceChain = allocateDeviceMemory(this.chainDimension)
+
+        this.deviceBackwardWrtInput = allocateDeviceMemory(this.inputDimension)
+        this.deviceWeightGradientAccumulator = allocateDeviceMemory(this.numberWeightEntries)
+        this.deviceBiasGradientAccumulator = allocateDeviceMemory(this.numberBiasEntries)
+
+        this.deviceWeights = copyFromHostToDevice(this.initialWeights, this.numberWeightEntries)
+
+        if(this.initialBias != null) {
+
+            this.deviceBias = copyFromHostToDevice(this.initialBias, this.numberBiasEntries)
+
+        }
 
     }
 
@@ -65,9 +89,11 @@ class CublasProjectionLayer internal constructor(
 
         this.inputEntries = input.entries
 
-        val result = cublasProject(this.forwardHandle, input.entries, this.inputEntries.size, this.numberWeightRows, this.numberWeightColumns, this.numberWeightEntries, this.weights, this.bias)
+        setVector(this.deviceInput, this.inputEntries, this.inputDimension)
 
-        return DoubleMatrix(this.numberWeightRows, 1, result)
+        val result = cublasProject(this.cublasHandle, this.deviceInput, this.deviceResult, this.deviceWeights, this.numberWeightRows, this.numberWeightColumns, this.deviceBias, this.numberBiasEntries)
+
+        return DoubleMatrix(resultDimension, 1, result)
 
     }
 
@@ -105,48 +131,18 @@ class CublasProjectionLayer internal constructor(
 
     override fun backward(chain: DoubleMatrix): DoubleMatrix {
 
-        val deviceInput = copyFromHostToDevice(this.inputEntries, this.inputDimension)
-        val deviceWeights = copyFromHostToDevice(this.weights, this.numberWeightEntries)
-        val deviceChain = copyFromHostToDevice(chain.entries, this.numberWeightRows)
+        setVector(this.deviceChain, chain.entries, chainDimension)
 
-        val hostInputResult = DoubleArray(this.numberWeightColumns)
-        val deviceInputResult = copyFromHostToDevice(hostInputResult, this.numberWeightColumns)
+        cublasBackwardProjectionWrtInput(this.cublasHandle, this.deviceWeights, this.numberWeightRows, this.numberWeightColumns, this.deviceChain, this.deviceBackwardWrtInput)
+        cublasBackwardProjectionWrtWeights(this.cublasHandle, this.deviceInput, this.deviceChain, this.deviceWeightGradientAccumulator, this.numberWeightRows, this.numberWeightColumns)
 
-        val hostWeightResult = DoubleArray(this.numberWeightEntries)
-        val deviceWeightResult = copyFromHostToDevice(hostWeightResult, this.numberWeightEntries)
+        if (this.initialBias != null) {
 
-        val inputStream = cudaStream_t()
-        cudaStreamCreate(inputStream)
-
-        val weightStream = cudaStream_t()
-        cudaStreamCreate(weightStream)
-
-        cublasSetStream(this.inputHandle, inputStream)
-        cublasBackwardProjectionWrtInput(this.inputHandle, deviceWeights, this.numberWeightRows, this.numberWeightColumns, deviceChain, deviceInputResult)
-
-        cublasSetStream(this.weightHandle, weightStream)
-        cublasBackwardProjectionWrtWeights(this.weightHandle, deviceInput, deviceChain, this.chainDimension, deviceWeightResult)
-
-        cublasGetVector(this.numberWeightColumns, Sizeof.DOUBLE, deviceInputResult, 1, Pointer.to(hostInputResult), 1)
-        cublasGetVector(this.numberWeightEntries, Sizeof.DOUBLE, deviceWeightResult, 1, Pointer.to(hostWeightResult), 1)
-
-        cudaFree(deviceInput)
-        cudaFree(deviceWeights)
-        cudaFree(deviceChain)
-
-        cudaFree(deviceInputResult)
-        cudaFree(deviceWeightResult)
-
-        cudaStreamDestroy(inputStream)
-        cudaStreamDestroy(weightStream)
-
-        this.weightAccumulator.accumulate(hostWeightResult)
-
-        if (this.biasAccumulator != null) {
-
-            this.biasAccumulator.accumulate(chain.entries)
+            cublasBackwardProjectionWrtBias(this.cublasHandle, this.deviceChain, this.chainDimension, this.deviceBiasGradientAccumulator)
 
         }
+
+        val hostInputResult = getVector(this.deviceBackwardWrtInput, this.inputDimension)
 
         return DoubleMatrix(this.inputDimension, 1, hostInputResult)
 
@@ -156,21 +152,15 @@ class CublasProjectionLayer internal constructor(
 
         if (this.weightUpdateRule != null) {
 
-            val weightAccumulator = this.weightAccumulator
-
-            updateDensely(this.weights, weightAccumulator.getAccumulation(), scalingFactor, this.weightUpdateRule)
-
-            weightAccumulator.reset()
+            this.weightUpdateRule.update(this.deviceWeights, scalingFactor, this.deviceWeightGradientAccumulator)
+            setVectorToZero(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
 
         }
 
-        if (this.bias != null && this.biasUpdateRule != null) {
+        if (this.biasUpdateRule != null) {
 
-            val biasAccumulator = this.biasAccumulator!!
-
-            updateDensely(this.bias, biasAccumulator.getAccumulation(), scalingFactor, this.biasUpdateRule)
-
-            biasAccumulator.reset()
+            this.biasUpdateRule.update(this.deviceBias, scalingFactor, this.deviceBiasGradientAccumulator)
+            setVectorToZero(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
         }
 
@@ -178,9 +168,23 @@ class CublasProjectionLayer internal constructor(
 
     override fun release() {
 
-        cublasDestroy(this.forwardHandle)
-        cublasDestroy(this.inputHandle)
-        cublasDestroy(this.weightHandle)
+        cudaFree(this.deviceInput)
+        cudaFree(this.deviceResult)
+        cudaFree(this.deviceChain)
+
+        cudaFree(this.deviceWeights)
+        cudaFree(this.deviceWeightGradientAccumulator)
+
+        if(this.initialBias != null) {
+
+            cudaFree(this.deviceBias)
+            cudaFree(this.deviceBiasGradientAccumulator)
+
+        }
+
+        cudaFree(this.deviceBackwardWrtInput)
+
+        cublasDestroy(this.cublasHandle)
 
     }
 
@@ -191,7 +195,7 @@ fun cublasProjectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    optimizationStrategy : CublasOptimizationStrategy? = null) =
 
     cublasProjectionLayer(
         null,
@@ -209,35 +213,32 @@ fun cublasProjectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null): CublasProjectionLayer {
+    optimizationStrategy : CublasOptimizationStrategy? = null): CublasProjectionLayer {
+
+    val cublasHandle = cublasHandle()
 
     val numberWeightRows = outputDimension
     val numberWeightColumns = inputDimension
 
     val weights = initializeWeights(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
-    val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
+    val weightUpdateRule = optimizationStrategy?.invoke(cublasHandle, numberWeightRows, numberWeightColumns)
 
     val bias : DoubleArray?
-    val biasUpdateRule: UpdateRule?
-    val biasAccumulator: DenseAccumulator?
+    val biasUpdateRule: CublasUpdateRule?
 
     if (biasInitializationStrategy != null) {
 
         bias = initializeColumnVector(biasInitializationStrategy, outputDimension)
-        biasUpdateRule = optimizationStrategy?.invoke(bias.size, 1)
-        biasAccumulator = DenseAccumulator(bias.size)
+        biasUpdateRule = optimizationStrategy?.invoke(cublasHandle, bias.size, 1)
 
     }
     else {
 
         bias = null
         biasUpdateRule = null
-        biasAccumulator = null
 
     }
 
-    val weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
-
-    return CublasProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasAccumulator, biasUpdateRule)
+    return CublasProjectionLayer(name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
 
 }

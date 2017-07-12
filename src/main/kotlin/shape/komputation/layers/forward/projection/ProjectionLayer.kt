@@ -29,6 +29,7 @@ class ProjectionLayer internal constructor(
     private var numberInputColumns = -1
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
+    private val numberBiasEntries = if(this.bias == null) -1 else this.bias.size
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 

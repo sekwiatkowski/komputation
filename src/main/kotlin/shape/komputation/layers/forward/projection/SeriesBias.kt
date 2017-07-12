@@ -8,7 +8,6 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
-import shape.komputation.optimization.updateDensely
 
 class SeriesBias internal constructor(
     private val name : String?,
@@ -47,7 +46,7 @@ class SeriesBias internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.bias, batchAccumulator.getAccumulation(), scalingFactor, updateRule)
+            this.updateRule.updateDensely(this.bias, batchAccumulator.getAccumulation(), this.numberBiasEntries)
 
         }
 

@@ -9,7 +9,6 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
-import shape.komputation.optimization.updateDensely
 
 class SeriesWeighting internal constructor(
     private val name : String?,
@@ -46,7 +45,7 @@ class SeriesWeighting internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
+            this.updateRule.updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries)
 
         }
 

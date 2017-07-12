@@ -5,7 +5,6 @@ import jcuda.Sizeof
 import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
-import jcuda.runtime.JCuda.cudaMalloc
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.matrix.*
@@ -151,7 +150,7 @@ class CublasProjectionBackwardTest {
         val hostResult = DoubleArray(resultDimension)
         val deviceResult = copyFromHostToDevice(hostResult, resultDimension)
 
-        cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, chainDimension, deviceResult)
+        cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, deviceResult, chainDimension, inputDimension)
 
         cublasGetVector(resultDimension, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
 

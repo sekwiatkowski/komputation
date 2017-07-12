@@ -3,23 +3,20 @@ package shape.komputation.functions
 import jcuda.Pointer
 import jcuda.Sizeof
 import jcuda.jcublas.JCublas2.*
-import jcuda.runtime.JCuda.cudaFree
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
-import shape.komputation.matrix.copyFromHostToDevice
 
-fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, inputDimension : Int, numberWeightRows : Int, numberWeightColumns: Int, numberWeightEntries: Int, weights : DoubleArray, bias : DoubleArray? = null): DoubleArray {
+fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult : Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer? = null, biasDimension : Int = 0): DoubleArray {
 
-    val deviceWeights = copyFromHostToDevice(weights, numberWeightEntries)
+    if (deviceBias != null) {
 
-    val deviceInputs = copyFromHostToDevice(input, inputDimension)
+        cublasDcopy(cublasHandle, biasDimension, deviceBias, 1, deviceResult, 1)
 
-    val hostResult = DoubleArray(numberWeightRows)
-    val deviceResult = copyFromHostToDevice(bias ?: hostResult, numberWeightRows)
+    }
 
     // C = alpha * op(A) * op(B) + beta * C
-    val beta = if (bias != null) 1.0 else 0.0
+    val beta = if (deviceBias != null) 1.0 else 0.0
     cublasDgemv(
         cublasHandle,
         CUBLAS_OP_N, // no transposition
@@ -28,18 +25,15 @@ fun cublasProject(cublasHandle: cublasHandle, input: DoubleArray, inputDimension
         Pointer.to(doubleArrayOf(1.0)), // alpha
         deviceWeights, // weight pointer
         numberWeightRows, // number weight rows
-        deviceInputs, // input pointer
+        deviceInput, // input pointer
         1, // storage spacing between elements of x
         Pointer.to(doubleArrayOf(beta)), // beta
         deviceResult, // result pointer
         numberWeightRows // number result rows
     )
 
+    val hostResult = DoubleArray(numberWeightRows)
     cublasGetVector(numberWeightRows, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
-
-    cudaFree(deviceWeights)
-    cudaFree(deviceInputs)
-    cudaFree(deviceResult)
 
     return hostResult
 
@@ -89,19 +83,40 @@ fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: 
     chain_1
     chain_2
  */
-fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, chainDimension : Int, deviceResult: Pointer) {
+fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, deviceAccumulator: Pointer, numberWeightRows: Int, numberWeightColumns : Int) {
 
     cublasDger(
         cublasHandle,
-        chainDimension, // rows of matrix A
-        chainDimension, // columns of matrix A
+        numberWeightRows, // rows of matrix A
+        numberWeightColumns, // columns of matrix A
         Pointer.to(doubleArrayOf(1.0)), // alpha
         deviceChain,
         1,
         deviceInput,
         1,
-        deviceResult,
-        chainDimension // rows of matrix A
+        deviceAccumulator,
+        numberWeightRows // rows of matrix A
     )
+
+}
+
+fun cublasBackwardProjectionWrtBias(cublasHandle: cublasHandle, deviceChain: Pointer, chainDimension : Int, deviceAccumulator: Pointer) {
+
+    cublasDgeam(
+        cublasHandle,
+        CUBLAS_OP_N,
+        CUBLAS_OP_N,
+        chainDimension,
+        1,
+        Pointer.to(doubleArrayOf(1.0)),
+        deviceChain,
+        chainDimension,
+        Pointer.to(doubleArrayOf(1.0)),
+        deviceAccumulator,
+        chainDimension,
+        deviceAccumulator,
+        chainDimension
+    )
+
 
 }

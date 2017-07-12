@@ -32,11 +32,13 @@ class Adam(
 
         for (index in 0..gradientSize - 1) {
 
-            val updatedFirstMomentEstimate = this.firstMomentDecay * this.firstMomentEstimate[index] + this.oneMinusFirstMomentDecay * gradient[index]
+            val derivative = gradient[index]
+
+            val updatedFirstMomentEstimate = this.firstMomentDecay * this.firstMomentEstimate[index] + this.oneMinusFirstMomentDecay * derivative
             this.firstMomentEstimate[index] = updatedFirstMomentEstimate
             val correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0 - Math.pow(this.firstMomentDecay, this.step))
 
-            val updatedSecondMomentEstimate = this.secondMomentDecay * this.secondMomentEstimate[index] + this.oneMinusSecondMomentDecay * gradient[index] * gradient[index]
+            val updatedSecondMomentEstimate = this.secondMomentDecay * this.secondMomentEstimate[index] + this.oneMinusSecondMomentDecay * derivative * derivative
             this.secondMomentEstimate[index] = updatedSecondMomentEstimate
             val correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0 - Math.pow(this.secondMomentDecay, this.step))
 
