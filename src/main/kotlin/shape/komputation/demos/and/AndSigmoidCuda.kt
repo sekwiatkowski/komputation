@@ -2,7 +2,7 @@ package shape.komputation.demos.and
 
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.layers.forward.activation.sigmoidLayer
+import shape.komputation.layers.forward.activation.cudaSigmoidLayer
 import shape.komputation.layers.forward.projection.cublasProjectionLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.Matrix
@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(),
         projectionLayer,
-        sigmoidLayer()
+        cudaSigmoidLayer(1, 1, 1)
     )
 
     network.train(inputs, targets, squaredLoss(), 10_000, 1, printLoss)

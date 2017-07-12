@@ -6,7 +6,7 @@ __device__ double sigmoid (double x)
 }
 
 extern "C"
-__global__ void sigmoid_kernel (int length, double *source, double *destination)
+__global__ void sigmoidKernel (int length, double *source, double *destination)
 {
 
     int threadId = blockDim.x * blockIdx.x + threadIdx.x;
