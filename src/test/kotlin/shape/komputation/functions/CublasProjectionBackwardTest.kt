@@ -7,7 +7,11 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.matrix.*
+import shape.komputation.cuda.copyFromHostToDevice
+import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.doubleScalar
 
 class CublasProjectionBackwardTest {
 

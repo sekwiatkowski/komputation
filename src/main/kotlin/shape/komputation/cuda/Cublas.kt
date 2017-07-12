@@ -1,4 +1,4 @@
-package shape.komputation.matrix
+package shape.komputation.cuda
 
 import jcuda.Pointer
 import jcuda.Sizeof
@@ -8,7 +8,9 @@ import jcuda.runtime.JCuda.cudaMalloc
 
 fun copyFromHostToDevice(data: DoubleArray, size: Int): Pointer {
 
-    val pointer = allocateDeviceMemory(size)
+    val pointer = Pointer()
+
+    allocateDeviceMemory(pointer, size)
 
     setVector(pointer, data, size)
 
@@ -16,12 +18,9 @@ fun copyFromHostToDevice(data: DoubleArray, size: Int): Pointer {
 
 }
 
-fun allocateDeviceMemory(size: Int): Pointer {
+fun allocateDeviceMemory(pointer: Pointer, size : Int) {
 
-    val pointer = Pointer()
     cudaMalloc(pointer, (size * Sizeof.DOUBLE).toLong())
-
-    return pointer
 
 }
 
@@ -36,7 +35,6 @@ fun setVectorToZero(devicePointer: Pointer, size: Int) {
     setVector(devicePointer, DoubleArray(size), size)
 
 }
-
 
 fun getVector(devicePointer: Pointer, size: Int): DoubleArray {
 

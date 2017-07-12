@@ -1,9 +1,8 @@
-package shape.komputation.layers.forwarding.activation
+package shape.komputation.layers.forward.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.functions.activation.tanh
-import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.matrix.doubleColumnVector
 
 class TanhLayerTest {

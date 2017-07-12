@@ -7,7 +7,7 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.matrix.copyFromHostToDevice
+import shape.komputation.cuda.copyFromHostToDevice
 
 class CublasStochasticGradientDescentTest {
 

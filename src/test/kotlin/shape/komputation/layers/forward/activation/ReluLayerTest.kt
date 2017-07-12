@@ -1,8 +1,7 @@
-package shape.komputation.layers.forwarding.activation
+package shape.komputation.layers.forward.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.matrix.doubleColumnVector
 
 class ReluLayerTest {

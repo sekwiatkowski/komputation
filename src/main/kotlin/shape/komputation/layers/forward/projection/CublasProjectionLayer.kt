@@ -5,6 +5,7 @@ import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
+import shape.komputation.cuda.*
 import shape.komputation.functions.cublasBackwardProjectionWrtBias
 import shape.komputation.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.functions.cublasBackwardProjectionWrtWeights
@@ -14,7 +15,7 @@ import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.ForwardLayer
 import shape.komputation.layers.Resourceful
-import shape.komputation.matrix.*
+import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.CublasOptimizationStrategy
 import shape.komputation.optimization.CublasUpdateRule
 import shape.komputation.optimization.Optimizable
@@ -67,13 +68,13 @@ class CublasProjectionLayer internal constructor(
 
         cublasCreate(this.cublasHandle)
 
-        this.deviceInput = allocateDeviceMemory(this.inputDimension)
-        this.deviceResult = allocateDeviceMemory(this.numberWeightRows)
-        this.deviceChain = allocateDeviceMemory(this.chainDimension)
+        allocateDeviceMemory(this.deviceInput, this.inputDimension)
+        allocateDeviceMemory(this.deviceResult, this.numberWeightRows)
+        allocateDeviceMemory(this.deviceChain, this.chainDimension)
 
-        this.deviceBackwardWrtInput = allocateDeviceMemory(this.inputDimension)
-        this.deviceWeightGradientAccumulator = allocateDeviceMemory(this.numberWeightEntries)
-        this.deviceBiasGradientAccumulator = allocateDeviceMemory(this.numberBiasEntries)
+        allocateDeviceMemory(this.deviceBackwardWrtInput, this.inputDimension)
+        allocateDeviceMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
+        allocateDeviceMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
         this.deviceWeights = copyFromHostToDevice(this.initialWeights, this.numberWeightEntries)
 
