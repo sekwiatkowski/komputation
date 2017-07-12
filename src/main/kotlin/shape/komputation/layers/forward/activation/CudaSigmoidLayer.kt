@@ -11,13 +11,16 @@ import java.io.File
 
 class CudaSigmoidLayer internal constructor(
     name : String? = null,
-    private val inputDimension : Int,
-    private val numberBlocks : Int,
-    private val numberThreadsPerBlock : Int) : ActivationLayer(name), Resourceful {
+    private val computeCapabilities: Pair<Int, Int>,
+    maximumThreadsPerBlock: Int,
+    private val inputDimension : Int) : ActivationLayer(name), Resourceful {
 
     private val resultDimension = inputDimension
 
     private val deviceInput = Pointer()
+
+    private val numberThreads = Math.min(this.inputDimension, maximumThreadsPerBlock)
+    private val numberBlocks = Math.ceil(inputDimension.toDouble() / numberThreads.toDouble()).toInt()
 
     private val deviceForwardResult = Pointer()
 
@@ -67,7 +70,7 @@ class CudaSigmoidLayer internal constructor(
 
         val ptxPath = ptxFile.path
 
-        compileKernel(cuFile.path, ptxPath)
+        compileKernel(cuFile.path, ptxPath, this.computeCapabilities)
 
         loadKernel(ptxPath, kernel, kernelName)
 
@@ -79,7 +82,7 @@ class CudaSigmoidLayer internal constructor(
 
         setVector(this.deviceInput, input.entries, this.inputDimension)
 
-        launchKernel(this.forwardFunction, this.forwardParameters, this.numberBlocks, this.numberThreadsPerBlock)
+        launchKernel(this.forwardFunction, this.forwardParameters, this.numberBlocks, this.numberThreads)
 
         cuCtxSynchronize()
 
@@ -93,7 +96,7 @@ class CudaSigmoidLayer internal constructor(
 
         setVector(this.deviceChain, chain.entries, this.inputDimension)
 
-        launchKernel(this.backwardFunction, this.backwardParameters, this.numberBlocks, this.numberThreadsPerBlock)
+        launchKernel(this.backwardFunction, this.backwardParameters, this.numberBlocks, this.numberThreads)
 
         cuCtxSynchronize()
 
@@ -117,17 +120,15 @@ class CudaSigmoidLayer internal constructor(
 
 }
 fun cudaSigmoidLayer(
-    inputDimension : Int,
-    numberBlocks : Int,
-    numberThreadsPerBlock : Int) =
+    environment: CudaEnvironment,
+    inputDimension : Int) =
 
-    cudaSigmoidLayer(null, inputDimension, numberBlocks, numberThreadsPerBlock)
+    cudaSigmoidLayer(null, environment, inputDimension)
 
 
 fun cudaSigmoidLayer(
     name : String? = null,
-    inputDimension : Int,
-    numberBlocks : Int,
-    numberThreadsPerBlock : Int) =
+    environment: CudaEnvironment,
+    inputDimension : Int) =
 
-    CudaSigmoidLayer(name, inputDimension, numberBlocks, numberThreadsPerBlock)
+    CudaSigmoidLayer(name, environment.computeCapabilities, environment.numberThreadsPerBlock, inputDimension)

@@ -4,9 +4,11 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 
-fun compileKernel(cuFile: String, ptxFile: String) {
+fun compileKernel(cuFile: String, ptxFile: String, computeCapability : Pair<Int, Int>) {
 
-    val command = "nvcc -m64 -ptx $cuFile -o $ptxFile"
+    val (major, minor) = computeCapability
+
+    val command = "nvcc -m64 -arch=compute_$major$minor -ptx $cuFile -o $ptxFile"
 
     val process = Runtime.getRuntime().exec(command)
 

@@ -2,7 +2,7 @@ package shape.komputation.layers.forward.activation
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.cuda.initializeCuda
+import shape.komputation.cuda.setUpCudaEnvironment
 import shape.komputation.functions.activation.sigmoid
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleRowVector
@@ -13,9 +13,9 @@ class CudaSigmoidLayerTest {
     @Test
     fun testForwardOneDimension() {
 
-        initializeCuda()
+        val environment = setUpCudaEnvironment()
 
-        val layer = cudaSigmoidLayer(1, 1, 1)
+        val layer = cudaSigmoidLayer(environment, 1)
         layer.acquire()
 
         val actual = layer.forward(doubleScalar(0.0), false)
@@ -30,9 +30,9 @@ class CudaSigmoidLayerTest {
     @Test
     fun testForwardTwoDimensions() {
 
-        initializeCuda()
+        val environment = setUpCudaEnvironment()
 
-        val layer = cudaSigmoidLayer(2, 1, 2)
+        val layer = cudaSigmoidLayer(environment, 2)
         layer.acquire()
 
         val actual = layer.forward(doubleRowVector(0.0, 1.0), false)
@@ -47,9 +47,9 @@ class CudaSigmoidLayerTest {
     @Test
     fun testBackwardOneDimension() {
 
-        initializeCuda()
+        val environment = setUpCudaEnvironment()
 
-        val layer = cudaSigmoidLayer(1, 1, 1)
+        val layer = cudaSigmoidLayer(environment, 1)
         layer.acquire()
 
         layer.forward(doubleScalar(0.0), false)
@@ -66,9 +66,9 @@ class CudaSigmoidLayerTest {
     @Test
     fun testBackwardTwoDimensions() {
 
-        initializeCuda()
+        val environment = setUpCudaEnvironment()
 
-        val layer = cudaSigmoidLayer(2, 1, 2)
+        val layer = cudaSigmoidLayer(environment, 2)
         layer.acquire()
 
         layer.forward(doubleColumnVector(0.0, 1.0), false)

@@ -1,5 +1,6 @@
 package shape.komputation.demos.negation
 
+import shape.komputation.cuda.setUpCudaEnvironment
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.cudaSigmoidLayer
@@ -13,12 +14,15 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val random = Random(1)
+
+    val cudaEnvironment = setUpCudaEnvironment()
+
     val initialize = heInitialization(random)
 
     val optimizationStrategy = cublasStochasticGradientDescent(0.01)
 
     val projectionLayer = cublasProjectionLayer(1, 1, initialize, initialize, optimizationStrategy)
-    val sigmoidLayer = cudaSigmoidLayer(1, 1, 1)
+    val sigmoidLayer = cudaSigmoidLayer(cudaEnvironment, 1)
 
     val network = Network(
         inputLayer(),

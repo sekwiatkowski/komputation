@@ -1,5 +1,6 @@
 package shape.komputation.demos.and
 
+import shape.komputation.cuda.setUpCudaEnvironment
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.cudaSigmoidLayer
@@ -30,6 +31,8 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
+    val cudaEnvironment = setUpCudaEnvironment()
+
     val initialize = heInitialization(random)
     val optimizer = cublasStochasticGradientDescent(0.03)
 
@@ -38,7 +41,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(),
         projectionLayer,
-        cudaSigmoidLayer(1, 1, 1)
+        cudaSigmoidLayer(cudaEnvironment, 1)
     )
 
     network.train(inputs, targets, squaredLoss(), 10_000, 1, printLoss)
