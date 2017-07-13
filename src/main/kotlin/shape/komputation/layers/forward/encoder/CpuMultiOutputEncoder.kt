@@ -2,18 +2,19 @@ package shape.komputation.layers.forward.encoder
 
 import shape.komputation.functions.add
 import shape.komputation.functions.extractStep
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.*
 import shape.komputation.optimization.Optimizable
 
-class MultiOutputEncoder internal constructor(
+class CpuMultiOutputEncoder internal constructor(
     name : String?,
     isReversed : Boolean,
     private val unit: RecurrentUnit,
     private val numberSteps: Int,
     private val inputDimension: Int,
-    private val hiddenDimension : Int) : ForwardLayer(name), Optimizable {
+    private val hiddenDimension : Int) : BaseForwardLayer(name), Optimizable {
 
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
@@ -90,6 +91,27 @@ class MultiOutputEncoder internal constructor(
 
 }
 
+class MultiOutputEncoder(
+    private val name: String?,
+    private val unit: RecurrentUnit,
+    private val numberSteps: Int,
+    private val inputDimension: Int,
+    private val hiddenDimension: Int,
+    private val isReversed: Boolean) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuMultiOutputEncoder(
+            this.name,
+            this.isReversed,
+            this.unit,
+            this.numberSteps,
+            this.inputDimension,
+            this.hiddenDimension
+        )
+
+}
+
 fun multiOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
@@ -116,9 +138,9 @@ fun multiOutputEncoder(
 
     MultiOutputEncoder(
         name,
-        isReversed,
         unit,
         numberSteps,
         inputDimension,
-        hiddenDimension
+        hiddenDimension,
+        isReversed
     )

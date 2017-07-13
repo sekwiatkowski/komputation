@@ -1,18 +1,19 @@
 package shape.komputation.layers.forward.convolution
 
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.projection.ProjectionLayer
+import shape.komputation.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class ConvolutionalLayer internal constructor(
+class CpuConvolutionalLayer internal constructor(
     name : String? = null,
-    private val expansionLayer: ExpansionLayer,
-    private val projectionLayer: ProjectionLayer) : ForwardLayer(name), Optimizable {
+    private val expansionLayer: CpuExpansionLayer,
+    private val projectionLayer: CpuProjectionLayer) : BaseForwardLayer(name), Optimizable {
 
     override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 
@@ -42,6 +43,29 @@ class ConvolutionalLayer internal constructor(
 
 }
 
+class ConvolutionalLayer(
+    private val name : String?,
+    private val numberFilters: Int,
+    private val filterWidth: Int,
+    private val filterHeight : Int,
+    private val initializationStrategy : InitializationStrategy,
+    private val optimizationStrategy : OptimizationStrategy? = null) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu(): CpuConvolutionalLayer {
+
+        val expansionLayerName = concatenateNames(name, "expansion")
+        val expansionLayer = expansionLayer(expansionLayerName, this.filterWidth, this.filterHeight).buildForCpu()
+
+        val projectionLayerName = concatenateNames(name, "projection")
+        val projectionLayer = projectionLayer(projectionLayerName, this.filterWidth * this.filterHeight, this.numberFilters, this.initializationStrategy, this.initializationStrategy, this.optimizationStrategy).buildForCpu()
+
+        return CpuConvolutionalLayer(name, expansionLayer, projectionLayer)
+
+    }
+
+
+}
+
 fun convolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
@@ -59,14 +83,6 @@ fun convolutionalLayer(
     filterWidth: Int,
     filterHeight : Int,
     initializationStrategy : InitializationStrategy,
-    optimizationStrategy : OptimizationStrategy? = null): ConvolutionalLayer {
+    optimizationStrategy : OptimizationStrategy? = null) =
 
-    val expansionLayerName = concatenateNames(name, "expansion")
-    val expansionLayer = expansionLayer(expansionLayerName, filterWidth, filterHeight)
-
-    val projectionLayerName = concatenateNames(name, "projection")
-    val projectionLayer = projectionLayer(projectionLayerName, filterWidth * filterHeight, numberFilters, initializationStrategy, initializationStrategy, optimizationStrategy)
-
-    return ConvolutionalLayer(name, expansionLayer, projectionLayer)
-
-}
+    ConvolutionalLayer(name, numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy)

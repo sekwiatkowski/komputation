@@ -5,11 +5,12 @@ import jcuda.driver.CUfunction
 import jcuda.driver.JCudaDriver.cuCtxSynchronize
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.*
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.DoubleMatrix
 import java.io.File
 
-class CudaSigmoidLayer internal constructor(
+class TempCudaSigmoidLayer internal constructor(
     name : String? = null,
     private val computeCapabilities: Pair<Int, Int>,
     maximumThreadsPerBlock: Int,
@@ -119,6 +120,18 @@ class CudaSigmoidLayer internal constructor(
     }
 
 }
+
+class CudaSigmoidLayer(
+    private val name : String? = null,
+    private val environment: CudaEnvironment,
+    private val inputDimension : Int) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        TempCudaSigmoidLayer(this.name, this.environment.computeCapabilities, this.environment.numberThreadsPerBlock, this.inputDimension)
+
+}
+
 fun cudaSigmoidLayer(
     environment: CudaEnvironment,
     inputDimension : Int) =
@@ -131,4 +144,4 @@ fun cudaSigmoidLayer(
     environment: CudaEnvironment,
     inputDimension : Int) =
 
-    CudaSigmoidLayer(name, environment.computeCapabilities, environment.numberThreadsPerBlock, inputDimension)
+    CudaSigmoidLayer(name, environment, inputDimension)

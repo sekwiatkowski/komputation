@@ -2,7 +2,7 @@ package shape.komputation.optimization
 
 fun stochasticGradientDescent(learningRate: Double): (Int, Int) -> UpdateRule {
 
-    return { numberRows : Int, numberColumns : Int ->
+    return { _: Int, _: Int ->
 
         StochasticGradientDescent(learningRate)
 

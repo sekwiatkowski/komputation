@@ -41,7 +41,6 @@ fun main(args: Array<String>) {
             convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
             reluLayer(),
             maxPoolingLayer()
-
         )
 
     }

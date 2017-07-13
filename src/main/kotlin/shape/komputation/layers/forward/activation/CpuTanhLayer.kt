@@ -3,10 +3,11 @@ package shape.komputation.layers.forward.activation
 import shape.komputation.functions.activation.differentiateTanh
 import shape.komputation.functions.activation.tanh
 import shape.komputation.functions.hadamard
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class TanhLayer internal constructor(name: String? = null) : ActivationLayer(name), DropoutCompliant {
+class CpuTanhLayer internal constructor(name: String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -55,6 +56,14 @@ class TanhLayer internal constructor(name: String? = null) : ActivationLayer(nam
         return DoubleMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, differentiation!!))
 
     }
+
+}
+
+class TanhLayer(private val name : String?) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuTanhLayer(this.name)
 
 }
 

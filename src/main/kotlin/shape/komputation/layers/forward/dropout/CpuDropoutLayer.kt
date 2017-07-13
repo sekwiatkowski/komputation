@@ -1,7 +1,9 @@
 package shape.komputation.layers.forward.dropout
 
 import shape.komputation.functions.generateMask
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.DropoutCompliantInstruction
 import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.layers.concatenateNames
@@ -9,13 +11,13 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleConstantColumnVector
 import java.util.*
 
-class DropoutLayer internal constructor(
+class CpuDropoutLayer internal constructor(
     name : String?,
     private val dimension : Int,
     private val random : Random,
     private val keepProbability : Double,
     private val activation: DropoutCompliant,
-    private val takeExpectation : HadamardCombination) : ForwardLayer(name) {
+    private val takeExpectation : HadamardCombination) : BaseForwardLayer(name) {
 
     private var mask = BooleanArray(0)
     private var expectation = doubleConstantColumnVector(this.dimension, this.keepProbability)
@@ -62,15 +64,30 @@ class DropoutLayer internal constructor(
 
 }
 
-fun dropoutLayer(dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant) =
+class DropoutLayer(
+    private val name : String?,
+    private val dimension: Int,
+    private val random: Random,
+    private val keepProbability: Double,
+    private val activation: DropoutCompliantInstruction) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu(): CpuDropoutLayer {
+
+        val takeExpectationName = concatenateNames(this.name, "take-expectation")
+        val takeExpectation = hadamardCombination(takeExpectationName)
+
+        val activation = this.activation.buildForCpu()
+
+        return CpuDropoutLayer(this.name, this.dimension, this.random, this.keepProbability, activation, takeExpectation)
+
+    }
+
+}
+
+fun dropoutLayer(dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliantInstruction) =
 
     dropoutLayer(null, dimension, random, keepProbability, activation)
 
-fun dropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliant): DropoutLayer {
+fun dropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Double, activation: DropoutCompliantInstruction) =
 
-    val takeExpectationName = concatenateNames(name, "take-expectation")
-    val takeExpectation = hadamardCombination(takeExpectationName)
-
-    return DropoutLayer(name, dimension, random, keepProbability, activation, takeExpectation)
-
-}
+    DropoutLayer(name, dimension, random, keepProbability, activation)

@@ -1,8 +1,8 @@
 package shape.komputation.networks
 
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.CpuEntryPointInstruction
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
-import shape.komputation.layers.entry.EntryPoint
 import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
@@ -11,8 +11,10 @@ import shape.komputation.optimization.Optimizable
 
 val printLoss = { _ : Int, loss : Double -> println(loss) }
 
-class Network(private val entryPoint: EntryPoint, private vararg val layers: ForwardLayer) {
+class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLayerInstructions: CpuForwardLayerInstruction) {
 
+    private val layers = forwardLayerInstructions.map { it.buildForCpu() }
+    private val entryPoint = entryPointInstruction.buildForCpu()
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 

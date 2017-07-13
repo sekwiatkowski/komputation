@@ -2,20 +2,21 @@ package shape.komputation.layers.forward.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.functions.activation.tanh
 import shape.komputation.matrix.doubleColumnVector
 
-class ReluLayerTest {
+class CpuTanhLayerTest {
 
-    private val layer = reluLayer()
+    private val layer = CpuTanhLayer()
 
     @Test
     fun testSparseForwarding() {
 
         val actual = layer
-            .forward(doubleColumnVector(-1.0, 1.0, -2.0, 2.0), booleanArrayOf(false, true, true, false))
+            .forward(doubleColumnVector(-0.5, 0.0, 0.5), booleanArrayOf(false, false, true))
             .entries
 
-        val expected = doubleArrayOf(0.0, 1.0, 0.0, 0.0)
+        val expected = doubleArrayOf(0.0, 0.0, tanh(0.5))
 
         assertArrayEquals(actual, expected)
 

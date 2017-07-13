@@ -13,14 +13,15 @@ import shape.komputation.functions.cublasProject
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.CublasOptimizationStrategy
 import shape.komputation.optimization.CublasUpdateRule
 import shape.komputation.optimization.Optimizable
 
-class CublasProjectionLayer internal constructor(
+class TempCublasProjectionLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
     private val initialWeights: DoubleArray,
@@ -29,7 +30,7 @@ class CublasProjectionLayer internal constructor(
     private val weightUpdateRule: CublasUpdateRule? = null,
 
     private val initialBias: DoubleArray? = null,
-    private val biasUpdateRule: CublasUpdateRule? = null) : ForwardLayer(name), Optimizable, Resourceful {
+    private val biasUpdateRule: CublasUpdateRule? = null) : BaseForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
@@ -191,6 +192,46 @@ class CublasProjectionLayer internal constructor(
 
 }
 
+class CublasProjectionLayer(
+    private val name : String?,
+    private val inputDimension: Int,
+    private val outputDimension: Int,
+    private val weightInitializationStrategy: InitializationStrategy,
+    private val biasInitializationStrategy: InitializationStrategy?,
+    private val optimizationStrategy : CublasOptimizationStrategy?) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu(): TempCublasProjectionLayer {
+
+        val cublasHandle = cublasHandle()
+
+        val numberWeightRows = this.outputDimension
+        val numberWeightColumns = this.inputDimension
+
+        val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
+        val weightUpdateRule = this.optimizationStrategy?.invoke(cublasHandle, numberWeightRows, numberWeightColumns)
+
+        val bias : DoubleArray?
+        val biasUpdateRule: CublasUpdateRule?
+
+        if (this.biasInitializationStrategy != null) {
+
+            bias = initializeColumnVector(this.biasInitializationStrategy, this.outputDimension)
+            biasUpdateRule = this.optimizationStrategy?.invoke(cublasHandle, bias.size, 1)
+
+        }
+        else {
+
+            bias = null
+            biasUpdateRule = null
+
+        }
+
+        return TempCublasProjectionLayer(this.name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
+
+    }
+
+}
+
 fun cublasProjectionLayer(
     inputDimension: Int,
     outputDimension: Int,
@@ -214,32 +255,6 @@ fun cublasProjectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : CublasOptimizationStrategy? = null): CublasProjectionLayer {
+    optimizationStrategy : CublasOptimizationStrategy? = null) =
 
-    val cublasHandle = cublasHandle()
-
-    val numberWeightRows = outputDimension
-    val numberWeightColumns = inputDimension
-
-    val weights = initializeWeights(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
-    val weightUpdateRule = optimizationStrategy?.invoke(cublasHandle, numberWeightRows, numberWeightColumns)
-
-    val bias : DoubleArray?
-    val biasUpdateRule: CublasUpdateRule?
-
-    if (biasInitializationStrategy != null) {
-
-        bias = initializeColumnVector(biasInitializationStrategy, outputDimension)
-        biasUpdateRule = optimizationStrategy?.invoke(cublasHandle, bias.size, 1)
-
-    }
-    else {
-
-        bias = null
-        biasUpdateRule = null
-
-    }
-
-    return CublasProjectionLayer(name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
-
-}
+    CublasProjectionLayer(name, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)

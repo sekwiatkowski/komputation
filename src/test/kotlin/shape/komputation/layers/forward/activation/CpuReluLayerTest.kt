@@ -2,21 +2,20 @@ package shape.komputation.layers.forward.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.functions.activation.sigmoid
 import shape.komputation.matrix.doubleColumnVector
 
-class SigmoidLayerTest {
+class CpuReluLayerTest {
 
-    private val layer = sigmoidLayer()
+    private val layer = CpuReluLayer()
 
     @Test
     fun testSparseForwarding() {
 
         val actual = layer
-            .forward(doubleColumnVector(0.25, 0.5, 0.75), booleanArrayOf(false, false, true))
+            .forward(doubleColumnVector(-1.0, 1.0, -2.0, 2.0), booleanArrayOf(false, true, true, false))
             .entries
 
-        val expected = doubleArrayOf(0.0, 0.0, sigmoid(0.75))
+        val expected = doubleArrayOf(0.0, 1.0, 0.0, 0.0)
 
         assertArrayEquals(actual, expected)
 

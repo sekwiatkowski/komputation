@@ -1,14 +1,6 @@
 package shape.komputation.layers.forward.activation
 
-import org.junit.jupiter.api.Test
-import shape.komputation.assertMatrixEquality
-import shape.komputation.cuda.setUpCudaEnvironment
-import shape.komputation.functions.activation.sigmoid
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleRowVector
-import shape.komputation.matrix.doubleScalar
-
-class CudaSigmoidLayerTest {
+/* class CudaSigmoidLayerTest {
 
     @Test
     fun testForwardOneDimension() {
@@ -83,4 +75,4 @@ class CudaSigmoidLayerTest {
     }
 
 
-}
+} */

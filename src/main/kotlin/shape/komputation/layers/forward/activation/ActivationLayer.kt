@@ -1,11 +1,11 @@
 package shape.komputation.layers.forward.activation
 
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.identityLayer
 
-abstract class ActivationLayer(name : String?) : ForwardLayer(name)
+abstract class ActivationLayer(name : String?) : BaseForwardLayer(name)
 
 fun activationLayers(number: Int, name: String?, function: ActivationFunction) =
 
@@ -20,14 +20,14 @@ fun activationLayer(name: String?, function: ActivationFunction) =
     when (function) {
 
         ActivationFunction.ReLU ->
-            reluLayer(name)
+            reluLayer(name).buildForCpu()
         ActivationFunction.Identity ->
-            identityLayer(name)
+            identityLayer(name).buildForCpu()
         ActivationFunction.Sigmoid ->
-            sigmoidLayer(name)
+            sigmoidLayer(name).buildForCpu()
         ActivationFunction.Softmax ->
-            softmaxLayer(name)
+            softmaxLayer(name).buildForCpu()
         ActivationFunction.Tanh ->
-            tanhLayer(name)
+            tanhLayer(name).buildForCpu()
 
     }

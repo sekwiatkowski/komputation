@@ -1,10 +1,11 @@
 package shape.komputation.layers.forward
 
 import shape.komputation.functions.transpose
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.matrix.DoubleMatrix
 
-class TranspositionLayer internal constructor(name : String? = null) : ForwardLayer(name)  {
+class CpuTranspositionLayer internal constructor(name : String? = null) : BaseForwardLayer(name)  {
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) =
 
@@ -13,6 +14,15 @@ class TranspositionLayer internal constructor(name : String? = null) : ForwardLa
     override fun backward(chain: DoubleMatrix) =
 
         DoubleMatrix(chain.numberColumns, chain.numberRows, transpose(chain.numberRows, chain.numberColumns, chain.entries))
+
+}
+
+class TranspositionLayer(private val name : String? = null) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuTranspositionLayer(this.name)
+
 
 }
 

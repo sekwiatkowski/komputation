@@ -2,20 +2,21 @@ package shape.komputation.layers.forward
 
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationLayer
 import shape.komputation.layers.forward.activation.activationLayer
-import shape.komputation.layers.forward.projection.ProjectionLayer
+import shape.komputation.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
 
-class DenseLayer internal constructor(
+class CpuDenseLayer internal constructor(
     name : String?,
-    private val projection : ProjectionLayer,
-    private val activation: ActivationLayer) : ForwardLayer(name), Optimizable {
+    private val projection : CpuProjectionLayer,
+    private val activation: ActivationLayer) : BaseForwardLayer(name), Optimizable {
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
 
@@ -44,6 +45,30 @@ class DenseLayer internal constructor(
 
 }
 
+class DenseLayer(
+    private val name : String?,
+    private val inputDimension : Int,
+    private val outputDimension : Int,
+    private val weightInitializationStrategy: InitializationStrategy,
+    private val biasInitializationStrategy: InitializationStrategy?,
+    private val activationFunction: ActivationFunction,
+    private val optimizationStrategy: OptimizationStrategy?) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu(): CpuDenseLayer {
+
+        val projectionName = concatenateNames(name, "projection")
+        val projection = projectionLayer(projectionName, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy).buildForCpu()
+
+        val activationName = concatenateNames(name, "activation")
+        val activation = activationLayer(activationName, activationFunction)
+
+        return CpuDenseLayer(name, projection, activation)
+
+    }
+
+
+}
+
 fun denseLayer(
     inputDimension : Int,
     outputDimension : Int,
@@ -69,14 +94,13 @@ fun denseLayer(
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
     activationFunction: ActivationFunction,
-    optimizationStrategy: OptimizationStrategy?): DenseLayer {
+    optimizationStrategy: OptimizationStrategy?) =
 
-    val projectionName = concatenateNames(name, "projection")
-    val projection = projectionLayer(projectionName, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
-
-    val activationName = concatenateNames(name, "activation")
-    val activation = activationLayer(activationName, activationFunction)
-
-    return DenseLayer(name, projection, activation)
-
-}
+    DenseLayer(
+        name,
+        inputDimension,
+        outputDimension,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        activationFunction,
+        optimizationStrategy)

@@ -4,10 +4,11 @@ import shape.komputation.functions.backwardExpansionForConvolution
 import shape.komputation.functions.convolutionsPerColumn
 import shape.komputation.functions.convolutionsPerRow
 import shape.komputation.functions.expandForConvolution
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.matrix.DoubleMatrix
 
-class ExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : ForwardLayer(name) {
+class CpuExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : BaseForwardLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1
@@ -61,18 +62,27 @@ class ExpansionLayer internal constructor(name : String? = null, private val fil
 
 }
 
+class ExpansionLayer(
+    private val name : String?,
+    private val filterWidth: Int,
+    private val filterHeight: Int) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuExpansionLayer(this.name, this.filterWidth, this.filterHeight)
+
+
+}
 
 fun expansionLayer(
     filterWidth: Int,
-    filterHeight: Int): ExpansionLayer {
+    filterHeight: Int) =
 
-    return expansionLayer(null, filterWidth, filterHeight)
-}
+    expansionLayer(null, filterWidth, filterHeight)
 
 fun expansionLayer(
     name : String?,
     filterWidth: Int,
-    filterHeight: Int): ExpansionLayer {
+    filterHeight: Int) =
 
-    return ExpansionLayer(name, filterWidth, filterHeight)
-}
+    ExpansionLayer(name, filterWidth, filterHeight)

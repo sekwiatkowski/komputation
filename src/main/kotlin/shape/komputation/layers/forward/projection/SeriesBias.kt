@@ -8,6 +8,7 @@ import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
+import shape.komputation.optimization.updateDensely
 
 class SeriesBias internal constructor(
     private val name : String?,
@@ -42,15 +43,13 @@ class SeriesBias internal constructor(
 
     fun optimize(scalingFactor : Double) {
 
-        val batchAccumulator = this.batchAccumulator
-
         if (this.updateRule != null) {
 
-            this.updateRule.updateDensely(this.bias, batchAccumulator.getAccumulation(), this.numberBiasEntries)
+            updateDensely(this.bias, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
 
         }
 
-        batchAccumulator.reset()
+        this.batchAccumulator.reset()
 
     }
 

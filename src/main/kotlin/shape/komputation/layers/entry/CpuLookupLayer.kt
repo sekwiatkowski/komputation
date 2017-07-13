@@ -1,19 +1,18 @@
 package shape.komputation.layers.entry
 
+import shape.komputation.layers.BaseEntryPoint
+import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.optimization.Optimizable
-import shape.komputation.optimization.SparseAccumulator
-import shape.komputation.optimization.UpdateRule
-import shape.komputation.optimization.updateSparsely
+import shape.komputation.optimization.*
 
-class LookupLayer internal constructor(
+class CpuLookupLayer internal constructor(
     name : String?,
     private val vectors: Array<DoubleArray>,
     private val dimension : Int,
     private val gradientAccumulator: SparseAccumulator,
-    private val update: UpdateRule? = null) : EntryPoint(name), Optimizable {
+    private val update: UpdateRule? = null) : BaseEntryPoint(name), Optimizable {
 
     private var input : IntArray? = null
 
@@ -86,6 +85,35 @@ class LookupLayer internal constructor(
 
 }
 
+class LookupLayer(
+    private val name : String? = null,
+    private val vectors: Array<DoubleArray>,
+    private val dimension : Int,
+    private val maximumBatchSize : Int,
+    private val maximumLength: Int,
+    private val optimizationStrategy : OptimizationStrategy?) : CpuEntryPointInstruction {
+
+    override fun buildForCpu(): CpuLookupLayer {
+
+        val updateRule = if (this.optimizationStrategy != null) {
+
+            this.optimizationStrategy.invoke(this.vectors.size, this.vectors[0].size)
+
+        }
+        else {
+
+            null
+        }
+
+        val sparseAccumulator = SparseAccumulator(this.vectors.size, this.maximumBatchSize, this.maximumLength, this.dimension)
+
+        return CpuLookupLayer(name, vectors, dimension, sparseAccumulator, updateRule)
+
+    }
+
+
+}
+
 fun lookupLayer(
     vectors: Array<DoubleArray>,
     dimension : Int,
@@ -101,20 +129,13 @@ fun lookupLayer(
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength: Int,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null): LookupLayer {
+    optimizationStrategy : OptimizationStrategy? = null) =
 
-    val updateRule = if (optimizationStrategy != null) {
-
-        optimizationStrategy(vectors.size, vectors[0].size)
-
-    }
-    else {
-
-        null
-    }
-
-    val sparseAccumulator = SparseAccumulator(vectors.size, maximumBatchSize, maximumLength, dimension)
-
-    return LookupLayer(name, vectors, dimension, sparseAccumulator, updateRule)
-
-}
+    LookupLayer(
+        name,
+        vectors,
+        dimension,
+        maximumBatchSize,
+        maximumLength,
+        optimizationStrategy
+    )

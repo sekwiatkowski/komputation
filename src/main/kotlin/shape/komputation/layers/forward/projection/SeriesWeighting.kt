@@ -2,17 +2,18 @@ package shape.komputation.layers.forward.projection
 
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeWeights
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.identityLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.DenseAccumulator
 import shape.komputation.optimization.OptimizationStrategy
 import shape.komputation.optimization.UpdateRule
+import shape.komputation.optimization.updateDensely
 
 class SeriesWeighting internal constructor(
     private val name : String?,
-    private val weightings: Array<ForwardLayer>,
+    private val weightings: Array<BaseForwardLayer>,
     private val weights: DoubleArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
@@ -45,7 +46,7 @@ class SeriesWeighting internal constructor(
 
         if (this.updateRule != null) {
 
-            this.updateRule.updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries)
+            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
 
         }
 
@@ -101,7 +102,7 @@ fun seriesWeighting(
 
         if (useIdentityAtFirstStep && indexStep == 0) {
 
-            identityLayer(stepProjectionName)
+            identityLayer(stepProjectionName).buildForCpu()
 
         }
         else {
@@ -131,8 +132,6 @@ private fun stepWeighting(
     numberWeightColumns: Int,
     weights : DoubleArray,
     weightAccumulator: DenseAccumulator,
-    weightUpdateRule : UpdateRule? = null): ProjectionLayer {
+    weightUpdateRule : UpdateRule? = null) =
 
-    return ProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule)
-
-}
+    CpuProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule)

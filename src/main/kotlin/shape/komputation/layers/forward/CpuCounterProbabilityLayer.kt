@@ -2,12 +2,13 @@ package shape.komputation.layers.forward
 
 import shape.komputation.functions.negate
 import shape.komputation.functions.subtract
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.matrix.DoubleMatrix
 
-class CounterProbabilityLayer internal constructor(
+class CpuCounterProbabilityLayer internal constructor(
     name : String?,
-    dimension : Int) : ForwardLayer(name) {
+    dimension : Int) : BaseForwardLayer(name) {
 
     private val one = DoubleArray(dimension) { 1.0 }
 
@@ -20,6 +21,17 @@ class CounterProbabilityLayer internal constructor(
         DoubleMatrix(chain.numberRows, chain.numberColumns, negate(chain.entries))
 
 }
+
+class CounterProbabilityLayer(
+    private val name : String?,
+    private val dimension: Int) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuCounterProbabilityLayer(this.name, this.dimension)
+
+}
+
 
 fun counterProbabilityLayer(dimension: Int) =
 

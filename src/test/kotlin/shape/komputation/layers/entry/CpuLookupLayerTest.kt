@@ -4,14 +4,14 @@ import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
 import shape.komputation.matrix.*
 
-class LookupLayerTest {
+class CpuLookupLayerTest {
 
     @Test
     fun testOneDimension() {
 
         val firstVector = doubleArrayOf(1.0)
 
-        val lookupLayer = lookupLayer(arrayOf(firstVector), 1, 1, 1)
+        val lookupLayer = lookupLayer(arrayOf(firstVector), 1, 1, 1).buildForCpu()
 
         val expected = doubleScalar(1.0)
         val actual = lookupLayer.forward(intScalar(0))
@@ -23,7 +23,7 @@ class LookupLayerTest {
     @Test
     fun testTwoDimensions() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0)), 2, 1, 1)
+        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0)), 2, 1, 1).buildForCpu()
 
         val expected = doubleColumnVector(1.0, 2.0)
         val actual = lookupLayer.forward(intScalar(0))
@@ -35,7 +35,7 @@ class LookupLayerTest {
     @Test
     fun testOneOutOfTwoVectors() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 1)
+        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 1).buildForCpu()
 
         assertMatrixEquality(
             doubleScalar(1.0),
@@ -52,7 +52,7 @@ class LookupLayerTest {
     @Test
     fun testTwoOutOfTwoVectors() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 2)
+        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 2).buildForCpu()
 
         assertMatrixEquality(
             doubleRowVector(1.0, 2.0),
@@ -64,7 +64,7 @@ class LookupLayerTest {
     @Test
     fun testTwoOutOfTwoVectorsTwoDimensions() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2)
+        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2).buildForCpu()
 
         assertMatrixEquality(
             doubleMatrixFromColumns(
@@ -79,7 +79,7 @@ class LookupLayerTest {
     @Test
     fun testTwoOutOfTwoVectorsTwoDimensionsReversed() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2)
+        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2).buildForCpu()
 
         assertMatrixEquality(
             doubleMatrixFromColumns(

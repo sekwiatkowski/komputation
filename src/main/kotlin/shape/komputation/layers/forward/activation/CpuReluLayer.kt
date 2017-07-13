@@ -2,10 +2,11 @@ package shape.komputation.layers.forward.activation
 
 import shape.komputation.functions.activation.backwardRelu
 import shape.komputation.functions.activation.relu
+import shape.komputation.layers.DropoutCompliantInstruction
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class ReluLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
+class CpuReluLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -49,6 +50,16 @@ class ReluLayer internal constructor(name : String? = null) : ActivationLayer(na
         val backwardEntries = backwardRelu(this.forwardEntries, chainEntries)
 
         return DoubleMatrix(chain.numberRows, chain.numberColumns, backwardEntries)
+
+    }
+
+}
+
+class ReluLayer(private val name : String?) : DropoutCompliantInstruction {
+
+    override fun buildForCpu(): CpuReluLayer {
+
+        return CpuReluLayer(this.name)
 
     }
 

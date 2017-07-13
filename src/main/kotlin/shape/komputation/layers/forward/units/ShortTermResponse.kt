@@ -5,7 +5,7 @@ import shape.komputation.layers.combination.AdditionCombination
 import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.activation.TanhLayer
+import shape.komputation.layers.forward.activation.CpuTanhLayer
 import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.projection.SeriesBias
 import shape.komputation.layers.forward.projection.SeriesWeighting
@@ -20,7 +20,7 @@ class ShortTermResponse(
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<TanhLayer>) {
+    private val activations: Array<CpuTanhLayer>) {
 
     fun forward(step : Int, state : DoubleMatrix, input : DoubleMatrix, forget : DoubleMatrix, isTraining : Boolean): DoubleMatrix {
 
@@ -142,6 +142,7 @@ fun shortTermResponse(
 
             val shortTermBiasName = concatenateNames(name, "bias")
             seriesBias(shortTermBiasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+
         }
         else {
             null
@@ -151,7 +152,7 @@ fun shortTermResponse(
     val shortTermActivations = Array(numberSteps) { indexStep ->
 
         val shortTermActivationName = concatenateNames(name, "activation-step-$indexStep")
-        tanhLayer(shortTermActivationName)
+        tanhLayer(shortTermActivationName).buildForCpu()
 
     }
 

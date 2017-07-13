@@ -3,10 +3,11 @@ package shape.komputation.layers.forward.activation
 import shape.komputation.functions.activation.differentiateSigmoid
 import shape.komputation.functions.activation.sigmoid
 import shape.komputation.functions.hadamard
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.DoubleMatrix
 
-class SigmoidLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
+class CpuSigmoidLayer internal constructor(name : String? = null) : ActivationLayer(name), DropoutCompliant {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -57,6 +58,14 @@ class SigmoidLayer internal constructor(name : String? = null) : ActivationLayer
         return DoubleMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, differentiation!!))
 
     }
+
+}
+
+class SigmoidLayer(private val name : String?) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuSigmoidLayer(this.name)
 
 }
 

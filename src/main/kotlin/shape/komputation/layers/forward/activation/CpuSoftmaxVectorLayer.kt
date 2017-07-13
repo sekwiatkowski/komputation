@@ -2,9 +2,10 @@ package shape.komputation.layers.forward.activation
 
 import shape.komputation.functions.activation.backwardVectorSoftmax
 import shape.komputation.functions.activation.vectorSoftmax
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.matrix.DoubleMatrix
 
-class SoftmaxVectorLayer internal constructor (name : String? = null) : ActivationLayer(name) {
+class CpuSoftmaxVectorLayer internal constructor (name : String? = null) : ActivationLayer(name) {
 
     private var forwardEntries : DoubleArray = DoubleArray(0)
 
@@ -30,6 +31,14 @@ class SoftmaxVectorLayer internal constructor (name : String? = null) : Activati
         return DoubleMatrix(chain.numberRows, chain.numberColumns, backwardVectorSoftmax(this.forwardEntries, chainEntries))
 
     }
+
+}
+
+class SoftmaxVectorLayer(private val name : String?) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuSoftmaxVectorLayer(this.name)
 
 }
 

@@ -2,7 +2,8 @@ package shape.komputation.layers.forward
 
 import shape.komputation.functions.splitRows
 import shape.komputation.functions.stackRows
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
@@ -10,7 +11,7 @@ import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 import shape.komputation.optimization.Optimizable
 
-class Concatenation internal constructor(name : String? = null, vararg continuations: Array<ForwardLayer>) : ForwardLayer(name), Optimizable, Resourceful {
+class CpuConcatenation internal constructor(name : String? = null, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable, Resourceful {
 
     private val networks = continuations.map { layers -> Network(inputLayer(), *layers) }
 
@@ -99,18 +100,26 @@ class Concatenation internal constructor(name : String? = null, vararg continuat
 
 }
 
-fun concatenation(vararg continuations: Array<ForwardLayer>) =
+class Concatenation(private val name : String?, private val continuations: Array<Array<CpuForwardLayerInstruction>>) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuConcatenation(this.name, this.continuations)
+
+}
+
+fun concatenation(vararg continuations: CpuForwardLayerInstruction) =
 
     concatenation(null, *continuations)
 
-fun concatenation(vararg continuations: ForwardLayer) =
+fun concatenation(name : String?, vararg continuations: CpuForwardLayerInstruction) =
+
+    concatenation(name, *continuations.map { layer -> arrayOf(layer) }.toTypedArray())
+
+fun concatenation(vararg continuations: Array<CpuForwardLayerInstruction>) =
 
     concatenation(null, *continuations)
 
-fun concatenation(name : String?, vararg continuations: ForwardLayer) =
+fun concatenation(name : String?, vararg continuations: Array<CpuForwardLayerInstruction>) =
 
-    concatenation(name, *continuations.map { layer -> arrayOf<ForwardLayer>(layer) }.toTypedArray())
-
-fun concatenation(name : String?, vararg continuations: Array<ForwardLayer>) =
-
-    Concatenation(name, *continuations)
+    Concatenation(name, arrayOf(*continuations))

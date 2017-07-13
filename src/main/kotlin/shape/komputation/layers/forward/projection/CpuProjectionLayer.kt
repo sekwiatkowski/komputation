@@ -7,11 +7,12 @@ import shape.komputation.functions.project
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.*
 
-class ProjectionLayer internal constructor(
+class CpuProjectionLayer internal constructor(
     name : String? = null,
 
     private val weights : DoubleArray,
@@ -22,14 +23,13 @@ class ProjectionLayer internal constructor(
 
     private val bias : DoubleArray? = null,
     private val biasAccumulator: DenseAccumulator? = null,
-    private val biasUpdateRule: UpdateRule? = null) : ForwardLayer(name), Optimizable {
+    private val biasUpdateRule: UpdateRule? = null) : BaseForwardLayer(name), Optimizable {
 
     private var inputEntries = DoubleArray(0)
     private var numberInputRows = -1
     private var numberInputColumns = -1
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
-    private val numberBiasEntries = if(this.bias == null) -1 else this.bias.size
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 
@@ -110,6 +110,49 @@ class ProjectionLayer internal constructor(
 
 }
 
+class ProjectionLayer(
+    private val name : String?,
+    private val inputDimension: Int,
+    private val outputDimension: Int,
+    private val weightInitializationStrategy: InitializationStrategy,
+    private val biasInitializationStrategy: InitializationStrategy?,
+    private val optimizationStrategy : OptimizationStrategy? = null) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu(): CpuProjectionLayer {
+
+        val numberWeightRows = this.outputDimension
+        val numberWeightColumns = this.inputDimension
+
+        val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
+        val weightUpdateRule = this.optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
+
+        val bias : DoubleArray?
+        val biasUpdateRule: UpdateRule?
+        val biasAccumulator: DenseAccumulator?
+
+        if (this.biasInitializationStrategy != null) {
+
+            bias = initializeColumnVector(this.biasInitializationStrategy, this.outputDimension)
+            biasUpdateRule = this.optimizationStrategy?.invoke(bias.size, 1)
+            biasAccumulator = DenseAccumulator(bias.size)
+
+        }
+        else {
+
+            bias = null
+            biasUpdateRule = null
+            biasAccumulator = null
+
+        }
+
+        val weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
+
+        return CpuProjectionLayer(this.name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasAccumulator, biasUpdateRule)
+
+    }
+
+}
+
 fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
@@ -125,35 +168,12 @@ fun projectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null): ProjectionLayer {
+    optimizationStrategy : OptimizationStrategy? = null) =
 
-    val numberWeightRows = outputDimension
-    val numberWeightColumns = inputDimension
-
-    val weights = initializeWeights(weightInitializationStrategy, numberWeightRows, numberWeightColumns, inputDimension)
-    val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
-
-    val bias : DoubleArray?
-    val biasUpdateRule: UpdateRule?
-    val biasAccumulator: DenseAccumulator?
-
-    if (biasInitializationStrategy != null) {
-
-        bias = initializeColumnVector(biasInitializationStrategy, outputDimension)
-        biasUpdateRule = optimizationStrategy?.invoke(bias.size, 1)
-        biasAccumulator = DenseAccumulator(bias.size)
-
-    }
-    else {
-
-        bias = null
-        biasUpdateRule = null
-        biasAccumulator = null
-
-    }
-
-    val weightAccumulator = DenseAccumulator(numberWeightRows * numberWeightColumns)
-
-    return ProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule, bias, biasAccumulator, biasUpdateRule)
-
-}
+    ProjectionLayer(
+        name,
+        inputDimension,
+        outputDimension,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        optimizationStrategy)

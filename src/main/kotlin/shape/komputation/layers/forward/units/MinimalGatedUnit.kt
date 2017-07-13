@@ -6,10 +6,9 @@ import shape.komputation.layers.combination.HadamardCombination
 import shape.komputation.layers.combination.additionCombination
 import shape.komputation.layers.combination.hadamardCombination
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.CounterProbabilityLayer
+import shape.komputation.layers.forward.CpuCounterProbabilityLayer
 import shape.komputation.layers.forward.activation.ActivationLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
-import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.counterProbabilityLayer
 import shape.komputation.layers.forward.projection.seriesBias
 import shape.komputation.layers.forward.projection.seriesWeighting
@@ -25,7 +24,7 @@ class MinimalGatedUnit internal constructor(
     inputDimension: Int,
     private val forgetUnit: RecurrentUnit,
     private val shortTermResponse: ShortTermResponse,
-    private val counterProbabilities: Array<CounterProbabilityLayer>,
+    private val counterProbabilities: Array<CpuCounterProbabilityLayer>,
     private val longTermHadamards: Array<HadamardCombination>,
     private val shortTermHadamards: Array<HadamardCombination>,
     private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
@@ -207,7 +206,7 @@ fun minimalGatedUnit(
     val forgetActivations = Array<ActivationLayer>(numberSteps) { indexStep ->
 
         val forgetActivationName = concatenateNames(name, "forget-activation-step-$indexStep")
-        sigmoidLayer(forgetActivationName)
+        sigmoidLayer(forgetActivationName).buildForCpu()
 
     }
 
@@ -218,7 +217,7 @@ fun minimalGatedUnit(
     val keepSubtractions = Array(numberSteps) { indexStep ->
 
         val keepSubtractionName = concatenateNames(name, "keep-subtraction-$indexStep")
-        counterProbabilityLayer(keepSubtractionName, hiddenDimension)
+        counterProbabilityLayer(keepSubtractionName, hiddenDimension).buildForCpu()
 
     }
 

@@ -1,19 +1,20 @@
 package shape.komputation.layers.forward.encoder
 
-import shape.komputation.layers.ForwardLayer
+import shape.komputation.layers.BaseForwardLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleZeroColumnVector
 import shape.komputation.matrix.doubleZeroMatrix
 import shape.komputation.optimization.Optimizable
 
-class SingleOutputEncoder internal constructor(
+class CpuSingleOutputEncoder internal constructor(
     name : String?,
     isReversed : Boolean,
     private val unit: RecurrentUnit,
     private val numberSteps: Int,
     private val inputDimension: Int,
-    private val hiddenDimension : Int) : ForwardLayer(name), Optimizable {
+    private val hiddenDimension : Int) : BaseForwardLayer(name), Optimizable {
 
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
@@ -70,6 +71,28 @@ class SingleOutputEncoder internal constructor(
 
 }
 
+class SingleOutputEncoder(
+    private val name : String?,
+    private val unit : RecurrentUnit,
+    private val numberSteps : Int,
+    private val inputDimension : Int,
+    private val hiddenDimension: Int,
+    private val isReversed: Boolean) : CpuForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuSingleOutputEncoder(
+            this.name,
+            this.isReversed,
+            this.unit,
+            this.numberSteps,
+            this.inputDimension,
+            this.hiddenDimension
+        )
+
+
+}
+
 fun singleOutputEncoder(
     unit : RecurrentUnit,
     numberSteps : Int,
@@ -94,11 +117,4 @@ fun singleOutputEncoder(
     hiddenDimension: Int,
     isReversed: Boolean = false) =
 
-    SingleOutputEncoder(
-        name,
-        isReversed,
-        unit,
-        numberSteps,
-        inputDimension,
-        hiddenDimension
-    )
+    SingleOutputEncoder(name, unit, numberSteps, inputDimension, hiddenDimension, isReversed)
