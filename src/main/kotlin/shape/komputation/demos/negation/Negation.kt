@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
     val optimizationStrategy = stochasticGradientDescent(0.01)
 
     val projectionLayer = projectionLayer(1, 1, initialize, initialize, optimizationStrategy)
-    val sigmoidLayer = sigmoidLayer()
+    val sigmoidLayer = sigmoidLayer(1)
 
     val network = Network(
         inputLayer(),

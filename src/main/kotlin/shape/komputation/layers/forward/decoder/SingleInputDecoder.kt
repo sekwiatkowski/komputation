@@ -1,15 +1,15 @@
 package shape.komputation.layers.forward.decoder
 
-import shape.komputation.cpu.forward.activation.activationLayer
-import shape.komputation.cpu.forward.decoder.CpuSingleInputDecoder
-import shape.komputation.cpu.forward.projection.seriesBias
-import shape.komputation.cpu.forward.projection.seriesWeighting
-import shape.komputation.cpu.forward.units.RecurrentUnit
+import shape.komputation.cpu.layers.forward.activation.activationLayer
+import shape.komputation.cpu.layers.forward.decoder.CpuSingleInputDecoder
+import shape.komputation.cpu.layers.forward.projection.seriesBias
+import shape.komputation.cpu.layers.forward.projection.seriesWeighting
+import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
-import shape.komputation.optimization.OptimizationStrategy
+import shape.komputation.optimization.OptimizationInstruction
 
 
 class SingleInputDecoder(
@@ -18,23 +18,23 @@ class SingleInputDecoder(
     private val hiddenDimension : Int,
     private val outputDimension: Int,
     private val unit : RecurrentUnit,
-    private val weightInitializationStrategy: InitializationStrategy,
-    private val biasInitializationStrategy: InitializationStrategy?,
+    private val weightInitialization: InitializationStrategy,
+    private val biasInitialization: InitializationStrategy?,
     private val activationFunction: ActivationFunction,
-    private val optimizationStrategy: OptimizationStrategy?): CpuForwardLayerInstruction {
+    private val optimization: OptimizationInstruction?): CpuForwardLayerInstruction {
 
     override fun buildForCpu(): CpuSingleInputDecoder {
 
         val weightingSeriesName = concatenateNames(this.name, "weighting")
         val weightingStepName = concatenateNames(this.name, "weighting-step")
-        val weighting = seriesWeighting(weightingSeriesName, weightingStepName, this.numberSteps, false, this.hiddenDimension, this.outputDimension, this.weightInitializationStrategy, this.optimizationStrategy)
+        val weighting = seriesWeighting(weightingSeriesName, weightingStepName, this.numberSteps, false, this.hiddenDimension, this.outputDimension, this.weightInitialization, optimization)
 
         val bias =
 
-            if (this.biasInitializationStrategy != null) {
+            if (this.biasInitialization != null) {
 
                 val biasSeriesName = concatenateNames(this.name, "bias")
-                seriesBias(biasSeriesName, this.outputDimension, biasInitializationStrategy, this.optimizationStrategy)
+                seriesBias(biasSeriesName, this.outputDimension, biasInitialization, this.optimization)
 
             }
             else {
@@ -46,7 +46,7 @@ class SingleInputDecoder(
         val activationName = concatenateNames(this.name, "activation")
         val activations = Array(this.numberSteps) { index ->
 
-            activationLayer(concatenateNames(activationName, index.toString()), this.activationFunction).buildForCpu()
+            activationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.outputDimension).buildForCpu()
 
         }
 
@@ -70,10 +70,10 @@ fun singleInputDecoder(
     hiddenDimension : Int,
     outputDimension: Int,
     unit : RecurrentUnit,
-    weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
-    activationFunction: ActivationFunction,
-    optimizationStrategy: OptimizationStrategy?) =
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy?,
+    activation: ActivationFunction,
+    optimization: OptimizationInstruction?) =
 
     singleInputDecoder(
         null,
@@ -81,10 +81,10 @@ fun singleInputDecoder(
         hiddenDimension,
         outputDimension,
         unit,
-        weightInitializationStrategy,
-        biasInitializationStrategy,
-        activationFunction,
-        optimizationStrategy)
+        weightInitialization,
+        biasInitialization,
+        activation,
+        optimization)
 
 
 fun singleInputDecoder(
@@ -93,10 +93,10 @@ fun singleInputDecoder(
     hiddenDimension : Int,
     outputDimension: Int,
     unit : RecurrentUnit,
-    weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
-    activationFunction: ActivationFunction,
-    optimizationStrategy: OptimizationStrategy?) =
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy?,
+    activation: ActivationFunction,
+    optimization: OptimizationInstruction?) =
 
     SingleInputDecoder(
         name,
@@ -104,7 +104,7 @@ fun singleInputDecoder(
         hiddenDimension,
         outputDimension,
         unit,
-        weightInitializationStrategy,
-        biasInitializationStrategy,
-        activationFunction,
-        optimizationStrategy)
+        weightInitialization,
+        biasInitialization,
+        activation,
+        optimization)

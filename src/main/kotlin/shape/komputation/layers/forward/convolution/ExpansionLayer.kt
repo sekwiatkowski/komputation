@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward.convolution
 
-import shape.komputation.cpu.forward.convolution.CpuExpansionLayer
+import shape.komputation.cpu.layers.forward.convolution.CpuExpansionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 

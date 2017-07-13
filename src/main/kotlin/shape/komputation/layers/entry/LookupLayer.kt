@@ -1,10 +1,9 @@
 package shape.komputation.layers.entry
 
-import shape.komputation.cpu.entry.CpuLookupLayer
+import shape.komputation.cpu.layers.entry.CpuLookupLayer
+import shape.komputation.cpu.optimization.SparseAccumulator
 import shape.komputation.layers.CpuEntryPointInstruction
-import shape.komputation.optimization.OptimizationStrategy
-import shape.komputation.optimization.SparseAccumulator
-import shape.komputation.optimization.UpdateRule
+import shape.komputation.optimization.OptimizationInstruction
 
 class LookupLayer(
     private val name : String? = null,
@@ -12,13 +11,13 @@ class LookupLayer(
     private val dimension : Int,
     private val maximumBatchSize : Int,
     private val maximumLength: Int,
-    private val optimizationStrategy : OptimizationStrategy?) : CpuEntryPointInstruction {
+    private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction {
 
     override fun buildForCpu(): CpuLookupLayer {
 
-        val updateRule = if (this.optimizationStrategy != null) {
+        val updateRule = if (this.optimization != null) {
 
-            this.optimizationStrategy.invoke(this.vectors.size, this.vectors[0].size)
+            this.optimization.buildForCpu().invoke(this.vectors.size, this.vectors[0].size)
 
         }
         else {
@@ -40,9 +39,9 @@ fun lookupLayer(
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength : Int,
-    optimizationStrategy : ((numberRows : Int, numberColumns : Int) -> UpdateRule)? = null) =
+    optimization: OptimizationInstruction? = null) =
 
-    lookupLayer(null, vectors, dimension, maximumBatchSize, maximumLength, optimizationStrategy)
+    lookupLayer(null, vectors, dimension, maximumBatchSize, maximumLength, optimization)
 
 fun lookupLayer(
     name : String? = null,
@@ -50,7 +49,7 @@ fun lookupLayer(
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength: Int,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    optimization: OptimizationInstruction? = null) =
 
     LookupLayer(
         name,
@@ -58,5 +57,5 @@ fun lookupLayer(
         dimension,
         maximumBatchSize,
         maximumLength,
-        optimizationStrategy
+        optimization
     )

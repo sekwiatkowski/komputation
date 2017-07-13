@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward
 
-import shape.komputation.cpu.forward.CpuTranspositionLayer
+import shape.komputation.cpu.layers.forward.CpuTranspositionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 class TranspositionLayer(private val name : String? = null) : CpuForwardLayerInstruction {

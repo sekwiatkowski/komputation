@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward
 
-import shape.komputation.cpu.forward.CpuColumnRepetitionLayer
+import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 class ColumnRepetitionLayer(private val name : String?, private val n : Int) : CpuForwardLayerInstruction {

@@ -1,6 +1,6 @@
 package shape.komputation.layers.entry
 
-import shape.komputation.cpu.entry.CpuInputLayer
+import shape.komputation.cpu.layers.entry.CpuInputLayer
 import shape.komputation.layers.CpuEntryPointInstruction
 
 class InputLayer(private val name : String? = null) : CpuEntryPointInstruction {

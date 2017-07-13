@@ -1,13 +1,12 @@
 package shape.komputation.functions
 
 import jcuda.Pointer
-import jcuda.Sizeof
 import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
 
-fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult : Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer? = null, biasDimension : Int = 0): DoubleArray {
+fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult : Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer? = null, biasDimension : Int = 0) {
 
     if (deviceBias != null) {
 
@@ -31,11 +30,6 @@ fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult
         deviceResult, // result pointer
         numberWeightRows // number result rows
     )
-
-    val hostResult = DoubleArray(numberWeightRows)
-    cublasGetVector(numberWeightRows, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
-
-    return hostResult
 
 }
 

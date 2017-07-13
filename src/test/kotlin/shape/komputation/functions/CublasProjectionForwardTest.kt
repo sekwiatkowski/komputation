@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.copyFromHostToDevice
+import shape.komputation.cuda.getVector
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleScalar
 
@@ -72,17 +73,22 @@ class CublasProjectionForwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
+
         val deviceResult = Pointer()
-        allocateDeviceMemory(deviceResult, weightMatrix.numberRows)
+        val resultDimension = weightMatrix.numberRows
+        allocateDeviceMemory(deviceResult, resultDimension)
+
         val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
 
-        val actual = cublasProject(
+        cublasProject(
             cublasHandle,
             deviceInput,
             deviceResult,
             deviceWeights,
             weightMatrix.numberRows,
             weightMatrix.numberColumns)
+
+        val actual = getVector(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceResult)
@@ -101,11 +107,13 @@ class CublasProjectionForwardTest {
 
         val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
         val deviceResult = Pointer()
-        allocateDeviceMemory(deviceResult, weightMatrix.numberRows)
+        val resultDimension = weightMatrix.numberRows
+        allocateDeviceMemory(deviceResult, resultDimension)
+
         val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
         val deviceBias = copyFromHostToDevice(bias, bias.size)
 
-        val actual = cublasProject(
+        cublasProject(
             cublasHandle,
             deviceInput,
             deviceResult,
@@ -114,6 +122,8 @@ class CublasProjectionForwardTest {
             weightMatrix.numberColumns,
             deviceBias,
             bias.size)
+
+        val actual = getVector(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceResult)

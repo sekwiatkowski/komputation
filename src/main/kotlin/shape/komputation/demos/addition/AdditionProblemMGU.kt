@@ -1,6 +1,6 @@
 package shape.komputation.demos.addition
 
-import shape.komputation.cpu.forward.units.minimalGatedUnit
+import shape.komputation.cpu.layers.forward.units.minimalGatedUnit
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization

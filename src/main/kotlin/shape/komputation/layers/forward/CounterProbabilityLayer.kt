@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward
 
-import shape.komputation.cpu.forward.CpuCounterProbabilityLayer
+import shape.komputation.cpu.layers.forward.CpuCounterProbabilityLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 class CounterProbabilityLayer(

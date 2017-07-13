@@ -1,22 +1,32 @@
 package shape.komputation.optimization
 
-fun stochasticGradientDescent(learningRate: Double): (Int, Int) -> UpdateRule {
+import jcuda.jcublas.cublasHandle
+import shape.komputation.cpu.optimization.CpuOptimizationStrategy
+import shape.komputation.cpu.optimization.CpuStochasticGradientDescent
+import shape.komputation.cuda.optimization.CublasStochasticGradientDescent
+import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 
-    return { _: Int, _: Int ->
+fun stochasticGradientDescent(learningRate: Double) =
 
-        StochasticGradientDescent(learningRate)
+    StochasticGradientDescent(learningRate)
+
+class StochasticGradientDescent(private val learningRate: Double) : OptimizationInstruction {
+
+    override fun buildForCpu() : CpuOptimizationStrategy {
+
+        return { _: Int, _: Int ->
+
+            CpuStochasticGradientDescent(this.learningRate)
+
+        }
 
     }
 
-}
+    override fun buildForCuda(): CudaOptimizationStrategy {
 
-class StochasticGradientDescent(private val learningRate: Double) : UpdateRule {
+        return { cublasHandle : cublasHandle, numberRows : Int, numberColumns : Int ->
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
-
-        for(index in 0..gradientSize-1) {
-
-            parameters[index] -= learningRate * gradient[index]
+            CublasStochasticGradientDescent(cublasHandle, numberRows, numberColumns, learningRate)
 
         }
 

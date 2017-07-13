@@ -1,6 +1,6 @@
 package shape.komputation.layers
 
-import shape.komputation.cpu.CpuForwardLayer
+import shape.komputation.cpu.layers.CpuForwardLayer
 
 interface CpuForwardLayerInstruction {
 

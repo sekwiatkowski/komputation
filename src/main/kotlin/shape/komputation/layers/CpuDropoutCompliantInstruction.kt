@@ -1,6 +1,6 @@
 package shape.komputation.layers
 
-import shape.komputation.cpu.forward.dropout.DropoutCompliant
+import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
 
 interface CpuDropoutCompliantInstruction : CpuActivationLayerInstruction {
 

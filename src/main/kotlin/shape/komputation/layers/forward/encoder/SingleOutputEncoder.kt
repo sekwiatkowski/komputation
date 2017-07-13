@@ -1,7 +1,7 @@
 package shape.komputation.layers.forward.encoder
 
-import shape.komputation.cpu.forward.encoder.CpuSingleOutputEncoder
-import shape.komputation.cpu.forward.units.RecurrentUnit
+import shape.komputation.cpu.layers.forward.encoder.CpuSingleOutputEncoder
+import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 class SingleOutputEncoder(

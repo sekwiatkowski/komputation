@@ -1,7 +1,7 @@
 package shape.komputation.layers.forward.dropout
 
-import shape.komputation.cpu.combination.hadamardCombination
-import shape.komputation.cpu.forward.dropout.CpuDropoutLayer
+import shape.komputation.cpu.layers.combination.hadamardCombination
+import shape.komputation.cpu.layers.forward.dropout.CpuDropoutLayer
 import shape.komputation.layers.CpuDropoutCompliantInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames

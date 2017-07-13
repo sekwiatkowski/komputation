@@ -1,48 +1,30 @@
 package shape.komputation.optimization.adaptive
 
-import shape.komputation.optimization.UpdateRule
+import shape.komputation.cpu.optimization.CpuOptimizationStrategy
+import shape.komputation.cpu.optimization.adaptive.CpuAdagrad
+import shape.komputation.cuda.optimization.CudaOptimizationStrategy
+import shape.komputation.optimization.OptimizationInstruction
 
-fun adagrad(learningRate: Double, epsilon: Double = 1e-6): (Int, Int) -> UpdateRule {
+fun adagrad(learningRate: Double, epsilon: Double = 1e-6) =
 
-    return { numberRows : Int, numberColumns : Int ->
+    Adagrad(learningRate, epsilon)
 
-        Adagrad(learningRate, epsilon, numberRows * numberColumns)
+class Adagrad(private val decay : Double = 0.95, private val epsilon: Double = 1e-6) : OptimizationInstruction {
 
-    }
+    override fun buildForCpu() : CpuOptimizationStrategy {
 
-}
+        return { numberRows : Int, numberColumns : Int ->
 
-class Adagrad(private val learningRate: Double, private val epsilon : Double, size : Int) : UpdateRule {
-
-    private val sumOfSquaredDerivatives = DoubleArray(size)
-
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
-
-        for(index in 0..gradientSize-1) {
-
-            val historyIndex = start + index
-            val derivative = gradient[index]
-
-            this.updateHistory(historyIndex, derivative)
-
-            val adaptiveLearningRate = this.adaptLearningRate(historyIndex)
-
-            val update = -adaptiveLearningRate * derivative
-
-            parameters[index] += update
+            CpuAdagrad(this.decay, this.epsilon, numberRows * numberColumns)
 
         }
 
     }
 
-    private fun updateHistory(historyIndex: Int, derivative: Double) {
+    override fun buildForCuda(): CudaOptimizationStrategy {
 
-        this.sumOfSquaredDerivatives[historyIndex] += Math.pow(derivative, 2.0)
+        throw NotImplementedError()
 
     }
-
-    private fun adaptLearningRate(historyIndex: Int) =
-
-        this.learningRate / (Math.sqrt(this.sumOfSquaredDerivatives[historyIndex]) + this.epsilon)
 
 }

@@ -1,6 +1,6 @@
 package shape.komputation.demos.reverse
 
-import shape.komputation.cpu.forward.units.simpleRecurrentUnit
+import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
 import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization

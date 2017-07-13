@@ -1,13 +1,19 @@
 package shape.komputation.layers.forward.projection
 
-import shape.komputation.cpu.forward.projection.CpuProjectionLayer
+import jcuda.jcublas.cublasHandle
+import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
+import shape.komputation.cpu.optimization.DenseAccumulator
+import shape.komputation.cpu.optimization.UpdateRule
+import shape.komputation.cuda.CudaEnvironment
+import shape.komputation.cuda.layers.CudaForwardLayer
+import shape.komputation.cuda.layers.forward.projection.CublasProjectionLayer
+import shape.komputation.cuda.optimization.CublasUpdateRule
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.optimization.DenseAccumulator
-import shape.komputation.optimization.OptimizationStrategy
-import shape.komputation.optimization.UpdateRule
+import shape.komputation.layers.CudaForwardLayerInstruction
+import shape.komputation.optimization.OptimizationInstruction
 
 class ProjectionLayer(
     private val name : String?,
@@ -15,7 +21,7 @@ class ProjectionLayer(
     private val outputDimension: Int,
     private val weightInitializationStrategy: InitializationStrategy,
     private val biasInitializationStrategy: InitializationStrategy?,
-    private val optimizationStrategy : OptimizationStrategy? = null) : CpuForwardLayerInstruction {
+    private val optimizationStrategy : OptimizationInstruction? = null) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu(): CpuProjectionLayer {
 
@@ -23,7 +29,7 @@ class ProjectionLayer(
         val numberWeightColumns = this.inputDimension
 
         val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
-        val weightUpdateRule = this.optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
+        val weightUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(numberWeightRows, numberWeightColumns)
 
         val bias : DoubleArray?
         val biasUpdateRule: UpdateRule?
@@ -32,7 +38,7 @@ class ProjectionLayer(
         if (this.biasInitializationStrategy != null) {
 
             bias = initializeColumnVector(this.biasInitializationStrategy, this.outputDimension)
-            biasUpdateRule = this.optimizationStrategy?.invoke(bias.size, 1)
+            biasUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(bias.size, 1)
             biasAccumulator = DenseAccumulator(bias.size)
 
         }
@@ -50,6 +56,36 @@ class ProjectionLayer(
 
     }
 
+    override fun buildForCuda(environment: CudaEnvironment): CudaForwardLayer {
+
+        val cublasHandle = cublasHandle()
+
+        val numberWeightRows = this.outputDimension
+        val numberWeightColumns = this.inputDimension
+
+        val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
+        val weightUpdateRule = this.optimizationStrategy?.buildForCuda()?.invoke(cublasHandle, numberWeightRows, numberWeightColumns)
+
+        val bias : DoubleArray?
+        val biasUpdateRule: CublasUpdateRule?
+
+        if (this.biasInitializationStrategy != null) {
+
+            bias = initializeColumnVector(this.biasInitializationStrategy, this.outputDimension)
+            biasUpdateRule = this.optimizationStrategy?.buildForCuda()?.invoke(cublasHandle, bias.size, 1)
+
+        }
+        else {
+
+            bias = null
+            biasUpdateRule = null
+
+        }
+
+        return CublasProjectionLayer(this.name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
+
+    }
+
 }
 
 fun projectionLayer(
@@ -57,7 +93,7 @@ fun projectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    optimizationStrategy : OptimizationInstruction? = null) =
 
     projectionLayer(null, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
 
@@ -67,7 +103,7 @@ fun projectionLayer(
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
-    optimizationStrategy : OptimizationStrategy? = null) =
+    optimizationStrategy : OptimizationInstruction? = null) =
 
     ProjectionLayer(
         name,

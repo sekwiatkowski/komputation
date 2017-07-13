@@ -1,53 +1,29 @@
 package shape.komputation.optimization.historical
 
-import shape.komputation.optimization.UpdateRule
+import shape.komputation.cpu.optimization.CpuOptimizationStrategy
+import shape.komputation.cpu.optimization.historical.CpuMomentum
+import shape.komputation.cuda.optimization.CudaOptimizationStrategy
+import shape.komputation.optimization.OptimizationInstruction
 
-fun momentum(learningRate: Double, momentum: Double): (Int, Int) -> UpdateRule {
+fun momentum(learningRate: Double, momentum : Double) =
 
-    return { numberRows : Int, numberColumns : Int ->
+    Momentum(learningRate, momentum)
 
-        Momentum(learningRate, momentum,numberRows * numberColumns)
+class Momentum(private val learningRate: Double, private val momentum : Double) : OptimizationInstruction {
 
-    }
-}
+    override fun buildForCpu() : CpuOptimizationStrategy {
 
-/*
-    After n step, the first scaled gradient is decayed by momentum^(n-1), the second scaled gradient is decayed by momentum^(n-2), etc.
-    history_0 = 0
-    history_1 = momentum * history_0 - learning_rate * gradient_1
-              = - learning_rate * gradient_1
-    history_2 = momentum * history_1 - learning_rate * gradient_2
-              = momentum * (- learning_rate * gradient_1) - learning_rate * gradient_2
-              = - momentum * learning_rate * gradient_1 - learning_rate * gradient_2
-    history_3 = momentum * history_2 - learning_rate * gradient_3
-              = momentum * (- momentum * learning_rate * gradient_1 - learning_rate * gradient_2) - learning_rate * gradient_3
-              = - momentum^2 * learning_rate * gradient_1 - momentum * learning_rate * gradient 2 - learning_rate * gradient_3
- */
-class Momentum(private val learningRate: Double, private val momentum: Double, historySize: Int) : UpdateRule {
+        return { numberRows : Int, numberColumns : Int ->
 
-    private val history = DoubleArray(historySize)
-
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
-
-        for(localIndex in 0..gradientSize - 1) {
-
-            val historyIndex = start + localIndex
-
-            val derivative = gradient[localIndex]
-
-            parameters[localIndex] += this.updateHistory(derivative, historyIndex)
+            CpuMomentum(this.learningRate, this.momentum, numberRows * numberColumns)
 
         }
 
     }
 
-    private fun updateHistory(derivative: Double, historyIndex : Int): Double {
+    override fun buildForCuda(): CudaOptimizationStrategy {
 
-        val newStateEntry = this.momentum * this.history[historyIndex] - this.learningRate * derivative
-
-        this.history[historyIndex] = newStateEntry
-
-        return newStateEntry
+        throw NotImplementedError()
 
     }
 

@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(),
         projectionLayer,
-        sigmoidLayer()
+        sigmoidLayer(1)
     )
 
     network.train(inputs, targets, squaredLoss(), 10_000, 1, printLoss)

@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward
 
-import shape.komputation.cpu.forward.CpuConcatenation
+import shape.komputation.cpu.layers.forward.CpuConcatenation
 import shape.komputation.layers.CpuForwardLayerInstruction
 
 class Concatenation(private val name : String?, private val continuations: Array<Array<CpuForwardLayerInstruction>>) : CpuForwardLayerInstruction {
