@@ -28,15 +28,15 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
     - [attentive](./src/main/kotlin/shape/komputation/layers/forward/decoder/AttentiveDecoder.kt)
 
 - RNN units:
-  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/layers/forward/units/SimpleRecurrentUnit.kt)
-  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/layers/forward/units/MinimalGatedUnit.kt)
+  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/forward/units/SimpleRecurrentUnit.kt)
+  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/cpu/forward/units/MinimalGatedUnit.kt)
 
 - [Dropout](./src/main/kotlin/shape/komputation/layers/forward/dropout/DropoutLayer.kt)
 
 - [Highway layer](./src/main/kotlin/shape/komputation/layers/forward/HighwayLayer.kt)
 
 - Activation functions:
-  - [Identity](./src/main/kotlin/shape/komputation/layers/forward/IdentityLayer.kt)
+  - [Identity](./src/main/kotlin/shape/komputation/layers/forward/activation/IdentityLayer.kt)
   - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/forward/activation/ReluLayer.kt)
   - [Sigmoid](./src/main/kotlin/shape/komputation/layers/forward/activation/SigmoidLayer.kt)
   - Softmax:

@@ -1,152 +1,15 @@
 package shape.komputation.layers.forward.decoder
 
+import shape.komputation.cpu.forward.activation.activationLayer
+import shape.komputation.cpu.forward.decoder.CpuMultiInputDecoder
+import shape.komputation.cpu.forward.projection.seriesBias
+import shape.komputation.cpu.forward.projection.seriesWeighting
+import shape.komputation.cpu.forward.units.RecurrentUnit
 import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.functions.add
-import shape.komputation.functions.extractStep
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.BaseForwardLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.activation.ActivationLayer
-import shape.komputation.layers.forward.activation.activationLayers
-import shape.komputation.layers.forward.projection.SeriesBias
-import shape.komputation.layers.forward.projection.SeriesWeighting
-import shape.komputation.layers.forward.projection.seriesBias
-import shape.komputation.layers.forward.projection.seriesWeighting
-import shape.komputation.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.doubleZeroMatrix
-import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationStrategy
-
-class CpuMultiInputDecoder internal constructor(
-    name : String?,
-    private val numberSteps : Int,
-    private val inputDimension: Int,
-    private val hiddenDimension: Int,
-    private val outputDimension : Int,
-    private val unit : RecurrentUnit,
-    private val weighting: SeriesWeighting,
-    private val bias: SeriesBias?,
-    private val activations: Array<ActivationLayer>) : BaseForwardLayer(name), Optimizable {
-
-    override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
-
-        val seriesOutput = doubleZeroMatrix(this.outputDimension, this.numberSteps)
-
-        // Start with a zero state
-        var state = doubleZeroColumnVector(this.hiddenDimension)
-
-        for (indexStep in 0..this.numberSteps - 1) {
-
-            // Extract the n-th step input
-            val stepInput = input.getColumn(indexStep)
-
-            // Compute the new state
-            state = this.unit.forwardStep(indexStep, state, stepInput, isTraining)
-
-            val output = this.forwardOutput(indexStep, state, isTraining)
-
-            // Store the n-th output
-            seriesOutput.setColumn(indexStep, output.entries)
-
-        }
-
-        return seriesOutput
-
-    }
-
-    private fun forwardOutput(indexStep: Int, state: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
-
-        val weighting = this.weighting.forwardStep(indexStep, state, isTraining)
-
-        val biased =
-
-            if (this.bias != null) {
-
-                bias.forwardStep(weighting)
-
-            }
-            else {
-
-                weighting
-            }
-
-        val output = this.activations[indexStep].forward(biased, isTraining)
-
-        return output
-
-    }
-
-    // Incoming gradient: d chain / d series prediction
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
-
-        val chainEntries = chain.entries
-
-        val diffStatePreActivationWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
-        var diffStatePreActivationWrtPreviousState : DoubleMatrix? = null
-
-        for (indexStep in this.numberSteps - 1 downTo 0) {
-
-            val chainStep = doubleColumnVector(*extractStep(chainEntries, indexStep, outputDimension))
-
-            val diffOutputPreActivationWrtState = this.backwardOutput(indexStep, chainStep)
-
-            val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
-
-                doubleColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
-
-            }
-            else {
-
-                diffOutputPreActivationWrtState
-
-            }
-
-            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
-
-            diffStatePreActivationWrtInput.setColumn(indexStep, newDiffStatePreActivationWrtInput.entries)
-            diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
-
-        }
-
-        this.unit.backwardSeries()
-
-        this.weighting.backwardSeries()
-        this.bias?.backwardSeries()
-
-        return diffStatePreActivationWrtInput
-
-    }
-
-    private fun backwardOutput(indexStep: Int, chainStep: DoubleMatrix): DoubleMatrix {
-
-        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(chainStep)
-
-        val diffOutputPreActivationWrtState = this.weighting.backwardStep(indexStep, diffOutputWrtOutputPreActivation)
-
-        this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
-
-        return diffOutputPreActivationWrtState
-
-    }
-
-    override fun optimize(scalingFactor : Double) {
-
-        if (this.unit is Optimizable) {
-
-            this.unit.optimize(scalingFactor)
-
-        }
-
-        this.weighting.optimize(scalingFactor)
-        this.bias?.optimize(scalingFactor)
-
-    }
-
-}
 
 class MultiInputDecoder(
     private val name : String?,
@@ -180,11 +43,11 @@ class MultiInputDecoder(
             }
 
         val activationName = concatenateNames(this.name, "activation")
-        val activations = activationLayers(
-            this.numberSteps,
-            activationName,
-            this.activationFunction
-        )
+        val activations = Array(this.numberSteps) { index ->
+
+            activationLayer(concatenateNames(activationName, index.toString()), this.activationFunction).buildForCpu()
+
+        }
 
         return CpuMultiInputDecoder(
             this.name,

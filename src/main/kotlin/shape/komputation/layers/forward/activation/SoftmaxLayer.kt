@@ -1,53 +1,13 @@
 package shape.komputation.layers.forward.activation
 
-import shape.komputation.functions.activation.backwardColumnWiseSoftmax
-import shape.komputation.functions.activation.columnWiseSoftmax
-import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.cpu.forward.activation.CpuSoftmaxLayer
+import shape.komputation.layers.CpuActivationLayerInstruction
 
-class CpuSoftmaxLayer internal constructor(name : String? = null) : ActivationLayer(name) {
-
-    private var forwardEntries : DoubleArray = DoubleArray(0)
-
-    override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
-
-        val numberRows = input.numberRows
-        val numberColumns = input.numberColumns
-
-        val result = DoubleMatrix(numberRows, numberColumns, columnWiseSoftmax(input.entries, numberRows, numberColumns))
-
-        this.forwardEntries = result.entries
-
-        return result
-
-    }
-
-    /*
-        Note that each pre-activation effects all nodes.
-        For i == j: prediction (1 - prediction)
-        for i != j: -(prediction_i * prediction_j)
-     */
-    override fun backward(chain : DoubleMatrix): DoubleMatrix {
-
-        val chainEntries = chain.entries
-
-        val numberRows = chain.numberRows
-        val numberColumns = chain.numberColumns
-
-        val gradient = backwardColumnWiseSoftmax(numberRows, numberColumns, this.forwardEntries, chainEntries)
-
-        return DoubleMatrix(numberRows, numberColumns, gradient)
-
-    }
-
-}
-
-class SoftmaxLayer(private val name : String?) : CpuForwardLayerInstruction {
+class SoftmaxLayer(private val name : String?) : CpuActivationLayerInstruction {
 
     override fun buildForCpu() =
 
         CpuSoftmaxLayer(this.name)
-
 
 }
 

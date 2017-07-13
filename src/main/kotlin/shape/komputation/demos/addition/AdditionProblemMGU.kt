@@ -1,12 +1,12 @@
 package shape.komputation.demos.addition
 
+import shape.komputation.cpu.forward.units.minimalGatedUnit
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.encoder.singleOutputEncoder
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.layers.forward.units.minimalGatedUnit
 import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
