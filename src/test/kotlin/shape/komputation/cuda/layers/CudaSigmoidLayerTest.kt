@@ -3,10 +3,10 @@ package shape.komputation.cuda.layers
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.cuda.copyFromHostToDevice
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaEnvironment
-import shape.komputation.functions.activation.sigmoid
 import shape.komputation.layers.forward.activation.sigmoidLayer
 
 class CudaSigmoidLayerTest {

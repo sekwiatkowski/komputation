@@ -1,47 +1,11 @@
 package shape.komputation.loss
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.cpu.loss.CpuSquaredLoss
 
-class SquaredLoss : LossFunction {
+class SquaredLoss : CpuLossFunctionInstruction {
 
-    override fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double {
+    override fun buildForCpu() =
 
-        var loss = 0.0
-
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
-
-        for (indexRow in 0..predictionEntries.size-1) {
-
-            val prediction = predictionEntries[indexRow]
-            val target = targetEntries[indexRow]
-
-            loss += 0.5 * Math.pow(prediction - target, 2.0)
-
-        }
-
-        return loss
-
-    }
-
-    // loss = 0.5 (prediction - target)^2 = 0.5 prediction^2 - prediction * target + 0.5 target ^2
-    // d loss / d prediction = prediction - target
-
-    override fun backward(predictions: DoubleMatrix, targets : DoubleMatrix): DoubleMatrix {
-
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
-
-        val backwardEntries = DoubleArray(predictionEntries.size) { index ->
-
-            predictionEntries[index] - targetEntries[index]
-
-        }
-
-        return DoubleMatrix(predictions.numberRows, predictions.numberColumns, backwardEntries)
-
-    }
+        CpuSquaredLoss()
 
 }
-
-fun squaredLoss() = SquaredLoss()

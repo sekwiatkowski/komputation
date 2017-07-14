@@ -1,6 +1,7 @@
 package shape.komputation.demos.trec
 
-import shape.komputation.functions.findMaxIndex
+import shape.komputation.cpu.functions.findMaxIndex
+import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -10,10 +11,9 @@ import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.intVector
+import shape.komputation.matrix.intColumnVector
 import shape.komputation.matrix.oneHotVector
 import shape.komputation.networks.Network
 import shape.komputation.optimization.adaptive.rmsprop
@@ -211,7 +211,7 @@ private fun represent(examples: Iterable<TrecExample>, vocabulary: Collection<St
     examples
         .map { (_, tokens) -> tokens }
         .map { tokens -> tokens.map { vocabulary.indexOf(it) }.toIntArray() }
-        .map { indices -> intVector(*indices) as Matrix }
+        .map { indices -> intColumnVector(*indices) as Matrix }
         .toTypedArray()
 
 private fun createTargets(trainingCategories: List<String>, indexedCategories: Map<String, Int>) =

@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.combination
 
+import shape.komputation.cpu.functions.hadamard
 import shape.komputation.cpu.layers.CombinationLayer
-import shape.komputation.functions.hadamard
 import shape.komputation.matrix.DoubleMatrix
 
 class HadamardCombination internal constructor(val name: String?) : CombinationLayer(name) {

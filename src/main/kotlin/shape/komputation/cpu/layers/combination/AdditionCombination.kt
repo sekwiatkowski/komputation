@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.combination
 
+import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.layers.CombinationLayer
-import shape.komputation.functions.add
 import shape.komputation.matrix.DoubleMatrix
 
 /*

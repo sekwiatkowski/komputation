@@ -1,8 +1,8 @@
 package shape.komputation.layers.forward
 
+import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.CpuDenseLayer
 import shape.komputation.cpu.layers.forward.activation.activationLayer
-import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames

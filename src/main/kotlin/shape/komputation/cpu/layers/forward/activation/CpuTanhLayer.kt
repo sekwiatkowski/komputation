@@ -1,9 +1,9 @@
 package shape.komputation.cpu.layers.forward.activation
 
+import shape.komputation.cpu.functions.activation.differentiateTanh
+import shape.komputation.cpu.functions.activation.tanh
+import shape.komputation.cpu.functions.hadamard
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
-import shape.komputation.functions.activation.differentiateTanh
-import shape.komputation.functions.activation.tanh
-import shape.komputation.functions.hadamard
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuTanhLayer internal constructor(name: String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {

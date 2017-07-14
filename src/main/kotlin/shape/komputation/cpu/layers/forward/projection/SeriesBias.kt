@@ -1,10 +1,10 @@
 package shape.komputation.cpu.layers.forward.projection
 
+import shape.komputation.cpu.functions.add
+import shape.komputation.cpu.functions.backwardProjectionWrtBias
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
-import shape.komputation.functions.add
-import shape.komputation.functions.backwardProjectionWrtBias
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.matrix.DoubleMatrix

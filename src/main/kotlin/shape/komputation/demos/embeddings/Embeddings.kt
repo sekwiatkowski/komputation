@@ -1,14 +1,14 @@
 package shape.komputation.demos.embeddings
 
-import shape.komputation.initialization.uniformInitialization
+import shape.komputation.cpu.loss.squaredLoss
 import shape.komputation.initialization.initializeColumnVector
+import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.historical.momentum

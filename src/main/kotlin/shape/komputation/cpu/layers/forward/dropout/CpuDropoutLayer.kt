@@ -1,8 +1,8 @@
 package shape.komputation.cpu.layers.forward.dropout
 
+import shape.komputation.cpu.functions.generateMask
 import shape.komputation.cpu.layers.BaseForwardLayer
 import shape.komputation.cpu.layers.combination.HadamardCombination
-import shape.komputation.functions.generateMask
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleConstantColumnVector
 import java.util.*

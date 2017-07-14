@@ -1,5 +1,6 @@
 package shape.komputation.demos.lines
 
+import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -7,7 +8,6 @@ import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleMatrixFromRows

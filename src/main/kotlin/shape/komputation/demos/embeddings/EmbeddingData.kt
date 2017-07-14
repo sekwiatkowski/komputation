@@ -1,7 +1,7 @@
 package shape.komputation.demos.embeddings
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.intVector
+import shape.komputation.matrix.intColumnVector
 import shape.komputation.matrix.oneHotVector
 
 /*
@@ -61,7 +61,7 @@ object EmbeddingData {
 
     private fun generateEmbeddings(modifierIndices: IntRange, polarityIndices: IntRange) =
 
-        modifierIndices.zip(polarityIndices).map { (modifier, polarity) -> intVector(modifier, polarity) }
+        modifierIndices.zip(polarityIndices).map { (modifier, polarity) -> intColumnVector(modifier, polarity) }
 
     val inputs = listOf<List<Matrix>>(
             generateEmbeddings(strongModifierIndices, negativeIndices),

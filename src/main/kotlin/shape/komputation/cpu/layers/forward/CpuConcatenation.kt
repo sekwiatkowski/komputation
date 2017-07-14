@@ -1,17 +1,16 @@
 package shape.komputation.cpu.layers.forward
 
+import shape.komputation.cpu.functions.splitRows
+import shape.komputation.cpu.functions.stackRows
 import shape.komputation.cpu.layers.BaseForwardLayer
-import shape.komputation.functions.splitRows
-import shape.komputation.functions.stackRows
 import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.networks.Network
 import shape.komputation.optimization.Optimizable
 
-class CpuConcatenation internal constructor(name : String? = null, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable, Resourceful {
+class CpuConcatenation internal constructor(name : String? = null, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable {
 
     private val networks = continuations.map { layers -> Network(inputLayer(), *layers) }
 
@@ -73,26 +72,6 @@ class CpuConcatenation internal constructor(name : String? = null, continuations
         for (network in this.networks) {
 
             network.optimize(scalingFactor)
-
-        }
-
-    }
-
-    override fun acquire() {
-
-        for (network in this.networks) {
-
-            network.acquireLayerResources()
-
-        }
-
-    }
-
-    override fun release() {
-
-        for (network in this.networks) {
-
-            network.releaseLayerResources()
 
         }
 

@@ -1,9 +1,9 @@
 package shape.komputation.cpu.layers.forward.encoder
 
+import shape.komputation.cpu.functions.add
+import shape.komputation.cpu.functions.extractStep
 import shape.komputation.cpu.layers.BaseForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.functions.add
-import shape.komputation.functions.extractStep
 import shape.komputation.matrix.*
 import shape.komputation.optimization.Optimizable
 

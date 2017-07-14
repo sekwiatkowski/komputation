@@ -2,9 +2,9 @@ package shape.komputation.matrix
 
 import java.util.*
 
-sealed class Matrix
+sealed class Matrix(val numberRows: Int, val numberColumns: Int)
 
-open class DoubleMatrix(val numberRows: Int, val numberColumns: Int, val entries: DoubleArray) : Matrix() {
+open class DoubleMatrix(numberRows: Int, numberColumns: Int, val entries: DoubleArray) : Matrix(numberRows, numberColumns) {
 
     fun getEntry(indexRow: Int, indexColumn: Int): Double {
 
@@ -36,4 +36,4 @@ open class DoubleMatrix(val numberRows: Int, val numberColumns: Int, val entries
 
 }
 
-class IntMatrix(val entries : IntArray, val numberRows : Int, val numberColumns : Int) : Matrix()
+class IntMatrix(numberRows : Int, numberColumns : Int, val entries : IntArray) : Matrix(numberRows, numberColumns)

@@ -1,10 +1,10 @@
 package shape.komputation.demos.negation
 
+import shape.komputation.cpu.loss.squaredLoss
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent

@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.forward.activation
 
-import shape.komputation.functions.activation.backwardVectorSoftmax
-import shape.komputation.functions.activation.vectorSoftmax
+import shape.komputation.cpu.functions.activation.backwardVectorSoftmax
+import shape.komputation.cpu.functions.activation.vectorSoftmax
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuSoftmaxVectorLayer internal constructor (name : String? = null) : BaseCpuActivationLayer(name) {

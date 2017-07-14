@@ -1,6 +1,6 @@
 package shape.komputation.cpu.optimization
 
-import shape.komputation.functions.scale
+import shape.komputation.cpu.functions.scale
 
 fun updateDensely(parameters: DoubleArray, gradient : DoubleArray, scalingFactor : Double, rule : UpdateRule) {
 

@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.forward.activation
 
-import shape.komputation.functions.activation.backwardColumnWiseSoftmax
-import shape.komputation.functions.activation.columnWiseSoftmax
+import shape.komputation.cpu.functions.activation.backwardColumnWiseSoftmax
+import shape.komputation.cpu.functions.activation.columnWiseSoftmax
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuSoftmaxLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name) {

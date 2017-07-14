@@ -1,7 +1,8 @@
 package shape.komputation.demos.reverse
 
+import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
@@ -9,7 +10,6 @@ import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.decoder.singleInputDecoder
 import shape.komputation.layers.forward.encoder.singleOutputEncoder
-import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent

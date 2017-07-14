@@ -7,13 +7,13 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.copyFromHostToDevice
+import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
+import shape.komputation.cuda.functions.cublasBackwardProjectionWrtInput
+import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
+import shape.komputation.cuda.functions.cublasProject
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CublasUpdateRule
 import shape.komputation.cuda.setVectorToZero
-import shape.komputation.functions.cublasBackwardProjectionWrtBias
-import shape.komputation.functions.cublasBackwardProjectionWrtInput
-import shape.komputation.functions.cublasBackwardProjectionWrtWeights
-import shape.komputation.functions.cublasProject
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 

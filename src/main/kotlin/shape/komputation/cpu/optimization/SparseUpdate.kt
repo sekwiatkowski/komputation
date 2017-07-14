@@ -1,6 +1,6 @@
 package shape.komputation.cpu.optimization
 
-import shape.komputation.functions.scale
+import shape.komputation.cpu.functions.scale
 
 fun updateSparsely(vectors: Array<DoubleArray>, dimension : Int, size : Int, ids: IntArray, counts : DoubleArray, gradients: Array<DoubleArray>, rule : UpdateRule) {
 

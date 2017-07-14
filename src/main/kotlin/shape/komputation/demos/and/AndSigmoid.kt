@@ -1,10 +1,10 @@
 package shape.komputation.demos.and
 
+import shape.komputation.cpu.loss.squaredLoss
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleScalar

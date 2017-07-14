@@ -1,14 +1,14 @@
 package shape.komputation.demos.mnist
 
-import shape.komputation.functions.activation.ActivationFunction
-import shape.komputation.functions.findMaxIndex
+import shape.komputation.cpu.functions.activation.ActivationFunction
+import shape.komputation.cpu.functions.findMaxIndex
+import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.logisticLoss
 import shape.komputation.networks.Network
 import shape.komputation.optimization.historical.nesterov
 import java.io.File

@@ -1,8 +1,8 @@
 package shape.komputation.cpu.layers.forward.activation
 
+import shape.komputation.cpu.functions.activation.backwardRelu
+import shape.komputation.cpu.functions.activation.relu
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
-import shape.komputation.functions.activation.backwardRelu
-import shape.komputation.functions.activation.relu
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {

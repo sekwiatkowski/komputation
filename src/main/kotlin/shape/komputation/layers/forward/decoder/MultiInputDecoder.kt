@@ -1,11 +1,11 @@
 package shape.komputation.layers.forward.decoder
 
+import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.activation.activationLayer
 import shape.komputation.cpu.layers.forward.decoder.CpuMultiInputDecoder
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.functions.activation.ActivationFunction
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames

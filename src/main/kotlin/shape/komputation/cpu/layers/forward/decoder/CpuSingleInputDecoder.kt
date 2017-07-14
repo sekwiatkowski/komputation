@@ -1,12 +1,12 @@
 package shape.komputation.cpu.layers.forward.decoder
 
+import shape.komputation.cpu.functions.add
+import shape.komputation.cpu.functions.extractStep
 import shape.komputation.cpu.layers.BaseForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.functions.add
-import shape.komputation.functions.extractStep
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleZeroColumnVector

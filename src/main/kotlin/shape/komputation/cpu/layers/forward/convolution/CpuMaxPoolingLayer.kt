@@ -1,8 +1,8 @@
 package shape.komputation.cpu.layers.forward.convolution
 
+import shape.komputation.cpu.functions.findMaxIndicesInRows
+import shape.komputation.cpu.functions.selectEntries
 import shape.komputation.cpu.layers.BaseForwardLayer
-import shape.komputation.functions.findMaxIndicesInRows
-import shape.komputation.functions.selectEntries
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 

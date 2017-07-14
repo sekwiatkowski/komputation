@@ -57,7 +57,7 @@ class CpuLookupLayerTest {
 
         assertMatrixEquality(
             doubleRowVector(1.0, 2.0),
-            lookupLayer.forward(intVector(0, 1)),
+            lookupLayer.forward(intColumnVector(0, 1)),
             0.001)
 
     }
@@ -72,7 +72,7 @@ class CpuLookupLayerTest {
                 doubleArrayOf(1.0, 2.0),
                 doubleArrayOf(3.0, 4.0)
             ),
-            lookupLayer.forward(intVector(0, 1)),
+            lookupLayer.forward(intColumnVector(0, 1)),
             0.001)
 
     }
@@ -87,7 +87,7 @@ class CpuLookupLayerTest {
                 doubleArrayOf(3.0, 4.0),
                 doubleArrayOf(1.0, 2.0)
             ),
-            lookupLayer.forward(intVector(1, 0)),
+            lookupLayer.forward(intColumnVector(1, 0)),
             0.001)
 
     }

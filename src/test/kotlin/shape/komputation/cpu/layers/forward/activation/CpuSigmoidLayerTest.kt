@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.forward.activation
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.functions.activation.sigmoid
+import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.matrix.doubleColumnVector
 
 class CpuSigmoidLayerTest {

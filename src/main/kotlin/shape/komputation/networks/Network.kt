@@ -1,9 +1,8 @@
 package shape.komputation.networks
 
+import shape.komputation.cpu.loss.CpuLossFunction
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.layers.Resourceful
-import shape.komputation.loss.LossFunction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
@@ -13,9 +12,11 @@ val printLoss = { _ : Int, loss : Double -> println(loss) }
 
 class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLayerInstructions: CpuForwardLayerInstruction) {
 
-    private val layers = forwardLayerInstructions.map { it.buildForCpu() }
     private val entryPoint = entryPointInstruction.buildForCpu()
+
+    private val layers = forwardLayerInstructions.map { it.buildForCpu() }
     private val numberLayers = this.layers.size
+
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
     fun forward(input : Matrix, isTraining : Boolean) : DoubleMatrix {
@@ -61,7 +62,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
     fun train(
         inputs: Array<Matrix>,
         targets: Array<DoubleMatrix>,
-        lossFunction: LossFunction,
+        lossFunction: CpuLossFunction,
         numberIterations : Int,
         batchSize : Int,
         afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
@@ -69,8 +70,6 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
         val numberExamples = inputs.size
 
         val batches = partitionIndices(numberExamples, batchSize)
-
-        this.acquireLayerResources()
 
         repeat(numberIterations) { indexIteration ->
 
@@ -113,8 +112,6 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         }
 
-        this.releaseLayerResources()
-
     }
 
     fun test(
@@ -125,8 +122,6 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
         val size = inputs.size
 
         val results = BooleanArray(size)
-
-        this.acquireLayerResources()
 
         for(index in 0..size -1) {
 
@@ -139,37 +134,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         }
 
-        this.releaseLayerResources()
-
         return results
-
-    }
-
-    fun acquireLayerResources() {
-
-        for (layer in this.layers) {
-
-            if (layer is Resourceful) {
-
-                layer.acquire()
-
-            }
-
-        }
-
-    }
-
-    fun releaseLayerResources() {
-
-        for (layer in this.layers) {
-
-            if (layer is Resourceful) {
-
-                layer.release()
-
-            }
-
-        }
 
     }
 

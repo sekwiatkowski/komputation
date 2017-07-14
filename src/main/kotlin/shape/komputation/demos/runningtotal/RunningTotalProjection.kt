@@ -1,14 +1,14 @@
 package shape.komputation.demos.runningtotal
 
+import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.functions.activation.ActivationFunction
+import shape.komputation.cpu.loss.squaredLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.loss.squaredLoss
 import shape.komputation.networks.Network
 import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent

@@ -1,5 +1,5 @@
 package shape.komputation.matrix
 
-fun intVector(vararg entries : Int) = IntMatrix(entries, entries.size, 1)
+fun intColumnVector(vararg entries : Int) = IntMatrix(entries.size, 1, entries)
 
-fun intScalar(scalar : Int) = intVector(scalar)
+fun intScalar(scalar : Int) = intColumnVector(scalar)

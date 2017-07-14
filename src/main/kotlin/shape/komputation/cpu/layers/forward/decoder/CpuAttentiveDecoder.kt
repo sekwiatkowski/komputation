@@ -1,5 +1,9 @@
 package shape.komputation.cpu.layers.forward.decoder
 
+import shape.komputation.cpu.functions.add
+import shape.komputation.cpu.functions.backwardProjectionWrtInput
+import shape.komputation.cpu.functions.backwardProjectionWrtWeights
+import shape.komputation.cpu.functions.extractStep
 import shape.komputation.cpu.layers.BaseForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
@@ -11,10 +15,6 @@ import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
-import shape.komputation.functions.add
-import shape.komputation.functions.backwardProjectionWrtInput
-import shape.komputation.functions.backwardProjectionWrtWeights
-import shape.komputation.functions.extractStep
 import shape.komputation.matrix.*
 import shape.komputation.optimization.Optimizable
 

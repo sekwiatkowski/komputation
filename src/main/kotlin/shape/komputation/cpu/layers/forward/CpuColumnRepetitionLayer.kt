@@ -1,8 +1,8 @@
 package shape.komputation.cpu.layers.forward
 
+import shape.komputation.cpu.functions.repeatColumn
+import shape.komputation.cpu.functions.sumRows
 import shape.komputation.cpu.layers.BaseForwardLayer
-import shape.komputation.functions.repeatColumn
-import shape.komputation.functions.sumRows
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val n : Int) : BaseForwardLayer(name) {

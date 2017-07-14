@@ -1,8 +1,8 @@
 package shape.komputation.cpu.layers.forward
 
+import shape.komputation.cpu.functions.negate
+import shape.komputation.cpu.functions.subtract
 import shape.komputation.cpu.layers.BaseForwardLayer
-import shape.komputation.functions.negate
-import shape.komputation.functions.subtract
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuCounterProbabilityLayer internal constructor(

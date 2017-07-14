@@ -1,13 +1,13 @@
 package shape.komputation.cpu.layers.forward.projection
 
+import shape.komputation.cpu.functions.backwardProjectionWrtBias
+import shape.komputation.cpu.functions.backwardProjectionWrtInput
+import shape.komputation.cpu.functions.backwardProjectionWrtWeights
+import shape.komputation.cpu.functions.project
 import shape.komputation.cpu.layers.BaseForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
-import shape.komputation.functions.backwardProjectionWrtBias
-import shape.komputation.functions.backwardProjectionWrtInput
-import shape.komputation.functions.backwardProjectionWrtWeights
-import shape.komputation.functions.project
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 

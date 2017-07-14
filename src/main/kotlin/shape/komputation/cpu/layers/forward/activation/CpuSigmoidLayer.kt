@@ -1,9 +1,9 @@
 package shape.komputation.cpu.layers.forward.activation
 
+import shape.komputation.cpu.functions.activation.differentiateSigmoid
+import shape.komputation.cpu.functions.activation.sigmoid
+import shape.komputation.cpu.functions.hadamard
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
-import shape.komputation.functions.activation.differentiateSigmoid
-import shape.komputation.functions.activation.sigmoid
-import shape.komputation.functions.hadamard
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuSigmoidLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {

@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.forward
 
+import shape.komputation.cpu.functions.transpose
 import shape.komputation.cpu.layers.BaseForwardLayer
-import shape.komputation.functions.transpose
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuTranspositionLayer internal constructor(name : String? = null) : BaseForwardLayer(name)  {
