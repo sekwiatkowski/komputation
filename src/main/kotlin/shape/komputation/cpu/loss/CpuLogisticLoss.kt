@@ -2,7 +2,7 @@ package shape.komputation.cpu.loss
 
 import shape.komputation.matrix.DoubleMatrix
 
-class LogisticLoss : CpuLossFunction {
+class CpuLogisticLoss : CpuLossFunction {
 
     // -log(probability of the correct target)
     override fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double {
@@ -56,5 +56,3 @@ class LogisticLoss : CpuLossFunction {
     }
 
 }
-
-fun logisticLoss() = LogisticLoss()

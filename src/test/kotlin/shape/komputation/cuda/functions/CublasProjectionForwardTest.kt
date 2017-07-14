@@ -72,13 +72,15 @@ class CublasProjectionForwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
+        val deviceInput = Pointer()
+        copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
 
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
         allocateDeviceMemory(deviceResult, resultDimension)
 
-        val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
+        val deviceWeights = Pointer()
+        copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
 
         cublasProject(
             cublasHandle,
@@ -105,13 +107,16 @@ class CublasProjectionForwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val deviceInput = copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size)
+        val deviceInput = Pointer()
+        copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
         allocateDeviceMemory(deviceResult, resultDimension)
 
-        val deviceWeights = copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size)
-        val deviceBias = copyFromHostToDevice(bias, bias.size)
+        val deviceWeights = Pointer()
+        copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
+        val deviceBias = Pointer()
+        copyFromHostToDevice(bias, bias.size, deviceBias)
 
         cublasProject(
             cublasHandle,

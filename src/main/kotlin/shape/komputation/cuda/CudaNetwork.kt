@@ -1,14 +1,11 @@
-package shape.komputation.networks
+package shape.komputation.cuda
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.loss.CudaLossFunction
-import shape.komputation.cuda.setUpCudaEnvironment
-import shape.komputation.cuda.setVector
 import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.Resourceful
+import shape.komputation.loss.CudaLossFunctionInstruction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
@@ -24,9 +21,9 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(input : Matrix) : Pointer {
+    fun forward(id : Int, input : Matrix) : Pointer {
 
-        var output = this.entryPoint.forward(input)
+        var output = this.entryPoint.forward(id, input)
 
         for (layer in this.layers) {
 
@@ -57,10 +54,12 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     fun train(
         inputs: Array<Matrix>,
         targets: Array<DoubleMatrix>,
-        lossFunction: CudaLossFunction,
+        loss: CudaLossFunctionInstruction,
         numberIterations : Int,
         batchSize : Int,
-        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
+        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null): Long {
+
+        val lossFunction = loss.buildForCuda(this.cudaEnvironment)
 
         val numberExamples = inputs.size
 
@@ -68,35 +67,62 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         this.acquireLayerResources()
 
-        val deviceTarget = Pointer()
+        if (lossFunction is Resourceful) {
+
+            lossFunction.acquire()
+
+        }
+
         val firstTarget = targets.first()
         val targetSize = firstTarget.numberRows * firstTarget.numberColumns
-        allocateDeviceMemory(deviceTarget, targetSize)
+
+        val targetMemory = hashMapOf<Int, Pointer>()
+
+        val start = System.currentTimeMillis()
 
         repeat(numberIterations) { indexIteration ->
 
-            for (batch in batches) {
+            var id = 0
 
-                var batchLoss = 0.0
+            var iterationLoss = 0.0
+
+            for (batch in batches) {
 
                 for (indexExample in batch) {
 
                     val input = inputs[indexExample]
 
-                    val target = targets[indexExample]
-                    setVector(deviceTarget, target.entries, targetSize)
+                    val deviceTarget = if (targetMemory.containsKey(id)) {
 
-                    val prediction = this.forward(input)
+                        targetMemory[id]!!
 
-                    val loss = lossFunction.forward(prediction, deviceTarget)
+                    }
+                    else {
 
-                    val lossGradient = lossFunction.backward(prediction, deviceTarget)
+                        val target = targets[indexExample]
+
+                        val newPointer = Pointer()
+                        copyFromHostToDevice(target.entries, targetSize, newPointer)
+
+                        targetMemory[id] = newPointer
+
+                        newPointer
+
+                    }
+
+                    val devicePointer = this.forward(id++, input)
+
+                    lossFunction.accumulate(devicePointer, deviceTarget)
+
+                    val lossGradient = lossFunction.backward(devicePointer, deviceTarget)
 
                     this.backward(lossGradient)
 
-                    batchLoss += loss
-
                 }
+
+                iterationLoss += lossFunction.accessAccumulation()
+
+                lossFunction.reset()
 
                 val scalingFactor = 1.0.div(batch.size.toDouble())
 
@@ -106,15 +132,27 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
             if (afterEachIteration != null) {
 
-                afterEachIteration(indexIteration, 0.0)
+                afterEachIteration(indexIteration, iterationLoss)
 
             }
 
         }
 
-        cudaFree(deviceTarget)
+        val stop = System.currentTimeMillis()
+
+        val time = stop - start
+
+        targetMemory.values.forEach { pointer -> cudaFree(pointer) }
+
+        if (lossFunction is Resourceful) {
+
+            lossFunction.release()
+
+        }
 
         this.releaseLayerResources()
+
+        return time
 
 
     }
@@ -130,6 +168,12 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     }
 
     fun acquireLayerResources() {
+
+        if (this.entryPoint is Resourceful) {
+
+            this.entryPoint.acquire()
+
+        }
 
         for (layer in this.layers) {
 
@@ -152,6 +196,12 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
                 layer.release()
 
             }
+
+        }
+
+        if (this.entryPoint is Resourceful) {
+
+            this.entryPoint.release()
 
         }
 

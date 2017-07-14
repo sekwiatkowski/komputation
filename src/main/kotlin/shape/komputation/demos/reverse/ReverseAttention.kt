@@ -1,15 +1,15 @@
 package shape.komputation.demos.reverse
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.loss.logisticLoss
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.decoder.attentiveDecoder
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
+import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -58,7 +58,7 @@ fun main(args: Array<String>) {
         optimizationStrategy)
 
     val network = Network(
-        inputLayer(),
+        inputLayer(seriesLength),
         encoder,
         decoder
     )

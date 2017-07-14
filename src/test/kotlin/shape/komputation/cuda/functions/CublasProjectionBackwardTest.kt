@@ -114,12 +114,15 @@ class CublasProjectionBackwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val deviceWeights = copyFromHostToDevice(weights.entries, numberWeightEntries)
+        val deviceWeights = Pointer()
+        copyFromHostToDevice(weights.entries, numberWeightEntries, deviceWeights)
 
-        val deviceChain = copyFromHostToDevice(chain, numberWeightRows)
+        val deviceChain = Pointer()
+        copyFromHostToDevice(chain, numberWeightRows, deviceChain)
 
         val hostResult = DoubleArray(numberWeightColumns)
-        val deviceResult = copyFromHostToDevice(hostResult, numberWeightColumns)
+        val deviceResult = Pointer()
+        copyFromHostToDevice(hostResult, numberWeightColumns, deviceResult)
 
         cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
 
@@ -147,12 +150,15 @@ class CublasProjectionBackwardTest {
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
-        val deviceInput = copyFromHostToDevice(inputEntries, inputDimension)
+        val deviceInput = Pointer()
+        copyFromHostToDevice(inputEntries, inputDimension, deviceInput)
 
-        val deviceChain = copyFromHostToDevice(chain, chainDimension)
+        val deviceChain = Pointer()
+        copyFromHostToDevice(chain, chainDimension, deviceChain)
 
         val hostResult = DoubleArray(resultDimension)
-        val deviceResult = copyFromHostToDevice(hostResult, resultDimension)
+        val deviceResult = Pointer()
+        copyFromHostToDevice(hostResult, resultDimension, deviceResult)
 
         cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, deviceResult, chainDimension, inputDimension)
 

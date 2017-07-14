@@ -1,11 +1,15 @@
 package shape.komputation.loss
 
-import shape.komputation.cpu.loss.CpuSquaredLoss
+import shape.komputation.cpu.loss.CpuLogisticLoss
 
 class LogisticLoss : CpuLossFunctionInstruction {
 
     override fun buildForCpu() =
 
-        CpuSquaredLoss()
+        CpuLogisticLoss()
 
 }
+
+fun logisticLoss() =
+
+    LogisticLoss()

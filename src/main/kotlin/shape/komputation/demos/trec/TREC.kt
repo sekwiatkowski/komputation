@@ -1,7 +1,7 @@
 package shape.komputation.demos.trec
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.findMaxIndex
-import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -11,11 +11,11 @@ import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.intColumnVector
 import shape.komputation.matrix.oneHotVector
-import shape.komputation.networks.Network
 import shape.komputation.optimization.adaptive.rmsprop
 import java.io.File
 import java.util.*
@@ -111,6 +111,7 @@ class TrecTraining {
         val network = Network(
             lookupLayer(embeddings, embeddingDimension, maximumBatchSize, maximumLength, optimizationStrategy),
             concatenation(
+                maximumLength * embeddingDimension,
                 *filterWidths
                     .map { filterWidth ->
                         arrayOf(

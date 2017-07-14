@@ -2,7 +2,6 @@ package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
 import jcuda.driver.CUfunction
-import jcuda.driver.JCudaDriver.cuCtxSynchronize
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.compileKernel
@@ -23,14 +22,18 @@ class CudaSigmoidLayer internal constructor(
     private val numberBlocks = Math.ceil(inputDimension.toDouble() / numberThreads.toDouble()).toInt()
 
     private val deviceForwardResult = Pointer()
+    private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private var forwardPtxFile: File? = null
     private val forwardFunction = CUfunction()
 
     private val deviceBackwardResult = Pointer()
+    private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     private var backwardPtxFile: File? = null
     private val backwardFunction = CUfunction()
+
+    val deviceInputDimension = Pointer.to(intArrayOf(this.inputDimension))
 
     override fun acquire() {
 
@@ -67,14 +70,12 @@ class CudaSigmoidLayer internal constructor(
     override fun forward(input : Pointer): Pointer {
 
         val forwardParameters = Pointer.to(
-            Pointer.to(intArrayOf(this.inputDimension)),
+            this.deviceInputDimension,
             Pointer.to(input),
-            Pointer.to(this.deviceForwardResult)
+            this.pointerToDeviceForwardResult
         )
 
         launchKernel(this.forwardFunction, forwardParameters, this.numberBlocks, this.numberThreads)
-
-        cuCtxSynchronize()
 
         return this.deviceForwardResult
 
@@ -83,15 +84,13 @@ class CudaSigmoidLayer internal constructor(
     override fun backward(chain : Pointer) : Pointer {
 
         val backwardParameters = Pointer.to(
-            Pointer.to(intArrayOf(this.inputDimension)),
-            Pointer.to(this.deviceForwardResult),
+            this.deviceInputDimension,
+            this.pointerToDeviceForwardResult,
             Pointer.to(chain),
-            Pointer.to(this.deviceBackwardResult)
+            pointerToDeviceBackwardResult
         )
 
         launchKernel(this.backwardFunction, backwardParameters, this.numberBlocks, this.numberThreads)
-
-        cuCtxSynchronize()
 
         return this.deviceBackwardResult
 

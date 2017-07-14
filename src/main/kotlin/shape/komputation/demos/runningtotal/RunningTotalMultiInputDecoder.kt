@@ -1,16 +1,16 @@
 package shape.komputation.demos.runningtotal
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.loss.squaredLoss
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.decoder.multiInputDecoder
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
+import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -75,7 +75,7 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        inputLayer(),
+        inputLayer(numberSteps),
         encoder,
         decoder
     )
@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        squaredLoss(),
+        squaredLoss(1),
         numberIterations,
         batchSize,
         printLoss

@@ -16,8 +16,15 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
     private val backwardKernel = CUfunction()
 
     private val deviceForwardResults = Pointer()
+    private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
+
     private val deviceBackwardResults = Pointer()
-    private val deviceSum = Pointer()
+    private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
+
+    private val deviceLoss = Pointer()
+    private val pointerToDeviceSum = Pointer.to(this.deviceLoss)
+
+    private val deviceTargetDimension = Pointer.to(intArrayOf(this.targetDimension))
 
     override fun acquire() {
 
@@ -25,7 +32,7 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
         this.backwardPtxFile = acquireKernel(File(javaClass.getResource("/cuda/BackwardSquaredLoss.cu").toURI()), "backwardSquaredLossKernel", this.backwardKernel)
 
         allocateDeviceMemory(this.deviceForwardResults, this.targetDimension)
-        allocateDeviceMemory(this.deviceSum, 1)
+        allocateDeviceMemory(this.deviceLoss, 1)
         allocateDeviceMemory(this.deviceBackwardResults, this.targetDimension)
 
     }
@@ -51,36 +58,42 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
         this.backwardPtxFile!!.delete()
 
         cudaFree(this.deviceForwardResults)
-        cudaFree(this.deviceSum)
+        cudaFree(this.deviceLoss)
 
         cudaFree(this.deviceBackwardResults)
 
     }
 
-    override fun forward(predictions: Pointer, targets: Pointer): Double {
+    override fun accumulate(predictions: Pointer, targets: Pointer) {
 
         val parameters = Pointer.to(
-            Pointer.to(intArrayOf(this.targetDimension)),
+            this.deviceTargetDimension,
             Pointer.to(predictions),
             Pointer.to(targets),
-            Pointer.to(this.deviceForwardResults),
-            Pointer.to(this.deviceSum))
+            this.pointerToDeviceForwardResults,
+            this.pointerToDeviceSum)
 
         launchKernel(this.forwardKernel, parameters, 1, this.targetDimension, this.targetDimension)
 
-        val hostResult = getVector(this.deviceSum, 1)[0]
+    }
 
-        return hostResult
+    override fun accessAccumulation() =
+
+        getVector(this.deviceLoss, 1)[0]
+
+    override fun reset() {
+
+        setVectorToZero(this.deviceLoss, 1)
 
     }
 
     override fun backward(predictions: Pointer, targets: Pointer): Pointer {
 
         val parameters = Pointer.to(
-            Pointer.to(intArrayOf(this.targetDimension)),
+            this.deviceTargetDimension,
             Pointer.to(predictions),
             Pointer.to(targets),
-            Pointer.to(this.deviceBackwardResults))
+            this.pointerToDeviceBackwardResults)
 
         launchKernel(this.backwardKernel, parameters, 1, this.targetDimension)
 

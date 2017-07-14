@@ -35,7 +35,7 @@ __global__ void squaredLossKernel (int length, double *predictions, double *targ
 
     if (threadId == 0) {
 
-        result[blockIdx.x] = sharedData[0];
+        result[blockIdx.x] += sharedData[0];
 
     }
 

@@ -67,11 +67,11 @@ class CublasProjectionLayer internal constructor(
         allocateDeviceMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
         allocateDeviceMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
-        this.deviceWeights = copyFromHostToDevice(this.initialWeights, this.numberWeightEntries)
+        copyFromHostToDevice(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
 
         if(this.initialBias != null) {
 
-            this.deviceBias = copyFromHostToDevice(this.initialBias, this.numberBiasEntries)
+            copyFromHostToDevice(this.initialBias, this.numberBiasEntries, this.deviceBias)
 
         }
 

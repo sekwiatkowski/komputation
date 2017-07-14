@@ -1,8 +1,8 @@
-package shape.komputation.networks
+package shape.komputation.cpu
 
-import shape.komputation.cpu.loss.CpuLossFunction
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.loss.CpuLossFunctionInstruction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
@@ -62,10 +62,12 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
     fun train(
         inputs: Array<Matrix>,
         targets: Array<DoubleMatrix>,
-        lossFunction: CpuLossFunction,
+        loss: CpuLossFunctionInstruction,
         numberIterations : Int,
         batchSize : Int,
         afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
+
+        val lossFunction = loss.buildForCpu()
 
         val numberExamples = inputs.size
 
@@ -86,13 +88,13 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
                     val prediction = this.forward(input, true)
 
-                    val loss = lossFunction.forward(prediction, target)
+                    val instanceLoss = lossFunction.forward(prediction, target)
 
                     val lossGradient = lossFunction.backward(prediction, target)
 
                     this.backward(lossGradient)
 
-                    batchLoss += loss
+                    batchLoss += instanceLoss
 
                 }
 

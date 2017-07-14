@@ -1,15 +1,15 @@
 package shape.komputation.demos.mnist
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.functions.findMaxIndex
-import shape.komputation.cpu.loss.logisticLoss
 import shape.komputation.initialization.constantInitialization
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.highwayLayer
-import shape.komputation.networks.Network
+import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
@@ -60,7 +60,7 @@ fun main(args: Array<String>) {
     val createHiddenLayer = { highwayLayer(hiddenDimension, gaussianInitialization, zeroInitialization, constantInitialization, ActivationFunction.Tanh, optimizer) }
 
     val network = Network(
-        inputLayer(),
+        inputLayer(inputDimension),
         dimensionalityReductionLayer,
         createHiddenLayer(),
         createHiddenLayer(),

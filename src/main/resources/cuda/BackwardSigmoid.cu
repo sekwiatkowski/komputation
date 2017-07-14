@@ -17,4 +17,6 @@ __global__ void backwardSigmoidKernel (int length, double *forward, double *chai
 
     }
 
+    __syncthreads();
+
 }

@@ -17,4 +17,6 @@ __global__ void sigmoidKernel (int length, double *source, double *destination)
 
     }
 
+    __syncthreads();
+
 }

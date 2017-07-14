@@ -43,5 +43,3 @@ class CpuSquaredLoss : CpuLossFunction {
     }
 
 }
-
-fun squaredLoss() = CpuSquaredLoss()

@@ -1,15 +1,15 @@
 package shape.komputation.demos.and
 
-import shape.komputation.cpu.loss.squaredLoss
+import shape.komputation.cpu.Network
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleScalar
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -30,17 +30,20 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
+    val inputDimension = 2
+    val outputDimension = 1
+
     val initialize = heInitialization(random)
     val optimizer = stochasticGradientDescent(0.03)
 
-    val projectionLayer = projectionLayer(2, 1, initialize, initialize, optimizer)
+    val projectionLayer = projectionLayer(inputDimension, outputDimension, initialize, initialize, optimizer)
 
     val network = Network(
-        inputLayer(),
+        inputLayer(inputDimension),
         projectionLayer,
-        sigmoidLayer(1)
+        sigmoidLayer(outputDimension)
     )
 
-    network.train(inputs, targets, squaredLoss(), 10_000, 1, printLoss)
+    network.train(inputs, targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
 
 }

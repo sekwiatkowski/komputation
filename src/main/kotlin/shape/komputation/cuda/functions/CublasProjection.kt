@@ -6,7 +6,10 @@ import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
 
-fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult : Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer? = null, biasDimension : Int = 0) {
+private val pointerToOne = Pointer.to(doubleArrayOf(1.0))
+private val pointerToZero = Pointer.to(doubleArrayOf(0.0))
+
+fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult : Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer? = null, biasDimension : Int = 0): Int {
 
     if (deviceBias != null) {
 
@@ -15,18 +18,19 @@ fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult
     }
 
     // C = alpha * op(A) * op(B) + beta * C
-    val beta = if (deviceBias != null) 1.0 else 0.0
-    cublasDgemv(
+    val pointerToBeta = if (deviceBias != null) pointerToOne else pointerToZero
+
+    return cublasDgemv(
         cublasHandle,
         CUBLAS_OP_N, // no transposition
         numberWeightRows, // number of rows of matrix A
         numberWeightColumns, // number of columns of matrix A
-        Pointer.to(doubleArrayOf(1.0)), // alpha
+        pointerToOne, // alpha
         deviceWeights, // weight pointer
         numberWeightRows, // number weight rows
         deviceInput, // input pointer
         1, // storage spacing between elements of x
-        Pointer.to(doubleArrayOf(beta)), // beta
+        pointerToBeta, // beta
         deviceResult, // result pointer
         numberWeightRows // number result rows
     )
@@ -47,24 +51,22 @@ fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceResult
                     w_12 w_22
                     w_13 w_23
  */
-fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer, deviceResult : Pointer) {
+fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer, deviceResult : Pointer) =
 
     cublasDgemv(
         cublasHandle,
         CUBLAS_OP_T, // transpose
         numberWeightRows, // number of rows of matrix A
         numberWeightColumns, // number of columns of matrix A
-        Pointer.to(doubleArrayOf(1.0)), // alpha
+        pointerToOne, // alpha
         deviceWeights, // weight pointer
         numberWeightRows, // number weight rows
         deviceChain, // input pointer
         1, // storage spacing between elements of x
-        Pointer.to(doubleArrayOf(0.0)), // beta
+        pointerToZero, // beta
         deviceResult, // result pointer
         1 // specifies the storage spacing between elements of y
     )
-
-}
 
 /*
     Differentiation w.r.t weights:
@@ -77,13 +79,13 @@ fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: 
     chain_1
     chain_2
  */
-fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, deviceAccumulator: Pointer, numberWeightRows: Int, numberWeightColumns : Int) {
+fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, deviceAccumulator: Pointer, numberWeightRows: Int, numberWeightColumns : Int) =
 
     cublasDger(
         cublasHandle,
         numberWeightRows, // rows of matrix A
         numberWeightColumns, // columns of matrix A
-        Pointer.to(doubleArrayOf(1.0)), // alpha
+        pointerToOne, // alpha
         deviceChain,
         1,
         deviceInput,
@@ -91,8 +93,6 @@ fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: 
         deviceAccumulator,
         numberWeightRows // rows of matrix A
     )
-
-}
 
 fun cublasBackwardProjectionWrtBias(cublasHandle: cublasHandle, deviceChain: Pointer, chainDimension : Int, deviceAccumulator: Pointer) {
 
@@ -102,10 +102,10 @@ fun cublasBackwardProjectionWrtBias(cublasHandle: cublasHandle, deviceChain: Poi
         CUBLAS_OP_N,
         chainDimension,
         1,
-        Pointer.to(doubleArrayOf(1.0)),
+        pointerToOne,
         deviceChain,
         chainDimension,
-        Pointer.to(doubleArrayOf(1.0)),
+        pointerToOne,
         deviceAccumulator,
         chainDimension,
         deviceAccumulator,

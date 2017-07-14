@@ -1,5 +1,6 @@
 package shape.komputation.cpu.layers.forward
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.splitRows
 import shape.komputation.cpu.functions.stackRows
 import shape.komputation.cpu.layers.BaseForwardLayer
@@ -7,20 +8,20 @@ import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
-import shape.komputation.networks.Network
 import shape.komputation.optimization.Optimizable
 
-class CpuConcatenation internal constructor(name : String? = null, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable {
+class CpuConcatenation internal constructor(name : String? = null, inputDimension : Int, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable {
 
-    private val networks = continuations.map { layers -> Network(inputLayer(), *layers) }
+    private val networks = continuations.map { layers -> Network(inputLayer(inputDimension), *layers) }
+    private val numberNetworks = this.networks.size
 
-    private val results = Array(continuations.size) { EMPTY_DOUBLE_MATRIX }
+    private val results = Array(this.numberNetworks) { EMPTY_DOUBLE_MATRIX }
 
-    private val heights = IntArray(continuations.size)
+    private val heights = IntArray(this.numberNetworks)
 
     override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 
-        for (indexNetwork in (0..this.networks.size-1)) {
+        for (indexNetwork in (0..this.numberNetworks-1)) {
 
             val network = this.networks[indexNetwork]
 
@@ -50,7 +51,7 @@ class CpuConcatenation internal constructor(name : String? = null, continuations
 
         val resultEntries = resultWrtInput.entries
 
-        for (indexNetwork in (1..this.networks.size-1)) {
+        for (indexNetwork in (1..this.numberNetworks-1)) {
 
             val network = this.networks[indexNetwork]
 

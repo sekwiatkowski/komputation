@@ -17,4 +17,6 @@ __global__ void backwardSquaredLossKernel (int length, double *predictions, doub
 
     }
 
+    __syncthreads();
+
 }

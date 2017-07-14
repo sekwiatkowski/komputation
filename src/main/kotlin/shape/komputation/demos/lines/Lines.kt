@@ -1,6 +1,7 @@
 package shape.komputation.demos.lines
 
-import shape.komputation.cpu.loss.logisticLoss
+import shape.komputation.cpu.Network
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.reluLayer
@@ -8,11 +9,10 @@ import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleMatrixFromRows
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -75,7 +75,7 @@ fun main(args: Array<String>) {
     val numberFilters = 6
 
     val network = Network(
-        inputLayer(),
+        inputLayer(9),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
         maxPoolingLayer(),
         reluLayer(),

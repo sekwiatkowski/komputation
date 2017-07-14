@@ -1,15 +1,15 @@
 package shape.komputation.demos.addition
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.layers.forward.units.minimalGatedUnit
-import shape.komputation.cpu.loss.squaredLoss
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.encoder.singleOutputEncoder
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
+import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -21,6 +21,7 @@ fun main(args: Array<String>) {
     val batchSize = 1
     val inputDimension = 2
     val hiddenDimension = 20
+    val outputDimension = 1
     val numberIterations = 100
 
     val inputs = AdditionProblemData.generateInputs(numberExamples, random, length)
@@ -48,10 +49,10 @@ fun main(args: Array<String>) {
 
     val encoder = singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
 
-    val outputProjection = projectionLayer(hiddenDimension, 1, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
+    val outputProjection = projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
 
     val network = Network(
-        inputLayer(),
+        inputLayer(inputDimension),
         encoder,
         outputProjection
     )
@@ -59,7 +60,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        squaredLoss(),
+        squaredLoss(outputDimension),
         numberIterations,
         batchSize,
         printLoss

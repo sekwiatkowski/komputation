@@ -24,8 +24,10 @@ class CublasStochasticGradientDescentTest {
 
         val cublasStochasticGradientDescent = CublasStochasticGradientDescent(cublasHandle, numberRows, numberColumns, 0.1)
 
-        val deviceParameter = copyFromHostToDevice(doubleArrayOf(2.0), size)
-        val deviceGradient = copyFromHostToDevice(doubleArrayOf(0.1), size)
+        val deviceParameter = Pointer()
+        copyFromHostToDevice(doubleArrayOf(2.0), size, deviceParameter)
+        val deviceGradient = Pointer()
+        copyFromHostToDevice(doubleArrayOf(0.1), size, deviceGradient)
 
         cublasStochasticGradientDescent.update(deviceParameter, 1.0, deviceGradient)
 

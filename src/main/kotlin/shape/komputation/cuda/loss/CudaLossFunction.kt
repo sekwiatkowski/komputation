@@ -4,7 +4,11 @@ import jcuda.Pointer
 
 interface CudaLossFunction {
 
-    fun forward(predictions: Pointer, targets : Pointer): Double
+    fun accumulate(predictions: Pointer, targets : Pointer)
+
+    fun accessAccumulation() : Double
+
+    fun reset()
 
     fun backward(predictions: Pointer, targets : Pointer): Pointer
 

@@ -1,16 +1,16 @@
 package shape.komputation.demos.runningtotal
 
+import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.loss.squaredLoss
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
 import shape.komputation.layers.forward.projection.projectionLayer
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
+import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -19,6 +19,7 @@ fun main(args: Array<String>) {
     val numberSteps = 4
     val exclusiveUpperLimit = 10
     val hiddenDimension = 4
+    val outputDimension = 1
     val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
     val numberIterations = 30
     val batchSize = 4
@@ -49,15 +50,15 @@ fun main(args: Array<String>) {
     val encoder = multiOutputEncoder(encoderUnit, numberSteps, 1, hiddenDimension)
 
     val network = Network(
-        inputLayer(),
+        inputLayer(numberSteps),
         encoder,
-        projectionLayer(hiddenDimension, 1, inputWeightInitializationStrategy, inputWeightInitializationStrategy, optimizationStrategy)
+        projectionLayer(hiddenDimension, outputDimension, inputWeightInitializationStrategy, inputWeightInitializationStrategy, optimizationStrategy)
     )
 
     network.train(
         inputs,
         targets,
-        squaredLoss(),
+        squaredLoss(1),
         numberIterations,
         batchSize,
         printLoss

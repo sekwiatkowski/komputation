@@ -1,14 +1,14 @@
 package shape.komputation.demos.and
 
-import shape.komputation.cpu.loss.logisticLoss
+import shape.komputation.cpu.Network
+import shape.komputation.cpu.printLoss
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.networks.Network
-import shape.komputation.networks.printLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -28,16 +28,19 @@ fun main(args: Array<String>) {
         doubleColumnVector(0.0, 1.0)
     )
 
+    val inputDimension = 2
+    val outputDimension = 2
+
     val random = Random(1)
     val initialize = heInitialization(random)
 
     val optimizer = stochasticGradientDescent(0.03)
 
-    val projectionLayer = projectionLayer(2, 2, initialize, initialize, optimizer)
+    val projectionLayer = projectionLayer(inputDimension, outputDimension, initialize, initialize, optimizer)
     val softmaxLayer = softmaxLayer()
 
     val network = Network(
-        inputLayer(),
+        inputLayer(inputDimension),
         projectionLayer,
         softmaxLayer
     )
