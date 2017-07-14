@@ -9,11 +9,11 @@ extern "C"
 __global__ void sigmoidKernel (int length, double *source, double *destination)
 {
 
-    int threadId = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if(threadId < length) {
+    if(index < length) {
 
-        destination[threadId] = sigmoid(source[threadId]);
+        destination[index] = sigmoid(source[index]);
 
     }
 

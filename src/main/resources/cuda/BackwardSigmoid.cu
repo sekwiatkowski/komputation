@@ -9,11 +9,11 @@ extern "C"
 __global__ void backwardSigmoidKernel (int length, double *forward, double *chain, double *destination)
 {
 
-    int threadId = blockDim.x * blockIdx.x + threadIdx.x;
+    unsigned int index = blockDim.x * blockIdx.x + threadIdx.x;
 
-    if(threadId < length) {
+    if(index < length) {
 
-        destination[threadId] = backwardSigmoid(forward[threadId], chain[threadId]);
+        destination[index] = backwardSigmoid(forward[index], chain[index]);
 
     }
 

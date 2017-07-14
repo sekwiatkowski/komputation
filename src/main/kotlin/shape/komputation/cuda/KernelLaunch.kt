@@ -1,6 +1,7 @@
 package shape.komputation.cuda
 
 import jcuda.Pointer
+import jcuda.Sizeof
 import jcuda.driver.CUfunction
 import jcuda.driver.CUmodule
 import jcuda.driver.JCudaDriver
@@ -14,13 +15,13 @@ fun loadKernel(path : String, function: CUfunction, functionName : String) {
 
 }
 
-fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocks: Int, numberThreadsPerBlock: Int) {
+fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocks: Int, numberThreadsPerBlock: Int, sharedMemorySize : Int = 0) {
 
     JCudaDriver.cuLaunchKernel(
         function,
         numberBlocks, 1, 1,
         numberThreadsPerBlock, 1, 1,
-        0,
+        sharedMemorySize * Sizeof.DOUBLE,
         null,
         parameters,
         null
