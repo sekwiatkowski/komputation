@@ -10,58 +10,8 @@ import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleMatrixFromRows
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
-
-object LinesData {
-
-    val inputs = arrayOf<Matrix>(
-
-        doubleMatrixFromRows(
-            doubleArrayOf(1.0, 1.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(0.0, 0.0, 0.0)
-        ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 1.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 0.0)
-        ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 1.0, 1.0)
-        ),
-        doubleMatrixFromRows(
-            doubleArrayOf(1.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 0.0, 0.0)
-        ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 1.0, 0.0),
-            doubleArrayOf(0.0, 1.0, 0.0),
-            doubleArrayOf(0.0, 1.0, 0.0)
-        ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 1.0)
-        )
-    )
-
-    val targets = arrayOf(
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0)
-    )
-
-}
 
 fun main(args: Array<String>) {
 

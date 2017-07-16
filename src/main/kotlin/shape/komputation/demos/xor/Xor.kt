@@ -7,28 +7,8 @@ import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.squaredLoss
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleScalar
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
-
-object XorData {
-
-    val input = arrayOf<Matrix>(
-        doubleColumnVector(0.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 1.0))
-
-    val targets = arrayOf(
-        doubleScalar(0.0),
-        doubleScalar(1.0),
-        doubleScalar(1.0),
-        doubleScalar(0.0)
-    )
-
-}
 
 fun main(args: Array<String>) {
 

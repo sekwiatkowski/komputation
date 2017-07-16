@@ -7,26 +7,10 @@ import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
-import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
 fun main(args: Array<String>) {
-
-    val input = arrayOf<Matrix>(
-        doubleColumnVector(0.0, 0.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 1.0)
-    )
-
-    val targets = arrayOf(
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(0.0, 1.0)
-    )
 
     val inputDimension = 2
     val outputDimension = 2
@@ -45,6 +29,6 @@ fun main(args: Array<String>) {
         softmaxLayer
     )
 
-    network.train(input, targets, logisticLoss(), 10_000, 1, printLoss)
+    network.train(OneHotAndData.input, OneHotAndData.targets, logisticLoss(), 10_000, 1, printLoss)
 
 }
