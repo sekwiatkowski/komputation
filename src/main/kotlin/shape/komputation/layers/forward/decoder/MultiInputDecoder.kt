@@ -1,6 +1,6 @@
 package shape.komputation.layers.forward.decoder
 
-import shape.komputation.cpu.layers.forward.activation.activationLayer
+import shape.komputation.cpu.layers.forward.activation.cpuActivationLayer
 import shape.komputation.cpu.layers.forward.decoder.CpuMultiInputDecoder
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
@@ -45,7 +45,7 @@ class MultiInputDecoder(
         val activationName = concatenateNames(this.name, "activation")
         val activations = Array(this.numberSteps) { index ->
 
-            activationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.outputDimension).buildForCpu()
+            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.outputDimension).buildForCpu()
 
         }
 

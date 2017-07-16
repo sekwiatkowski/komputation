@@ -30,7 +30,7 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
     override fun acquire() {
 
         this.forwardPtxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/squaredloss/SquaredLoss.cu").toURI()),
+            File(javaClass.getResource("/cuda/squaredloss/SquaredLossKernel.cu").toURI()),
             "squaredLossKernel",
             this.forwardKernel,
             this.capabilities)
@@ -38,7 +38,7 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
         allocateDeviceMemory(this.deviceForwardResults, this.targetDimension)
 
         this.backwardPtxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/squaredloss/BackwardSquaredLoss.cu").toURI()),
+            File(javaClass.getResource("/cuda/squaredloss/BackwardSquaredLossKernel.cu").toURI()),
             "backwardSquaredLossKernel",
             this.backwardKernel,
             this.capabilities)

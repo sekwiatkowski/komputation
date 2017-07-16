@@ -4,7 +4,7 @@ import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.forward.activation.*
 
-fun activationLayer(name: String?, function: ActivationFunction, dimension : Int) : CpuActivationLayerInstruction =
+fun cpuActivationLayer(name: String?, function: ActivationFunction, dimension : Int) : CpuActivationLayerInstruction =
 
     when (function) {
 

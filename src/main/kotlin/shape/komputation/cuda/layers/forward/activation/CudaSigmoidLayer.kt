@@ -37,13 +37,13 @@ class CudaSigmoidLayer internal constructor(
     override fun acquire() {
 
         this.forwardPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/sigmoid/Sigmoid.cu").toURI()),
+            File(this.javaClass.getResource("/cuda/sigmoid/SigmoidKernel.cu").toURI()),
             "sigmoidKernel",
             this.forwardFunction,
             this.computeCapabilities)
 
         this.backwardPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/sigmoid/BackwardSigmoid.cu").toURI()),
+            File(this.javaClass.getResource("/cuda/sigmoid/BackwardSigmoidKernel.cu").toURI()),
             "backwardSigmoidKernel",
             this.backwardFunction,
             this.computeCapabilities)

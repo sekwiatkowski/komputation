@@ -25,7 +25,7 @@ class CudaStochasticGradientDescent(
     override fun acquire() {
 
         this.ptxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/stochasticgradientdescent/StochasticGradientDescent.cu").toURI()),
+            File(javaClass.getResource("/cuda/stochasticgradientdescent/StochasticGradientDescentKernel.cu").toURI()),
             "stochasticGradientDescentKernel",
             kernel,
             capabilities

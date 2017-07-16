@@ -3,7 +3,7 @@ package shape.komputation.cpu.layers.forward.units
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.additionCombination
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
-import shape.komputation.cpu.layers.forward.activation.activationLayer
+import shape.komputation.cpu.layers.forward.activation.cpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.projection.seriesBias
@@ -170,7 +170,7 @@ fun simpleRecurrentUnit(
     val activationName = concatenateNames(name, "activation")
     val activationLayers = Array(numberSteps) { index ->
 
-        activationLayer(concatenateNames(activationName, index.toString()), activationFunction, hiddenDimension).buildForCpu()
+        cpuActivationLayer(concatenateNames(activationName, index.toString()), activationFunction, hiddenDimension).buildForCpu()
 
     }
 

@@ -1,9 +1,15 @@
 package shape.komputation.layers.forward
 
+import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.CpuDenseLayer
-import shape.komputation.cpu.layers.forward.activation.activationLayer
+import shape.komputation.cpu.layers.forward.activation.cpuActivationLayer
+import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.layers.CudaForwardLayer
+import shape.komputation.cuda.layers.forward.activation.cudaActivationLayer
+import shape.komputation.cuda.layers.forward.dense.CudaDenseLayer
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.projection.projectionLayer
@@ -16,17 +22,30 @@ class DenseLayer(
     private val weightInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
     private val activationFunction: ActivationFunction,
-    private val optimization: OptimizationInstruction?) : CpuForwardLayerInstruction {
+    private val optimization: OptimizationInstruction?) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+
+    private val projectionName = concatenateNames(this.name, "projection")
+    private val activationName = concatenateNames(this.name, "activation")
+
+    private val projection = projectionLayer(this.projectionName, this.inputDimension, this.outputDimension, this.weightInitialization, this.biasInitialization, this.optimization)
 
     override fun buildForCpu(): CpuDenseLayer {
 
-        val projectionName = concatenateNames(this.name, "projection")
-        val projection = projectionLayer(projectionName, this.inputDimension, this.outputDimension, this.weightInitialization, this.biasInitialization, this.optimization).buildForCpu()
+        val projectionLayer = projection.buildForCpu()
 
-        val activationName = concatenateNames(this.name, "activation")
-        val activation = activationLayer(activationName, this.activationFunction, this.outputDimension).buildForCpu()
+        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.outputDimension).buildForCpu()
 
-        return CpuDenseLayer(this.name, projection, activation)
+        return CpuDenseLayer(this.name, projectionLayer, activationLayer)
+
+    }
+
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaForwardLayer {
+
+        val projectionLayer = projection.buildForCuda(context, cublasHandle)
+
+        val activationLayer = cudaActivationLayer(this.activationName, this.activationFunction, this.outputDimension).buildForCuda(context, cublasHandle)
+
+        return CudaDenseLayer(this.name, projectionLayer, activationLayer)
 
     }
 

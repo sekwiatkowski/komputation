@@ -2,7 +2,7 @@ package shape.komputation.layers.forward.decoder
 
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.additionCombination
-import shape.komputation.cpu.layers.forward.activation.activationLayer
+import shape.komputation.cpu.layers.forward.activation.cpuActivationLayer
 import shape.komputation.cpu.layers.forward.decoder.CpuAttentiveDecoder
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
@@ -81,7 +81,7 @@ class AttentiveDecoder(
         val activationName = concatenateNames(this.name, "decoding-activation")
         val activations = Array(this.numberSteps) { index ->
 
-            activationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.decodingDimension).buildForCpu()
+            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.decodingDimension).buildForCpu()
 
         }
 

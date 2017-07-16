@@ -36,7 +36,6 @@ class CudaProjectionLayer internal constructor(
     private val numberBiasEntries = if(this.hasBias) this.initialBias!!.size else 0
 
     private val inputDimension = this.numberWeightColumns
-    private val resultDimension = this.numberWeightRows
 
     /*
                        i_1
@@ -116,19 +115,19 @@ class CudaProjectionLayer internal constructor(
         }
 
         this.projectionPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/projection/Projection.cu").toURI()),
+            File(this.javaClass.getResource("/cuda/projection/ProjectionKernel.cu").toURI()),
             "projectionKernel",
             this.projectionKernel,
             this.computeCapabilities)
 
         this.projectionWithBiasPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/projection/ProjectionWithBias.cu").toURI()),
+            File(this.javaClass.getResource("/cuda/projection/ProjectionWithBiasKernel.cu").toURI()),
             "projectionWithBiasKernel",
             this.projectionWithBiasKernel,
             this.computeCapabilities)
 
         this.accumulationPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/accumulation/Accumulation.cu").toURI()),
+            File(this.javaClass.getResource("/cuda/accumulation/AccumulationKernel.cu").toURI()),
             "accumulationKernel",
             this.accumulationKernel,
             this.computeCapabilities)
