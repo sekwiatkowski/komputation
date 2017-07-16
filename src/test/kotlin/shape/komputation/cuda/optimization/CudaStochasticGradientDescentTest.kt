@@ -29,7 +29,7 @@ class CudaStochasticGradientDescentTest {
         val deviceGradient = Pointer()
         setVector(doubleArrayOf(0.1), size, deviceGradient)
 
-        stochasticGradientDescent.update(deviceParameter, 1.0, deviceGradient)
+        stochasticGradientDescent.update(Pointer.to(deviceParameter), 1.0, Pointer.to(deviceGradient))
 
         val hostParameter = DoubleArray(1)
 

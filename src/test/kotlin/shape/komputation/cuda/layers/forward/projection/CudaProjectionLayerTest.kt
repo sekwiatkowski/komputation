@@ -93,7 +93,7 @@ class CudaProjectionLayerTest {
 
         context.destroy()
 
-        assertArrayEquals(actual, expected)
+        assertArrayEquals(expected, actual)
 
     }
 

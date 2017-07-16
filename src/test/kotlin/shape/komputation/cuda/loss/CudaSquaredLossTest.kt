@@ -48,7 +48,7 @@ class CudaSquaredLossTest {
 
         loss.acquire()
 
-        loss.accumulate(devicePredictions, deviceTargets)
+        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
 
         val actual = loss.accessAccumulation()
 
@@ -98,7 +98,7 @@ class CudaSquaredLossTest {
 
         loss.acquire()
 
-        val deviceResult = loss.backward(devicePredictions, deviceTargets)
+        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
         val actual = getVector(deviceResult, size)
 
         loss.release()

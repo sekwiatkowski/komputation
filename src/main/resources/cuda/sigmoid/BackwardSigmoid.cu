@@ -1,9 +1,4 @@
-__device__ double backwardSigmoid (double forward, double chain)
-{
-
-    return forward * (1.0 - forward) * chain;
-
-}
+#include "Sigmoid.cuh"
 
 extern "C"
 __global__ void backwardSigmoidKernel (int length, double *forward, double *chain, double *destination)

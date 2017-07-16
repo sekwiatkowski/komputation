@@ -147,10 +147,10 @@ class CudaProjectionLayer internal constructor(
             val parameters = Pointer.to(
                 pointerToDeviceInput,
                 this.pointerToDeviceWeights,
-                this.pointerToDeviceBias,
-                this.pointerToDeviceResult,
                 this.pointerToNumberWeightRows,
-                this.pointerToNumberWeightColumns
+                this.pointerToNumberWeightColumns,
+                this.pointerToDeviceBias,
+                this.pointerToDeviceResult
             )
 
             launchKernel(
@@ -167,9 +167,9 @@ class CudaProjectionLayer internal constructor(
             val parameters = Pointer.to(
                 pointerToDeviceInput,
                 this.pointerToDeviceWeights,
-                this.pointerToDeviceResult,
                 this.pointerToNumberWeightRows,
-                this.pointerToNumberWeightColumns
+                this.pointerToNumberWeightColumns,
+                this.pointerToDeviceResult
             )
 
             launchKernel(
