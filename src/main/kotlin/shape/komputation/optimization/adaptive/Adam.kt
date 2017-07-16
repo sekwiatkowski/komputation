@@ -2,6 +2,7 @@ package shape.komputation.optimization.adaptive
 
 import shape.komputation.cpu.optimization.CpuOptimizationStrategy
 import shape.komputation.cpu.optimization.adaptive.CpuAdam
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -25,7 +26,7 @@ class Adam(
 
     }
 
-    override fun buildForCuda(): CudaOptimizationStrategy {
+    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
         throw NotImplementedError()
 

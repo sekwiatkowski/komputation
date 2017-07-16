@@ -3,10 +3,10 @@ package shape.komputation.cpu.layers.forward.convolution
 import shape.komputation.cpu.functions.backwardExpansionForConvolution
 import shape.komputation.cpu.functions.convolutionsPerColumn
 import shape.komputation.cpu.functions.expandForConvolution
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class CpuExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : BaseForwardLayer(name) {
+class CpuExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : BaseCpuForwardLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1

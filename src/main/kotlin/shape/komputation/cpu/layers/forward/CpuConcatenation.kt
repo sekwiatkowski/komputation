@@ -3,14 +3,14 @@ package shape.komputation.cpu.layers.forward
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.splitRows
 import shape.komputation.cpu.functions.stackRows
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
 import shape.komputation.optimization.Optimizable
 
-class CpuConcatenation internal constructor(name : String? = null, inputDimension : Int, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseForwardLayer(name), Optimizable {
+class CpuConcatenation internal constructor(name : String? = null, inputDimension : Int, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseCpuForwardLayer(name), Optimizable {
 
     private val networks = continuations.map { layers -> Network(inputLayer(inputDimension), *layers) }
     private val numberNetworks = this.networks.size

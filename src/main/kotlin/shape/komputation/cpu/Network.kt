@@ -65,13 +65,15 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
         loss: CpuLossFunctionInstruction,
         numberIterations : Int,
         batchSize : Int,
-        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null) {
+        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null): Long {
 
         val lossFunction = loss.buildForCpu()
 
         val numberExamples = inputs.size
 
         val batches = partitionIndices(numberExamples, batchSize)
+
+        val start = System.currentTimeMillis()
 
         repeat(numberIterations) { indexIteration ->
 
@@ -113,6 +115,12 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
             }
 
         }
+
+        val stop = System.currentTimeMillis()
+
+        val time = stop - start
+
+        return time
 
     }
 

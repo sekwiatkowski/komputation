@@ -4,7 +4,7 @@ import shape.komputation.cpu.functions.backwardProjectionWrtBias
 import shape.komputation.cpu.functions.backwardProjectionWrtInput
 import shape.komputation.cpu.functions.backwardProjectionWrtWeights
 import shape.komputation.cpu.functions.project
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
@@ -22,7 +22,7 @@ class CpuProjectionLayer internal constructor(
 
     private val bias : DoubleArray? = null,
     private val biasAccumulator: DenseAccumulator? = null,
-    private val biasUpdateRule: UpdateRule? = null) : BaseForwardLayer(name), Optimizable {
+    private val biasUpdateRule: UpdateRule? = null) : BaseCpuForwardLayer(name), Optimizable {
 
     private var inputEntries = DoubleArray(0)
     private var numberInputRows = -1

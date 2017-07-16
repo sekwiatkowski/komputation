@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.forward.decoder
 
 import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.functions.extractStep
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
@@ -22,7 +22,7 @@ class CpuSingleInputDecoder internal constructor(
     private val unit : RecurrentUnit,
     private val weighting: SeriesWeighting,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : BaseForwardLayer(name), Optimizable {
+    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
     override fun forward(encoderOutput: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
 

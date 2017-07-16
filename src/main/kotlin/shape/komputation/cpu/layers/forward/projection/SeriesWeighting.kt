@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers.forward.projection
 
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
@@ -13,7 +13,7 @@ import shape.komputation.optimization.OptimizationInstruction
 
 class SeriesWeighting internal constructor(
     private val name : String?,
-    private val weightings: Array<BaseForwardLayer>,
+    private val weightings: Array<BaseCpuForwardLayer>,
     private val weights: DoubleArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,

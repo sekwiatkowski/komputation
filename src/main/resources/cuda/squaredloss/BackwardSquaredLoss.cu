@@ -9,7 +9,7 @@ extern "C"
 __global__ void backwardSquaredLossKernel (int length, double *predictions, double *targets, double *backwardResults)
 {
 
-    unsigned int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
 
     if(index < length) {
 

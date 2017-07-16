@@ -2,11 +2,11 @@ package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.functions.findMaxIndicesInRows
 import shape.komputation.cpu.functions.selectEntries
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 
-class CpuMaxPoolingLayer internal constructor(name : String? = null) : BaseForwardLayer(name) {
+class CpuMaxPoolingLayer internal constructor(name : String? = null) : BaseCpuForwardLayer(name) {
 
     private var numberInputRows = -1
     private var numberInputColumns = -1

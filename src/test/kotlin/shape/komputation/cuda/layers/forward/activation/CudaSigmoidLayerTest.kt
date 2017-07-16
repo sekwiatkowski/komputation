@@ -1,13 +1,14 @@
-package shape.komputation.cuda.layers
+package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
+import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cpu.functions.activation.sigmoid
-import shape.komputation.cuda.copyFromHostToDevice
 import shape.komputation.cuda.getVector
-import shape.komputation.cuda.setUpCudaEnvironment
+import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.cuda.setVector
 import shape.komputation.layers.forward.activation.sigmoidLayer
 
 class CudaSigmoidLayerTest {
@@ -15,13 +16,13 @@ class CudaSigmoidLayerTest {
     @Test
     fun testForwardOneDimension() {
 
-        val environment = setUpCudaEnvironment()
+        val context = setUpCudaContext()
 
-        val layer = sigmoidLayer(1).buildForCuda(environment)
+        val layer = sigmoidLayer(1).buildForCuda(context, cublasHandle())
         layer.acquire()
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(doubleArrayOf(0.0), 1, deviceInput)
+        setVector(doubleArrayOf(0.0), 1, deviceInput)
 
         val deviceResult = layer.forward(deviceInput)
 
@@ -40,13 +41,13 @@ class CudaSigmoidLayerTest {
     @Test
     fun testForwardTwoDimensions() {
 
-        val environment = setUpCudaEnvironment()
+        val context = setUpCudaContext()
 
-        val layer = sigmoidLayer(2).buildForCuda(environment)
+        val layer = sigmoidLayer(2).buildForCuda(context, cublasHandle())
         layer.acquire()
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(doubleArrayOf(0.0, 1.0), 2, deviceInput)
+        setVector(doubleArrayOf(0.0, 1.0), 2, deviceInput)
 
         val deviceResult = layer.forward(deviceInput)
 
@@ -66,17 +67,17 @@ class CudaSigmoidLayerTest {
     @Test
     fun testBackwardOneDimension() {
 
-        val environment = setUpCudaEnvironment()
+        val context = setUpCudaContext()
 
-        val layer = sigmoidLayer(1).buildForCuda(environment)
+        val layer = sigmoidLayer(1).buildForCuda(context, cublasHandle())
         layer.acquire()
 
         val input = Pointer()
-        copyFromHostToDevice(doubleArrayOf(0.0), 1, input)
+        setVector(doubleArrayOf(0.0), 1, input)
         layer.forward(input)
 
         val chain = Pointer()
-        copyFromHostToDevice(doubleArrayOf(1.0), 1, chain)
+        setVector(doubleArrayOf(1.0), 1, chain)
         val deviceResult = layer.backward(chain)
 
         val actual = getVector(deviceResult, 1)
@@ -95,17 +96,17 @@ class CudaSigmoidLayerTest {
     @Test
     fun testBackwardTwoDimensions() {
 
-        val environment = setUpCudaEnvironment()
+        val context = setUpCudaContext()
 
-        val layer = sigmoidLayer(2).buildForCuda(environment)
+        val layer = sigmoidLayer(2).buildForCuda(context, cublasHandle())
         layer.acquire()
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(doubleArrayOf(0.0, 1.0), 2, deviceInput)
+        setVector(doubleArrayOf(0.0, 1.0), 2, deviceInput)
         layer.forward(deviceInput)
 
         val deviceChain = Pointer()
-        copyFromHostToDevice(doubleArrayOf(1.0, 2.0), 2, deviceChain)
+        setVector(doubleArrayOf(1.0, 2.0), 2, deviceChain)
         val deviceResult = layer.backward(deviceChain)
 
         val actual = getVector(deviceResult, 2)

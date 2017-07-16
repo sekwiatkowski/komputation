@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers.forward.convolution
 
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
@@ -8,7 +8,7 @@ import shape.komputation.optimization.Optimizable
 class CpuConvolutionalLayer internal constructor(
     name : String? = null,
     private val expansionLayer: CpuExpansionLayer,
-    private val projectionLayer: CpuProjectionLayer) : BaseForwardLayer(name), Optimizable {
+    private val projectionLayer: CpuProjectionLayer) : BaseCpuForwardLayer(name), Optimizable {
 
     override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 

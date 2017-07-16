@@ -1,10 +1,10 @@
 package shape.komputation.optimization
 
-import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.optimization.CpuOptimizationStrategy
 import shape.komputation.cpu.optimization.CpuStochasticGradientDescent
-import shape.komputation.cuda.optimization.CublasStochasticGradientDescent
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
+import shape.komputation.cuda.optimization.CudaStochasticGradientDescent
 
 fun stochasticGradientDescent(learningRate: Double) =
 
@@ -22,11 +22,15 @@ class StochasticGradientDescent(private val learningRate: Double) : Optimization
 
     }
 
-    override fun buildForCuda(): CudaOptimizationStrategy {
+    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
-        return { cublasHandle : cublasHandle, numberRows : Int, numberColumns : Int ->
+        return { numberRows : Int, numberColumns : Int ->
 
-            CublasStochasticGradientDescent(cublasHandle, numberRows, numberColumns, learningRate)
+            CudaStochasticGradientDescent(
+                context.computeCapabilities,
+                context.numberThreadsPerBlock,
+                numberRows * numberColumns,
+                this.learningRate)
 
         }
 

@@ -2,34 +2,34 @@ package shape.komputation.cuda.optimization
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.jcublas.JCublas2.*
-import jcuda.jcublas.cublasHandle
+import jcuda.jcublas.JCublas2.cublasGetVector
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.copyFromHostToDevice
+import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.cuda.setVector
 
-class CublasStochasticGradientDescentTest {
+class CudaStochasticGradientDescentTest {
 
     @Test
     fun testOneDimension() {
 
-        val cublasHandle = cublasHandle()
-
-        cublasCreate(cublasHandle)
+        val cudaContext = setUpCudaContext()
 
         val numberRows = 1
         val numberColumns = 1
         val size = numberRows * numberColumns
 
-        val cublasStochasticGradientDescent = CublasStochasticGradientDescent(cublasHandle, numberRows, numberColumns, 0.1)
+        val stochasticGradientDescent = CudaStochasticGradientDescent(cudaContext.computeCapabilities, cudaContext.numberThreadsPerBlock, numberRows * numberColumns, 0.1)
+
+        stochasticGradientDescent.acquire()
 
         val deviceParameter = Pointer()
-        copyFromHostToDevice(doubleArrayOf(2.0), size, deviceParameter)
+        setVector(doubleArrayOf(2.0), size, deviceParameter)
         val deviceGradient = Pointer()
-        copyFromHostToDevice(doubleArrayOf(0.1), size, deviceGradient)
+        setVector(doubleArrayOf(0.1), size, deviceGradient)
 
-        cublasStochasticGradientDescent.update(deviceParameter, 1.0, deviceGradient)
+        stochasticGradientDescent.update(deviceParameter, 1.0, deviceGradient)
 
         val hostParameter = DoubleArray(1)
 
@@ -38,7 +38,9 @@ class CublasStochasticGradientDescentTest {
         cudaFree(deviceParameter)
         cudaFree(deviceGradient)
 
-        cublasDestroy(cublasHandle)
+        stochasticGradientDescent.release()
+
+        cudaContext.destroy()
 
         assertArrayEquals(doubleArrayOf(1.99), hostParameter)
 

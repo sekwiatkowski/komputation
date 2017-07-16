@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.forward.dropout
 
 import shape.komputation.cpu.functions.generateMask
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.HadamardCombination
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleConstantColumnVector
@@ -13,7 +13,7 @@ class CpuDropoutLayer internal constructor(
     private val random : Random,
     private val keepProbability : Double,
     private val activation: DropoutCompliant,
-    private val takeExpectation : HadamardCombination) : BaseForwardLayer(name) {
+    private val takeExpectation : HadamardCombination) : BaseCpuForwardLayer(name) {
 
     private var mask = BooleanArray(0)
     private var expectation = doubleConstantColumnVector(this.dimension, this.keepProbability)

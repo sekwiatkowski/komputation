@@ -2,6 +2,7 @@ package shape.komputation.optimization.adaptive
 
 import shape.komputation.cpu.optimization.CpuOptimizationStrategy
 import shape.komputation.cpu.optimization.adaptive.CpuAdagrad
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -21,7 +22,7 @@ class Adagrad(private val decay : Double = 0.95, private val epsilon: Double = 1
 
     }
 
-    override fun buildForCuda(): CudaOptimizationStrategy {
+    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
         throw NotImplementedError()
 

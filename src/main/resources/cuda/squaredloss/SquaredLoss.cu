@@ -12,8 +12,8 @@ __global__ void squaredLossKernel (int length, double *predictions, double *targ
     extern __shared__ double sharedData[];
 
     // each thread loads one element from global to shared mem
-    unsigned int threadId = threadIdx.x;
-    unsigned int globalId = blockIdx.x * blockDim.x + threadIdx.x;
+    int threadId = threadIdx.x;
+    int globalId = blockIdx.x * blockDim.x + threadIdx.x;
 
     double forwardResult = squaredLoss(predictions[globalId], targets[globalId]);
 

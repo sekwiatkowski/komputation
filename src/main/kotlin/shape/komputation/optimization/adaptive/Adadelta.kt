@@ -2,6 +2,7 @@ package shape.komputation.optimization.adaptive
 
 import shape.komputation.cpu.optimization.CpuOptimizationStrategy
 import shape.komputation.cpu.optimization.adaptive.CpuAdadelta
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -21,7 +22,7 @@ class Adadelta(private val decay : Double = 0.95, private val epsilon: Double = 
 
     }
 
-    override fun buildForCuda(): CudaOptimizationStrategy {
+    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
         throw NotImplementedError()
 

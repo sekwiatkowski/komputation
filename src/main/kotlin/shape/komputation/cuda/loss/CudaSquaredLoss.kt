@@ -1,6 +1,7 @@
 package shape.komputation.cuda.loss
 
 import jcuda.Pointer
+import jcuda.Sizeof
 import jcuda.driver.CUfunction
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.*
@@ -28,27 +29,22 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
 
     override fun acquire() {
 
-        this.forwardPtxFile = acquireKernel(File(javaClass.getResource("/cuda/SquaredLoss.cu").toURI()), "squaredLossKernel", this.forwardKernel)
-        this.backwardPtxFile = acquireKernel(File(javaClass.getResource("/cuda/BackwardSquaredLoss.cu").toURI()), "backwardSquaredLossKernel", this.backwardKernel)
+        this.forwardPtxFile = acquireKernel(
+            File(javaClass.getResource("/cuda/squaredloss/SquaredLoss.cu").toURI()),
+            "squaredLossKernel",
+            this.forwardKernel,
+            this.capabilities)
 
         allocateDeviceMemory(this.deviceForwardResults, this.targetDimension)
+
+        this.backwardPtxFile = acquireKernel(
+            File(javaClass.getResource("/cuda/squaredloss/BackwardSquaredLoss.cu").toURI()),
+            "backwardSquaredLossKernel",
+            this.backwardKernel,
+            this.capabilities)
+
         allocateDeviceMemory(this.deviceLoss, 1)
         allocateDeviceMemory(this.deviceBackwardResults, this.targetDimension)
-
-    }
-
-    private fun acquireKernel(cuFile : File, kernelName: String, kernel: CUfunction): File {
-
-        val ptxFile = File.createTempFile(kernelName, ".ptx")
-        ptxFile.deleteOnExit()
-
-        val ptxPath = ptxFile.path
-
-        compileKernel(cuFile.path, ptxPath, this.capabilities)
-
-        loadKernel(ptxPath, kernel, kernelName)
-
-        return ptxFile
 
     }
 
@@ -64,16 +60,23 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
 
     }
 
-    override fun accumulate(predictions: Pointer, targets: Pointer) {
+    private val accumulationSharedMemoryBytes = this.targetDimension * Sizeof.DOUBLE
+
+    override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer) {
 
         val parameters = Pointer.to(
             this.deviceTargetDimension,
-            Pointer.to(predictions),
-            Pointer.to(targets),
+            pointerToPredictions,
+            pointerToTargets,
             this.pointerToDeviceForwardResults,
             this.pointerToDeviceSum)
 
-        launchKernel(this.forwardKernel, parameters, 1, this.targetDimension, this.targetDimension)
+        launchKernel(
+            this.forwardKernel,
+            parameters,
+            1,
+            this.targetDimension,
+            this.accumulationSharedMemoryBytes)
 
     }
 
@@ -87,15 +90,15 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
 
     }
 
-    override fun backward(predictions: Pointer, targets: Pointer): Pointer {
+    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer): Pointer {
 
         val parameters = Pointer.to(
             this.deviceTargetDimension,
-            Pointer.to(predictions),
-            Pointer.to(targets),
+            pointerToPredictions,
+            pointerToTargets,
             this.pointerToDeviceBackwardResults)
 
-        launchKernel(this.backwardKernel, parameters, 1, this.targetDimension)
+        launchKernel(this.backwardKernel, parameters, 1, this.targetDimension, 0)
 
         return this.deviceBackwardResults
 

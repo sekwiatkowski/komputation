@@ -109,6 +109,7 @@ See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for 
 
 ## Initialization
 
+- [Provided](./src/main/kotlin/shape/komputation/initialization/ProvidedInitialization.kt)
 - [Constant](./src/main/kotlin/shape/komputation/initialization/ConstantInitialization.kt)
 - [Gaussian](./src/main/kotlin/shape/komputation/initialization/GaussianInitialization.kt)
 - [He](./src/main/kotlin/shape/komputation/initialization/HeInitialization.kt)

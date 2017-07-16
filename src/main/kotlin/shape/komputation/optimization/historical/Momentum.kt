@@ -2,6 +2,7 @@ package shape.komputation.optimization.historical
 
 import shape.komputation.cpu.optimization.CpuOptimizationStrategy
 import shape.komputation.cpu.optimization.historical.CpuMomentum
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -21,7 +22,7 @@ class Momentum(private val learningRate: Double, private val momentum : Double) 
 
     }
 
-    override fun buildForCuda(): CudaOptimizationStrategy {
+    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
         throw NotImplementedError()
 

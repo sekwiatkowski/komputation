@@ -1,10 +1,11 @@
 package shape.komputation.layers
 
-import shape.komputation.cuda.CudaEnvironment
+import jcuda.jcublas.cublasHandle
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.forward.activation.CudaActivationLayer
 
 interface CudaActivationLayerInstruction : CudaForwardLayerInstruction {
 
-    override fun buildForCuda(environment : CudaEnvironment): CudaActivationLayer
+    override fun buildForCuda(context : CudaContext, cublasHandle : cublasHandle): CudaActivationLayer
 
 }

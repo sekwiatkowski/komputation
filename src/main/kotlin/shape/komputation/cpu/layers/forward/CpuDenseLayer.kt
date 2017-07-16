@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers.forward
 
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.matrix.DoubleMatrix
@@ -9,7 +9,7 @@ import shape.komputation.optimization.Optimizable
 class CpuDenseLayer internal constructor(
     name : String?,
     private val projection : CpuProjectionLayer,
-    private val activation: CpuActivationLayer) : BaseForwardLayer(name), Optimizable {
+    private val activation: CpuActivationLayer) : BaseCpuForwardLayer(name), Optimizable {
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
 

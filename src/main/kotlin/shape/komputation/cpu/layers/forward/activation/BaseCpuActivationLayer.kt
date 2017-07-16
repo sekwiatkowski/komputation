@@ -1,5 +1,5 @@
 package shape.komputation.cpu.layers.forward.activation
 
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 
-abstract class BaseCpuActivationLayer(name : String?) : BaseForwardLayer(name), CpuActivationLayer
+abstract class BaseCpuActivationLayer(name : String?) : BaseCpuForwardLayer(name), CpuActivationLayer

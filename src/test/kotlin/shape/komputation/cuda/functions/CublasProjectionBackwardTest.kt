@@ -7,7 +7,7 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.copyFromHostToDevice
+import shape.komputation.cuda.setVector
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleColumnVector
 import shape.komputation.matrix.doubleRowVector
@@ -115,14 +115,14 @@ class CublasProjectionBackwardTest {
         cublasCreate(cublasHandle)
 
         val deviceWeights = Pointer()
-        copyFromHostToDevice(weights.entries, numberWeightEntries, deviceWeights)
+        setVector(weights.entries, numberWeightEntries, deviceWeights)
 
         val deviceChain = Pointer()
-        copyFromHostToDevice(chain, numberWeightRows, deviceChain)
+        setVector(chain, numberWeightRows, deviceChain)
 
         val hostResult = DoubleArray(numberWeightColumns)
         val deviceResult = Pointer()
-        copyFromHostToDevice(hostResult, numberWeightColumns, deviceResult)
+        setVector(hostResult, numberWeightColumns, deviceResult)
 
         cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
 
@@ -151,14 +151,14 @@ class CublasProjectionBackwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(inputEntries, inputDimension, deviceInput)
+        setVector(inputEntries, inputDimension, deviceInput)
 
         val deviceChain = Pointer()
-        copyFromHostToDevice(chain, chainDimension, deviceChain)
+        setVector(chain, chainDimension, deviceChain)
 
         val hostResult = DoubleArray(resultDimension)
         val deviceResult = Pointer()
-        copyFromHostToDevice(hostResult, resultDimension, deviceResult)
+        setVector(hostResult, resultDimension, deviceResult)
 
         cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, deviceResult, chainDimension, inputDimension)
 

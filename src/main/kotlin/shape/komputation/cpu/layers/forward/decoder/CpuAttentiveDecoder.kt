@@ -4,7 +4,7 @@ import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.functions.backwardProjectionWrtInput
 import shape.komputation.cpu.functions.backwardProjectionWrtWeights
 import shape.komputation.cpu.functions.extractStep
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
 import shape.komputation.cpu.layers.forward.CpuTranspositionLayer
@@ -35,7 +35,7 @@ class CpuAttentiveDecoder internal constructor(
     private val decodingPreviousDecoderWeighting: SeriesWeighting,
     private val decodingAdditions: Array<AdditionCombination>,
     private val bias : SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : BaseForwardLayer(name), Optimizable {
+    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
     private var attentionDistributionEntries = DoubleArray(this.numberSteps)
 

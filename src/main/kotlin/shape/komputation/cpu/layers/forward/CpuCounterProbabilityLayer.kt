@@ -2,12 +2,12 @@ package shape.komputation.cpu.layers.forward
 
 import shape.komputation.cpu.functions.negate
 import shape.komputation.cpu.functions.subtract
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
 class CpuCounterProbabilityLayer internal constructor(
     name : String?,
-    dimension : Int) : BaseForwardLayer(name) {
+    dimension : Int) : BaseCpuForwardLayer(name) {
 
     private val one = DoubleArray(dimension) { 1.0 }
 

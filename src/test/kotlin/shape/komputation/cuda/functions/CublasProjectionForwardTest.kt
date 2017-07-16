@@ -8,8 +8,8 @@ import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.copyFromHostToDevice
 import shape.komputation.cuda.getVector
+import shape.komputation.cuda.setVector
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.doubleScalar
 
@@ -73,22 +73,22 @@ class CublasProjectionForwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
+        setVector(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
 
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
         allocateDeviceMemory(deviceResult, resultDimension)
 
         val deviceWeights = Pointer()
-        copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
+        setVector(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
 
         cublasProject(
             cublasHandle,
             deviceInput,
-            deviceResult,
             deviceWeights,
             weightMatrix.numberRows,
-            weightMatrix.numberColumns)
+            weightMatrix.numberColumns,
+            deviceResult)
 
         val actual = getVector(deviceResult, resultDimension)
 
@@ -108,25 +108,25 @@ class CublasProjectionForwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        copyFromHostToDevice(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
+        setVector(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
         allocateDeviceMemory(deviceResult, resultDimension)
 
         val deviceWeights = Pointer()
-        copyFromHostToDevice(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
+        setVector(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
         val deviceBias = Pointer()
-        copyFromHostToDevice(bias, bias.size, deviceBias)
+        setVector(bias, bias.size, deviceBias)
 
-        cublasProject(
+        cublasProjectWithBias(
             cublasHandle,
             deviceInput,
-            deviceResult,
             deviceWeights,
             weightMatrix.numberRows,
             weightMatrix.numberColumns,
             deviceBias,
-            bias.size)
+            bias.size,
+            deviceResult)
 
         val actual = getVector(deviceResult, resultDimension)
 

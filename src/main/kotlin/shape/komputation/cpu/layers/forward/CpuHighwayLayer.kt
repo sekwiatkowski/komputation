@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers.forward
 
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.HadamardCombination
 import shape.komputation.cpu.optimization.DenseAccumulator
@@ -16,7 +16,7 @@ class CpuHighwayLayer internal constructor(
     private val transformationHadamard : HadamardCombination,
     private val counterProbability: CpuCounterProbabilityLayer,
     private val carryHadamard : HadamardCombination,
-    private val addition : AdditionCombination) : BaseForwardLayer(name), Optimizable {
+    private val addition : AdditionCombination) : BaseCpuForwardLayer(name), Optimizable {
 
     private val gradientAccumulator = DenseAccumulator(inputDimension)
 

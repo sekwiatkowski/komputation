@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.forward.encoder
 
 import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.functions.extractStep
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.*
 import shape.komputation.optimization.Optimizable
@@ -13,7 +13,7 @@ class CpuMultiOutputEncoder internal constructor(
     private val unit: RecurrentUnit,
     private val numberSteps: Int,
     private val inputDimension: Int,
-    private val hiddenDimension : Int) : BaseForwardLayer(name), Optimizable {
+    private val hiddenDimension : Int) : BaseCpuForwardLayer(name), Optimizable {
 
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0

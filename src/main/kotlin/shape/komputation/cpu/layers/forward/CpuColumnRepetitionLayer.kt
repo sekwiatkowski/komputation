@@ -2,10 +2,10 @@ package shape.komputation.cpu.layers.forward
 
 import shape.komputation.cpu.functions.repeatColumn
 import shape.komputation.cpu.functions.sumRows
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val n : Int) : BaseForwardLayer(name) {
+class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val n : Int) : BaseCpuForwardLayer(name) {
 
     override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
 

@@ -4,10 +4,9 @@ import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
-import shape.komputation.cuda.CudaEnvironment
-import shape.komputation.cuda.layers.CudaForwardLayer
-import shape.komputation.cuda.layers.forward.projection.CublasProjectionLayer
-import shape.komputation.cuda.optimization.CublasUpdateRule
+import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.layers.forward.projection.CudaProjectionLayer
+import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.initializeWeights
@@ -56,23 +55,21 @@ class ProjectionLayer(
 
     }
 
-    override fun buildForCuda(environment: CudaEnvironment): CudaForwardLayer {
-
-        val cublasHandle = cublasHandle()
+    override fun buildForCuda(context: CudaContext, cublasHandle : cublasHandle): CudaProjectionLayer {
 
         val numberWeightRows = this.outputDimension
         val numberWeightColumns = this.inputDimension
 
         val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
-        val weightUpdateRule = this.optimizationStrategy?.buildForCuda()?.invoke(cublasHandle, numberWeightRows, numberWeightColumns)
+        val weightUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(numberWeightRows, numberWeightColumns)
 
         val bias : DoubleArray?
-        val biasUpdateRule: CublasUpdateRule?
+        val biasUpdateRule: CudaUpdateRule?
 
         if (this.biasInitializationStrategy != null) {
 
             bias = initializeColumnVector(this.biasInitializationStrategy, this.outputDimension)
-            biasUpdateRule = this.optimizationStrategy?.buildForCuda()?.invoke(cublasHandle, bias.size, 1)
+            biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(bias.size, 1)
 
         }
         else {
@@ -82,7 +79,8 @@ class ProjectionLayer(
 
         }
 
-        return CublasProjectionLayer(this.name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
+        return CudaProjectionLayer(this.name, context.computeCapabilities, context.numberThreadsPerBlock, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
+        // return CublasProjectionLayer(this.name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
 
     }
 
@@ -92,7 +90,7 @@ fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
+    biasInitializationStrategy: InitializationStrategy? = null,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     projectionLayer(null, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
@@ -102,7 +100,7 @@ fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
+    biasInitializationStrategy: InitializationStrategy? = null,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     ProjectionLayer(

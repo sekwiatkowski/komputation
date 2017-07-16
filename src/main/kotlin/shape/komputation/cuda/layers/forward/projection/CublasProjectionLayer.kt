@@ -1,18 +1,13 @@
 package shape.komputation.cuda.layers.forward.projection
 
 import jcuda.Pointer
-import jcuda.jcublas.JCublas2.cublasCreate
-import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.copyFromHostToDevice
-import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
-import shape.komputation.cuda.functions.cublasBackwardProjectionWrtInput
-import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
-import shape.komputation.cuda.functions.cublasProject
+import shape.komputation.cuda.functions.*
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
-import shape.komputation.cuda.optimization.CublasUpdateRule
+import shape.komputation.cuda.optimization.CudaUpdateRule
+import shape.komputation.cuda.setVector
 import shape.komputation.cuda.setVectorToZero
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
@@ -23,14 +18,15 @@ class CublasProjectionLayer internal constructor(
     private val initialWeights: DoubleArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
-    private val weightUpdateRule: CublasUpdateRule? = null,
+    private val weightUpdateRule: CudaUpdateRule? = null,
 
     private val initialBias: DoubleArray? = null,
-    private val biasUpdateRule: CublasUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val biasUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
-    private val numberBiasEntries = if(this.initialBias != null) this.initialBias.size else 0
+    private val hasBias = initialBias != null
+    private val numberBiasEntries = if(this.hasBias) this.initialBias!!.size else 0
 
     private val inputDimension = this.numberWeightColumns
     private val resultDimension = this.numberWeightRows
@@ -42,7 +38,6 @@ class CublasProjectionLayer internal constructor(
                        i_3
         w_11 w_12 w_13
         w_21 w_22 w_23
-
         input dimension = number of weight columns
         result dimension = number of weight rows
     */
@@ -59,19 +54,17 @@ class CublasProjectionLayer internal constructor(
 
     override fun acquire() {
 
-        cublasCreate(this.cublasHandle)
-
         allocateDeviceMemory(this.deviceResult, this.numberWeightRows)
 
         allocateDeviceMemory(this.deviceBackwardWrtInput, this.inputDimension)
         allocateDeviceMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
         allocateDeviceMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
-        copyFromHostToDevice(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
+        setVector(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
 
-        if(this.initialBias != null) {
+        if(this.hasBias) {
 
-            copyFromHostToDevice(this.initialBias, this.numberBiasEntries, this.deviceBias)
+            setVector(this.initialBias!!, this.numberBiasEntries, this.deviceBias)
 
         }
 
@@ -83,7 +76,16 @@ class CublasProjectionLayer internal constructor(
 
         this.deviceInput = input
 
-        cublasProject(this.cublasHandle, this.deviceInput, this.deviceResult, this.deviceWeights, this.numberWeightRows, this.numberWeightColumns, this.deviceBias, this.numberBiasEntries)
+        if (this.hasBias) {
+
+            cublasProjectWithBias(this.cublasHandle, this.deviceInput, this.deviceWeights, this.numberWeightRows, this.numberWeightColumns, this.deviceResult, this.numberBiasEntries, this.deviceBias)
+
+        }
+        else {
+
+            cublasProject(this.cublasHandle, this.deviceInput, this.deviceWeights, this.numberWeightRows, this.numberWeightColumns, this.deviceResult)
+
+        }
 
         return this.deviceResult
 
@@ -95,30 +97,23 @@ class CublasProjectionLayer internal constructor(
                           x_3
         w_11 w_12 w_13    w_11 * x_1 + w_12 * x_2 + w_13 * x_3
         w_21 w_22 w_23    w_21 * x_1 + w_22 * x_2 + w_23 * x_3
-
         Differentiation w.r.t input:
-
         d Wx / d x = w_11 + w_21
                      w_12 + w_22
                      w_13 + w_23
-
         gemv solution:
                                   chain_1
                                   chain_2
         transposed W >> w_11 w_21
                         w_12 w_22
                         w_13 w_23
-
         Differentiation w.r.t weights:
-
         d Wx / d W = x_1 x_2 x_3
                      x_1 x_2 x_3
-
         ger solution:
                 x1 x2 x3 << transposed x
         chain_1
         chain_2
-
      */
 
     override fun backward(chain: Pointer): Pointer {
@@ -169,8 +164,6 @@ class CublasProjectionLayer internal constructor(
         }
 
         cudaFree(this.deviceBackwardWrtInput)
-
-        cublasDestroy(this.cublasHandle)
 
     }
 

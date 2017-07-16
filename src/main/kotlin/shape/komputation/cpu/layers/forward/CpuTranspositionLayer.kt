@@ -1,10 +1,10 @@
 package shape.komputation.cpu.layers.forward
 
 import shape.komputation.cpu.functions.transpose
-import shape.komputation.cpu.layers.BaseForwardLayer
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.DoubleMatrix
 
-class CpuTranspositionLayer internal constructor(name : String? = null) : BaseForwardLayer(name)  {
+class CpuTranspositionLayer internal constructor(name : String? = null) : BaseCpuForwardLayer(name)  {
 
     override fun forward(input: DoubleMatrix, isTraining : Boolean) =
 

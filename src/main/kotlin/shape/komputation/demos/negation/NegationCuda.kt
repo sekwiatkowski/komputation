@@ -26,8 +26,6 @@ fun main(args: Array<String>) {
         sigmoidLayer(outputDimension)
     )
 
-    val time = network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
-
-    println(time)
+    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
 
 }

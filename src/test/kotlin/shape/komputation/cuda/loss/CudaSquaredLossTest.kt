@@ -5,8 +5,8 @@ import jcuda.runtime.JCuda
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.copyFromHostToDevice
 import shape.komputation.cuda.getVector
+import shape.komputation.cuda.setVector
 
 class CudaSquaredLossTest {
 
@@ -40,9 +40,9 @@ class CudaSquaredLossTest {
     private fun testForward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: Double) {
 
         val devicePredictions = Pointer()
-        copyFromHostToDevice(predictions, size, devicePredictions)
+        setVector(predictions, size, devicePredictions)
         val deviceTargets = Pointer()
-        copyFromHostToDevice(targets, size, deviceTargets)
+        setVector(targets, size, deviceTargets)
 
         val loss = CudaSquaredLoss(3 to 5, size)
 
@@ -89,10 +89,10 @@ class CudaSquaredLossTest {
     private fun testBackward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: DoubleArray) {
 
         val devicePredictions = Pointer()
-        copyFromHostToDevice(predictions, size, devicePredictions)
+        setVector(predictions, size, devicePredictions)
 
         val deviceTargets = Pointer()
-        copyFromHostToDevice(targets, size, deviceTargets)
+        setVector(targets, size, deviceTargets)
 
         val loss = CudaSquaredLoss(3 to 5, size)
 

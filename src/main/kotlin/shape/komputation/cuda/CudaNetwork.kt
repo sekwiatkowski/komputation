@@ -1,6 +1,9 @@
 package shape.komputation.cuda
 
 import jcuda.Pointer
+import jcuda.jcublas.JCublas2.cublasCreate
+import jcuda.jcublas.JCublas2.cublasDestroy
+import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
@@ -13,11 +16,12 @@ import shape.komputation.optimization.Optimizable
 
 class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwardLayerInstructions: CudaForwardLayerInstruction) {
 
-    private val cudaEnvironment = setUpCudaEnvironment()
+    private val cudaContext = setUpCudaContext()
+    private val cublasHandle = cublasHandle()
 
     private val entryPoint = entryPointInstruction.buildForCuda()
 
-    private val layers = forwardLayerInstructions.map { it.buildForCuda(this.cudaEnvironment) }
+    private val layers = forwardLayerInstructions.map { it.buildForCuda(this.cudaContext, this.cublasHandle) }
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
@@ -59,7 +63,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         batchSize : Int,
         afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null): Long {
 
-        val lossFunction = loss.buildForCuda(this.cudaEnvironment)
+        val lossFunction = loss.buildForCuda(this.cudaContext)
 
         val numberExamples = inputs.size
 
@@ -78,13 +82,15 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         val targetMemory = hashMapOf<Int, Pointer>()
 
+        val trackLoss = afterEachIteration != null
+
         val start = System.currentTimeMillis()
 
         repeat(numberIterations) { indexIteration ->
 
             var id = 0
 
-            var iterationLoss = 0.0
+            var iterationLoss = if(trackLoss) 0.0 else Double.NaN
 
             for (batch in batches) {
 
@@ -92,7 +98,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                     val input = inputs[indexExample]
 
-                    val deviceTarget = if (targetMemory.containsKey(id)) {
+                    val pointerToTargets = if (targetMemory.containsKey(id)) {
 
                         targetMemory[id]!!
 
@@ -101,32 +107,44 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                         val target = targets[indexExample]
 
-                        val newPointer = Pointer()
-                        copyFromHostToDevice(target.entries, targetSize, newPointer)
+                        val deviceTargets = Pointer()
+                        setVector(target.entries, targetSize, deviceTargets)
 
-                        targetMemory[id] = newPointer
+                        val pointerToDeviceTargets = Pointer.to(deviceTargets)
 
-                        newPointer
+                        targetMemory[id] = pointerToDeviceTargets
+
+                        pointerToDeviceTargets
 
                     }
 
-                    val devicePointer = this.forward(id++, input)
+                    val devicePredictions = this.forward(id++, input)
 
-                    lossFunction.accumulate(devicePointer, deviceTarget)
+                    val pointerToDevicePredictions = Pointer.to(devicePredictions)
 
-                    val lossGradient = lossFunction.backward(devicePointer, deviceTarget)
+                    if (trackLoss) {
+
+                        lossFunction.accumulate(pointerToDevicePredictions, pointerToTargets)
+
+                    }
+
+                    val lossGradient = lossFunction.backward(pointerToDevicePredictions, pointerToTargets)
 
                     this.backward(lossGradient)
 
                 }
 
-                iterationLoss += lossFunction.accessAccumulation()
-
-                lossFunction.reset()
-
                 val scalingFactor = 1.0.div(batch.size.toDouble())
 
                 this.optimize(scalingFactor)
+
+                if (trackLoss) {
+
+                    iterationLoss += lossFunction.accessAccumulation()
+
+                    lossFunction.reset()
+
+                }
 
             }
 
@@ -169,6 +187,8 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     fun acquireLayerResources() {
 
+        cublasCreate(this.cublasHandle)
+
         if (this.entryPoint is Resourceful) {
 
             this.entryPoint.acquire()
@@ -188,6 +208,8 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     }
 
     fun releaseLayerResources() {
+
+        cublasDestroy(this.cublasHandle)
 
         for (layer in this.layers) {
 
