@@ -1,7 +1,9 @@
-package shape.komputation.demos.trec
+package shape.komputation.cpu.demos.trec
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.findMaxIndex
+import shape.komputation.demos.trec.NLP
+import shape.komputation.demos.trec.TRECData
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer

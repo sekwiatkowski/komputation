@@ -1,9 +1,10 @@
-package shape.komputation.demos.runningtotal
+package shape.komputation.cpu.demos.runningtotal
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.runningtotal.RunningTotalData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization

@@ -1,7 +1,8 @@
-package shape.komputation.demos.embeddings
+package shape.komputation.cpu.demos.embeddings
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.embeddings.EmbeddingData
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer

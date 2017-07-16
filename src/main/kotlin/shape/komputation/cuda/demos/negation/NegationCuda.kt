@@ -1,7 +1,8 @@
-package shape.komputation.demos.negation
+package shape.komputation.cuda.demos.negation
 
-import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.cuda.CudaNetwork
+import shape.komputation.demos.negation.NegationData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
@@ -20,7 +21,7 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.01)
 
-    val network = Network(
+    val network = CudaNetwork(
         inputLayer(inputDimension),
         projectionLayer(inputDimension, outputDimension, initialize, initialize, optimization),
         sigmoidLayer(outputDimension)

@@ -1,8 +1,9 @@
-package shape.komputation.demos.mnist
+package shape.komputation.cpu.demos.mnist
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.functions.findMaxIndex
+import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.constantInitialization
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.zeroInitialization

@@ -1,7 +1,8 @@
-package shape.komputation.demos.lines
+package shape.komputation.cpu.demos.lines
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.lines.LinesData
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.reluLayer

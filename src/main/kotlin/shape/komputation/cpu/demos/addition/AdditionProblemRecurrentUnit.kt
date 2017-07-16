@@ -1,8 +1,10 @@
-package shape.komputation.demos.addition
+package shape.komputation.cpu.demos.addition
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.layers.forward.units.minimalGatedUnit
+import shape.komputation.cpu.functions.activation.ActivationFunction
+import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.addition.AdditionProblemData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
@@ -34,16 +36,14 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = stochasticGradientDescent(0.001)
 
-    val encoderUnit = minimalGatedUnit(
+    val encoderUnit = simpleRecurrentUnit(
         length,
         hiddenDimension,
         inputDimension,
         identityInitializationStrategy,
         gaussianInitializationStrategy,
         zeroInitializationStrategy,
-        identityInitializationStrategy,
-        gaussianInitializationStrategy,
-        zeroInitializationStrategy,
+        ActivationFunction.ReLU,
         optimizationStrategy
     )
 

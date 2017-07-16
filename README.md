@@ -28,8 +28,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
     - [attentive](./src/main/kotlin/shape/komputation/layers/forward/decoder/AttentiveDecoder.kt)
 
 - RNN units:
-  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/forward/units/SimpleRecurrentUnit.kt)
-  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/cpu/forward/units/MinimalGatedUnit.kt)
+  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
+  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/cpu/layers/forward/units/MinimalGatedUnit.kt)
 
 - [Dropout](./src/main/kotlin/shape/komputation/layers/forward/dropout/DropoutLayer.kt)
 
@@ -53,34 +53,34 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 ## Demos
 
 - Boolean functions:
-  - [AND](./src/main/kotlin/shape/komputation/demos/and/AndSigmoid.kt)
-  - [Negation](./src/main/kotlin/shape/komputation/demos/negation/Negation.kt)
-  - [XOR](./src/main/kotlin/shape/komputation/demos/xor/Xor.kt)
+  - [AND](./src/main/kotlin/shape/komputation/cpu/demos/and/AndSigmoid.kt)
+  - [Negation](./src/main/kotlin/shape/komputation/cpu/demos/negation/Negation.kt)
+  - [XOR](./src/main/kotlin/shape/komputation/cpu/demos/xor/Xor.kt)
 
 - Running total:
-  - [Projection](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalProjection.kt)
-  - [Multi-input decoder](./src/main/kotlin/shape/komputation/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
+  - [Projection](./src/main/kotlin/shape/komputation/cpu/demos/runningtotal/RunningTotalProjection.kt)
+  - [Multi-input decoder](./src/main/kotlin/shape/komputation/cpu/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
 
-- [Computer vision toy problem](./src/main/kotlin/shape/komputation/demos/lines/Lines.kt)
+- [Computer vision toy problem](./src/main/kotlin/shape/komputation/cpu/demos/lines/Lines.kt)
 
 - Word embedding toy problem:
-  - [CNN with one filter height](./src/main/kotlin/shape/komputation/demos/embeddings/Embeddings.kt)
-  - [CNN with two filter heights](./src/main/kotlin/shape/komputation/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
+  - [CNN with one filter height](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/Embeddings.kt)
+  - [CNN with two filter heights](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
 
 - Addition problem:
-  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemRecurrentUnit.kt)
-  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/demos/addition/AdditionProblemMGU.kt)
+  - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
+  - [Minimal Gated Unit](./src/main/kotlin/shape/komputation/cpu/demos/addition/AdditionProblemMGU.kt)
 
 - Reverse function:
-  - [Unidirectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseUnidirectional.kt)
-  - [Bidirectional RNN](./src/main/kotlin/shape/komputation/demos/reverse/ReverseBidirectional.kt)
-  - [RNN with attention](./src/main/kotlin/shape/komputation/demos/reverse/ReverseAttention.kt)
+  - [Unidirectional RNN](./src/main/kotlin/shape/komputation/cpu/demos/reverse/ReverseUnidirectional.kt)
+  - [Bidirectional RNN](./src/main/kotlin/shape/komputation/cpu/demos/reverse/ReverseBidirectional.kt)
+  - [RNN with attention](./src/main/kotlin/shape/komputation/cpu/demos/reverse/ReverseAttention.kt)
 
 - MNIST:
-  - [Dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/demos/mnist/MnistDropoutNesterov.kt)
-  - [Highway layers](./src/main/kotlin/shape/komputation/demos/mnist/MnistHighway.kt)
+  - [Dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistDropoutNesterov.kt)
+  - [Highway layers](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistHighway.kt)
 
-- [TREC question classification](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt)
+- [TREC question classification](./src/main/kotlin/shape/komputation/cpu/demos/trec/TREC.kt)
 
 ## Sample code
 

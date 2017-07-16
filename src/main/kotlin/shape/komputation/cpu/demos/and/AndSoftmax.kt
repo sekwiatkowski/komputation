@@ -1,7 +1,8 @@
-package shape.komputation.demos.and
+package shape.komputation.cpu.demos.and
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.and.OneHotAndData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.softmaxLayer

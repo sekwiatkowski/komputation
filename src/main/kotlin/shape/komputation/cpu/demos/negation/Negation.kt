@@ -1,7 +1,8 @@
-package shape.komputation.demos.and
+package shape.komputation.cpu.demos.negation
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.negation.NegationData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
@@ -12,22 +13,20 @@ import java.util.*
 
 fun main(args: Array<String>) {
 
-    val random = Random(1)
-
-    val inputDimension = 2
+    val inputDimension = 1
     val outputDimension = 1
 
+    val random = Random(1)
     val initialize = heInitialization(random)
-    val optimizer = stochasticGradientDescent(0.03)
 
-    val projectionLayer = projectionLayer(inputDimension, outputDimension, initialize, initialize, optimizer)
+    val optimization = stochasticGradientDescent(0.01)
 
     val network = Network(
         inputLayer(inputDimension),
-        projectionLayer,
+        projectionLayer(inputDimension, outputDimension, initialize, initialize, optimization),
         sigmoidLayer(outputDimension)
     )
 
-    network.train(BinaryAndData.inputs, BinaryAndData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
+    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
 
 }

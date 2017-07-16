@@ -1,7 +1,8 @@
-package shape.komputation.demos.xor
+package shape.komputation.cpu.demos.xor
 
 import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.demos.xor.XorData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.sigmoidLayer
