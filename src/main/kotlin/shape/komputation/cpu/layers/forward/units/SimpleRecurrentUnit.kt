@@ -1,6 +1,5 @@
 package shape.komputation.cpu.layers.forward.units
 
-import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.additionCombination
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
@@ -11,6 +10,7 @@ import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.concatenateNames
+import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationInstruction

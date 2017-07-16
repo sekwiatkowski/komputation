@@ -1,7 +1,6 @@
 package shape.komputation.cpu.demos.reverse
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
 import shape.komputation.cpu.printLoss
 import shape.komputation.demos.reverse.ReverseData
@@ -9,6 +8,7 @@ import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.decoder.singleInputDecoder
 import shape.komputation.layers.forward.encoder.singleOutputEncoder
 import shape.komputation.loss.logisticLoss

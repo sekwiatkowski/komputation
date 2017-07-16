@@ -105,7 +105,7 @@ val network = Network(
 )
 ```
 
-See the [TREC demo](./src/main/kotlin/shape/komputation/demos/trec/TREC.kt) for more details.
+See the [TREC demo](./src/main/kotlin/shape/komputation/cpus/demos/trec/TREC.kt) for more details.
 
 ## Initialization
 

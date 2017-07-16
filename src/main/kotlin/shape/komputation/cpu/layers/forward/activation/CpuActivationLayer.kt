@@ -1,6 +1,5 @@
 package shape.komputation.cpu.layers.forward.activation
 
-import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.forward.activation.*

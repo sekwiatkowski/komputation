@@ -1,11 +1,11 @@
 package shape.komputation.layers.forward
 
-import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.layers.combination.additionCombination
 import shape.komputation.cpu.layers.combination.hadamardCombination
 import shape.komputation.cpu.layers.forward.CpuHighwayLayer
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.optimization.OptimizationInstruction
 
 class HighwayLayer(

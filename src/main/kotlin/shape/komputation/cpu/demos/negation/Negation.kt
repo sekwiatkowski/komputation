@@ -5,8 +5,8 @@ import shape.komputation.cpu.printLoss
 import shape.komputation.demos.negation.NegationData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.layers.forward.activation.sigmoidLayer
-import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.activation.ActivationFunction
+import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -17,14 +17,13 @@ fun main(args: Array<String>) {
     val outputDimension = 1
 
     val random = Random(1)
-    val initialize = heInitialization(random)
+    val initialization = heInitialization(random)
 
     val optimization = stochasticGradientDescent(0.01)
 
     val network = Network(
         inputLayer(inputDimension),
-        projectionLayer(inputDimension, outputDimension, initialize, initialize, optimization),
-        sigmoidLayer(outputDimension)
+        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
     network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)

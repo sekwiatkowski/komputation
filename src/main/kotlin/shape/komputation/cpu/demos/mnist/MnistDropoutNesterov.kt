@@ -1,11 +1,11 @@
 package shape.komputation.cpu.demos.mnist
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.activation.ActivationFunction
 import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.layers.entry.inputLayer
+import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer

@@ -5,8 +5,8 @@ import shape.komputation.cpu.printLoss
 import shape.komputation.demos.and.OneHotAndData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.layers.forward.activation.softmaxLayer
-import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.activation.ActivationFunction
+import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -17,17 +17,13 @@ fun main(args: Array<String>) {
     val outputDimension = 2
 
     val random = Random(1)
-    val initialize = heInitialization(random)
+    val initialization = heInitialization(random)
 
-    val optimizer = stochasticGradientDescent(0.03)
-
-    val projectionLayer = projectionLayer(inputDimension, outputDimension, initialize, initialize, optimizer)
-    val softmaxLayer = softmaxLayer()
+    val optimization = stochasticGradientDescent(0.03)
 
     val network = Network(
         inputLayer(inputDimension),
-        projectionLayer,
-        softmaxLayer
+        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Softmax, optimization)
     )
 
     network.train(OneHotAndData.input, OneHotAndData.targets, logisticLoss(), 10_000, 1, printLoss)

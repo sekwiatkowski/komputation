@@ -1,4 +1,4 @@
-package shape.komputation.cpu.functions.activation
+package shape.komputation.layers.forward.activation
 
 enum class ActivationFunction {
 

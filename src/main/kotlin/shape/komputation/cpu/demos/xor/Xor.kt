@@ -5,8 +5,8 @@ import shape.komputation.cpu.printLoss
 import shape.komputation.demos.xor.XorData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.layers.forward.activation.sigmoidLayer
-import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.activation.ActivationFunction
+import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -21,21 +21,16 @@ fun main(args: Array<String>) {
 
     val inputLayer = inputLayer(inputDimension)
 
-    val initialize = heInitialization(random)
-    val optimizationStrategy = stochasticGradientDescent(0.1)
+    val initialization = heInitialization(random)
+    val optimization = stochasticGradientDescent(0.1)
 
-    val hiddenPreactivationLayer = projectionLayer(inputDimension, hiddenDimension, initialize, initialize, optimizationStrategy)
-    val hiddenActivationLayer = sigmoidLayer(hiddenDimension)
-
-    val outputPreactivationLayer = projectionLayer(hiddenDimension, outputDimension, initialize, initialize, optimizationStrategy)
-    val outputActivationLayer = sigmoidLayer(outputDimension)
+    val hiddenLayer = denseLayer(inputDimension, hiddenDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
+    val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
 
     val network = Network(
         inputLayer,
-        hiddenPreactivationLayer,
-        hiddenActivationLayer,
-        outputPreactivationLayer,
-        outputActivationLayer
+        hiddenLayer,
+        outputLayer
     )
 
     network.train(XorData.input, XorData.targets, squaredLoss(outputDimension), 30_000, 1, printLoss)
