@@ -4,7 +4,7 @@ import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.forward.activation.*
 
-fun cpuActivationLayer(name: String?, function: ActivationFunction, dimension : Int) : CpuActivationLayerInstruction =
+fun cpuActivationLayer(name: String?, function: ActivationFunction, numberRows : Int, numberColumns : Int) : CpuActivationLayerInstruction =
 
     when (function) {
 
@@ -13,9 +13,9 @@ fun cpuActivationLayer(name: String?, function: ActivationFunction, dimension : 
         ActivationFunction.Identity ->
             identityLayer(name)
         ActivationFunction.Sigmoid ->
-            sigmoidLayer(name, dimension)
+            sigmoidLayer(name, numberRows * numberColumns)
         ActivationFunction.Softmax ->
-            softmaxLayer(name)
+            softmaxLayer(name, numberRows, numberColumns)
         ActivationFunction.Tanh ->
             tanhLayer(name)
 

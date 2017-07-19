@@ -7,7 +7,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaSigmoidLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class SigmoidLayer(private val name : String?, private val inputDimension : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class SigmoidLayer(private val name : String?, private val numberEntries: Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 
@@ -17,7 +17,7 @@ class SigmoidLayer(private val name : String?, private val inputDimension : Int)
 
         val kernelFactory = context.kernelFactory
 
-        return CudaSigmoidLayer(name, kernelFactory.forwardSigmoid(), kernelFactory.backwardSigmoid(), context.maximumNumberThreadsPerBlock, this.inputDimension)
+        return CudaSigmoidLayer(name, kernelFactory.forwardSigmoid(), kernelFactory.backwardSigmoid(), context.maximumNumberThreadsPerBlock, this.numberEntries)
 
     }
 

@@ -170,7 +170,7 @@ fun simpleRecurrentUnit(
     val activationName = concatenateNames(name, "activation")
     val activationLayers = Array(numberSteps) { index ->
 
-        cpuActivationLayer(concatenateNames(activationName, index.toString()), activationFunction, hiddenDimension).buildForCpu()
+        cpuActivationLayer(concatenateNames(activationName, index.toString()), activationFunction, hiddenDimension, numberSteps).buildForCpu()
 
     }
 

@@ -33,7 +33,7 @@ class DenseLayer(
 
         val projectionLayer = projection.buildForCpu()
 
-        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.outputDimension).buildForCpu()
+        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.outputDimension, 1).buildForCpu()
 
         return CpuDenseLayer(this.name, projectionLayer, activationLayer)
 

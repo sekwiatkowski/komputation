@@ -4,6 +4,16 @@ import java.io.File
 
 class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
+    fun exponentiationKernel() = createKernel(
+        "exponentiationKernel",
+        "exponentiationKernel",
+        "exponentiation/ExponentiationKernel.cu")
+
+    fun backwardExponentiationKernel() = createKernel(
+        "backwardExponentiationKernel",
+        "backwardExponentiationKernel",
+        "exponentiation/BackwardExponentiationKernel.cu")
+
     fun projectionKernel() = createKernel(
         "projectionKernel",
         "projectionKernel",
@@ -21,20 +31,21 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "accumulationKernel",
         "accumulation/AccumulationKernel.cu")
 
-    fun forwardNormalizationKernel(blockSize : Int) =
+    fun normalizationKernel(blockSize : Int) =
 
         createKernel(
-            "forwardNormalizationKernel",
-            "forwardNormalizationKernel<$blockSize>",
-            "normalization/ForwardNormalizationKernel.cu",
+            "normalizationKernel",
+            "normalizationKernel<$blockSize>",
+            "normalization/NormalizationKernel.cu",
             listOf("reduction/Reduction.cuh"))
 
-    fun backwardNormalizationKernel() =
+    fun backwardNormalizationKernel(blockSize: Int) =
 
         createKernel(
             "backwardNormalizationKernel",
-            "backwardNormalizationKernel",
-            "normalization/BackwardNormalizationKernel.cu")
+            "backwardNormalizationKernel<$blockSize>",
+            "normalization/BackwardNormalizationKernel.cu",
+            listOf("reduction/Reduction.cuh"))
 
     fun forwardSigmoid() = createKernel(
         "sigmoidKernel",

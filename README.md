@@ -101,7 +101,7 @@ val network = Network(
             .toTypedArray()
     ),
     projectionLayer(numberFilterWidths * numberFilters, numberCategories, initializationStrategy, initializationStrategy, optimizationStrategy),
-    softmaxLayer()
+    softmaxLayer(numberCategories)
 )
 ```
 

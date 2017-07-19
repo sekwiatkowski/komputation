@@ -11,12 +11,12 @@ class CudaSigmoidLayer internal constructor(
     private val forwardKernel: Kernel,
     private val backwardKernel: Kernel,
     maximumThreadsPerBlock: Int,
-    private val inputDimension : Int) : BaseCudaActivationLayer(name), Resourceful {
+    private val numberEntries : Int) : BaseCudaActivationLayer(name), Resourceful {
 
-    private val resultDimension = this.inputDimension
+    private val resultDimension = this.numberEntries
 
-    private val numberThreads = Math.min(this.inputDimension, maximumThreadsPerBlock)
-    private val numberBlocks = Math.ceil(this.inputDimension.toDouble() / this.numberThreads.toDouble()).toInt()
+    private val numberThreads = Math.min(this.numberEntries, maximumThreadsPerBlock)
+    private val numberBlocks = Math.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble()).toInt()
 
     private val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
@@ -24,7 +24,7 @@ class CudaSigmoidLayer internal constructor(
     private val deviceBackwardResult = Pointer()
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    val deviceInputDimension = Pointer.to(intArrayOf(this.inputDimension))
+    private val deviceInputDimension = Pointer.to(intArrayOf(this.numberEntries))
 
     override fun acquire() {
 
@@ -32,7 +32,7 @@ class CudaSigmoidLayer internal constructor(
         this.backwardKernel.acquire()
 
         allocateDeviceMemory(this.deviceForwardResult, this.resultDimension)
-        allocateDeviceMemory(this.deviceBackwardResult, this.inputDimension)
+        allocateDeviceMemory(this.deviceBackwardResult, this.numberEntries)
 
     }
 

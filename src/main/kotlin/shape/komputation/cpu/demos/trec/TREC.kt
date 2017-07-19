@@ -104,7 +104,7 @@ class TrecTraining {
                     .toTypedArray()
             ),
             projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
-            softmaxLayer()
+            softmaxLayer(numberCategories)
         )
 
         val afterEachIteration = { _ : Int, _ : Double ->

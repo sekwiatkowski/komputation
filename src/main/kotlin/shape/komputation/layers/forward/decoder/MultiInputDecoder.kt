@@ -45,7 +45,7 @@ class MultiInputDecoder(
         val activationName = concatenateNames(this.name, "activation")
         val activations = Array(this.numberSteps) { index ->
 
-            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.outputDimension).buildForCpu()
+            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.outputDimension, this.numberSteps).buildForCpu()
 
         }
 
