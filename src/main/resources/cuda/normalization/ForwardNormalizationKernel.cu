@@ -2,7 +2,6 @@
 
 /*
 
-    First approach:
     The number of categories is assumed to be smaller than or equal to the maximum number of threads per block.
     The warp size is further assumed to be 32.
 
@@ -17,23 +16,10 @@
     64 categories => ceil(64 / 32) * 32 = 64 threads
     65 categories => ceil(65 / 32) * 32 = 96 threads
 
-    Second approach:
-    Half of threads are idle in the first iteration of the reduction loop. As a remedy, the number of threads is halved.
-
-    number of warps = ceil(number of categories / warp size / 2)
-    number of threads per block = number of warps * warp size
-
-    Examples:
-    1 category => ceil(1 / 32 / 2) * 32 = 32 threads
-    31 categories => ceil(31 / 32 / 2) * 32 = 32 threads
-    32 categories => ceil(32 / 32 / 2) * 32 = 32 threads
-    33 categories => ceil(33 / 32 / 2) * 32 = 32 threads (instead of 64)
-    64 categories => ceil(64 / 32 / 2) * 32 = 32 threads (instead of 64)
-    65 categories => ceil(65 / 32 / 2) * 32 = 64 threads (instead of 96)
 */
 
 template <int blockSize>
-__global__ void normalizationKernel (int numberCategories, double * input, double * result)
+__global__ void forwardNormalizationKernel (int numberCategories, double * input, double * result, double * sums)
 {
 
     /*
@@ -41,6 +27,7 @@ __global__ void normalizationKernel (int numberCategories, double * input, doubl
         The j-th thread in a block is responsible for the probability of category j at the current step.
     */
     int threadId = threadIdx.x;
+    int blockId = blockIdx.x;
     int globalId = blockIdx.x * blockDim.x + threadId;
 
     /*
@@ -121,6 +108,12 @@ __global__ void normalizationKernel (int numberCategories, double * input, doubl
     if (threadId < 32) {
 
         reduceWarp<blockSize>(sharedData, threadId);
+
+    }
+
+    if(threadId == 0) {
+
+        sums[blockId] = sharedData[0];
 
     }
 

@@ -21,13 +21,20 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "accumulationKernel",
         "accumulation/AccumulationKernel.cu")
 
-    fun normalizationKernel(blockSize : Int) =
+    fun forwardNormalizationKernel(blockSize : Int) =
 
         createKernel(
-            "normalizationKernel",
-            "normalizationKernel<$blockSize>",
-            "normalization/NormalizationKernel.cu",
+            "forwardNormalizationKernel",
+            "forwardNormalizationKernel<$blockSize>",
+            "normalization/ForwardNormalizationKernel.cu",
             listOf("reduction/Reduction.cuh"))
+
+    fun backwardNormalizationKernel() =
+
+        createKernel(
+            "backwardNormalizationKernel",
+            "backwardNormalizationKernel",
+            "normalization/BackwardNormalizationKernel.cu")
 
     fun forwardSigmoid() = createKernel(
         "sigmoidKernel",
