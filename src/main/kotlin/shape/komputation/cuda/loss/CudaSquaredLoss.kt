@@ -2,19 +2,14 @@ package shape.komputation.cuda.loss
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.driver.CUfunction
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.*
+import shape.komputation.cuda.Kernel
+import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.getVector
+import shape.komputation.cuda.setVectorToZero
 import shape.komputation.layers.Resourceful
-import java.io.File
 
-class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val targetDimension : Int) : CudaLossFunction, Resourceful {
-
-    private var forwardPtxFile: File? = null
-    private val forwardKernel = CUfunction()
-
-    private var backwardPtxFile: File? = null
-    private val backwardKernel = CUfunction()
+class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKernel: Kernel, private val targetDimension : Int) : CudaLossFunction, Resourceful {
 
     private val deviceForwardResults = Pointer()
     private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
@@ -29,34 +24,27 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
 
     override fun acquire() {
 
-        this.forwardPtxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/squaredloss/SquaredLossKernel.cu").toURI()),
-            "squaredLossKernel",
-            this.forwardKernel,
-            this.capabilities)
+        this.forwardKernel.acquire()
 
         allocateDeviceMemory(this.deviceForwardResults, this.targetDimension)
-
-        this.backwardPtxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/squaredloss/BackwardSquaredLossKernel.cu").toURI()),
-            "backwardSquaredLossKernel",
-            this.backwardKernel,
-            this.capabilities)
-
         allocateDeviceMemory(this.deviceLoss, 1)
+
+        this.backwardKernel.acquire()
+
         allocateDeviceMemory(this.deviceBackwardResults, this.targetDimension)
 
     }
 
     override fun release() {
 
-        this.forwardPtxFile!!.delete()
-        this.backwardPtxFile!!.delete()
-
-        cudaFree(this.deviceForwardResults)
-        cudaFree(this.deviceLoss)
-
         cudaFree(this.deviceBackwardResults)
+
+        this.backwardKernel.release()
+
+        cudaFree(this.deviceLoss)
+        cudaFree(this.deviceForwardResults)
+
+        this.forwardKernel.release()
 
     }
 
@@ -71,8 +59,7 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
             this.pointerToDeviceForwardResults,
             this.pointerToDeviceSum)
 
-        launchKernel(
-            this.forwardKernel,
+        this.forwardKernel.launch(
             parameters,
             1,
             this.targetDimension,
@@ -98,7 +85,11 @@ class CudaSquaredLoss(private val capabilities : Pair<Int, Int>, private val tar
             pointerToTargets,
             this.pointerToDeviceBackwardResults)
 
-        launchKernel(this.backwardKernel, parameters, 1, this.targetDimension, 0)
+        this.backwardKernel.launch(
+            parameters,
+            1,
+            this.targetDimension,
+            0)
 
         return this.deviceBackwardResults
 

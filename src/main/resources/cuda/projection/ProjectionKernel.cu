@@ -1,4 +1,4 @@
-#include "Projection.cuh"
+#include "projection/Projection.cuh"
 
 // The number of blocks is given by:
 // (numberRows + blockDim.x - 1) / blockDim.x

@@ -20,7 +20,7 @@ class CudaStochasticGradientDescentTest {
         val numberColumns = 1
         val size = numberRows * numberColumns
 
-        val stochasticGradientDescent = CudaStochasticGradientDescent(cudaContext.computeCapabilities, cudaContext.numberThreadsPerBlock, numberRows * numberColumns, 0.1)
+        val stochasticGradientDescent = CudaStochasticGradientDescent(cudaContext.kernelFactory.stochasticGradientDescent(), cudaContext.maximumNumberThreadsPerBlock, numberRows * numberColumns, 0.1)
 
         stochasticGradientDescent.acquire()
 

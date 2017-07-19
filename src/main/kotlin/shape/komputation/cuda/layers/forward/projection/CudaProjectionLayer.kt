@@ -2,24 +2,23 @@ package shape.komputation.cuda.layers.forward.projection
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.driver.CUfunction
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.acquireKernel
+import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
-import shape.komputation.cuda.launchKernel
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setVector
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
-import java.io.File
 
 class CudaProjectionLayer internal constructor(
     name: String?,
-    private val computeCapabilities: Pair<Int, Int>,
+    private val accumulationKernel : Kernel,
+    private val projectionKernel : Kernel,
+    private val projectionWithBiasKernel : Kernel,
     private val maximumThreadsPerBlock: Int,
     private val cublasHandle: cublasHandle,
     private val initialWeights: DoubleArray,
@@ -72,16 +71,6 @@ class CudaProjectionLayer internal constructor(
     private val pointerToNumberWeightRows = Pointer.to(intArrayOf(this.numberWeightRows))
     private val pointerToNumberWeightColumns = Pointer.to(intArrayOf(this.numberWeightColumns))
 
-    // Forward kernels
-    private val projectionKernel = CUfunction()
-    private var projectionPtxFile : File? = null
-
-    private val projectionWithBiasKernel = CUfunction()
-    private var projectionWithBiasPtxFile : File? = null
-
-    private val accumulationKernel = CUfunction()
-    private var accumulationPtxFile : File? = null
-
     private val blockSize = 32
     private val numberBlocks = (this.numberWeightRows + this.blockSize - 1) / this.blockSize
     private val sharedMemoryBytes = this.blockSize * Sizeof.DOUBLE
@@ -114,23 +103,9 @@ class CudaProjectionLayer internal constructor(
 
         }
 
-        this.projectionPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/projection/ProjectionKernel.cu").toURI()),
-            "projectionKernel",
-            this.projectionKernel,
-            this.computeCapabilities)
-
-        this.projectionWithBiasPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/projection/ProjectionWithBiasKernel.cu").toURI()),
-            "projectionWithBiasKernel",
-            this.projectionWithBiasKernel,
-            this.computeCapabilities)
-
-        this.accumulationPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/accumulation/AccumulationKernel.cu").toURI()),
-            "accumulationKernel",
-            this.accumulationKernel,
-            this.computeCapabilities)
+        this.projectionKernel.acquire()
+        this.projectionWithBiasKernel.acquire()
+        this.accumulationKernel.acquire()
 
 
     }
@@ -152,8 +127,7 @@ class CudaProjectionLayer internal constructor(
                 this.pointerToDeviceResult
             )
 
-            launchKernel(
-                this.projectionWithBiasKernel,
+            this.projectionWithBiasKernel.launch(
                 parameters,
                 this.numberBlocks,
                 this.blockSize,
@@ -171,8 +145,7 @@ class CudaProjectionLayer internal constructor(
                 this.pointerToDeviceResult
             )
 
-            launchKernel(
-                this.projectionKernel,
+            this.projectionKernel.launch(
                 parameters,
                 this.numberBlocks,
                 this.blockSize,
@@ -229,8 +202,7 @@ class CudaProjectionLayer internal constructor(
 
         if (this.initialBias != null) {
 
-            launchKernel(
-                this.accumulationKernel,
+            this.accumulationKernel.launch(
                 Pointer.to(
                     this.pointerToNumberBiasEntries,
                     this.pointerToDeviceBiasGradientAccumulator,
@@ -283,9 +255,9 @@ class CudaProjectionLayer internal constructor(
 
         cudaFree(this.deviceBackwardWrtInput)
 
-        this.projectionPtxFile!!.deleteOnExit()
-        this.projectionWithBiasPtxFile!!.deleteOnExit()
-        this.accumulationPtxFile!!.deleteOnExit()
+        this.projectionKernel.release()
+        this.projectionWithBiasKernel.release()
+        this.accumulationKernel.release()
 
     }
 

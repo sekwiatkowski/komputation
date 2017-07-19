@@ -1,20 +1,14 @@
 package shape.komputation.cuda.optimization
 
 import jcuda.Pointer
-import jcuda.driver.CUfunction
-import shape.komputation.cuda.acquireKernel
-import shape.komputation.cuda.launchKernel
+import shape.komputation.cuda.Kernel
 import shape.komputation.layers.Resourceful
-import java.io.File
 
 class CudaStochasticGradientDescent(
-    private val capabilities : Pair<Int, Int>,
+    private val kernel: Kernel,
     maximumThreadsPerBlock: Int,
     private val size : Int,
     private val learningRate: Double) : CudaUpdateRule, Resourceful {
-
-    private var ptxFile: File? = null
-    private val kernel = CUfunction()
 
     private val pointerToSize = Pointer.to(intArrayOf(this.size))
     private val pointerToLearningRate = Pointer.to(doubleArrayOf(this.learningRate))
@@ -24,12 +18,7 @@ class CudaStochasticGradientDescent(
 
     override fun acquire() {
 
-        this.ptxFile = acquireKernel(
-            File(javaClass.getResource("/cuda/stochasticgradientdescent/StochasticGradientDescentKernel.cu").toURI()),
-            "stochasticGradientDescentKernel",
-            kernel,
-            capabilities
-        )
+        this.kernel.acquire()
 
     }
 
@@ -40,8 +29,7 @@ class CudaStochasticGradientDescent(
 
         this.scalingFactorArray[0] = scalingFactor
 
-        launchKernel(
-            this.kernel,
+        this.kernel.launch(
             Pointer.to(
                 this.pointerToSize,
                 pointerToDeviceParameter,
@@ -58,9 +46,8 @@ class CudaStochasticGradientDescent(
 
     override fun release() {
 
-        this.ptxFile!!.delete()
+        this.kernel.release()
 
     }
-
 
 }

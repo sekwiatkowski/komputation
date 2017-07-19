@@ -2,17 +2,7 @@ package shape.komputation.cuda
 
 import jcuda.Pointer
 import jcuda.driver.CUfunction
-import jcuda.driver.CUmodule
-import jcuda.driver.JCudaDriver.*
-
-fun loadKernel(path : String, function: CUfunction, functionName : String) {
-
-    val module = CUmodule()
-    cuModuleLoad(module, path)
-
-    cuModuleGetFunction(function, module, functionName)
-
-}
+import jcuda.driver.JCudaDriver.cuLaunchKernel
 
 fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocks: Int, numberThreadsPerBlock: Int, sharedMemoryBytes : Int) =
 

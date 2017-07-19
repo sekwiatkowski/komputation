@@ -9,8 +9,10 @@ import jcuda.driver.JCudaDriver.cuInit
 data class CudaContext(
     val context : CUcontext,
     val computeCapabilities : Pair<Int, Int>,
-    val numberThreadsPerBlock : Int,
+    val maximumNumberThreadsPerBlock: Int,
     val numberBlocks : Int) {
+
+    val kernelFactory = KernelFactory(this.computeCapabilities)
 
     fun destroy() {
 

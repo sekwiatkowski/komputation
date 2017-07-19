@@ -10,9 +10,13 @@ class SquaredLoss(private val dimension : Int) : CpuLossFunctionInstruction, Cud
 
         CpuSquaredLoss()
 
-    override fun buildForCuda(context: CudaContext) =
+    override fun buildForCuda(context: CudaContext): CudaSquaredLoss {
 
-        CudaSquaredLoss(context.computeCapabilities, dimension)
+        val kernelFactory = context.kernelFactory
+
+        return CudaSquaredLoss(kernelFactory.squaredLoss(), kernelFactory.backwardSquaredLoss(), dimension)
+
+    }
 
 }
 

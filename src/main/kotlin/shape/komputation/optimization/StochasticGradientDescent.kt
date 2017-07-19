@@ -27,8 +27,8 @@ class StochasticGradientDescent(private val learningRate: Double) : Optimization
         return { numberRows : Int, numberColumns : Int ->
 
             CudaStochasticGradientDescent(
-                context.computeCapabilities,
-                context.numberThreadsPerBlock,
+                context.kernelFactory.stochasticGradientDescent(),
+                context.maximumNumberThreadsPerBlock,
                 numberRows * numberColumns,
                 this.learningRate)
 

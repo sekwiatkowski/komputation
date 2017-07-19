@@ -79,7 +79,7 @@ class ProjectionLayer(
 
         }
 
-        return CudaProjectionLayer(this.name, context.computeCapabilities, context.numberThreadsPerBlock, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
+        return CudaProjectionLayer(this.name, context.kernelFactory.accumulationKernel(), context.kernelFactory.projectionKernel(), context.kernelFactory.projectionWithBiasKernel(), context.maximumNumberThreadsPerBlock, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
         // return CublasProjectionLayer(this.name, cublasHandle, weights, numberWeightRows, numberWeightColumns, weightUpdateRule, bias, biasUpdateRule)
 
     }

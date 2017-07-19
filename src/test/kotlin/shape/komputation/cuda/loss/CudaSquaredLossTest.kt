@@ -1,11 +1,13 @@
 package shape.komputation.cuda.loss
 
 import jcuda.Pointer
-import jcuda.runtime.JCuda
+import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.cuda.KernelFactory
 import shape.komputation.cuda.getVector
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
 
 class CudaSquaredLossTest {
@@ -39,12 +41,19 @@ class CudaSquaredLossTest {
 
     private fun testForward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: Double) {
 
+        val cudaContext = setUpCudaContext()
+
         val devicePredictions = Pointer()
         setVector(predictions, size, devicePredictions)
         val deviceTargets = Pointer()
         setVector(targets, size, deviceTargets)
 
-        val loss = CudaSquaredLoss(3 to 5, size)
+        val forwardKernel = KernelFactory(cudaContext.computeCapabilities)
+
+        val loss = CudaSquaredLoss(
+            forwardKernel.squaredLoss(),
+            forwardKernel.backwardSquaredLoss(),
+            size)
 
         loss.acquire()
 
@@ -54,10 +63,13 @@ class CudaSquaredLossTest {
 
         loss.release()
 
-        JCuda.cudaFree(devicePredictions)
-        JCuda.cudaFree(deviceTargets)
+        cudaFree(devicePredictions)
+        cudaFree(deviceTargets)
+
+        cudaContext.destroy()
 
         assertEquals(expected, actual, 0.001)
+
     }
 
     @Test
@@ -88,13 +100,20 @@ class CudaSquaredLossTest {
 
     private fun testBackward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: DoubleArray) {
 
+        val context = setUpCudaContext()
+
         val devicePredictions = Pointer()
         setVector(predictions, size, devicePredictions)
 
         val deviceTargets = Pointer()
         setVector(targets, size, deviceTargets)
 
-        val loss = CudaSquaredLoss(3 to 5, size)
+        val kernelFactory = KernelFactory(context.computeCapabilities)
+
+        val loss = CudaSquaredLoss(
+            kernelFactory.squaredLoss(),
+            kernelFactory.backwardSquaredLoss(),
+            size)
 
         loss.acquire()
 
@@ -103,8 +122,10 @@ class CudaSquaredLossTest {
 
         loss.release()
 
-        JCuda.cudaFree(devicePredictions)
-        JCuda.cudaFree(deviceTargets)
+        cudaFree(devicePredictions)
+        cudaFree(deviceTargets)
+
+        context.destroy()
 
         assertArrayEquals(expected, actual, 0.001)
 

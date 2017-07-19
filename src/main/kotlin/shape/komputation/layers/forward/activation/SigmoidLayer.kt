@@ -13,9 +13,13 @@ class SigmoidLayer(private val name : String?, private val inputDimension : Int)
 
         CpuSigmoidLayer(this.name)
 
-    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) =
+    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
 
-        CudaSigmoidLayer(name, context.computeCapabilities, context.numberThreadsPerBlock, this.inputDimension)
+        val kernelFactory = context.kernelFactory
+
+        return CudaSigmoidLayer(name, kernelFactory.forwardSigmoid(), kernelFactory.backwardSigmoid(), context.maximumNumberThreadsPerBlock, this.inputDimension)
+
+    }
 
 }
 

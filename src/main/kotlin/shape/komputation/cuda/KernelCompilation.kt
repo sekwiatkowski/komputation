@@ -1,69 +1,70 @@
 package shape.komputation.cuda
 
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.io.InputStream
+import jcuda.driver.CUfunction
+import jcuda.driver.CUmodule
+import jcuda.driver.JCudaDriver.cuModuleGetFunction
+import jcuda.driver.JCudaDriver.cuModuleLoadData
+import jcuda.nvrtc.JNvrtc
+import jcuda.nvrtc.JNvrtc.*
+import jcuda.nvrtc.nvrtcProgram
+import java.io.File
 
-fun compileKernel(cuFile: String, ptxFile: String, computeCapability : Pair<Int, Int>) {
+fun compileKernel(
+    program : nvrtcProgram,
+    computeCapabilities : Pair<Int, Int>,
+    cuFile : File,
+    name : String,
+    nameExpressions : Array<String>,
+    headerFiles : Array<File>,
+    includeNames : Array<String>) {
 
-    val (major, minor) = computeCapability
+    val sourceCode = cuFile.readText()
 
-    val command = "nvcc -m64 -arch=compute_$major$minor -ptx $cuFile -o $ptxFile"
+    val headerSources = Array(headerFiles.size) { index -> headerFiles[index].readText() }
 
-    val process = Runtime.getRuntime().exec(command)
+    val numberHeaders = headerFiles.size
 
-    val exitValue : Int
+    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headerSources, includeNames);
 
-    try {
+    for (nameExpression in nameExpressions) {
 
-        exitValue = process.waitFor()
+        JNvrtc.nvrtcAddNameExpression(program, nameExpression)
 
     }
-    catch (e: InterruptedException) {
 
-        Thread.currentThread().interrupt()
+    val (major, minor) = computeCapabilities
 
-        throw IOException("Interrupted while waiting for nvcc output", e)
+    val options = arrayOf("-arch=compute_$major$minor")
+    nvrtcCompileProgram(program, options.size, options)
 
-    }
+    val programLogArray = Array(1) { "" }
+    nvrtcGetProgramLog(program, programLogArray)
 
-    if (exitValue != 0)
-    {
+    val programLog = programLogArray.single()
 
-        val errorMessage = String(toByteArray(process.errorStream))
-        val outputMessage = String(toByteArray(process.inputStream))
+    if (programLog.isNotEmpty()) {
 
-        val report =
-            """
-                Could not create .ptx file:
-                Exit value: $exitValue
-                Output: $outputMessage
-                Error: $errorMessage
-            """.trimIndent()
-
-        throw IOException(report)
+        throw Exception(programLog)
 
     }
 
 }
 
-private fun toByteArray(inputStream: InputStream): ByteArray {
+fun loadKernel(
+    kernel : CUfunction,
+    program : nvrtcProgram,
+    nameExpression: String) {
 
-    val baos = ByteArrayOutputStream()
-    val buffer = ByteArray(8192)
+    val ptxs = arrayOfNulls<String>(1)
+    nvrtcGetPTX(program, ptxs)
+    val ptx = ptxs.single()
 
-    while (true) {
+    val module = CUmodule()
+    cuModuleLoadData(module, ptx)
 
-        val read = inputStream.read(buffer)
+    val loweredName = arrayOfNulls<String>(1)
+    nvrtcGetLoweredName(program, nameExpression, loweredName)
 
-        if (read == -1) {
-            break
-        }
-
-        baos.write(buffer, 0, read)
-
-    }
-
-    return baos.toByteArray()
+    cuModuleGetFunction(kernel, module, loweredName[0])
 
 }

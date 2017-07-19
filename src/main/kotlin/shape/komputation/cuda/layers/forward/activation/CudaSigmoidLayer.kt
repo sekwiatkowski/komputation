@@ -1,17 +1,15 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
-import jcuda.driver.CUfunction
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.acquireKernel
+import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.launchKernel
 import shape.komputation.layers.Resourceful
-import java.io.File
 
 class CudaSigmoidLayer internal constructor(
     name : String? = null,
-    private val computeCapabilities: Pair<Int, Int>,
+    private val forwardKernel: Kernel,
+    private val backwardKernel: Kernel,
     maximumThreadsPerBlock: Int,
     private val inputDimension : Int) : BaseCudaActivationLayer(name), Resourceful {
 
@@ -23,30 +21,15 @@ class CudaSigmoidLayer internal constructor(
     private val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
-    private var forwardPtxFile: File? = null
-    private val forwardFunction = CUfunction()
-
     private val deviceBackwardResult = Pointer()
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
-
-    private var backwardPtxFile: File? = null
-    private val backwardFunction = CUfunction()
 
     val deviceInputDimension = Pointer.to(intArrayOf(this.inputDimension))
 
     override fun acquire() {
 
-        this.forwardPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/sigmoid/SigmoidKernel.cu").toURI()),
-            "sigmoidKernel",
-            this.forwardFunction,
-            this.computeCapabilities)
-
-        this.backwardPtxFile = acquireKernel(
-            File(this.javaClass.getResource("/cuda/sigmoid/BackwardSigmoidKernel.cu").toURI()),
-            "backwardSigmoidKernel",
-            this.backwardFunction,
-            this.computeCapabilities)
+        this.forwardKernel.acquire()
+        this.backwardKernel.acquire()
 
         allocateDeviceMemory(this.deviceForwardResult, this.resultDimension)
         allocateDeviceMemory(this.deviceBackwardResult, this.inputDimension)
@@ -61,7 +44,7 @@ class CudaSigmoidLayer internal constructor(
             this.pointerToDeviceForwardResult
         )
 
-        launchKernel(this.forwardFunction, forwardParameters, this.numberBlocks, this.numberThreads, 0)
+        this.forwardKernel.launch(forwardParameters, this.numberBlocks, this.numberThreads, 0)
 
         return this.deviceForwardResult
 
@@ -76,7 +59,7 @@ class CudaSigmoidLayer internal constructor(
             pointerToDeviceBackwardResult
         )
 
-        launchKernel(this.backwardFunction, backwardParameters, this.numberBlocks, this.numberThreads, 0)
+        this.backwardKernel.launch(backwardParameters, this.numberBlocks, this.numberThreads, 0)
 
         return this.deviceBackwardResult
 
@@ -84,8 +67,8 @@ class CudaSigmoidLayer internal constructor(
 
     override fun release() {
 
-        this.forwardPtxFile!!.delete()
-        this.backwardPtxFile!!.delete()
+        this.forwardKernel.release()
+        this.backwardKernel.release()
 
         cudaFree(this.deviceForwardResult)
         cudaFree(this.deviceBackwardResult)
