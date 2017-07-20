@@ -139,14 +139,6 @@ class CudaSoftmaxLayerTest {
         val forwardEntries = columnWiseSoftmax(input, numberRows, numberColumns)
         val expected = backwardColumnWiseSoftmax(numberRows, numberColumns, forwardEntries, chain)
 
-        val actual = backward(numberRows, numberColumns, input, chain)
-
-        assertArrayEquals(expected, actual, 0.001)
-
-    }
-
-    private fun backward(numberRows: Int, numberColumns: Int, input: DoubleArray, chain: DoubleArray): DoubleArray {
-
         val numberEntries = numberRows * numberColumns
 
         val cudaContext = setUpCudaContext()
@@ -172,7 +164,7 @@ class CudaSoftmaxLayerTest {
 
         cudaContext.destroy()
 
-        return actual
+        assertArrayEquals(expected, actual, 0.001)
 
     }
 

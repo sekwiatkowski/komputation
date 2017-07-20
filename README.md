@@ -95,7 +95,7 @@ val network = Network(
                 arrayOf(
                     convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
                     maxPoolingLayer(),
-                    dropoutLayer(numberFilters, random, 0.8, reluLayer())
+                    dropoutLayer(numberFilters, random, 0.8, reluLayer(numberFilters))
                 )
             }
             .toTypedArray()

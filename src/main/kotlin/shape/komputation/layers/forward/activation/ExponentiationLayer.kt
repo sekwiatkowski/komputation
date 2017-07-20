@@ -6,7 +6,7 @@ import shape.komputation.cuda.KernelFactory
 import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class ExponentiationLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CudaForwardLayerInstruction {
+class ExponentiationLayer(private val name : String?, private val numberEntries: Int) : CudaForwardLayerInstruction {
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaExponentiationLayer {
 
@@ -19,8 +19,8 @@ class ExponentiationLayer(private val name : String?, private val numberRows : I
             this.name,
             forwardExponentiationKernel,
             backwardExponentiationKernel,
-            this.numberRows,
-            this.numberColumns)
+            context.maximumNumberThreadsPerBlock,
+            this.numberEntries)
 
         return exponentiationLayer
 
@@ -29,21 +29,17 @@ class ExponentiationLayer(private val name : String?, private val numberRows : I
 }
 
 fun exponentiationLayer(
-    numberRows : Int,
-    numberColumns : Int) =
+    numberEntries : Int) =
 
     exponentiationLayer(
         null,
-        numberRows,
-        numberColumns
+        numberEntries
     )
 
 fun exponentiationLayer(
     name : String?,
-    numberRows : Int,
-    numberColumns : Int) =
+    numberEntries : Int) =
 
     ExponentiationLayer(
         name,
-        numberRows,
-        numberColumns)
+        numberEntries)

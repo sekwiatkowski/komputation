@@ -98,7 +98,7 @@ class TrecTraining {
                         arrayOf(
                             convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, optimization),
                             maxPoolingLayer(),
-                            dropoutLayer(numberFilters, random, 0.8, reluLayer())
+                            dropoutLayer(numberFilters, random, 0.8, reluLayer(numberFilters))
                         )
                     }
                     .toTypedArray()

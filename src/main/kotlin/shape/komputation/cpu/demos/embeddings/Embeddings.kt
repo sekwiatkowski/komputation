@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
         lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
         maxPoolingLayer(),
-        reluLayer(),
+        reluLayer(numberFilters),
         denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
     )
 

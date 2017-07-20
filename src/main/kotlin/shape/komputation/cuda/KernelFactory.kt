@@ -47,16 +47,25 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
             "normalization/BackwardNormalizationKernel.cu",
             listOf("reduction/Reduction.cuh"))
 
-    fun forwardSigmoid() = createKernel(
+    fun sigmoid() = createKernel(
         "sigmoidKernel",
         "sigmoidKernel",
-        "sigmoid/SigmoidKernel.cu",
-        listOf("sigmoid/Sigmoid.cuh"))
+        "sigmoid/SigmoidKernel.cu")
 
     fun backwardSigmoid() = createKernel(
         "backwardSigmoidKernel",
         "backwardSigmoidKernel",
         "sigmoid/BackwardSigmoidKernel.cu")
+
+    fun relu() = createKernel(
+        "reluKernel",
+        "reluKernel",
+        "relu/ReluKernel.cu")
+
+    fun backwardRelu() = createKernel(
+        "backwardReluKernel",
+        "backwardReluKernel",
+        "relu/BackwardReluKernel.cu")
 
     fun stochasticGradientDescent() = createKernel(
         "stochasticGradientDescentKernel",
@@ -77,7 +86,6 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
     private fun resolveRelativePath(relativePath: String)  =
 
         File(this.javaClass.getResource("/cuda/$relativePath").toURI())
-
 
     private fun createKernel(name : String, nameExpression : String, relativePath : String, relativeHeaderPaths: List<String> = emptyList()): Kernel {
 

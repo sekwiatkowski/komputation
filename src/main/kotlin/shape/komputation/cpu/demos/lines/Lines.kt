@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
         inputLayer(inputDimension),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
         maxPoolingLayer(),
-        reluLayer(),
+        reluLayer(numberFilters),
         denseLayer(numberFilters, 2, initialize, initialize, ActivationFunction.Softmax, optimization)
     )
 

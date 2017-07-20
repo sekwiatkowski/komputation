@@ -17,7 +17,7 @@ class SoftmaxLayer(private val name : String?, private val numberRows : Int, pri
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaSoftmaxLayer {
 
-        val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows, this.numberColumns).buildForCuda(context, cublasHandle)
+        val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows * this.numberColumns).buildForCuda(context, cublasHandle)
 
         val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns).buildForCuda(context, cublasHandle)
 

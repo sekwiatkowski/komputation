@@ -9,7 +9,7 @@ fun cpuActivationLayer(name: String?, function: ActivationFunction, numberRows :
     when (function) {
 
         ActivationFunction.ReLU ->
-            reluLayer(name)
+            reluLayer(name, numberRows * numberColumns)
         ActivationFunction.Identity ->
             identityLayer(name)
         ActivationFunction.Sigmoid ->
