@@ -1,9 +1,8 @@
 package shape.komputation.cuda.layers
 
 import jcuda.Pointer
-import shape.komputation.layers.Resourceful
 
-interface CudaForwardLayer : Resourceful {
+interface CudaForwardLayer {
 
     fun forward(input : Pointer): Pointer
 

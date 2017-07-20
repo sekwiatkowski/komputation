@@ -4,13 +4,14 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.layers.Resourceful
 
 abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     name : String? = null,
     private val forwardKernel: Kernel,
     private val backwardKernel: Kernel,
     maximumThreadsPerBlock: Int,
-    private val numberEntries : Int) : BaseCudaActivationLayer(name) {
+    private val numberEntries : Int) : BaseCudaActivationLayer(name), Resourceful {
 
     private val numberThreads = Math.min(this.numberEntries, maximumThreadsPerBlock)
     private val numberBlocks = Math.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble()).toInt()

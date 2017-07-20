@@ -2,15 +2,14 @@ package shape.komputation.cuda.layers.forward.activation
 
 import shape.komputation.cuda.layers.CudaForwardLayer
 import shape.komputation.layers.CudaActivationLayerInstruction
-import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.reluLayer
-import shape.komputation.layers.forward.activation.sigmoidLayer
-import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.layers.forward.activation.*
 
 fun cudaActivationLayer(name: String?, function: ActivationFunction, dimension : Int) : CudaActivationLayerInstruction =
 
     when (function) {
 
+        ActivationFunction.Identity ->
+            identityLayer(name)
         ActivationFunction.Sigmoid ->
             sigmoidLayer(name, dimension)
         ActivationFunction.ReLU ->
