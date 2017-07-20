@@ -9,7 +9,7 @@ import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
 import shape.komputation.cpu.layers.forward.CpuTranspositionLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
-import shape.komputation.cpu.layers.forward.activation.CpuSoftmaxVectorLayer
+import shape.komputation.cpu.layers.forward.activation.CpuSoftmaxLayer
 import shape.komputation.cpu.layers.forward.activation.CpuTanhLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
@@ -29,7 +29,7 @@ class CpuAttentiveDecoder internal constructor(
     private val attentionAdditions : Array<AdditionCombination>,
     private val tanh: Array<CpuTanhLayer>,
     private val scoringWeighting: SeriesWeighting,
-    private val softmax : Array<CpuSoftmaxVectorLayer>,
+    private val softmax : Array<CpuSoftmaxLayer>,
     private val transposition: Array<CpuTranspositionLayer>,
     private val attendedEncodingWeighting: SeriesWeighting,
     private val decodingPreviousDecoderWeighting: SeriesWeighting,

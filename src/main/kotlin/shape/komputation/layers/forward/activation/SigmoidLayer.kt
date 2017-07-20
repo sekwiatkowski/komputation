@@ -17,7 +17,10 @@ class SigmoidLayer(private val name : String?, private val numberEntries: Int) :
 
         val kernelFactory = context.kernelFactory
 
-        return CudaSigmoidLayer(name, kernelFactory.sigmoid(), kernelFactory.backwardSigmoid(), context.maximumNumberThreadsPerBlock, this.numberEntries)
+        val forwardKernel = kernelFactory.sigmoid()
+        val backwardKernel = kernelFactory.backwardSigmoid()
+
+        return CudaSigmoidLayer(name, forwardKernel, backwardKernel, context.maximumNumberThreadsPerBlock, this.numberEntries)
 
     }
 

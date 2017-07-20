@@ -10,7 +10,7 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.softmaxVectorLayer
+import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.columnRepetitionLayer
 import shape.komputation.layers.forward.projection.projectionLayer
@@ -52,13 +52,13 @@ class AttentiveDecoder(
         val attentionPreviousStateWeightingStepName = concatenateNames(this.name, "attention-previous-state-weighting-step")
         val attentionPreviousStateWeighting = seriesWeighting(attentionPreviousStateWeightingSeriesName, attentionPreviousStateWeightingStepName, this.numberSteps, true, this.decodingDimension, this.encodingDimension, this.weightInitialization, this.optimization)
 
-        val tanh = Array(this.numberSteps) { tanhLayer().buildForCpu() }
+        val tanh = Array(this.numberSteps) { tanhLayer(this.encodingDimension * this.numberSteps).buildForCpu() }
 
         val scoringWeightingSeriesName = concatenateNames(this.name, "scoring-weighting")
         val scoringWeightingStepName = concatenateNames(this.name, "scoring-weighting-step")
         val scoringWeighting = seriesWeighting(scoringWeightingSeriesName, scoringWeightingStepName, this.numberSteps, false, this.encodingDimension, 1, this.weightInitialization, this.optimization)
 
-        val softmax = Array(this.numberSteps) { softmaxVectorLayer().buildForCpu() }
+        val softmax = Array(this.numberSteps) { softmaxLayer(this.numberSteps).buildForCpu() }
 
         val transposition = Array(this.numberSteps) { transpositionLayer().buildForCpu() }
 

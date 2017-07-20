@@ -17,7 +17,7 @@ fun cpuActivationLayer(name: String?, function: ActivationFunction, numberRows :
         ActivationFunction.Softmax ->
             softmaxLayer(name, numberRows, numberColumns)
         ActivationFunction.Tanh ->
-            tanhLayer(name)
+            tanhLayer(name, numberRows * numberColumns)
 
     }
 

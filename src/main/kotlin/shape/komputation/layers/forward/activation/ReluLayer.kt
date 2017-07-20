@@ -18,10 +18,10 @@ class ReluLayer(private val name : String?, private val numberEntries : Int) : C
 
         val kernelFactory = KernelFactory(context.computeCapabilities)
 
-        val reluKernel = kernelFactory.relu()
-        val backwardReluKernel = kernelFactory.backwardRelu()
+        val forwardKernel = kernelFactory.relu()
+        val backwardKernel = kernelFactory.backwardRelu()
 
-        return CudaReluLayer(this.name, reluKernel, backwardReluKernel, context.maximumNumberThreadsPerBlock, numberEntries)
+        return CudaReluLayer(this.name, forwardKernel, backwardKernel, context.maximumNumberThreadsPerBlock, this.numberEntries)
 
     }
 

@@ -10,16 +10,15 @@ fun cudaActivationLayer(name: String?, function: ActivationFunction, dimension :
 
         ActivationFunction.Identity ->
             identityLayer(name)
-        ActivationFunction.Sigmoid ->
-            sigmoidLayer(name, dimension)
         ActivationFunction.ReLU ->
             reluLayer(name, dimension)
+        ActivationFunction.Sigmoid ->
+            sigmoidLayer(name, dimension)
         ActivationFunction.Softmax ->
             softmaxLayer(name, dimension)
-        else ->
-            throw NotImplementedError()
+        ActivationFunction.Tanh ->
+            tanhLayer(name, dimension)
 
     }
-
 
 interface CudaActivationLayer : CudaForwardLayer

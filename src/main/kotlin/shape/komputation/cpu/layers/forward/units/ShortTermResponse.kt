@@ -152,7 +152,7 @@ fun shortTermResponse(
     val shortTermActivations = Array(numberSteps) { indexStep ->
 
         val shortTermActivationName = concatenateNames(name, "activation-step-$indexStep")
-        tanhLayer(shortTermActivationName).buildForCpu()
+        tanhLayer(shortTermActivationName, hiddenDimension).buildForCpu()
 
     }
 

@@ -67,11 +67,20 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "backwardReluKernel",
         "relu/BackwardReluKernel.cu")
 
+    fun tanh() = createKernel(
+        "tanhKernel",
+        "tanhKernel",
+        "tanh/TanhKernel.cu")
+
+    fun backwardTanh() = createKernel(
+        "backwardTanhKernel",
+        "backwardTanhKernel",
+        "tanh/BackwardTanhKernel.cu")
+
     fun stochasticGradientDescent() = createKernel(
         "stochasticGradientDescentKernel",
         "stochasticGradientDescentKernel",
-        "stochasticgradientdescent/StochasticGradientDescentKernel.cu"
-        )
+        "stochasticgradientdescent/StochasticGradientDescentKernel.cu")
 
     fun squaredLoss() = createKernel(
         "squaredLossKernel",

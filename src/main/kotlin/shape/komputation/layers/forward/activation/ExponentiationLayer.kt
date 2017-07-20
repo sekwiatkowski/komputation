@@ -12,13 +12,13 @@ class ExponentiationLayer(private val name : String?, private val numberEntries:
 
         val kernelFactory = KernelFactory(context.computeCapabilities)
 
-        val forwardExponentiationKernel = kernelFactory.exponentiationKernel()
-        val backwardExponentiationKernel = kernelFactory.backwardExponentiationKernel()
+        val forwardKernel = kernelFactory.exponentiationKernel()
+        val backwardKernel = kernelFactory.backwardExponentiationKernel()
 
         val exponentiationLayer = CudaExponentiationLayer(
             this.name,
-            forwardExponentiationKernel,
-            backwardExponentiationKernel,
+            forwardKernel,
+            backwardKernel,
             context.maximumNumberThreadsPerBlock,
             this.numberEntries)
 
