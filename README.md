@@ -39,9 +39,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Identity](./src/main/kotlin/shape/komputation/layers/forward/activation/IdentityLayer.kt)
   - [Rectified Linear Units (ReLUs)](./src/main/kotlin/shape/komputation/layers/forward/activation/ReluLayer.kt)
   - [Sigmoid](./src/main/kotlin/shape/komputation/layers/forward/activation/SigmoidLayer.kt)
-  - Softmax:
-    - [column-wise](./src/main/kotlin/shape/komputation/layers/forward/activation/SoftmaxLayer.kt)
-    - [vectorial](./src/main/kotlin/shape/komputation/layers/forward/activation/SoftmaxVectorLayer.kt)
+  - [Softmax](./src/main/kotlin/shape/komputation/layers/forward/activation/SoftmaxLayer.kt)
   - [Tanh](./src/main/kotlin/shape/komputation/layers/forward/activation/TanhLayer.kt)
 
 - Other layers:
