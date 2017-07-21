@@ -22,6 +22,8 @@ fun main(args: Array<String>) {
     val filterHeight = 1
     val numberFilters = 6
 
+    val outputDimension = 2
+
     val random = Random(1)
     val initialize = uniformInitialization(random, -0.05, 0.05)
 
@@ -32,8 +34,8 @@ fun main(args: Array<String>) {
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
         maxPoolingLayer(),
         reluLayer(numberFilters),
-        denseLayer(numberFilters, 2, initialize, initialize, ActivationFunction.Softmax, optimization)
+        denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
     )
 
-    network.train(LinesData.inputs, LinesData.targets, logisticLoss(), 30_000, 1, printLoss)
+    network.train(LinesData.inputs, LinesData.targets, logisticLoss(outputDimension), 30_000, 1, printLoss)
 }

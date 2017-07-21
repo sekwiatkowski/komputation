@@ -31,21 +31,17 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "accumulationKernel",
         "accumulation/AccumulationKernel.cu")
 
-    fun normalizationKernel(blockSize : Int) =
+    fun normalizationKernel(blockSize : Int) = createKernel(
+        "normalizationKernel",
+        "normalizationKernel<$blockSize>",
+        "normalization/NormalizationKernel.cu",
+        listOf("reduction/Reduction.cuh"))
 
-        createKernel(
-            "normalizationKernel",
-            "normalizationKernel<$blockSize>",
-            "normalization/NormalizationKernel.cu",
-            listOf("reduction/Reduction.cuh"))
-
-    fun backwardNormalizationKernel(blockSize: Int) =
-
-        createKernel(
-            "backwardNormalizationKernel",
-            "backwardNormalizationKernel<$blockSize>",
-            "normalization/BackwardNormalizationKernel.cu",
-            listOf("reduction/Reduction.cuh"))
+    fun backwardNormalizationKernel(blockSize: Int) = createKernel(
+        "backwardNormalizationKernel",
+        "backwardNormalizationKernel<$blockSize>",
+        "normalization/BackwardNormalizationKernel.cu",
+        listOf("reduction/Reduction.cuh"))
 
     fun sigmoid() = createKernel(
         "sigmoidKernel",
@@ -82,15 +78,27 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "stochasticGradientDescentKernel",
         "stochasticgradientdescent/StochasticGradientDescentKernel.cu")
 
-    fun squaredLoss() = createKernel(
+    fun squaredLoss(blockSize: Int) = createKernel(
         "squaredLossKernel",
-        "squaredLossKernel",
-        "squaredloss/SquaredLossKernel.cu")
+        "squaredLossKernel<$blockSize>",
+        "squaredloss/SquaredLossKernel.cu",
+        listOf("reduction/Reduction.cuh"))
 
     fun backwardSquaredLoss() = createKernel(
         "backwardSquaredLossKernel",
         "backwardSquaredLossKernel",
         "squaredloss/BackwardSquaredLossKernel.cu")
+
+    fun logisticLoss(blockSize: Int) = createKernel(
+        "logisticLossKernel",
+        "logisticLossKernel<$blockSize>",
+        "logisticloss/LogisticLossKernel.cu",
+        listOf("reduction/Reduction.cuh"))
+
+    fun backwardLogisticLoss() = createKernel(
+        "backwardLogisticLossKernel",
+        "backwardLogisticLossKernel",
+        "logisticloss/BackwardLogisticLossKernel.cu")
 
     private fun resolveRelativePath(relativePath: String)  =
 

@@ -5,10 +5,10 @@ import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.KernelFactory
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
+import shape.komputation.loss.squaredLoss
 
 class CudaSquaredLossTest {
 
@@ -19,9 +19,8 @@ class CudaSquaredLossTest {
 
         val predictions = doubleArrayOf(4.0)
         val targets = doubleArrayOf(2.0)
-        val size = 1
 
-        testForward(predictions, targets, size, expected)
+        testForward(predictions, targets, expected)
 
     }
 
@@ -33,13 +32,27 @@ class CudaSquaredLossTest {
 
         val predictions = doubleArrayOf(4.0, 6.0)
         val targets = doubleArrayOf(2.0, 3.0)
-        val size = 2
 
-        testForward(predictions, targets, size, expected)
+        testForward(predictions, targets, expected)
 
     }
 
-    private fun testForward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: Double) {
+    @Test
+    fun testForwardThreeDimensions() {
+
+        val expected = 0.5 * (Math.pow(4.0-2.0, 2.0) + Math.pow(6.0-3.0, 2.0) + Math.pow(8.0-4.0, 2.0))
+
+        val predictions = doubleArrayOf(4.0, 6.0, 8.0)
+        val targets = doubleArrayOf(2.0, 3.0, 4.0)
+
+        testForward(predictions, targets, expected)
+
+    }
+
+
+    private fun testForward(predictions: DoubleArray, targets: DoubleArray, expected: Double) {
+
+        val size = predictions.size
 
         val cudaContext = setUpCudaContext()
 
@@ -48,12 +61,7 @@ class CudaSquaredLossTest {
         val deviceTargets = Pointer()
         setVector(targets, size, deviceTargets)
 
-        val forwardKernel = KernelFactory(cudaContext.computeCapabilities)
-
-        val loss = CudaSquaredLoss(
-            forwardKernel.squaredLoss(),
-            forwardKernel.backwardSquaredLoss(),
-            size)
+        val loss = squaredLoss(size).buildForCuda(cudaContext)
 
         loss.acquire()
 
@@ -79,9 +87,8 @@ class CudaSquaredLossTest {
 
         val predictions = doubleArrayOf(4.0)
         val targets = doubleArrayOf(2.0)
-        val size = 1
 
-        testBackward(predictions, targets, size, expected)
+        testBackward(predictions, targets, expected)
 
     }
 
@@ -92,13 +99,14 @@ class CudaSquaredLossTest {
 
         val predictions = doubleArrayOf(4.0, 6.0)
         val targets = doubleArrayOf(2.0, 3.0)
-        val size = 2
 
-        testBackward(predictions, targets, size, expected)
+        testBackward(predictions, targets, expected)
 
     }
 
-    private fun testBackward(predictions: DoubleArray, targets: DoubleArray, size: Int, expected: DoubleArray) {
+    private fun testBackward(predictions: DoubleArray, targets: DoubleArray, expected: DoubleArray) {
+
+        val size = predictions.size
 
         val context = setUpCudaContext()
 
@@ -108,12 +116,7 @@ class CudaSquaredLossTest {
         val deviceTargets = Pointer()
         setVector(targets, size, deviceTargets)
 
-        val kernelFactory = KernelFactory(context.computeCapabilities)
-
-        val loss = CudaSquaredLoss(
-            kernelFactory.squaredLoss(),
-            kernelFactory.backwardSquaredLoss(),
-            size)
+        val loss = squaredLoss(size).buildForCuda(context)
 
         loss.acquire()
 

@@ -1,7 +1,7 @@
-package shape.komputation.cpu.demos.and
+package shape.komputation.cuda.demos.and
 
-import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.cuda.CudaNetwork
 import shape.komputation.demos.and.OneHotAndData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.03)
 
-    val network = Network(
+    val network = CudaNetwork(
         inputLayer(inputDimension),
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Softmax, optimization)
     )

@@ -45,11 +45,17 @@ object NLP {
 
     }
 
-    fun filterDocuments(documents: Iterable<List<String>>, vocabulary: Collection<String>, minLength : Int) =
+    fun filterTokens(documents: Iterable<List<String>>, vocabulary: Collection<String>) =
 
         documents
             .map { document -> document.filter { vocabulary.contains(it) } }
-            .filter { document -> document.size >= minLength }
+
+    fun filterDocuments(documents: Iterable<List<String>>, minLength : Int) =
+
+        documents
+            .withIndex()
+            .filter { (_, document)-> document.size >= minLength }
+            .map { (index, _) -> index }
 
     fun vectorizeDocuments(documents: Iterable<List<String>>, vocabulary: Collection<String>) =
 

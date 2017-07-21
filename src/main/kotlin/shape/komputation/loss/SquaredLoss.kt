@@ -14,7 +14,9 @@ class SquaredLoss(private val dimension : Int) : CpuLossFunctionInstruction, Cud
 
         val kernelFactory = context.kernelFactory
 
-        return CudaSquaredLoss(kernelFactory.squaredLoss(), kernelFactory.backwardSquaredLoss(), dimension)
+        val blockSize = Math.pow(2.0, Math.ceil(Math.log(this.dimension.toDouble()) / Math.log(2.0))).toInt()
+
+        return CudaSquaredLoss(kernelFactory.squaredLoss(blockSize), kernelFactory.backwardSquaredLoss(), this.dimension, blockSize)
 
     }
 

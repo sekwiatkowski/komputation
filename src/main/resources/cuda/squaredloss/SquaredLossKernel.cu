@@ -1,41 +1,26 @@
-__device__ double squaredLoss (double prediction, double target)
+#include "reduction/Reduction.cuh"
+
+// This assumes that the number of threads is equal to the number of predictions/targets.
+// First, the squared differences between predictions and targets are stored in shared memory.
+// In the second step, the squared differences are summed up using a parallel reduction.
+// Finally, the sum is multiplied by 1/2.
+template <int blockSize>
+__global__ void squaredLossKernel (double length, double *predictions, double *targets, double *forwardResults, double *result)
 {
 
-    return 0.5 * pow(prediction - target, 2.0);
-
-}
-
-extern "C"
-__global__ void squaredLossKernel (int length, double *predictions, double *targets, double *forwardResults, double *result)
-{
+    int threadId = threadIdx.x;
 
     extern __shared__ double sharedData[];
 
-    // each thread loads one element from global to shared mem
-    int threadId = threadIdx.x;
-    int globalId = blockIdx.x * blockDim.x + threadIdx.x;
-
-    double forwardResult = squaredLoss(predictions[globalId], targets[globalId]);
-
-    forwardResults[globalId] = forwardResult;
-    sharedData[threadId] = forwardResult;
+    sharedData[threadId] = pow(predictions[threadId] - targets[threadId], 2.0);
 
     __syncthreads();
 
-    for (unsigned int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+    reduce<blockSize>(threadId, sharedData, 0);
 
-        if (threadId < stride) {
+    if(threadId == 0) {
 
-            sharedData[threadId] += sharedData[threadId + stride];
-
-        }
-
-        __syncthreads();
-    }
-
-    if (threadId == 0) {
-
-        result[blockIdx.x] += sharedData[0];
+        result[0] = 0.5 * sharedData[0];
 
     }
 

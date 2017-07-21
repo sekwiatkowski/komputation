@@ -42,7 +42,7 @@ class TrecTraining {
 
         val optimization = rmsprop(0.001)
 
-        val maximumBatchSize = 1
+        val batchSize = 1
 
         val embeddingFile = File(embeddingFilePath)
 
@@ -68,17 +68,27 @@ class TrecTraining {
         val embeddableVocabulary = embeddingMap.keys.sorted()
         val missing = vocabulary.minus(embeddingMap.keys)
 
-        val embeddableTrainingDocuments = NLP.filterDocuments(trainingDocuments, embeddableVocabulary, maximumFilterWidth)
-        val embeddableTestDocuments = NLP.filterDocuments(testDocuments, embeddableVocabulary, maximumFilterWidth)
+        val trainingDocumentsWithFilteredTokens = NLP.filterTokens(trainingDocuments, embeddableVocabulary)
+        val testDocumentsWithFilteredTokens = NLP.filterTokens(testDocuments, embeddableVocabulary)
+
+        val embeddableTrainingIndices = NLP.filterDocuments(trainingDocumentsWithFilteredTokens, maximumFilterWidth)
+        val embeddableTestIndices = NLP.filterDocuments(testDocumentsWithFilteredTokens, maximumFilterWidth)
+
+        val embeddableTrainingDocuments = trainingDocumentsWithFilteredTokens.slice(embeddableTrainingIndices)
+        val embeddableTestDocuments = testDocumentsWithFilteredTokens.slice(embeddableTestIndices)
 
         val trainingRepresentations = NLP.vectorizeDocuments(embeddableTrainingDocuments, embeddableVocabulary)
         val testRepresentations = NLP.vectorizeDocuments(embeddableTestDocuments, embeddableVocabulary)
 
-        val indexedCategories = NLP.indexCategories(trainingCategories.toSet())
+        val embeddableTrainingCategories = trainingCategories.slice(embeddableTrainingIndices)
+        val embeddableTestCategories = testCategories.slice(embeddableTestIndices)
+
+        val indexedCategories = NLP.indexCategories(embeddableTrainingCategories.toSet())
         val numberCategories = indexedCategories.size
 
-        val trainingTargets = NLP.createTargets(trainingCategories, indexedCategories)
-        val testTargets = NLP.createTargets(testCategories, indexedCategories)
+        val trainingTargets = NLP.createTargets(embeddableTrainingCategories, indexedCategories)
+        val testTargets = NLP.createTargets(embeddableTestCategories, indexedCategories)
+
         val numberTestExamples = testTargets.size
 
         val maximumLength = trainingRepresentations.plus(testRepresentations)
@@ -90,7 +100,7 @@ class TrecTraining {
             .toTypedArray()
 
         val network = Network(
-            lookupLayer(embeddings, embeddingDimension, maximumBatchSize, maximumLength, optimization),
+            lookupLayer(embeddings, embeddingDimension, batchSize, maximumLength, optimization),
             concatenation(
                 maximumLength * embeddingDimension,
                 *filterWidths
@@ -126,7 +136,7 @@ class TrecTraining {
 
         }
 
-        network.train(trainingRepresentations, trainingTargets, logisticLoss(), numberIterations, maximumBatchSize, afterEachIteration)
+        network.train(trainingRepresentations, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
 
     }
 

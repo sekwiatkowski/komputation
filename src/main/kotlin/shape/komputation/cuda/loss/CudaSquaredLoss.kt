@@ -7,9 +7,8 @@ import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setVectorToZero
-import shape.komputation.layers.Resourceful
 
-class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKernel: Kernel, private val targetDimension : Int) : CudaLossFunction, Resourceful {
+class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKernel: Kernel, private val targetDimension : Int, private val forwardBlockSize: Int) : CudaLossFunction {
 
     private val deviceForwardResults = Pointer()
     private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
@@ -18,9 +17,11 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
     private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
 
     private val deviceLoss = Pointer()
-    private val pointerToDeviceSum = Pointer.to(this.deviceLoss)
+    private val pointerToDeviceLoss = Pointer.to(this.deviceLoss)
 
     private val deviceTargetDimension = Pointer.to(intArrayOf(this.targetDimension))
+
+    private val accumulationSharedMemoryBytes = this.targetDimension * Sizeof.DOUBLE
 
     override fun acquire() {
 
@@ -48,8 +49,6 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
 
     }
 
-    private val accumulationSharedMemoryBytes = this.targetDimension * Sizeof.DOUBLE
-
     override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer) {
 
         val parameters = Pointer.to(
@@ -57,12 +56,12 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
             pointerToPredictions,
             pointerToTargets,
             this.pointerToDeviceForwardResults,
-            this.pointerToDeviceSum)
+            this.pointerToDeviceLoss)
 
         this.forwardKernel.launch(
             parameters,
             1,
-            this.targetDimension,
+            this.forwardBlockSize,
             this.accumulationSharedMemoryBytes)
 
     }

@@ -2,7 +2,6 @@ package shape.komputation.layers.forward
 
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cuda.CudaContext
-import shape.komputation.cuda.KernelFactory
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.CudaForwardLayerInstruction
 
@@ -10,7 +9,7 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaNormalizationLayer {
 
-        val kernelFactory = KernelFactory(context.computeCapabilities)
+        val kernelFactory = context.kernelFactory
 
         val blockSize = Math.pow(2.0, Math.ceil(Math.log(numberRows.toDouble()) / Math.log(2.0))).toInt()
 

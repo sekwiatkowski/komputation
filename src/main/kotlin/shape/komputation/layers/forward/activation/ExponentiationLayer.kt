@@ -2,7 +2,6 @@ package shape.komputation.layers.forward.activation
 
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cuda.CudaContext
-import shape.komputation.cuda.KernelFactory
 import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
 import shape.komputation.layers.CudaForwardLayerInstruction
 
@@ -10,7 +9,7 @@ class ExponentiationLayer(private val name : String?, private val numberEntries:
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaExponentiationLayer {
 
-        val kernelFactory = KernelFactory(context.computeCapabilities)
+        val kernelFactory = context.kernelFactory
 
         val forwardKernel = kernelFactory.exponentiationKernel()
         val backwardKernel = kernelFactory.backwardExponentiationKernel()

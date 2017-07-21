@@ -1,8 +1,9 @@
 package shape.komputation.cuda.loss
 
 import jcuda.Pointer
+import shape.komputation.layers.Resourceful
 
-interface CudaLossFunction {
+interface CudaLossFunction : Resourceful {
 
     fun accumulate(pointerToPredictions: Pointer, pointerToTargets : Pointer)
 

@@ -33,6 +33,7 @@ fun main(args: Array<String>) {
 
     val inputDimension = 784
     val hiddenDimension = 100
+    val numberCategories = MnistData.numberCategories
 
     val gaussianInitialization = gaussianInitialization(random, 0.0,0.0001)
     val zeroInitialization = zeroInitialization()
@@ -51,7 +52,7 @@ fun main(args: Array<String>) {
 
     val outputLayer = denseLayer(
         hiddenDimension,
-        MnistData.numberCategories,
+        numberCategories,
         gaussianInitialization,
         gaussianInitialization,
         ActivationFunction.Softmax,
@@ -92,6 +93,6 @@ fun main(args: Array<String>) {
 
     }
 
-    network.train(trainingInputs, trainingTargets, logisticLoss(), numberIterations, batchSize, afterEachIteration)
+    network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
 
 }

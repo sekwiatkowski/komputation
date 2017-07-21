@@ -28,7 +28,7 @@ class CpuLogisticLoss : CpuLossFunction {
 
     }
 
-    // -1/probability of the correct target summed over each column
+    // -1/target probability if target = 1.0, 0.0 otherwise
     override fun backward(predictions: DoubleMatrix, targets : DoubleMatrix) : DoubleMatrix {
 
         val predictionEntries = predictions.entries
