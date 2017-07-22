@@ -13,8 +13,8 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.counterProbabilityLayer
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -32,7 +32,7 @@ class MinimalGatedUnit internal constructor(
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
 
-    override fun forwardStep(step : Int, state : DoubleMatrix, input : DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forwardStep(step : Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         val forget = this.forgetUnit.forwardStep(step, state, input, isTraining)
 
@@ -50,7 +50,7 @@ class MinimalGatedUnit internal constructor(
     }
 
 
-    private fun backwardLongTermComponent(step: Int, diffChainWrtLongTermComponent: DoubleMatrix) {
+    private fun backwardLongTermComponent(step: Int, diffChainWrtLongTermComponent: FloatMatrix) {
 
         // (1 - forget) (.) previous state / d (1 - forget) = previous state
         val diffLongTermComponentWrtKeep = this.longTermHadamards[step].backwardFirst(diffChainWrtLongTermComponent)
@@ -67,7 +67,7 @@ class MinimalGatedUnit internal constructor(
         this.previousStateAccumulator.accumulate(diffLongTermComponentWrtPreviousState.entries)
     }
 
-    private fun backwardShortTermComponent(step: Int, diffChainWrtShortTermComponent: DoubleMatrix) {
+    private fun backwardShortTermComponent(step: Int, diffChainWrtShortTermComponent: FloatMatrix) {
 
         // short-term component = forget (.) short-term response
 
@@ -95,7 +95,7 @@ class MinimalGatedUnit internal constructor(
 
     }
 
-    override fun backwardStep(step : Int, chain : DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
+    override fun backwardStep(step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
 
         // d (long-term component + short-term component) / d long-term component
         val diffChainWrtLongTermComponent = this.stateAdditions[step].backwardFirst(chain)
@@ -105,8 +105,8 @@ class MinimalGatedUnit internal constructor(
         val diffChainWrtShortTermComponent = this.stateAdditions[step].backwardSecond(chain)
         this.backwardShortTermComponent(step, diffChainWrtShortTermComponent)
 
-        val previousStateAccumulation = doubleColumnVector(*this.previousStateAccumulator.getAccumulation().copyOf())
-        val inputAccumulation = doubleColumnVector(*this.inputAccumulator.getAccumulation().copyOf())
+        val previousStateAccumulation = floatColumnVector(*this.previousStateAccumulator.getAccumulation().copyOf())
+        val inputAccumulation = floatColumnVector(*this.inputAccumulator.getAccumulation().copyOf())
 
         this.inputAccumulator.reset()
         this.previousStateAccumulator.reset()
@@ -122,7 +122,7 @@ class MinimalGatedUnit internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.forgetUnit is Optimizable) {
 

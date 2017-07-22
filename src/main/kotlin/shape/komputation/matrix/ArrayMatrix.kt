@@ -4,31 +4,31 @@ import java.util.*
 
 sealed class Matrix(val numberRows: Int, val numberColumns: Int)
 
-open class DoubleMatrix(numberRows: Int, numberColumns: Int, val entries: DoubleArray) : Matrix(numberRows, numberColumns) {
+open class FloatMatrix(numberRows: Int, numberColumns: Int, val entries: FloatArray) : Matrix(numberRows, numberColumns) {
 
-    fun getEntry(indexRow: Int, indexColumn: Int): Double {
+    fun getEntry(indexRow: Int, indexColumn: Int): Float {
 
         return this.entries[indexColumn * this.numberRows + indexRow]
 
     }
 
 
-    fun setEntry(indexRow: Int, indexColumn: Int, entry : Double) {
+    fun setEntry(indexRow: Int, indexColumn: Int, entry : Float) {
 
         this.entries[indexColumn * this.numberRows + indexRow] = entry
 
     }
 
-    fun getColumn(index: Int) : DoubleMatrix {
+    fun getColumn(index: Int) : FloatMatrix {
 
         val start = index * this.numberRows
         val end = start + this.numberRows
 
-        return doubleColumnVector(*Arrays.copyOfRange(this.entries, start, end))
+        return floatColumnVector(*Arrays.copyOfRange(this.entries, start, end))
 
     }
 
-    fun setColumn(index: Int, entries: DoubleArray) {
+    fun setColumn(index: Int, entries: FloatArray) {
 
         System.arraycopy(entries, 0, this.entries, index * this.numberRows, entries.size)
 

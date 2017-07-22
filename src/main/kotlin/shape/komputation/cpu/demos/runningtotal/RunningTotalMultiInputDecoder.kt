@@ -12,6 +12,7 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.decoder.multiInputDecoder
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
 import shape.komputation.loss.squaredLoss
+import shape.komputation.matrix.IntMath
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -19,7 +20,7 @@ fun main(args: Array<String>) {
 
     val exclusiveUpperLimit = 10
     val numberSteps = 4
-    val numberExamples = Math.pow(exclusiveUpperLimit.toDouble(), numberSteps.toDouble()).toInt()
+    val numberExamples = IntMath.pow(exclusiveUpperLimit, numberSteps)
     val hiddenDimension = 4
     val numberIterations = 30
     val batchSize = 4
@@ -27,10 +28,10 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val identityInitializationStrategy = identityInitialization()
-    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)
     val zeroInitializationStrategy = zeroInitialization()
 
-    val optimizationStrategy = stochasticGradientDescent(0.001)
+    val optimizationStrategy = stochasticGradientDescent(0.001f)
 
     val inputs = RunningTotalData.generateInputs(random, numberExamples, numberSteps, exclusiveUpperLimit)
 

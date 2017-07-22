@@ -3,20 +3,20 @@ package shape.komputation.cpu.functions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.doubleMatrixFromColumns
+import shape.komputation.matrix.floatMatrixFromColumns
 
 class ConvolutionExpansionTest {
 
     @Test
     fun testForward() {
 
-        val actual = expandForConvolution(doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0), 3, 2, 1, 2, 3)
-        val expected = doubleMatrixFromColumns(
-            doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0),
-            doubleArrayOf(4.0, 5.0, 6.0, 7.0, 8.0, 9.0)
+        val actual = expandForConvolution(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f), 3, 2, 1, 2, 3)
+        val expected = floatMatrixFromColumns(
+            floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f),
+            floatArrayOf(4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f)
         )
 
-        assertMatrixEquality(expected, actual, 0.01)
+        assertMatrixEquality(expected, actual, 0.01f)
 
     }
 

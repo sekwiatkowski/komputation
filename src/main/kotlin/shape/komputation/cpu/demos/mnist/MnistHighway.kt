@@ -35,11 +35,11 @@ fun main(args: Array<String>) {
     val hiddenDimension = 100
     val numberCategories = MnistData.numberCategories
 
-    val gaussianInitialization = gaussianInitialization(random, 0.0,0.0001)
+    val gaussianInitialization = gaussianInitialization(random, 0.0f,0.0001f)
     val zeroInitialization = zeroInitialization()
-    val constantInitialization = constantInitialization(-2.0)
+    val constantInitialization = constantInitialization(-2.0f)
 
-    val optimizer = momentum(0.01, 0.1)
+    val optimizer = momentum(0.01f, 0.1f)
 
     val dimensionalityReductionLayer = denseLayer(
         inputDimension,
@@ -74,7 +74,7 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    val afterEachIteration = { _ : Int, _ : Double ->
+    val afterEachIteration = { _ : Int, _ : Float ->
 
         val accuracy = network
             .test(
@@ -87,7 +87,8 @@ fun main(args: Array<String>) {
                 }
             )
             .count { correct -> correct }
-            .div(MnistData.numberTestExamples.toDouble())
+            .toFloat()
+            .div(MnistData.numberTestExamples.toFloat())
 
         println(accuracy)
 

@@ -1,22 +1,22 @@
 package shape.komputation.demos.and
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.floatColumnVector
 
 object OneHotAndData {
 
     val input = arrayOf<Matrix>(
-        doubleColumnVector(0.0, 0.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 1.0)
+        floatColumnVector(0.0f, 0.0f),
+        floatColumnVector(0.0f, 1.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(1.0f, 1.0f)
     )
 
     val targets = arrayOf(
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(0.0, 1.0)
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(0.0f, 1.0f)
     )
 
 

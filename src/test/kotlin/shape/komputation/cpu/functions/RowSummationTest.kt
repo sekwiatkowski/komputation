@@ -8,8 +8,8 @@ class RowSummationTest {
     @Test
     fun test1() {
 
-        val actual = sumRows(doubleArrayOf(1.0), 1, 1)
-        val expected = doubleArrayOf(1.0)
+        val actual = sumRows(floatArrayOf(1.0f), 1, 1)
+        val expected = floatArrayOf(1.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -18,8 +18,8 @@ class RowSummationTest {
     @Test
     fun test2() {
 
-        val actual = sumRows(doubleArrayOf(1.0, 2.0), 2, 1)
-        val expected = doubleArrayOf(1.0, 2.0)
+        val actual = sumRows(floatArrayOf(1.0f, 2.0f), 2, 1)
+        val expected = floatArrayOf(1.0f, 2.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -28,8 +28,8 @@ class RowSummationTest {
     @Test
     fun test3() {
 
-        val actual = sumRows(doubleArrayOf(1.0, 2.0, 3.0, 4.0), 2, 2)
-        val expected = doubleArrayOf(4.0, 6.0)
+        val actual = sumRows(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f), 2, 2)
+        val expected = floatArrayOf(4.0f, 6.0f)
 
         assertArrayEquals(expected, actual)
 

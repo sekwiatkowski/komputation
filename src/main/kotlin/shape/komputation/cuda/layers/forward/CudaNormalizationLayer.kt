@@ -1,10 +1,10 @@
 package shape.komputation.cuda.layers.forward
 
 import jcuda.Pointer
-import jcuda.Sizeof
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.computeDeviceByteSize
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.layers.Resourceful
 
@@ -19,8 +19,8 @@ class CudaNormalizationLayer internal constructor(
     private val numberEntries = this.numberRows * this.numberColumns
 
     private val reductionLength = this.numberRows + this.numberRows / 2
-    private val forwardSharedMemoryBytes = this.reductionLength * Sizeof.DOUBLE
-    private val backwardSharedMemoryBytes = (1 + this.reductionLength) * Sizeof.DOUBLE
+    private val forwardSharedMemoryBytes = computeDeviceByteSize(this.reductionLength).toInt()
+    private val backwardSharedMemoryBytes = computeDeviceByteSize(1 + this.reductionLength).toInt()
 
     private val pointerToNumberCategories = Pointer.to(intArrayOf(this.numberRows))
 

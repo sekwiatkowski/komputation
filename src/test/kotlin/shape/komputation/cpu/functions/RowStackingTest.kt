@@ -2,48 +2,48 @@ package shape.komputation.cpu.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.doubleMatrixFromRows
-import shape.komputation.matrix.doubleRowVector
+import shape.komputation.matrix.floatMatrixFromRows
+import shape.komputation.matrix.floatRowVector
 
 class RowStackingTest {
 
     @Test
     fun test1() {
 
-        val firstRow = doubleArrayOf(1.0, 2.0)
-        val secondRow = doubleArrayOf(3.0, 4.0)
+        val firstRow = floatArrayOf(1.0f, 2.0f)
+        val secondRow = floatArrayOf(3.0f, 4.0f)
 
-        val actual = stackRows(2, doubleRowVector(*firstRow), doubleRowVector(*secondRow))
-        val expected = doubleMatrixFromRows(
+        val actual = stackRows(2, floatRowVector(*firstRow), floatRowVector(*secondRow))
+        val expected = floatMatrixFromRows(
             firstRow,
             secondRow
         )
 
-        assertMatrixEquality(expected, actual, 0.01)
+        assertMatrixEquality(expected, actual, 0.01f)
 
     }
 
     @Test
     fun test2() {
 
-        val firstRow = doubleArrayOf(1.0, 2.0)
+        val firstRow = floatArrayOf(1.0f, 2.0f)
 
-        val secondRow = doubleArrayOf(3.0, 4.0)
-        val thirdRow = doubleArrayOf(5.0, 6.0)
+        val secondRow = floatArrayOf(3.0f, 4.0f)
+        val thirdRow = floatArrayOf(5.0f, 6.0f)
 
-        val secondMatrix = doubleMatrixFromRows(
+        val secondMatrix = floatMatrixFromRows(
             secondRow,
             thirdRow
         )
 
-        val actual = stackRows(2, doubleRowVector(*firstRow), secondMatrix)
-        val expected = doubleMatrixFromRows(
+        val actual = stackRows(2, floatRowVector(*firstRow), secondMatrix)
+        val expected = floatMatrixFromRows(
             firstRow,
             secondRow,
             thirdRow
         )
 
-        assertMatrixEquality(expected, actual, 0.01)
+        assertMatrixEquality(expected, actual, 0.01f)
 
     }
 

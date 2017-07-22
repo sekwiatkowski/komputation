@@ -1,28 +1,28 @@
 package shape.komputation.cpu.functions.activation
 
-fun relu(input: DoubleArray) =
+fun relu(input: FloatArray) =
 
-    DoubleArray(input.size) { index ->
+    FloatArray(input.size) { index ->
 
         relu(input[index])
 
     }
 
-fun relu(entry: Double) =
+fun relu(entry: Float) =
 
-    Math.max(entry, 0.0)
+    Math.max(entry, 0.0f)
 
 // d relu(x) / d x = d max(x, 0) / d x
 // = 1 if x > 0.0, 0.0 otherwise
-fun backwardRelu(forwardEntries : DoubleArray, chainEntries : DoubleArray) =
+fun backwardRelu(forwardEntries : FloatArray, chainEntries : FloatArray) =
 
-    DoubleArray(forwardEntries.size) { index ->
+    FloatArray(forwardEntries.size) { index ->
 
         val forwardEntry = forwardEntries[index]
 
         if (forwardEntry > 0.0)
             chainEntries[index]
         else
-            0.0
+            0.0f
 
     }

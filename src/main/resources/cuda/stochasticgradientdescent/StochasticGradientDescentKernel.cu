@@ -1,5 +1,5 @@
 extern "C"
-__global__ void stochasticGradientDescentKernel (int length, double *parameter, double scalingFactor, double learningRate, double *gradient)
+__global__ void stochasticGradientDescentKernel (int length, float *parameter, float scalingFactor, float learningRate, float *gradient)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

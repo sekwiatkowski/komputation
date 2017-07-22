@@ -10,85 +10,85 @@ class CpuLookupLayerTest {
     @Test
     fun testOneDimension() {
 
-        val firstVector = doubleArrayOf(1.0)
+        val firstVector = floatArrayOf(1.0f)
 
         val lookupLayer = lookupLayer(arrayOf(firstVector), 1, 1, 1).buildForCpu()
 
-        val expected = doubleScalar(1.0)
+        val expected = floatScalar(1.0f)
         val actual = lookupLayer.forward(intScalar(0))
 
-        assertMatrixEquality(expected, actual, 0.001)
+        assertMatrixEquality(expected, actual, 0.001f)
 
     }
 
     @Test
     fun testTwoDimensions() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0)), 2, 1, 1).buildForCpu()
+        val lookupLayer = lookupLayer(arrayOf(floatArrayOf(1.0f, 2.0f)), 2, 1, 1).buildForCpu()
 
-        val expected = doubleColumnVector(1.0, 2.0)
+        val expected = floatColumnVector(1.0f, 2.0f)
         val actual = lookupLayer.forward(intScalar(0))
 
-        assertMatrixEquality(expected, actual, 0.001)
+        assertMatrixEquality(expected, actual, 0.001f)
 
     }
 
     @Test
     fun testOneOutOfTwoVectors() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 1).buildForCpu()
+        val lookupLayer = lookupLayer(arrayOf(floatArrayOf(1.0f), floatArrayOf(2.0f)), 1, 1, 1).buildForCpu()
 
         assertMatrixEquality(
-            doubleScalar(1.0),
+            floatScalar(1.0f),
             lookupLayer.forward(intScalar(0)),
-            0.001)
+            0.001f)
 
         assertMatrixEquality(
-            doubleScalar(2.0),
+            floatScalar(2.0f),
             lookupLayer.forward(intScalar(1)),
-            0.001)
+            0.001f)
 
     }
 
     @Test
     fun testTwoOutOfTwoVectors() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0)), 1, 1, 2).buildForCpu()
+        val lookupLayer = lookupLayer(arrayOf(floatArrayOf(1.0f), floatArrayOf(2.0f)), 1, 1, 2).buildForCpu()
 
         assertMatrixEquality(
-            doubleRowVector(1.0, 2.0),
+            floatRowVector(1.0f, 2.0f),
             lookupLayer.forward(intColumnVector(0, 1)),
-            0.001)
+            0.001f)
 
     }
 
     @Test
     fun testTwoOutOfTwoVectorsTwoDimensions() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2).buildForCpu()
+        val lookupLayer = lookupLayer(arrayOf(floatArrayOf(1.0f, 2.0f), floatArrayOf(3.0f, 4.0f)), 2, 1, 2).buildForCpu()
 
         assertMatrixEquality(
-            doubleMatrixFromColumns(
-                doubleArrayOf(1.0, 2.0),
-                doubleArrayOf(3.0, 4.0)
+            floatMatrixFromColumns(
+                floatArrayOf(1.0f, 2.0f),
+                floatArrayOf(3.0f, 4.0f)
             ),
             lookupLayer.forward(intColumnVector(0, 1)),
-            0.001)
+            0.001f)
 
     }
 
     @Test
     fun testTwoOutOfTwoVectorsTwoDimensionsReversed() {
 
-        val lookupLayer = lookupLayer(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0, 4.0)), 2, 1, 2).buildForCpu()
+        val lookupLayer = lookupLayer(arrayOf(floatArrayOf(1.0f, 2.0f), floatArrayOf(3.0f, 4.0f)), 2, 1, 2).buildForCpu()
 
         assertMatrixEquality(
-            doubleMatrixFromColumns(
-                doubleArrayOf(3.0, 4.0),
-                doubleArrayOf(1.0, 2.0)
+            floatMatrixFromColumns(
+                floatArrayOf(3.0f, 4.0f),
+                floatArrayOf(1.0f, 2.0f)
             ),
             lookupLayer.forward(intColumnVector(1, 0)),
-            0.001)
+            0.001f)
 
     }
 

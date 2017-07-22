@@ -8,12 +8,12 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
     private val visited = BooleanArray(numberVectors)
 
     private val ids = IntArray(maximumBatchSize * maximumLength)
-    private val counts = DoubleArray(maximumBatchSize * maximumLength)
-    private val sums = Array(maximumBatchSize * maximumLength) { DoubleArray(dimension) }
+    private val counts = FloatArray(maximumBatchSize * maximumLength)
+    private val sums = Array(maximumBatchSize * maximumLength) { FloatArray(dimension) }
 
     private var lastNewId = -1
 
-    fun accumulate(ids: IntArray, gradient: DoubleArray) {
+    fun accumulate(ids: IntArray, gradient: FloatArray) {
 
         val numberIds = ids.size
 
@@ -46,7 +46,7 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
             if (!this.visited[id]) {
 
                 // Increment the count
-                this.counts[mappedId] += 1.0
+                this.counts[mappedId] += 1.0f
 
                 // Avoid further increments for the current example.
                 this.visited[id] = true
@@ -82,9 +82,9 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
         for (index in 0..lastNewId) {
 
-            this.counts[index] = 0.0
+            this.counts[index] = 0.0f
 
-            Arrays.fill(this.sums[index], 0.0)
+            Arrays.fill(this.sums[index], 0.0f)
 
         }
 

@@ -1,8 +1,8 @@
 package shape.komputation.cpu.functions
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
-fun splitRows(matrix : DoubleMatrix, heights : IntArray): Array<DoubleMatrix> {
+fun splitRows(matrix : FloatMatrix, heights : IntArray): Array<FloatMatrix> {
 
     val numberColumns = matrix.numberColumns
     val numberRows = matrix.numberRows
@@ -14,7 +14,7 @@ fun splitRows(matrix : DoubleMatrix, heights : IntArray): Array<DoubleMatrix> {
 
         val height = heights[indexMatrix]
 
-        val subEntries = DoubleArray(height * numberColumns)
+        val subEntries = FloatArray(height * numberColumns)
 
         for (indexColumn in 0..numberColumns - 1) {
 
@@ -27,7 +27,7 @@ fun splitRows(matrix : DoubleMatrix, heights : IntArray): Array<DoubleMatrix> {
 
         runningHeight += height
 
-        DoubleMatrix(height, numberColumns, subEntries)
+        FloatMatrix(height, numberColumns, subEntries)
 
     }
 

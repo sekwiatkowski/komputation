@@ -4,7 +4,7 @@ import shape.komputation.cpu.functions.backwardExpansionForConvolution
 import shape.komputation.cpu.functions.convolutionsPerColumn
 import shape.komputation.cpu.functions.expandForConvolution
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 class CpuExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : BaseCpuForwardLayer(name) {
 
@@ -28,7 +28,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
         i_22 i_23
         i_32 i_33
     */
-    override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
@@ -43,7 +43,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
     }
 
     // d expansion / d input
-    override fun backward(chain : DoubleMatrix): DoubleMatrix {
+    override fun backward(chain : FloatMatrix): FloatMatrix {
 
         val summedDerivatives = backwardExpansionForConvolution(
             this.numberInputRows,
@@ -54,7 +54,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
             chain.numberRows,
             chain.numberColumns)
 
-        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, summedDerivatives)
+        return FloatMatrix(this.numberInputRows, this.numberInputColumns, summedDerivatives)
 
     }
 

@@ -18,14 +18,14 @@
 // Number of threads = blockDim.x
 // Shared memory size = blockDim.x * DOUBLE_SIZE
 extern "C"
-__global__ void projectionWithBiasKernel(double * input, double * weights, int numberRows, int numberColumns, double * bias, double * result)
+__global__ void projectionWithBiasKernel(float * input, float * weights, int numberRows, int numberColumns, float * bias, float * result)
 {
     int indexRow = threadIdx.x + blockIdx.x * blockDim.x;
 
     // All threads in a block have access to shared memory.
-    extern __shared__ double sharedData[];
+    extern __shared__ float sharedData[];
 
-    double resultEntry = project(input, weights, numberRows, numberColumns, indexRow, sharedData);
+    float resultEntry = project(input, weights, numberRows, numberColumns, indexRow, sharedData);
 
     // Set the result entries in the threads with the first numberRows global IDs
     if (indexRow < numberRows) {

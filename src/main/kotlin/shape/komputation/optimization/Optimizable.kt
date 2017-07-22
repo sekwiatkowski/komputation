@@ -2,6 +2,6 @@ package shape.komputation.optimization
 
 interface Optimizable {
 
-    fun optimize(scalingFactor : Double)
+    fun optimize(scalingFactor : Float)
 
 }

@@ -5,7 +5,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.layers.CudaEntryPoint
 import shape.komputation.cuda.setVector
 import shape.komputation.layers.Resourceful
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
 class CudaInputLayer(private val dimension : Int) : CudaEntryPoint, Resourceful {
@@ -25,7 +25,7 @@ class CudaInputLayer(private val dimension : Int) : CudaEntryPoint, Resourceful 
         }
         else {
 
-            input as DoubleMatrix
+            input as FloatMatrix
 
             val deviceInput = Pointer()
 

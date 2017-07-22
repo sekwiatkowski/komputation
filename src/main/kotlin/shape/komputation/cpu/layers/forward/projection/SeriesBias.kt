@@ -7,23 +7,21 @@ import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.OptimizationInstruction
 
 class SeriesBias internal constructor(
     private val name : String?,
-    private val bias: DoubleArray,
+    private val bias: FloatArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule? = null) {
 
-    private val numberBiasEntries = bias.size
+    fun forwardStep(input : FloatMatrix) =
 
-    fun forwardStep(input : DoubleMatrix) =
+        FloatMatrix(input.numberRows, input.numberColumns, add(input.entries, bias))
 
-        DoubleMatrix(input.numberRows, input.numberColumns, add(input.entries, bias))
-
-    fun backwardStep(chain: DoubleMatrix) {
+    fun backwardStep(chain: FloatMatrix) {
 
         val backwardWrtBias = backwardProjectionWrtBias(this.bias.size, chain.entries, chain.numberRows, chain.numberColumns)
 
@@ -41,7 +39,7 @@ class SeriesBias internal constructor(
 
     }
 
-    fun optimize(scalingFactor : Double) {
+    fun optimize(scalingFactor : Float) {
 
         if (this.updateRule != null) {
 

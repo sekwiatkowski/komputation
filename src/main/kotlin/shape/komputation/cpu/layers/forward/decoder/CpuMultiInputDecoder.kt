@@ -7,10 +7,10 @@ import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.doubleZeroMatrix
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuMultiInputDecoder internal constructor(
@@ -24,12 +24,12 @@ class CpuMultiInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val seriesOutput = doubleZeroMatrix(this.outputDimension, this.numberSteps)
+        val seriesOutput = floatZeroMatrix(this.outputDimension, this.numberSteps)
 
         // Start with a zero state
-        var state = doubleZeroColumnVector(this.hiddenDimension)
+        var state = floatZeroColumnVector(this.hiddenDimension)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
@@ -50,7 +50,7 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
-    private fun forwardOutput(indexStep: Int, state: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    private fun forwardOutput(indexStep: Int, state: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         val weighting = this.weighting.forwardStep(indexStep, state, isTraining)
 
@@ -73,22 +73,22 @@ class CpuMultiInputDecoder internal constructor(
     }
 
     // Incoming gradient: d chain / d series prediction
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
+    override fun backward(chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 
-        val diffStatePreActivationWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
-        var diffStatePreActivationWrtPreviousState : DoubleMatrix? = null
+        val diffStatePreActivationWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
+        var diffStatePreActivationWrtPreviousState : FloatMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val chainStep = doubleColumnVector(*extractStep(chainEntries, indexStep, outputDimension))
+            val chainStep = floatColumnVector(*extractStep(chainEntries, indexStep, outputDimension))
 
             val diffOutputPreActivationWrtState = this.backwardOutput(indexStep, chainStep)
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                doubleColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
+                floatColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
 
             }
             else {
@@ -113,7 +113,7 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
-    private fun backwardOutput(indexStep: Int, chainStep: DoubleMatrix): DoubleMatrix {
+    private fun backwardOutput(indexStep: Int, chainStep: FloatMatrix): FloatMatrix {
 
         val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(chainStep)
 
@@ -125,7 +125,7 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.unit is Optimizable) {
 

@@ -1,23 +1,25 @@
 package shape.komputation.cpu.functions.activation
 
-fun sigmoid(input: DoubleArray) =
+import shape.komputation.matrix.FloatMath
 
-    DoubleArray(input.size) { index ->
+fun sigmoid(input: FloatArray) =
+
+    FloatArray(input.size) { index ->
 
         sigmoid(input[index])
 
     }
 
-fun sigmoid(x: Double) =
+fun sigmoid(x: Float) =
 
-    1.0 / (1.0 + Math.exp(-x))
+    1.0f / (1.0f + FloatMath.exp(-x))
 
-fun differentiateSigmoid(forwardEntries: DoubleArray) =
+fun differentiateSigmoid(forwardEntries: FloatArray) =
 
-    DoubleArray(forwardEntries.size) { index ->
+    FloatArray(forwardEntries.size) { index ->
 
         val forward = forwardEntries[index]
 
-        forward * (1 - forward)
+        forward * (1.0f - forward)
 
     }

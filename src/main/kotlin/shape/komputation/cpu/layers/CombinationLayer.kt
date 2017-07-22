@@ -1,13 +1,13 @@
 package shape.komputation.cpu.layers
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 abstract class CombinationLayer(private val name: String?) {
 
-    abstract fun forward(first: DoubleMatrix, second: DoubleMatrix) : DoubleMatrix
+    abstract fun forward(first: FloatMatrix, second: FloatMatrix) : FloatMatrix
 
-    abstract fun backwardFirst(chain : DoubleMatrix) : DoubleMatrix
+    abstract fun backwardFirst(chain : FloatMatrix) : FloatMatrix
 
-    abstract fun backwardSecond(chain : DoubleMatrix) : DoubleMatrix
+    abstract fun backwardSecond(chain : FloatMatrix) : FloatMatrix
 
 }

@@ -1,12 +1,13 @@
 package shape.komputation.cpu.optimization.adaptive
 
 import shape.komputation.cpu.optimization.UpdateRule
+import shape.komputation.matrix.FloatMath
 
-class CpuAdagrad(private val learningRate: Double, private val epsilon : Double, size : Int) : UpdateRule {
+class CpuAdagrad(private val learningRate: Float, private val epsilon : Float, size : Int) : UpdateRule {
 
-    private val sumOfSquaredDerivatives = DoubleArray(size)
+    private val sumOfSquaredDerivatives = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
         for(index in 0..gradientSize-1) {
 
@@ -25,14 +26,14 @@ class CpuAdagrad(private val learningRate: Double, private val epsilon : Double,
 
     }
 
-    private fun updateHistory(historyIndex: Int, derivative: Double) {
+    private fun updateHistory(historyIndex: Int, derivative: Float) {
 
-        this.sumOfSquaredDerivatives[historyIndex] += Math.pow(derivative, 2.0)
+        this.sumOfSquaredDerivatives[historyIndex] += derivative * derivative
 
     }
 
     private fun adaptLearningRate(historyIndex: Int) =
 
-        this.learningRate / (Math.sqrt(this.sumOfSquaredDerivatives[historyIndex]) + this.epsilon)
+        this.learningRate / (FloatMath.sqrt(this.sumOfSquaredDerivatives[historyIndex]) + this.epsilon)
 
 }

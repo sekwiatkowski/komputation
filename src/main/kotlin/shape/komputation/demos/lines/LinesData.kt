@@ -1,52 +1,52 @@
 package shape.komputation.demos.lines
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleMatrixFromRows
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatMatrixFromRows
 
 object LinesData {
 
     val inputs = arrayOf<Matrix>(
 
-        doubleMatrixFromRows(
-            doubleArrayOf(1.0, 1.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(0.0, 0.0, 0.0)
+        floatMatrixFromRows(
+            floatArrayOf(1.0f, 1.0f, 1.0f),
+            floatArrayOf(0.0f, 0.0f, 0.0f),
+            floatArrayOf(0.0f, 0.0f, 0.0f)
         ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 1.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 0.0)
+        floatMatrixFromRows(
+            floatArrayOf(0.0f, 0.0f, 0.0f),
+            floatArrayOf(1.0f, 1.0f, 1.0f),
+            floatArrayOf(0.0f, 0.0f, 0.0f)
         ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(0.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 1.0, 1.0)
+        floatMatrixFromRows(
+            floatArrayOf(0.0f, 0.0f, 0.0f),
+            floatArrayOf(0.0f, 0.0f, 0.0f),
+            floatArrayOf(1.0f, 1.0f, 1.0f)
         ),
-        doubleMatrixFromRows(
-            doubleArrayOf(1.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 0.0, 0.0),
-            doubleArrayOf(1.0, 0.0, 0.0)
+        floatMatrixFromRows(
+            floatArrayOf(1.0f, 0.0f, 0.0f),
+            floatArrayOf(1.0f, 0.0f, 0.0f),
+            floatArrayOf(1.0f, 0.0f, 0.0f)
         ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 1.0, 0.0),
-            doubleArrayOf(0.0, 1.0, 0.0),
-            doubleArrayOf(0.0, 1.0, 0.0)
+        floatMatrixFromRows(
+            floatArrayOf(0.0f, 1.0f, 0.0f),
+            floatArrayOf(0.0f, 1.0f, 0.0f),
+            floatArrayOf(0.0f, 1.0f, 0.0f)
         ),
-        doubleMatrixFromRows(
-            doubleArrayOf(0.0, 0.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 1.0),
-            doubleArrayOf(0.0, 0.0, 1.0)
+        floatMatrixFromRows(
+            floatArrayOf(0.0f, 0.0f, 1.0f),
+            floatArrayOf(0.0f, 0.0f, 1.0f),
+            floatArrayOf(0.0f, 0.0f, 1.0f)
         )
     )
 
     val targets = arrayOf(
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(1.0, 0.0)
+        floatColumnVector(0.0f, 1.0f),
+        floatColumnVector(0.0f, 1.0f),
+        floatColumnVector(0.0f, 1.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(1.0f, 0.0f)
     )
 
 }

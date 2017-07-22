@@ -14,7 +14,7 @@ import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
-import shape.komputation.optimization.adaptive.rmsprop
+import shape.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
 
@@ -38,9 +38,9 @@ class TrecTraining {
     fun run(embeddingFilePath: String, embeddingDimension: Int) {
 
         val random = Random(1)
-        val initialization = uniformInitialization(random, -0.05, 0.05)
+        val initialization = uniformInitialization(random, -0.05f, 0.05f)
 
-        val optimization = rmsprop(0.001)
+        val optimization = momentum(0.0005f, 0.9f)
 
         val batchSize = 1
 
@@ -53,7 +53,7 @@ class TrecTraining {
         val filterHeight = embeddingDimension
         val numberFilterWidths = filterWidths.size
 
-        val numberIterations = 30
+        val numberIterations = 10
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -108,7 +108,7 @@ class TrecTraining {
                         arrayOf(
                             convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, optimization),
                             maxPoolingLayer(),
-                            dropoutLayer(numberFilters, random, 0.8, reluLayer(numberFilters))
+                            dropoutLayer(numberFilters, random, 0.8f, reluLayer(numberFilters))
                         )
                     }
                     .toTypedArray()
@@ -117,7 +117,7 @@ class TrecTraining {
             softmaxLayer(numberCategories)
         )
 
-        val afterEachIteration = { _ : Int, _ : Double ->
+        val afterEachIteration = { _ : Int, _ : Float ->
 
             val accuracyRate = network
                 .test(
@@ -130,7 +130,8 @@ class TrecTraining {
                     }
                 )
                 .count { correct -> correct }
-                .div(numberTestExamples.toDouble())
+                .toFloat()
+                .div(numberTestExamples.toFloat())
 
             println(accuracyRate)
 

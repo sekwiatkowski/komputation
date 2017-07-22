@@ -1,11 +1,11 @@
 package shape.komputation.cuda.layers.forward.projection
 
 import jcuda.Pointer
-import jcuda.Sizeof
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.computeDeviceByteSize
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
@@ -21,12 +21,12 @@ class CudaProjectionLayer internal constructor(
     private val projectionWithBiasKernel : Kernel,
     private val maximumThreadsPerBlock: Int,
     private val cublasHandle: cublasHandle,
-    private val initialWeights: DoubleArray,
+    private val initialWeights: FloatArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
     private val weightUpdateRule: CudaUpdateRule? = null,
 
-    private val initialBias: DoubleArray? = null,
+    private val initialBias: FloatArray? = null,
     private val biasUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
@@ -73,7 +73,7 @@ class CudaProjectionLayer internal constructor(
 
     private val blockSize = 32
     private val numberBlocks = (this.numberWeightRows + this.blockSize - 1) / this.blockSize
-    private val sharedMemoryBytes = this.blockSize * Sizeof.DOUBLE
+    private val sharedMemoryBytes = computeDeviceByteSize(this.blockSize).toInt()
 
     override fun acquire() {
 
@@ -221,7 +221,7 @@ class CudaProjectionLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Double) {
+    override fun optimize(scalingFactor: Float) {
 
         this.weightUpdateRule?.update(this.pointerToDeviceWeights, scalingFactor, this.pointerToDeviceWeightGradientAccumulator)
 

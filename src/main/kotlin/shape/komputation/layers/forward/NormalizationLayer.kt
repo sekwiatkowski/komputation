@@ -11,7 +11,7 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
         val kernelFactory = context.kernelFactory
 
-        val blockSize = Math.pow(2.0, Math.ceil(Math.log(numberRows.toDouble()) / Math.log(2.0))).toInt()
+        val blockSize = Math.pow(2.0, Math.ceil(Math.log(this.numberRows.toDouble()) / Math.log(2.0))).toInt()
 
         val normalizationLayer = CudaNormalizationLayer(
             this.name,

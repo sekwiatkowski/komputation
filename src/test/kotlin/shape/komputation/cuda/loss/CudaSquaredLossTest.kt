@@ -9,16 +9,17 @@ import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
 import shape.komputation.loss.squaredLoss
+import shape.komputation.matrix.FloatMath
 
 class CudaSquaredLossTest {
 
     @Test
     fun testForwardOneDimension() {
 
-        val expected = 0.5 * Math.pow(4.0-2.0, 2.0)
+        val expected = 0.5f * FloatMath.pow(4.0f-2.0f, 2.0f)
 
-        val predictions = doubleArrayOf(4.0)
-        val targets = doubleArrayOf(2.0)
+        val predictions = floatArrayOf(4.0f)
+        val targets = floatArrayOf(2.0f)
 
         testForward(predictions, targets, expected)
 
@@ -28,10 +29,10 @@ class CudaSquaredLossTest {
     @Test
     fun testForwardTwoDimensions() {
 
-        val expected = 0.5 * (Math.pow(4.0-2.0, 2.0) + Math.pow(6.0-3.0, 2.0))
+        val expected = 0.5f * (FloatMath.pow(4.0f-2.0f, 2.0f) + FloatMath.pow(6.0f-3.0f, 2.0f))
 
-        val predictions = doubleArrayOf(4.0, 6.0)
-        val targets = doubleArrayOf(2.0, 3.0)
+        val predictions = floatArrayOf(4.0f, 6.0f)
+        val targets = floatArrayOf(2.0f, 3.0f)
 
         testForward(predictions, targets, expected)
 
@@ -40,17 +41,17 @@ class CudaSquaredLossTest {
     @Test
     fun testForwardThreeDimensions() {
 
-        val expected = 0.5 * (Math.pow(4.0-2.0, 2.0) + Math.pow(6.0-3.0, 2.0) + Math.pow(8.0-4.0, 2.0))
+        val expected = 0.5f * (FloatMath.pow(4.0f-2.0f, 2.0f) + FloatMath.pow(6.0f-3.0f, 2.0f) + FloatMath.pow(8.0f-4.0f, 2.0f))
 
-        val predictions = doubleArrayOf(4.0, 6.0, 8.0)
-        val targets = doubleArrayOf(2.0, 3.0, 4.0)
+        val predictions = floatArrayOf(4.0f, 6.0f, 8.0f)
+        val targets = floatArrayOf(2.0f, 3.0f, 4.0f)
 
         testForward(predictions, targets, expected)
 
     }
 
 
-    private fun testForward(predictions: DoubleArray, targets: DoubleArray, expected: Double) {
+    private fun testForward(predictions: FloatArray, targets: FloatArray, expected: Float) {
 
         val size = predictions.size
 
@@ -76,17 +77,17 @@ class CudaSquaredLossTest {
 
         cudaContext.destroy()
 
-        assertEquals(expected, actual, 0.001)
+        assertEquals(expected, actual, 0.001f)
 
     }
 
     @Test
     fun testBackwardOneDimension() {
 
-        val expected = doubleArrayOf(2.0)
+        val expected = floatArrayOf(2.0f)
 
-        val predictions = doubleArrayOf(4.0)
-        val targets = doubleArrayOf(2.0)
+        val predictions = floatArrayOf(4.0f)
+        val targets = floatArrayOf(2.0f)
 
         testBackward(predictions, targets, expected)
 
@@ -95,16 +96,16 @@ class CudaSquaredLossTest {
     @Test
     fun testBackwardTwoDimensions() {
 
-        val expected = doubleArrayOf(2.0, 3.0)
+        val expected = floatArrayOf(2.0f, 3.0f)
 
-        val predictions = doubleArrayOf(4.0, 6.0)
-        val targets = doubleArrayOf(2.0, 3.0)
+        val predictions = floatArrayOf(4.0f, 6.0f)
+        val targets = floatArrayOf(2.0f, 3.0f)
 
         testBackward(predictions, targets, expected)
 
     }
 
-    private fun testBackward(predictions: DoubleArray, targets: DoubleArray, expected: DoubleArray) {
+    private fun testBackward(predictions: FloatArray, targets: FloatArray, expected: FloatArray) {
 
         val size = predictions.size
 
@@ -130,7 +131,7 @@ class CudaSquaredLossTest {
 
         context.destroy()
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 

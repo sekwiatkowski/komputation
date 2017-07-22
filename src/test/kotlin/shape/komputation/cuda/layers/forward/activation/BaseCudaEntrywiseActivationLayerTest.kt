@@ -2,7 +2,7 @@ package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
@@ -12,7 +12,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
 
     protected abstract fun createLayer(context: CudaContext, numberEntries: Int) : BaseCudaEntrywiseActivationLayer
 
-    protected fun testForward(input: DoubleArray, expected: DoubleArray) {
+    protected fun testForward(input: FloatArray, expected: FloatArray) {
 
         val numberEntries = input.size
 
@@ -34,11 +34,11 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
 
         cudaContext.destroy()
 
-        Assertions.assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    protected fun testBackward(input: DoubleArray, chain: DoubleArray, expected: DoubleArray) {
+    protected fun testBackward(input: FloatArray, chain: FloatArray, expected: FloatArray) {
 
         val numberEntries = input.size
 
@@ -62,7 +62,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
 
         layer.release()
 
-        Assertions.assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 

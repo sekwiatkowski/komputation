@@ -5,14 +5,14 @@
 // In the second step, the squared differences are summed up using a parallel reduction.
 // Finally, the sum is multiplied by 1/2.
 template <int blockSize>
-__global__ void squaredLossKernel (double length, double *predictions, double *targets, double *forwardResults, double *result)
+__global__ void squaredLossKernel (float length, float *predictions, float *targets, float *forwardResults, float *result)
 {
 
     int threadId = threadIdx.x;
 
-    extern __shared__ double sharedData[];
+    extern __shared__ float sharedData[];
 
-    sharedData[threadId] = pow(predictions[threadId] - targets[threadId], 2.0);
+    sharedData[threadId] = powf(predictions[threadId] - targets[threadId], 2.0);
 
     __syncthreads();
 

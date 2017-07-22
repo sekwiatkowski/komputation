@@ -1,18 +1,18 @@
 package shape.komputation.demos.negation
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleScalar
+import shape.komputation.matrix.floatScalar
 
 object NegationData {
 
     val inputs = arrayOf<Matrix>(
-        doubleScalar(0.0),
-        doubleScalar(1.0)
+        floatScalar(0.0f),
+        floatScalar(1.0f)
     )
 
     val targets = arrayOf(
-        doubleScalar(1.0),
-        doubleScalar(0.0)
+        floatScalar(1.0f),
+        floatScalar(0.0f)
     )
 
 }

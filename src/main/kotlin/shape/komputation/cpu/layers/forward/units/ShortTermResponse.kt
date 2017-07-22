@@ -11,7 +11,7 @@ import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.tanhLayer
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.OptimizationInstruction
 
 class ShortTermResponse(
@@ -22,7 +22,7 @@ class ShortTermResponse(
     private val bias: SeriesBias?,
     private val activations: Array<CpuTanhLayer>) {
 
-    fun forward(step : Int, state : DoubleMatrix, input : DoubleMatrix, forget : DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    fun forward(step : Int, state : FloatMatrix, input : FloatMatrix, forget : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         val shortTermMemory = this.forgetting[step].forward(state, forget)
 
@@ -50,7 +50,7 @@ class ShortTermResponse(
 
     }
 
-    fun backward(step: Int, chain: DoubleMatrix): Pair<DoubleMatrix, Pair<DoubleMatrix, DoubleMatrix>> {
+    fun backward(step: Int, chain: FloatMatrix): Pair<FloatMatrix, Pair<FloatMatrix, FloatMatrix>> {
 
         // short-term response = tanh(short-term response pre-activation)
         // d short-term response / d short-term response pre-activation
@@ -94,7 +94,7 @@ class ShortTermResponse(
 
     }
 
-    fun optimize(scalingFactor : Double) {
+    fun optimize(scalingFactor : Float) {
 
         this.memoryWeighting.optimize(scalingFactor)
         this.inputWeighting.optimize(scalingFactor)

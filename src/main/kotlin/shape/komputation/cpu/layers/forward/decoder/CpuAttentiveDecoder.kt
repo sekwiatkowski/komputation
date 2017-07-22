@@ -37,16 +37,16 @@ class CpuAttentiveDecoder internal constructor(
     private val bias : SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    private var attentionDistributionEntries = DoubleArray(this.numberSteps)
+    private var attentionDistributionEntries = FloatArray(this.numberSteps)
 
     private val encodingSize = this.numberSteps * this.encodingDimension
-    private var encodingEntries = DoubleArray(this.encodingSize)
+    private var encodingEntries = FloatArray(this.encodingSize)
     private val encodingAccumulator = DenseAccumulator(this.encodingSize)
 
-    override fun forward(encodings : DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(encodings : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        var previousDecoderState = doubleZeroColumnVector(this.decodingDimension)
-        val output = doubleZeroMatrix(this.encodingDimension, this.numberSteps)
+        var previousDecoderState = floatZeroColumnVector(this.decodingDimension)
+        val output = floatZeroMatrix(this.encodingDimension, this.numberSteps)
 
         this.encodingEntries = encodings.entries
 
@@ -83,7 +83,7 @@ class CpuAttentiveDecoder internal constructor(
             // attended encoding = encodings * normalized scores as column vector
             val blasTransposedAttentionDistribution = createBlasMatrix(this.numberSteps, 1, transposedAttentionDistribution.entries)
 
-            val attendedEncoding = DoubleMatrix(encodingDimension, 1, blasEncodingMatrix.multiply(blasTransposedAttentionDistribution).getEntries())
+            val attendedEncoding = FloatMatrix(encodingDimension, 1, blasEncodingMatrix.multiply(blasTransposedAttentionDistribution).getEntries())
 
             // weighted attended encoding = attended encoding weights * attended encoding
             val weightedAttendedEncoding = this.attendedEncodingWeighting.forwardStep(indexStep, attendedEncoding, isTraining)
@@ -113,11 +113,11 @@ class CpuAttentiveDecoder internal constructor(
 
     }
 
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
+    override fun backward(chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 
-        var diffNextDecoderStateWrtDecoderState : DoubleArray? = null
+        var diffNextDecoderStateWrtDecoderState : FloatArray? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
@@ -125,7 +125,7 @@ class CpuAttentiveDecoder internal constructor(
 
             val diffOutputWrtDecoderState = extractStep(chainEntries, indexStep, this.decodingDimension)
 
-            val sumWrtDecoderState = doubleColumnVector(*(
+            val sumWrtDecoderState = floatColumnVector(*(
                 if (isLastStep) {
 
                     diffOutputWrtDecoderState
@@ -171,7 +171,7 @@ class CpuAttentiveDecoder internal constructor(
                 this.encodingDimension,
                 diffPreActivationWrtAttendedEncodingEntries,
                 diffPreActivationWrtAttendedEncodingNumberRows)
-            val diffAttendedEncodingWrtTransposedAttentionDistribution = DoubleMatrix(numberSteps, 1, diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
+            val diffAttendedEncodingWrtTransposedAttentionDistribution = FloatMatrix(numberSteps, 1, diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
 
             /* d Ea^t / d E
                d Ea^t / d e(1)_1 = a_1
@@ -229,7 +229,7 @@ class CpuAttentiveDecoder internal constructor(
         this.bias?.backwardSeries()
 
         val encodingAccumulation = encodingAccumulator.getAccumulation().copyOf()
-        val result = DoubleMatrix(this.encodingDimension, this.numberSteps, encodingAccumulation)
+        val result = FloatMatrix(this.encodingDimension, this.numberSteps, encodingAccumulation)
 
         this.encodingAccumulator.reset()
 
@@ -237,7 +237,7 @@ class CpuAttentiveDecoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         // W^e
         this.encodingProjection.optimize(scalingFactor)

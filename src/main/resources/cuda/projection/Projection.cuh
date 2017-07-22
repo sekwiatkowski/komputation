@@ -1,6 +1,6 @@
-__device__ double project(double * input, double * weights, int numberRows, int numberColumns, int indexRow, double * sharedData) {
+__device__ double project(float * input, float * weights, int numberRows, int numberColumns, int indexRow, float * sharedData) {
 
-    double resultEntry = 0.0;
+    float resultEntry = 0.0;
 
     // Columns are processed in blocks.
     // numberColumns = 1, blockDim.x = 16: (numberColumns + blockDim.x - 1) / BLOCK__SIZE = (1 + 16 - 1) / 16 = 1

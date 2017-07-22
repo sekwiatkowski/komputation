@@ -1,14 +1,15 @@
 package shape.komputation.cpu.optimization.adaptive
 
 import shape.komputation.cpu.optimization.UpdateRule
+import shape.komputation.matrix.FloatMath
 
-class CpuRMSProp(private val learningRate : Double, private val decay : Double, private val epsilon : Double, size : Int) : UpdateRule {
+class CpuRMSProp(private val learningRate : Float, private val decay : Float, private val epsilon : Float, size : Int) : UpdateRule {
 
-    private val oneMinusDecay = 1.0 - this.decay
+    private val oneMinusDecay = 1.0f - this.decay
 
-    private val accumulation = DoubleArray(size)
+    private val accumulation = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
         for(index in 0..gradientSize-1) {
 
@@ -16,10 +17,10 @@ class CpuRMSProp(private val learningRate : Double, private val decay : Double, 
 
             val historyIndex = start + index
 
-            val newAccumulation = this.decay * this.accumulation[historyIndex] + this.oneMinusDecay * Math.pow(derivative, 2.0)
+            val newAccumulation = this.decay * this.accumulation[historyIndex] + this.oneMinusDecay * (derivative * derivative)
             this.accumulation[historyIndex] = newAccumulation
 
-            val adaptiveLearningRate = this.learningRate / Math.sqrt(newAccumulation + this.epsilon)
+            val adaptiveLearningRate = this.learningRate / FloatMath.sqrt(newAccumulation + this.epsilon)
 
             val update = -adaptiveLearningRate * derivative
 

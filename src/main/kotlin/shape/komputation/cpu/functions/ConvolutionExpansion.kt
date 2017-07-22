@@ -1,6 +1,6 @@
 package shape.komputation.cpu.functions
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 fun convolutionsPerColumn(numberRows : Int, filterHeight: Int) =
 
@@ -11,19 +11,19 @@ fun convolutionsPerRow(numberColumns : Int, filterWidth: Int) =
     numberColumns - filterWidth + 1
 
 fun expandForConvolution(
-    inputEntries : DoubleArray,
+    inputEntries : FloatArray,
     numberInputRows : Int,
     convolutionsPerRow : Int,
     convolutionsPerColumn : Int,
     filterWidth : Int,
-    filterHeight: Int): DoubleMatrix {
+    filterHeight: Int): FloatMatrix {
 
     val numberConvolutions = convolutionsPerRow * convolutionsPerColumn
 
     val numberExpansionRows = filterWidth * filterHeight
     val numberExpansionColumns = numberConvolutions
 
-    val expandedInputMatrix = DoubleArray(numberExpansionRows * numberConvolutions)
+    val expandedInputMatrix = FloatArray(numberExpansionRows * numberConvolutions)
 
     var counter = 0
 
@@ -45,7 +45,7 @@ fun expandForConvolution(
 
     }
 
-    return DoubleMatrix(numberExpansionRows, numberExpansionColumns, expandedInputMatrix)
+    return FloatMatrix(numberExpansionRows, numberExpansionColumns, expandedInputMatrix)
 
 }
 
@@ -54,11 +54,11 @@ fun backwardExpansionForConvolution(
     numberInputColumns: Int,
     filterHeight: Int,
     convolutionsPerRow: Int,
-    chain: DoubleArray,
+    chain: FloatArray,
     numberChainRows: Int,
-    numberChainColumns: Int): DoubleArray {
+    numberChainColumns: Int): FloatArray {
 
-    val sums = DoubleArray(numberInputRows * numberInputColumns)
+    val sums = FloatArray(numberInputRows * numberInputColumns)
 
     var count = 0
 

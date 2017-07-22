@@ -4,8 +4,8 @@ import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.HadamardCombination
 import shape.komputation.cpu.optimization.DenseAccumulator
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
 import shape.komputation.optimization.Optimizable
 
 class CpuHighwayLayer internal constructor(
@@ -20,7 +20,7 @@ class CpuHighwayLayer internal constructor(
 
     private val gradientAccumulator = DenseAccumulator(inputDimension)
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // H(x)
         val transformed = this.transformation.forward(input, isTraining)
@@ -44,7 +44,7 @@ class CpuHighwayLayer internal constructor(
 
     }
 
-    private fun backwardTransformation(chain: DoubleMatrix) {
+    private fun backwardTransformation(chain: FloatMatrix) {
 
         // d chain / d H(x) (.) T(x)
         val diffChainWrtTransformationComponent = this.addition.backwardFirst(chain)
@@ -67,7 +67,7 @@ class CpuHighwayLayer internal constructor(
 
     }
 
-    private fun backwardCarry(chain: DoubleMatrix) {
+    private fun backwardCarry(chain: FloatMatrix) {
 
         // d chain / d x (.) (1 - T(x))
         val diffChainWrtCarryComponent = this.addition.backwardSecond(chain)
@@ -90,13 +90,13 @@ class CpuHighwayLayer internal constructor(
 
     }
 
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
+    override fun backward(chain: FloatMatrix): FloatMatrix {
 
         this.backwardTransformation(chain)
 
         this.backwardCarry(chain)
 
-        val result = doubleColumnVector(*this.gradientAccumulator.getAccumulation().copyOf())
+        val result = floatColumnVector(*this.gradientAccumulator.getAccumulation().copyOf())
 
         this.gradientAccumulator.reset()
 
@@ -104,7 +104,7 @@ class CpuHighwayLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         this.transformation.optimize(scalingFactor)
         this.transformationFraction.optimize(scalingFactor)

@@ -6,14 +6,14 @@ import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
 
-private val pointerToOne = Pointer.to(doubleArrayOf(1.0))
-private val pointerToZero = Pointer.to(doubleArrayOf(0.0))
+private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
+private val pointerToZero = Pointer.to(floatArrayOf(0.0f))
 
 fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceResult: Pointer) =
 
     // C = alpha * op(A) * op(B) + beta * C
 
-    cublasDgemv(
+    cublasSgemv(
         cublasHandle,
         CUBLAS_OP_N, // no transposition
         numberWeightRows, // number of rows of matrix A
@@ -34,7 +34,7 @@ fun cublasProjectWithBias(cublasHandle: cublasHandle, deviceInput: Pointer, devi
 
     // C = alpha * op(A) * op(B) + beta * C
 
-    return cublasDgemv(
+    return cublasSgemv(
         cublasHandle,
         CUBLAS_OP_N, // no transposition
         numberWeightRows, // number of rows of matrix A
@@ -68,7 +68,7 @@ fun cublasProjectWithBias(cublasHandle: cublasHandle, deviceInput: Pointer, devi
  */
 fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer, deviceResult : Pointer) =
 
-    cublasDgemv(
+    cublasSgemv(
         cublasHandle,
         CUBLAS_OP_T, // transpose
         numberWeightRows, // number of rows of matrix A
@@ -96,7 +96,7 @@ fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: 
  */
 fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, deviceAccumulator: Pointer, numberWeightRows: Int, numberWeightColumns : Int) =
 
-    cublasDger(
+    cublasSger(
         cublasHandle,
         numberWeightRows, // rows of matrix A
         numberWeightColumns, // columns of matrix A
@@ -111,7 +111,7 @@ fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: 
 
 fun cublasBackwardProjectionWrtBias(cublasHandle: cublasHandle, deviceChain: Pointer, chainDimension : Int, deviceAccumulator: Pointer) {
 
-    cublasDgeam(
+    cublasSgeam(
         cublasHandle,
         CUBLAS_OP_N,
         CUBLAS_OP_N,

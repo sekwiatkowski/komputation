@@ -3,7 +3,7 @@ package shape.komputation.cpu.layers.forward.activation
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cpu.functions.activation.sigmoid
-import shape.komputation.matrix.doubleColumnVector
+import shape.komputation.matrix.floatColumnVector
 
 class CpuSigmoidLayerTest {
 
@@ -13,10 +13,10 @@ class CpuSigmoidLayerTest {
     fun testSparseForwarding() {
 
         val actual = layer
-            .forward(doubleColumnVector(0.25, 0.5, 0.75), booleanArrayOf(false, false, true))
+            .forward(floatColumnVector(0.25f, 0.5f, 0.75f), booleanArrayOf(false, false, true))
             .entries
 
-        val expected = doubleArrayOf(0.0, 0.0, sigmoid(0.75))
+        val expected = floatArrayOf(0.0f, 0.0f, sigmoid(0.75f))
 
         assertArrayEquals(actual, expected)
 

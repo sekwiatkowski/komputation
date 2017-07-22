@@ -1,16 +1,17 @@
 package shape.komputation.cpu.optimization.adaptive
 
 import shape.komputation.cpu.optimization.UpdateRule
+import shape.komputation.matrix.FloatMath
 
 
-class CpuAdadelta(private val decay : Double, private val epsilon : Double, size : Int) : UpdateRule {
+class CpuAdadelta(private val decay : Float, private val epsilon : Float, size : Int) : UpdateRule {
 
-    private val oneMinusDecay = 1.0 - this.decay
+    private val oneMinusDecay = 1.0f - this.decay
 
-    private val gradientAccumulation = DoubleArray(size)
-    private val updateAccumulation = DoubleArray(size)
+    private val gradientAccumulation = FloatArray(size)
+    private val updateAccumulation = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
         for(localIndex in 0..gradientSize-1) {
 
@@ -18,18 +19,18 @@ class CpuAdadelta(private val decay : Double, private val epsilon : Double, size
 
             val derivative = gradient[localIndex]
 
-            val newGradientAccumulation = this.decay * this.gradientAccumulation[historyIndex] + this.oneMinusDecay * Math.pow(derivative, 2.0)
+            val newGradientAccumulation = this.decay * this.gradientAccumulation[historyIndex] + this.oneMinusDecay * (derivative * derivative)
             this.gradientAccumulation[historyIndex] = newGradientAccumulation
-            val rootMeanSquaredOfDerivatives = Math.sqrt(newGradientAccumulation + this.epsilon)
+            val rootMeanSquaredOfDerivatives = FloatMath.sqrt(newGradientAccumulation + this.epsilon)
 
             val pastUpdateAccumulation = this.updateAccumulation[historyIndex]
-            val rootMeanSquaredOfPastUpdates = Math.sqrt(pastUpdateAccumulation + this.epsilon)
+            val rootMeanSquaredOfPastUpdates = FloatMath.sqrt(pastUpdateAccumulation + this.epsilon)
 
             val learningRate = rootMeanSquaredOfPastUpdates / rootMeanSquaredOfDerivatives
 
             val update = -learningRate * derivative
 
-            this.updateAccumulation[historyIndex] = this.decay * pastUpdateAccumulation + this.oneMinusDecay * Math.pow(update, 2.0)
+            this.updateAccumulation[historyIndex] = this.decay * pastUpdateAccumulation + this.oneMinusDecay * (update * update)
 
             parameters[localIndex] += update
 

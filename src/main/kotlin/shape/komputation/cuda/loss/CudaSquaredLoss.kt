@@ -1,12 +1,8 @@
 package shape.komputation.cuda.loss
 
 import jcuda.Pointer
-import jcuda.Sizeof
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.Kernel
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.getVector
-import shape.komputation.cuda.setVectorToZero
+import shape.komputation.cuda.*
 
 class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKernel: Kernel, private val targetDimension : Int, private val forwardBlockSize: Int) : CudaLossFunction {
 
@@ -21,7 +17,7 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
 
     private val deviceTargetDimension = Pointer.to(intArrayOf(this.targetDimension))
 
-    private val accumulationSharedMemoryBytes = this.targetDimension * Sizeof.DOUBLE
+    private val accumulationSharedMemoryBytes = computeDeviceByteSize(this.targetDimension).toInt()
 
     override fun acquire() {
 

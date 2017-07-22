@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
     val inputLayer = inputLayer(inputDimension)
 
     val initialization = heInitialization(random)
-    val optimization = stochasticGradientDescent(0.1)
+    val optimization = stochasticGradientDescent(0.1f)
 
     val hiddenLayer = denseLayer(inputDimension, hiddenDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)

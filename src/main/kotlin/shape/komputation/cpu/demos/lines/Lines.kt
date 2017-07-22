@@ -25,9 +25,9 @@ fun main(args: Array<String>) {
     val outputDimension = 2
 
     val random = Random(1)
-    val initialize = uniformInitialization(random, -0.05, 0.05)
+    val initialize = uniformInitialization(random, -0.05f, 0.05f)
 
-    val optimization = stochasticGradientDescent(0.01)
+    val optimization = stochasticGradientDescent(0.01f)
 
     val network = Network(
         inputLayer(inputDimension),

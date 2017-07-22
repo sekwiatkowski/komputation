@@ -16,9 +16,9 @@ class CudaProjectionLayerTest {
     @Test
     fun testOneDimensionToOneDimension() {
 
-        val input = doubleArrayOf(2.0)
-        val weights = doubleArrayOf(3.0)
-        val expected = doubleArrayOf(6.0)
+        val input = floatArrayOf(2.0f)
+        val weights = floatArrayOf(3.0f)
+        val expected = floatArrayOf(6.0f)
         val inputDimension = 1
         val outputDimension = 1
 
@@ -29,9 +29,9 @@ class CudaProjectionLayerTest {
     @Test
     fun testOneDimensionToTwoDimensions() {
 
-        val input = doubleArrayOf(2.0)
-        val weights = doubleArrayOf(3.0, 4.0)
-        val expected = doubleArrayOf(6.0, 8.0)
+        val input = floatArrayOf(2.0f)
+        val weights = floatArrayOf(3.0f, 4.0f)
+        val expected = floatArrayOf(6.0f, 8.0f)
         val inputDimension = 1
         val outputDimension = 2
 
@@ -42,9 +42,9 @@ class CudaProjectionLayerTest {
     @Test
     fun testTwoDimensionsToOneDimensions() {
 
-        val input = doubleArrayOf(2.0, 3.0)
-        val weights = doubleArrayOf(4.0, 5.0)
-        val expected = doubleArrayOf(23.0)
+        val input = floatArrayOf(2.0f, 3.0f)
+        val weights = floatArrayOf(4.0f, 5.0f)
+        val expected = floatArrayOf(23.0f)
         val inputDimension = 2
         val outputDimension = 1
 
@@ -61,9 +61,9 @@ class CudaProjectionLayerTest {
             4 6    4*2+6*3 = 26
             5 7    5*2+7*3 = 31
          */
-        val input = doubleArrayOf(2.0, 3.0)
-        val weights = doubleArrayOf(4.0, 5.0, 6.0, 7.0)
-        val expected = doubleArrayOf(26.0, 31.0)
+        val input = floatArrayOf(2.0f, 3.0f)
+        val weights = floatArrayOf(4.0f, 5.0f, 6.0f, 7.0f)
+        val expected = floatArrayOf(26.0f, 31.0f)
         val inputDimension = 2
         val outputDimension = 2
 
@@ -71,7 +71,7 @@ class CudaProjectionLayerTest {
 
     }
 
-    private fun test(inputDimension: Int, outputDimension: Int, input: DoubleArray, weights : DoubleArray, expected: DoubleArray) {
+    private fun test(inputDimension: Int, outputDimension: Int, input: FloatArray, weights : FloatArray, expected: FloatArray) {
 
         val context = setUpCudaContext()
 
@@ -104,10 +104,10 @@ class CudaProjectionLayerWithBiasTest {
     @Test
     fun testOneDimensionToOneDimension() {
 
-        val input = doubleArrayOf(2.0)
-        val weights = doubleArrayOf(3.0)
-        val bias = doubleArrayOf(4.0)
-        val expected = doubleArrayOf(10.0)
+        val input = floatArrayOf(2.0f)
+        val weights = floatArrayOf(3.0f)
+        val bias = floatArrayOf(4.0f)
+        val expected = floatArrayOf(10.0f)
         val inputDimension = 1
         val outputDimension = 1
 
@@ -118,10 +118,10 @@ class CudaProjectionLayerWithBiasTest {
     @Test
     fun testOneDimensionToTwoDimensions() {
 
-        val input = doubleArrayOf(2.0)
-        val weights = doubleArrayOf(3.0, 4.0)
-        val bias = doubleArrayOf(5.0, 6.0)
-        val expected = doubleArrayOf(11.0, 14.0)
+        val input = floatArrayOf(2.0f)
+        val weights = floatArrayOf(3.0f, 4.0f)
+        val bias = floatArrayOf(5.0f, 6.0f)
+        val expected = floatArrayOf(11.0f, 14.0f)
         val inputDimension = 1
         val outputDimension = 2
 
@@ -132,10 +132,10 @@ class CudaProjectionLayerWithBiasTest {
     @Test
     fun testTwoDimensionsToOneDimensions() {
 
-        val input = doubleArrayOf(2.0, 3.0)
-        val weights = doubleArrayOf(4.0, 5.0)
-        val bias = doubleArrayOf(6.0)
-        val expected = doubleArrayOf(29.0)
+        val input = floatArrayOf(2.0f, 3.0f)
+        val weights = floatArrayOf(4.0f, 5.0f)
+        val bias = floatArrayOf(6.0f)
+        val expected = floatArrayOf(29.0f)
         val inputDimension = 2
         val outputDimension = 1
 
@@ -146,10 +146,10 @@ class CudaProjectionLayerWithBiasTest {
     @Test
     fun testTwoDimensionsToTwoDimensions() {
 
-        val input = doubleArrayOf(2.0, 3.0)
-        val weights = doubleArrayOf(4.0, 5.0, 6.0, 7.0)
-        val bias = doubleArrayOf(8.0, 9.0)
-        val expected = doubleArrayOf(34.0, 40.0)
+        val input = floatArrayOf(2.0f, 3.0f)
+        val weights = floatArrayOf(4.0f, 5.0f, 6.0f, 7.0f)
+        val bias = floatArrayOf(8.0f, 9.0f)
+        val expected = floatArrayOf(34.0f, 40.0f)
         val inputDimension = 2
         val outputDimension = 2
 
@@ -157,7 +157,7 @@ class CudaProjectionLayerWithBiasTest {
 
     }
 
-    private fun test(inputDimension: Int, outputDimension: Int, input: DoubleArray, weights : DoubleArray, bias : DoubleArray, expected: DoubleArray) {
+    private fun test(inputDimension: Int, outputDimension: Int, input: FloatArray, weights : FloatArray, bias : FloatArray, expected: FloatArray) {
 
         val context = setUpCudaContext()
 

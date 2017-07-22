@@ -6,11 +6,11 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.cuda.optimization.CudaStochasticGradientDescent
 
-fun stochasticGradientDescent(learningRate: Double) =
+fun stochasticGradientDescent(learningRate: Float) =
 
     StochasticGradientDescent(learningRate)
 
-class StochasticGradientDescent(private val learningRate: Double) : OptimizationInstruction {
+class StochasticGradientDescent(private val learningRate: Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 

@@ -1,24 +1,26 @@
 package shape.komputation.cpu.optimization.adaptive
 
 import shape.komputation.cpu.optimization.UpdateRule
+import shape.komputation.matrix.FloatMath
 
 class CpuAdam(
-    private val learningRate : Double,
-    private val firstMomentDecay : Double,
-    private val secondMomentDecay : Double,
-    private val epsilon : Double, size : Int) : UpdateRule {
+    private val learningRate : Float,
+    private val firstMomentDecay : Float,
+    private val secondMomentDecay : Float,
+    private val epsilon : Float,
+    size : Int) : UpdateRule {
 
-    private val oneMinusFirstMomentDecay = 1.0 - firstMomentDecay
-    private val oneMinusSecondMomentDecay = 1.0 - secondMomentDecay
+    private val oneMinusFirstMomentDecay = 1.0f - this.firstMomentDecay
+    private val oneMinusSecondMomentDecay = 1.0f - this.secondMomentDecay
 
-    private val firstMomentEstimate = DoubleArray(size)
-    private val secondMomentEstimate = DoubleArray(size)
+    private val firstMomentEstimate = FloatArray(size)
+    private val secondMomentEstimate = FloatArray(size)
 
-    private var step = 0.0
+    private var step = 0.0f
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
-        this.step += 1.0
+        this.step += 1.0f
 
         for (index in 0..gradientSize - 1) {
 
@@ -26,13 +28,13 @@ class CpuAdam(
 
             val updatedFirstMomentEstimate = this.firstMomentDecay * this.firstMomentEstimate[index] + this.oneMinusFirstMomentDecay * derivative
             this.firstMomentEstimate[index] = updatedFirstMomentEstimate
-            val correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0 - Math.pow(this.firstMomentDecay, this.step))
+            val correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0f - FloatMath.pow(this.firstMomentDecay, this.step))
 
             val updatedSecondMomentEstimate = this.secondMomentDecay * this.secondMomentEstimate[index] + this.oneMinusSecondMomentDecay * derivative * derivative
             this.secondMomentEstimate[index] = updatedSecondMomentEstimate
-            val correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0 - Math.pow(this.secondMomentDecay, this.step))
+            val correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0f - FloatMath.pow(this.secondMomentDecay, this.step))
 
-            val adaptedLearningRate = this.learningRate / (Math.sqrt(correctedSecondMomentEstimate) + this.epsilon)
+            val adaptedLearningRate = this.learningRate / (FloatMath.sqrt(correctedSecondMomentEstimate) + this.epsilon)
 
             val change = -correctedFirstMomentEstimate * adaptedLearningRate
 

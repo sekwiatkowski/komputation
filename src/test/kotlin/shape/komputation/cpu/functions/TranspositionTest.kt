@@ -8,8 +8,8 @@ class TranspositionTest {
     @Test
     fun test1() {
 
-        val actual = transpose(1, 1, doubleArrayOf(1.0))
-        val expected = doubleArrayOf(1.0)
+        val actual = transpose(1, 1, floatArrayOf(1.0f))
+        val expected = floatArrayOf(1.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -18,8 +18,8 @@ class TranspositionTest {
     @Test
     fun test2() {
 
-        val actual = transpose(2, 1, doubleArrayOf(1.0, 2.0))
-        val expected = doubleArrayOf(1.0, 2.0)
+        val actual = transpose(2, 1, floatArrayOf(1.0f, 2.0f))
+        val expected = floatArrayOf(1.0f, 2.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -28,8 +28,8 @@ class TranspositionTest {
     @Test
     fun test3() {
 
-        val actual = transpose(1, 2, doubleArrayOf(1.0, 2.0))
-        val expected = doubleArrayOf(1.0, 2.0)
+        val actual = transpose(1, 2, floatArrayOf(1.0f, 2.0f))
+        val expected = floatArrayOf(1.0f, 2.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -38,8 +38,8 @@ class TranspositionTest {
     @Test
     fun test4() {
 
-        val actual = transpose(2, 2, doubleArrayOf(1.0, 2.0, 3.0, 4.0))
-        val expected = doubleArrayOf(1.0, 3.0, 2.0, 4.0)
+        val actual = transpose(2, 2, floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f))
+        val expected = floatArrayOf(1.0f, 3.0f, 2.0f, 4.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -48,8 +48,8 @@ class TranspositionTest {
     @Test
     fun test5() {
 
-        val actual = transpose(3, 2, doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
-        val expected = doubleArrayOf(1.0, 4.0, 2.0, 5.0, 3.0, 6.0)
+        val actual = transpose(3, 2, floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f))
+        val expected = floatArrayOf(1.0f, 4.0f, 2.0f, 5.0f, 3.0f, 6.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -58,8 +58,8 @@ class TranspositionTest {
     @Test
     fun test6() {
 
-        val actual = transpose(2, 3, doubleArrayOf(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
-        val expected = doubleArrayOf(1.0, 3.0, 5.0, 2.0, 4.0, 6.0)
+        val actual = transpose(2, 3, floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f))
+        val expected = floatArrayOf(1.0f, 3.0f, 5.0f, 2.0f, 4.0f, 6.0f)
 
         assertArrayEquals(expected, actual)
 

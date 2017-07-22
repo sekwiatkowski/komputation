@@ -4,11 +4,11 @@ package shape.komputation.cpu.functions
 import shape.komputation.matrix.createBlasMatrix
 import shape.komputation.matrix.createBlasVector
 
-fun project(input: DoubleArray, numberInputRows : Int, numberInputColumns: Int, weights: DoubleArray, numberWeightRows : Int, numberWeightColumns : Int) =
+fun project(input: FloatArray, numberInputRows : Int, numberInputColumns: Int, weights: FloatArray, numberWeightRows : Int, numberWeightColumns : Int) =
 
     project(input, numberInputRows, numberInputColumns, weights, numberWeightRows, numberWeightColumns, null)
 
-fun project(input: DoubleArray, numberInputRows : Int, numberInputColumns: Int, weights: DoubleArray, numberWeightRows : Int, numberWeightColumns : Int, bias : DoubleArray?) : DoubleArray {
+fun project(input: FloatArray, numberInputRows : Int, numberInputColumns: Int, weights: FloatArray, numberWeightRows : Int, numberWeightColumns : Int, bias : FloatArray?) : FloatArray {
 
     val inputMatrix = createBlasMatrix(numberInputRows, numberInputColumns, input)
     val weightMatrix = createBlasMatrix(numberWeightRows, numberWeightColumns, weights)
@@ -17,7 +17,7 @@ fun project(input: DoubleArray, numberInputRows : Int, numberInputColumns: Int, 
 
         if (numberInputColumns == 1) {
 
-            val biasVector = createBlasVector(bias, true)
+            val biasVector = createBlasVector(bias)
 
             return weightMatrix.multiplyAdd(inputMatrix, biasVector).getEntries()
 
@@ -43,12 +43,12 @@ fun backwardProjectionWrtInput(
     numberInputRows: Int,
     numberInputColumns : Int,
     numberInputEntries : Int,
-    weightEntries : DoubleArray,
+    weightEntries : FloatArray,
     numberWeightRows : Int,
-    chainEntries: DoubleArray,
-    numberChainRows : Int): DoubleArray {
+    chainEntries: FloatArray,
+    numberChainRows : Int): FloatArray {
 
-    val derivatives = DoubleArray(numberInputEntries)
+    val derivatives = FloatArray(numberInputEntries)
 
     var index = 0
 
@@ -56,7 +56,7 @@ fun backwardProjectionWrtInput(
 
         for (indexInputRow in 0..numberInputRows - 1) {
 
-            var derivative = 0.0
+            var derivative = 0.0f
 
             for (indexWeightRow in 0..numberWeightRows - 1) {
 
@@ -81,13 +81,13 @@ fun backwardProjectionWrtWeights(
     numberWeightEntries : Int,
     numberWeightRows : Int,
     numberWeightColumns: Int,
-    inputEntries: DoubleArray,
+    inputEntries: FloatArray,
     numberInputRows : Int,
-    chainEntries: DoubleArray,
+    chainEntries: FloatArray,
     numberChainRows: Int,
-    numberChainColumns : Int): DoubleArray {
+    numberChainColumns : Int): FloatArray {
 
-    val derivatives = DoubleArray(numberWeightEntries)
+    val derivatives = FloatArray(numberWeightEntries)
 
     var index = 0
 
@@ -95,7 +95,7 @@ fun backwardProjectionWrtWeights(
 
         for (indexWeightRow in 0..numberWeightRows - 1) {
 
-            var derivative = 0.0
+            var derivative = 0.0f
 
             for (indexChainColumn in 0..numberChainColumns - 1) {
 
@@ -119,11 +119,11 @@ fun backwardProjectionWrtWeights(
 
 }
 
-fun backwardProjectionWrtBias(numberBiasRows : Int, chain: DoubleArray, numberChainRows: Int, numberChainColumns: Int) =
+fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberChainRows: Int, numberChainColumns: Int) =
 
-    DoubleArray(numberBiasRows) { indexRow ->
+    FloatArray(numberBiasRows) { indexRow ->
 
-        var derivative = 0.0
+        var derivative = 0.0f
 
         for (indexChainColumn in 0..numberChainColumns - 1) {
 

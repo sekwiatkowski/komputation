@@ -1,12 +1,12 @@
-__device__ double relu (double x)
+__device__ float relu (float x)
 {
 
-    return fmax(x, 0.0);
+    return fmaxf(x, 0.0);
 
 }
 
 extern "C"
-__global__ void reluKernel (int length, double *source, double *destination)
+__global__ void reluKernel (int length, float *source, float *destination)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

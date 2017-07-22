@@ -31,10 +31,10 @@ fun main(args: Array<String>) {
     val targets = AdditionProblemData.generateTarget(inputs)
 
     val identityInitializationStrategy = identityInitialization()
-    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)
     val zeroInitializationStrategy = zeroInitialization()
 
-    val optimizationStrategy = stochasticGradientDescent(0.001)
+    val optimizationStrategy = stochasticGradientDescent(0.001f)
 
     val encoderUnit = simpleRecurrentUnit(
         length,

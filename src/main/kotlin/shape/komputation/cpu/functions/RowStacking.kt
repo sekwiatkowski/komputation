@@ -1,12 +1,12 @@
 package shape.komputation.cpu.functions
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
-fun stackRows(numberColumns : Int, vararg matrices : DoubleMatrix): DoubleMatrix {
+fun stackRows(numberColumns : Int, vararg matrices : FloatMatrix): FloatMatrix {
 
     val totalNumberRows = totalNumberRows(*matrices)
 
-    val stack = DoubleArray(totalNumberRows * numberColumns)
+    val stack = FloatArray(totalNumberRows * numberColumns)
 
     var startAtRow = 0
     for(indexMatrix in 0..matrices.size - 1) {
@@ -31,11 +31,11 @@ fun stackRows(numberColumns : Int, vararg matrices : DoubleMatrix): DoubleMatrix
 
     }
 
-    return DoubleMatrix(totalNumberRows, numberColumns, stack)
+    return FloatMatrix(totalNumberRows, numberColumns, stack)
 
 }
 
-fun totalNumberRows(vararg matrices : DoubleMatrix): Int {
+fun totalNumberRows(vararg matrices : FloatMatrix): Int {
 
     var totalNumberRows = 0
 

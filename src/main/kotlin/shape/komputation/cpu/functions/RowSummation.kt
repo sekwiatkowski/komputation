@@ -1,10 +1,11 @@
 package shape.komputation.cpu.functions
 
-fun sumRows(entries: DoubleArray, numberRows: Int, numberColumns : Int) =
+fun sumRows(entries: FloatArray, numberRows: Int, numberColumns : Int) =
 
-    DoubleArray(numberRows) { indexRow ->
+    FloatArray(numberRows) { indexRow ->
 
-        var sum = 0.0
+        var sum = 0.0f
+
         for (indexColumn in 0..numberColumns - 1) {
 
             sum += entries[indexColumn * numberRows + indexRow]

@@ -14,11 +14,11 @@ import shape.komputation.cpu.optimization.UpdateRule
               = momentum * (- momentum * learning_rate * gradient_1 - learning_rate * gradient_2) - learning_rate * gradient_3
               = - momentum^2 * learning_rate * gradient_1 - momentum * learning_rate * gradient 2 - learning_rate * gradient_3
  */
-class CpuMomentum(private val learningRate: Double, private val momentum: Double, historySize: Int) : UpdateRule {
+class CpuMomentum(private val learningRate: Float, private val momentum: Float, historySize: Int) : UpdateRule {
 
-    private val history = DoubleArray(historySize)
+    private val history = FloatArray(historySize)
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
         for(localIndex in 0..gradientSize - 1) {
 
@@ -32,7 +32,7 @@ class CpuMomentum(private val learningRate: Double, private val momentum: Double
 
     }
 
-    private fun updateHistory(derivative: Double, historyIndex : Int): Double {
+    private fun updateHistory(derivative: Float, historyIndex : Int): Float {
 
         val newStateEntry = this.momentum * this.history[historyIndex] - this.learningRate * derivative
 

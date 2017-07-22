@@ -11,7 +11,7 @@
 
 */
 template <int blockSize>
-__global__ void backwardNormalizationKernel (int numberCategories, double* inputs, double* sums, double* chain, double* results)
+__global__ void backwardNormalizationKernel (int numberCategories, float* inputs, float* sums, float* chain, float* results)
 {
 
     int indexRow = threadIdx.x;
@@ -20,7 +20,7 @@ __global__ void backwardNormalizationKernel (int numberCategories, double* input
     int firstIndexOfColumn = indexColumn * numberRows;
     int indexEntry = firstIndexOfColumn + indexRow;
 
-    extern __shared__ double sharedData[];
+    extern __shared__ float sharedData[];
 
     if(indexRow == 0) {
 
@@ -32,7 +32,7 @@ __global__ void backwardNormalizationKernel (int numberCategories, double* input
     // The rest of the shared memory contains the multiplication of the chain entries with the input entries.
     // Recall that the block size is a power of 2.
     // In many cases the number of threads will thus exceed the number of categories.
-    double thisMultiplication = -1;
+    float thisMultiplication = -1.0;
 
     if(indexRow < numberCategories) {
 
@@ -51,8 +51,8 @@ __global__ void backwardNormalizationKernel (int numberCategories, double* input
         sharedData[1] holds the sum over the multiplications.
     */
 
-    double sameEntry = chain[indexEntry] * (sums[indexColumn] - inputs[indexEntry]);
-    double otherEntries = -sharedData[1] + thisMultiplication;
+    float sameEntry = chain[indexEntry] * (sums[indexColumn] - inputs[indexEntry]);
+    float otherEntries = -sharedData[1] + thisMultiplication;
 
     results[indexEntry] = (sameEntry + otherEntries) / sharedData[0];
 

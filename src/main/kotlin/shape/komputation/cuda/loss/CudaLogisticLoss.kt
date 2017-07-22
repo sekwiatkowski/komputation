@@ -1,14 +1,10 @@
 package shape.komputation.cuda.loss
 
 import jcuda.Pointer
-import jcuda.Sizeof
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.Kernel
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.getVector
-import shape.komputation.cuda.setVectorToZero
+import shape.komputation.cuda.*
 
-// int length, double *predictions, double *targets, double *result
+// int length, float *predictions, float *targets, float *result
 class CudaLogisticLoss(
     private val forwardKernel : Kernel,
     private val backwardKernel : Kernel,
@@ -24,7 +20,7 @@ class CudaLogisticLoss(
     private val deviceLoss = Pointer()
     private val pointerToDeviceLoss = Pointer.to(this.deviceLoss)
 
-    private val forwardSharedMemoryBytes = blockSize * Sizeof.DOUBLE
+    private val forwardSharedMemoryBytes = computeDeviceByteSize(this.blockSize).toInt()
 
     private val deviceBackwardResult = Pointer()
     private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)

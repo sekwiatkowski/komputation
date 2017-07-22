@@ -2,7 +2,7 @@ package shape.komputation.cpu.optimization
 
 import shape.komputation.cpu.functions.scale
 
-fun updateSparsely(vectors: Array<DoubleArray>, dimension : Int, size : Int, ids: IntArray, counts : DoubleArray, gradients: Array<DoubleArray>, rule : UpdateRule) {
+fun updateSparsely(vectors: Array<FloatArray>, dimension : Int, size : Int, ids: IntArray, counts : FloatArray, gradients: Array<FloatArray>, rule : UpdateRule) {
 
     for (index in 0..size - 1) {
 
@@ -13,7 +13,7 @@ fun updateSparsely(vectors: Array<DoubleArray>, dimension : Int, size : Int, ids
 
         val gradient = gradients[index]
         val count = counts[index]
-        val scalingFactor = 1.0.div(count)
+        val scalingFactor = 1.0f.div(count)
         val scaledGradient = scale(gradient, scalingFactor)
 
         rule.updateSparsely(start, parameters, scaledGradient, scaledGradient.size)

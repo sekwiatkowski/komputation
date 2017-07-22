@@ -8,29 +8,29 @@ import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuProjectionLayer internal constructor(
     name : String? = null,
 
-    private val weights : DoubleArray,
+    private val weights : FloatArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
     private val weightAccumulator : DenseAccumulator,
     private val weightUpdateRule: UpdateRule? = null,
 
-    private val bias : DoubleArray? = null,
+    private val bias : FloatArray? = null,
     private val biasAccumulator: DenseAccumulator? = null,
     private val biasUpdateRule: UpdateRule? = null) : BaseCpuForwardLayer(name), Optimizable {
 
-    private var inputEntries = DoubleArray(0)
+    private var inputEntries = FloatArray(0)
     private var numberInputRows = -1
     private var numberInputColumns = -1
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+    override fun forward(input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.inputEntries = input.entries
         this.numberInputRows = input.numberRows
@@ -38,11 +38,11 @@ class CpuProjectionLayer internal constructor(
 
         val projection = project(this.inputEntries, this.numberInputRows, this.numberInputColumns, this.weights, this.numberWeightRows, this.numberWeightColumns, this.bias)
 
-        return DoubleMatrix(this.numberWeightRows, this.numberInputColumns, projection)
+        return FloatMatrix(this.numberWeightRows, this.numberInputColumns, projection)
 
     }
 
-    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
+    override fun backward(chain : FloatMatrix) : FloatMatrix {
 
         val chainEntries = chain.entries
         val numberChainRows = chain.numberRows
@@ -79,11 +79,11 @@ class CpuProjectionLayer internal constructor(
 
         }
 
-        return DoubleMatrix(this.numberInputRows, this.numberInputColumns, backwardWrtInput)
+        return FloatMatrix(this.numberInputRows, this.numberInputColumns, backwardWrtInput)
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.weightUpdateRule != null) {
 

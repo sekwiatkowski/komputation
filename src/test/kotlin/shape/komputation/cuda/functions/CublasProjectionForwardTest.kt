@@ -10,17 +10,17 @@ import org.junit.jupiter.api.Test
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setVector
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleScalar
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatScalar
 
 class CublasProjectionForwardTest {
 
     @Test
     fun testOneByOne() {
 
-        val weights = doubleScalar(2.0)
-        val input = doubleScalar(3.0)
-        val expected = doubleArrayOf(6.0)
+        val weights = floatScalar(2.0f)
+        val input = floatScalar(3.0f)
+        val expected = floatArrayOf(6.0f)
 
         check(weights, input, expected)
         check(input, weights, expected)
@@ -30,11 +30,11 @@ class CublasProjectionForwardTest {
     @Test
     fun testOneByOneWithBias() {
 
-        val weights = doubleScalar(2.0)
-        val input = doubleScalar(3.0)
-        val bias = doubleArrayOf(2.0)
+        val weights = floatScalar(2.0f)
+        val input = floatScalar(3.0f)
+        val bias = floatArrayOf(2.0f)
 
-        val expected = doubleArrayOf(8.0)
+        val expected = floatArrayOf(8.0f)
 
         checkWithBias(weights, bias, input, expected)
         checkWithBias(input, bias, weights, expected)
@@ -49,25 +49,25 @@ class CublasProjectionForwardTest {
                     4.0
             1.0 2.0 11.0
          */
-        val weights = DoubleMatrix(1, 2, doubleArrayOf(1.0, 2.0))
-        val input = DoubleMatrix(2, 1, doubleArrayOf(3.0, 4.0))
+        val weights = FloatMatrix(1, 2, floatArrayOf(1.0f, 2.0f))
+        val input = FloatMatrix(2, 1, floatArrayOf(3.0f, 4.0f))
 
-        check(weights, input, doubleArrayOf(11.0))
+        check(weights, input, floatArrayOf(11.0f))
 
     }
 
     @Test
     fun testOneByTwoTimesTwoByOneWithBias() {
 
-        val weights = DoubleMatrix(1, 2, doubleArrayOf(1.0, 2.0))
-        val bias = doubleArrayOf(5.0)
-        val input = DoubleMatrix(2, 1, doubleArrayOf(3.0, 4.0))
+        val weights = FloatMatrix(1, 2, floatArrayOf(1.0f, 2.0f))
+        val bias = floatArrayOf(5.0f)
+        val input = FloatMatrix(2, 1, floatArrayOf(3.0f, 4.0f))
 
-        checkWithBias(weights, bias, input, doubleArrayOf(16.0))
+        checkWithBias(weights, bias, input, floatArrayOf(16.0f))
 
     }
 
-    private fun check(weightMatrix : DoubleMatrix, inputMatrix: DoubleMatrix, expected : DoubleArray) {
+    private fun check(weightMatrix : FloatMatrix, inputMatrix: FloatMatrix, expected : FloatArray) {
 
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
@@ -98,11 +98,11 @@ class CublasProjectionForwardTest {
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun checkWithBias(weightMatrix : DoubleMatrix, bias : DoubleArray, inputMatrix: DoubleMatrix, expected : DoubleArray) {
+    private fun checkWithBias(weightMatrix : FloatMatrix, bias : FloatArray, inputMatrix: FloatMatrix, expected : FloatArray) {
 
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
@@ -137,7 +137,7 @@ class CublasProjectionForwardTest {
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 

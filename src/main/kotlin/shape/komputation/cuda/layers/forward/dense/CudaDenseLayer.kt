@@ -44,7 +44,7 @@ class CudaDenseLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Double) {
+    override fun optimize(scalingFactor: Float) {
 
         this.projectionLayer.optimize(scalingFactor)
 

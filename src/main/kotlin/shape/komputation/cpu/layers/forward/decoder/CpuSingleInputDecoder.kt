@@ -7,10 +7,10 @@ import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.doubleZeroMatrix
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 // The first input is empty.
@@ -24,14 +24,14 @@ class CpuSingleInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(encoderOutput: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(encoderOutput: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val seriesOutput = doubleZeroMatrix(this.outputDimension, this.numberSteps)
+        val seriesOutput = floatZeroMatrix(this.outputDimension, this.numberSteps)
 
         // Use the encoder output as the first state
         var state = encoderOutput
         // The first input is empty since there is no previous output
-        var input = doubleZeroColumnVector(this.outputDimension)
+        var input = floatZeroColumnVector(this.outputDimension)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
@@ -52,7 +52,7 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
-    private fun forwardOutput(indexStep: Int, newState: DoubleMatrix, isTraining: Boolean): DoubleMatrix {
+    private fun forwardOutput(indexStep: Int, newState: FloatMatrix, isTraining: Boolean): FloatMatrix {
 
         val weighting = this.weighting.forwardStep(indexStep, newState, isTraining)
 
@@ -75,16 +75,16 @@ class CpuSingleInputDecoder internal constructor(
     }
 
     // Incoming gradient: d chain / d series prediction
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
+    override fun backward(chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 
         // Differentiate the chain w.r.t. input
-        var diffStatePreActivationWrtInput : DoubleMatrix? = null
+        var diffStatePreActivationWrtInput : FloatMatrix? = null
 
         // Differentiate the chain w.r.t previous state.
         // This is done at each step. For the first step (t=1), the chain is differentiated w.r.t. to the initial state (t=0).
-        var diffStatePreActivationWrtPreviousState : DoubleMatrix? = null
+        var diffStatePreActivationWrtPreviousState : FloatMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
@@ -94,7 +94,7 @@ class CpuSingleInputDecoder internal constructor(
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                doubleColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
+                floatColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
 
             }
             else {
@@ -118,9 +118,9 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
-    private fun backwardOutput(indexStep: Int, chainStep: DoubleArray, diffStatePreActivationWrtInput: DoubleArray?): DoubleMatrix {
+    private fun backwardOutput(indexStep: Int, chainStep: FloatArray, diffStatePreActivationWrtInput: FloatArray?): FloatMatrix {
 
-        val outputSum = doubleColumnVector(*
+        val outputSum = floatColumnVector(*
 
         // The input gradient for step t+1 is added to the chain step t ...
         if (diffStatePreActivationWrtInput != null) {
@@ -146,7 +146,7 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.unit is Optimizable) {
 

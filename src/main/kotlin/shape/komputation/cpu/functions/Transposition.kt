@@ -1,6 +1,6 @@
 package shape.komputation.cpu.functions
 
-fun transpose(numberRows: Int, numberColumns: Int, entries: DoubleArray): DoubleArray {
+fun transpose(numberRows: Int, numberColumns: Int, entries: FloatArray): FloatArray {
 
     if(numberRows == 1 || numberColumns == 1) {
 
@@ -8,7 +8,7 @@ fun transpose(numberRows: Int, numberColumns: Int, entries: DoubleArray): Double
 
     }
 
-    val result = DoubleArray(entries.size)
+    val result = FloatArray(entries.size)
 
     for (indexColumn in 0..numberColumns-1) {
 

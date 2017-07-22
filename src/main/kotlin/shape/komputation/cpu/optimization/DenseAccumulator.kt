@@ -4,9 +4,9 @@ import java.util.*
 
 class DenseAccumulator(private val size : Int) {
 
-    private var accumulation = DoubleArray(size)
+    private var accumulation = FloatArray(size)
 
-    fun accumulate(gradient: DoubleArray) {
+    fun accumulate(gradient: FloatArray) {
 
         for (index in 0..this.size - 1) {
 
@@ -20,7 +20,7 @@ class DenseAccumulator(private val size : Int) {
 
     fun reset() {
 
-        Arrays.fill(accumulation, 0.0)
+        Arrays.fill(accumulation, 0.0f)
 
     }
 

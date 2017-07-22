@@ -1,11 +1,11 @@
 package shape.komputation.cpu.layers
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 interface CpuForwardLayer {
 
-    fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix
+    fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix
 
-    fun backward(chain : DoubleMatrix) : DoubleMatrix
+    fun backward(chain : FloatMatrix) : FloatMatrix
 
 }

@@ -6,7 +6,11 @@ import jcuda.runtime.JCuda.*
 import jcuda.runtime.cudaMemcpyKind.cudaMemcpyDeviceToHost
 import jcuda.runtime.cudaMemcpyKind.cudaMemcpyHostToDevice
 
-fun setVector(data: DoubleArray, size: Int, pointer : Pointer): Int {
+fun computeDeviceByteSize(arraySize : Int) =
+
+    (arraySize * Sizeof.FLOAT).toLong()
+
+fun setVector(data: FloatArray, size: Int, pointer : Pointer): Int {
 
     allocateDeviceMemory(pointer, size)
 
@@ -16,21 +20,21 @@ fun setVector(data: DoubleArray, size: Int, pointer : Pointer): Int {
 
 fun allocateDeviceMemory(pointer: Pointer, size : Int) =
 
-    cudaMalloc(pointer, (size * Sizeof.DOUBLE).toLong())
+    cudaMalloc(pointer, computeDeviceByteSize(size))
 
-fun copyFromHostToDevice(devicePointer: Pointer, data : DoubleArray, size: Int) =
+fun copyFromHostToDevice(devicePointer: Pointer, data : FloatArray, size: Int) =
 
-    cudaMemcpy(devicePointer, Pointer.to(data), (size * Sizeof.DOUBLE).toLong(), cudaMemcpyHostToDevice)
+    cudaMemcpy(devicePointer, Pointer.to(data), computeDeviceByteSize(size), cudaMemcpyHostToDevice)
 
 fun setVectorToZero(devicePointer: Pointer, size: Int) =
 
-    cudaMemset(devicePointer, 0, (Sizeof.DOUBLE * size).toLong())
+    cudaMemset(devicePointer, 0, computeDeviceByteSize(size))
 
-fun getVector(devicePointer: Pointer, size: Int): DoubleArray {
+fun getVector(devicePointer: Pointer, size: Int): FloatArray {
 
-    val hostVector = DoubleArray(size)
+    val hostVector = FloatArray(size)
 
-    cudaMemcpy(Pointer.to(hostVector), devicePointer, (size * Sizeof.DOUBLE).toLong(), cudaMemcpyDeviceToHost)
+    cudaMemcpy(Pointer.to(hostVector), devicePointer, computeDeviceByteSize(size), cudaMemcpyDeviceToHost)
 
     return hostVector
 

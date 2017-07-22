@@ -20,11 +20,11 @@ class CpuMultiOutputEncoder internal constructor(
 
     private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        var state = doubleZeroColumnVector(this.hiddenDimension)
+        var state = floatZeroColumnVector(this.hiddenDimension)
 
-        val output = doubleZeroMatrix(this.hiddenDimension, this.numberSteps)
+        val output = floatZeroMatrix(this.hiddenDimension, this.numberSteps)
 
         for (indexStep in this.startAtTheBeginning) {
 
@@ -40,9 +40,9 @@ class CpuMultiOutputEncoder internal constructor(
 
     }
 
-    override fun backward(incoming: DoubleMatrix): DoubleMatrix {
+    override fun backward(incoming: FloatMatrix): FloatMatrix {
 
-        val seriesBackwardWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
+        val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
 
         var stateChain = EMPTY_DOUBLE_MATRIX
 
@@ -64,7 +64,7 @@ class CpuMultiOutputEncoder internal constructor(
 
                 }
 
-            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, doubleColumnVector(*chainEntries))
+            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, floatColumnVector(*chainEntries))
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
@@ -78,7 +78,7 @@ class CpuMultiOutputEncoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.unit is Optimizable) {
 

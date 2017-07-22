@@ -23,12 +23,12 @@ fun main(args: Array<String>) {
     val numberEmbeddings = 40
     val embeddingDimension = 2
 
-    val initializationStrategy = uniformInitialization(random, -0.05, 0.05)
+    val initializationStrategy = uniformInitialization(random, -0.05f, 0.05f)
 
     val initializeEmbedding = { initializeColumnVector(initializationStrategy, embeddingDimension) }
     val embeddings = Array(numberEmbeddings) { initializeEmbedding() }
 
-    val optimizationStrategy = momentum(0.01, 0.9)
+    val optimizationStrategy = momentum(0.01f, 0.9f)
 
     val numberFilters = 2
 

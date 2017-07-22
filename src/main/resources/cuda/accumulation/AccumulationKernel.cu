@@ -1,5 +1,5 @@
 extern "C"
-__global__ void accumulationKernel (int length, double *accumulator, double *addition)
+__global__ void accumulationKernel (int length, float *accumulator, float *addition)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

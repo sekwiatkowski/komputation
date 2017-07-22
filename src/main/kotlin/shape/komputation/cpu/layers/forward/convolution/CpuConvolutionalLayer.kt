@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuConvolutionalLayer internal constructor(
@@ -10,7 +10,7 @@ class CpuConvolutionalLayer internal constructor(
     private val expansionLayer: CpuExpansionLayer,
     private val projectionLayer: CpuProjectionLayer) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         val expansion = this.expansionLayer.forward(input, isTraining)
 
@@ -20,7 +20,7 @@ class CpuConvolutionalLayer internal constructor(
 
     }
 
-    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
+    override fun backward(chain : FloatMatrix) : FloatMatrix {
 
         val backwardProjection = this.projectionLayer.backward(chain)
 
@@ -30,7 +30,7 @@ class CpuConvolutionalLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         this.projectionLayer.optimize(scalingFactor)
 

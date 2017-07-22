@@ -2,23 +2,24 @@ package shape.komputation.cuda.loss
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
 import shape.komputation.loss.logisticLoss
+import shape.komputation.matrix.FloatMath
 
 class CudaLogisticLossTest {
 
     @Test
     fun testForwardTwoCategoriesOneStepDimension() {
 
-        val predictions = doubleArrayOf(0.3, 0.7)
-        val targets = doubleArrayOf(0.0, 1.0)
+        val predictions = floatArrayOf(0.3f, 0.7f)
+        val targets = floatArrayOf(0.0f, 1.0f)
 
-        val expected = -Math.log(0.7)
+        val expected = -FloatMath.log(0.7f)
 
         testForward(predictions, targets, 2, 1, expected)
 
@@ -27,10 +28,10 @@ class CudaLogisticLossTest {
     @Test
     fun testForwardThreeCategoriesOneStepDimension() {
 
-        val predictions = doubleArrayOf(0.5, 0.3, 0.2)
-        val targets = doubleArrayOf(1.0, 0.0, 0.0)
+        val predictions = floatArrayOf(0.5f, 0.3f, 0.2f)
+        val targets = floatArrayOf(1.0f, 0.0f, 0.0f)
 
-        val expected = -Math.log(0.5)
+        val expected = -FloatMath.log(0.5f)
 
         testForward(predictions, targets, 3, 1, expected)
 
@@ -39,10 +40,10 @@ class CudaLogisticLossTest {
     @Test
     fun testForwardTwoCategoriesTwoStepsDimension() {
 
-        val predictions = doubleArrayOf(0.3, 0.7, 0.4, 0.6)
-        val targets = doubleArrayOf(0.0, 1.0, 1.0, 0.0)
+        val predictions = floatArrayOf(0.3f, 0.7f, 0.4f, 0.6f)
+        val targets = floatArrayOf(0.0f, 1.0f, 1.0f, 0.0f)
 
-        val expected = -Math.log(0.7) - Math.log(0.4)
+        val expected = -FloatMath.log(0.7f) - FloatMath.log(0.4f)
 
         testForward(predictions, targets, 2, 2, expected)
 
@@ -51,10 +52,10 @@ class CudaLogisticLossTest {
     @Test
     fun testBackwardTwoCategoriesOneStepDimension() {
 
-        val predictions = doubleArrayOf(0.3, 0.7)
-        val targets = doubleArrayOf(0.0, 1.0)
+        val predictions = floatArrayOf(0.3f, 0.7f)
+        val targets = floatArrayOf(0.0f, 1.0f)
 
-        val expected = doubleArrayOf(0.0, -1.0/0.7)
+        val expected = floatArrayOf(0.0f, -1.0f/0.7f)
 
         testBackward(predictions, targets, 2, 1, expected)
 
@@ -63,17 +64,17 @@ class CudaLogisticLossTest {
     @Test
     fun testBackwardTwoCategoriesTwoStepsDimension() {
 
-        val predictions = doubleArrayOf(0.3, 0.7, 0.8, 0.2)
-        val targets = doubleArrayOf(0.0, 1.0, 1.0, 0.0)
+        val predictions = floatArrayOf(0.3f, 0.7f, 0.8f, 0.2f)
+        val targets = floatArrayOf(0.0f, 1.0f, 1.0f, 0.0f)
 
-        val expected = doubleArrayOf(0.0, -1.0/0.7, -1.0/0.8, 0.0)
+        val expected = floatArrayOf(0.0f, -1.0f/0.7f, -1.0f/0.8f, 0.0f)
 
         testBackward(predictions, targets, 2, 2, expected)
 
     }
 
 
-    private fun testForward(predictions: DoubleArray, targets: DoubleArray, numberCategories : Int, numberSteps : Int, expected: Double) {
+    private fun testForward(predictions: FloatArray, targets: FloatArray, numberCategories : Int, numberSteps : Int, expected: Float) {
 
         val size = predictions.size
 
@@ -99,11 +100,11 @@ class CudaLogisticLossTest {
 
         cudaContext.destroy()
 
-        assertEquals(expected, actual, 0.001)
+        assertEquals(expected, actual, 0.001f)
 
     }
 
-    private fun testBackward(predictions: DoubleArray, targets: DoubleArray, numberCategories : Int, numberSteps : Int, expected: DoubleArray) {
+    private fun testBackward(predictions: FloatArray, targets: FloatArray, numberCategories : Int, numberSteps : Int, expected: FloatArray) {
 
         val size = predictions.size
 
@@ -129,7 +130,7 @@ class CudaLogisticLossTest {
 
         context.destroy()
 
-        Assertions.assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 

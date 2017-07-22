@@ -7,7 +7,7 @@ interface CudaLossFunction : Resourceful {
 
     fun accumulate(pointerToPredictions: Pointer, pointerToTargets : Pointer)
 
-    fun accessAccumulation() : Double
+    fun accessAccumulation() : Float
 
     fun reset()
 

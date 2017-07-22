@@ -19,7 +19,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialization = heInitialization(random)
 
-    val optimization = stochasticGradientDescent(0.01)
+    val optimization = stochasticGradientDescent(0.01f)
 
     val network = Network(
         inputLayer(inputDimension),

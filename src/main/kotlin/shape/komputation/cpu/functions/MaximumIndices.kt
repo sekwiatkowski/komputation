@@ -1,6 +1,6 @@
 package shape.komputation.cpu.functions
 
-fun findMaxIndicesInRows(input: DoubleArray, numberRows : Int, numberColumns : Int) =
+fun findMaxIndicesInRows(input: FloatArray, numberRows : Int, numberColumns : Int) =
 
     IntArray(numberRows) { indexRow ->
 
@@ -27,10 +27,10 @@ fun findMaxIndicesInRows(input: DoubleArray, numberRows : Int, numberColumns : I
 
     }
 
-fun findMaxIndex(input: DoubleArray): Int {
+fun findMaxIndex(input: FloatArray): Int {
 
     var maxIndex = -1
-    var maxValue = Double.NEGATIVE_INFINITY
+    var maxValue = Float.NEGATIVE_INFINITY
 
     for(index in 0..input.size - 1) {
 

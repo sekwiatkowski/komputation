@@ -11,13 +11,13 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 1, 1)
 
-        accumulator.accumulate(intArrayOf(0), doubleArrayOf(1.0))
+        accumulator.accumulate(intArrayOf(0), floatArrayOf(1.0f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(1.0), arrayOf(doubleArrayOf(1.0)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(1.0f)))
 
-        accumulator.accumulate(intArrayOf(0), doubleArrayOf(2.0))
+        accumulator.accumulate(intArrayOf(0), floatArrayOf(2.0f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(2.0), arrayOf(doubleArrayOf(3.0)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(3.0f)))
 
     }
 
@@ -26,13 +26,13 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 1, 2)
 
-        accumulator.accumulate(intArrayOf(0), doubleArrayOf(1.1, 1.2))
+        accumulator.accumulate(intArrayOf(0), floatArrayOf(1.1f, 1.2f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(1.0), arrayOf(doubleArrayOf(1.1, 1.2)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(1.1f, 1.2f)))
 
-        accumulator.accumulate(intArrayOf(0), doubleArrayOf(1.0, 2.0))
+        accumulator.accumulate(intArrayOf(0), floatArrayOf(1.0f, 2.0f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(2.0), arrayOf(doubleArrayOf(2.1, 3.2)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(2.1f, 3.2f)))
 
     }
 
@@ -41,10 +41,10 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 2, 1, 2)
 
-        accumulator.accumulate(intArrayOf(0), doubleArrayOf(1.1, 1.2))
-        accumulator.accumulate(intArrayOf(1), doubleArrayOf(2.1, 2.2))
+        accumulator.accumulate(intArrayOf(0), floatArrayOf(1.1f, 1.2f))
+        accumulator.accumulate(intArrayOf(1), floatArrayOf(2.1f, 2.2f))
 
-        check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(1.0, 1.0), arrayOf(doubleArrayOf(1.1, 1.2), doubleArrayOf(2.1, 2.2)))
+        check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(1.0f, 1.0f), arrayOf(floatArrayOf(1.1f, 1.2f), floatArrayOf(2.1f, 2.2f)))
 
     }
 
@@ -53,9 +53,9 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
+        accumulator.accumulate(intArrayOf(0, 1), floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
 
-        check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(1.0, 1.0), arrayOf(doubleArrayOf(1.1, 1.2), doubleArrayOf(2.1, 2.2)))
+        check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(1.0f, 1.0f), arrayOf(floatArrayOf(1.1f, 1.2f), floatArrayOf(2.1f, 2.2f)))
 
     }
 
@@ -64,10 +64,10 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.3, 1.4, 2.3, 2.4))
+        accumulator.accumulate(intArrayOf(0, 1), floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(0, 1), floatArrayOf(1.3f, 1.4f, 2.3f, 2.4f))
 
-        check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(2.0, 2.0), arrayOf(doubleArrayOf(2.4, 2.6), doubleArrayOf(4.4, 4.6)))
+        check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(2.0f, 2.0f), arrayOf(floatArrayOf(2.4f, 2.6f), floatArrayOf(4.4f, 4.6f)))
 
     }
 
@@ -76,10 +76,10 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), doubleArrayOf(1.1, 1.2, 2.1, 2.2))
-        accumulator.accumulate(intArrayOf(1, 0), doubleArrayOf(2.3, 2.4, 1.3, 1.4))
+        accumulator.accumulate(intArrayOf(0, 1), floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(1, 0), floatArrayOf(2.3f, 2.4f, 1.3f, 1.4f))
 
-        check(accumulator, 2, intArrayOf(0, 1), doubleArrayOf(2.0, 2.0), arrayOf(doubleArrayOf(2.4, 2.6), doubleArrayOf(4.4, 4.6)))
+        check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(2.0f, 2.0f), arrayOf(floatArrayOf(2.4f, 2.6f), floatArrayOf(4.4f, 4.6f)))
 
     }
 
@@ -88,9 +88,9 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 2, 1)
 
-        accumulator.accumulate(intArrayOf(0, 0), doubleArrayOf(1.0, 2.0))
+        accumulator.accumulate(intArrayOf(0, 0), floatArrayOf(1.0f, 2.0f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(1.0), arrayOf(doubleArrayOf(3.0)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(3.0f)))
 
     }
 
@@ -99,10 +99,10 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 2, 2, 1)
 
-        accumulator.accumulate(intArrayOf(0, 0), doubleArrayOf(1.0, 2.0))
-        accumulator.accumulate(intArrayOf(0, 0), doubleArrayOf(3.0, 4.0))
+        accumulator.accumulate(intArrayOf(0, 0), floatArrayOf(1.0f, 2.0f))
+        accumulator.accumulate(intArrayOf(0, 0), floatArrayOf(3.0f, 4.0f))
 
-        check(accumulator, 1, intArrayOf(0), doubleArrayOf(2.0), arrayOf(doubleArrayOf(10.0)))
+        check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(10.0f)))
 
     }
 
@@ -110,8 +110,8 @@ class SparseAccumulatorTest {
         accumulator: SparseAccumulator,
         expectedSize: Int,
         expectedIds: IntArray,
-        expectedCounts: DoubleArray,
-        expectedSums: Array<DoubleArray>) {
+        expectedCounts: FloatArray,
+        expectedSums: Array<FloatArray>) {
 
         val actualSize = accumulator.getSize()
         val actualIds = accumulator.getIds()
@@ -124,7 +124,7 @@ class SparseAccumulatorTest {
 
             assertEquals(expectedIds[index], actualIds[index])
             assertEquals(expectedCounts[index], actualCounts[index])
-            assertArrayEquals(actualSums[index], expectedSums[index], 0.001)
+            assertArrayEquals(actualSums[index], expectedSums[index], 0.001f)
 
         }
 

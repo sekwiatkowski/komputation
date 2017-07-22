@@ -7,7 +7,7 @@ import shape.komputation.optimization.OptimizationInstruction
 
 class LookupLayer(
     private val name : String? = null,
-    private val vectors: Array<DoubleArray>,
+    private val vectors: Array<FloatArray>,
     private val dimension : Int,
     private val maximumBatchSize : Int,
     private val maximumLength: Int,
@@ -35,7 +35,7 @@ class LookupLayer(
 }
 
 fun lookupLayer(
-    vectors: Array<DoubleArray>,
+    vectors: Array<FloatArray>,
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength : Int,
@@ -45,7 +45,7 @@ fun lookupLayer(
 
 fun lookupLayer(
     name : String? = null,
-    vectors: Array<DoubleArray>,
+    vectors: Array<FloatArray>,
     dimension : Int,
     maximumBatchSize : Int,
     maximumLength: Int,

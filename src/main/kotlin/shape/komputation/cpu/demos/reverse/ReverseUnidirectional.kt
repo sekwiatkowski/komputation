@@ -29,10 +29,10 @@ fun main(args: Array<String>) {
     val targets = ReverseData.generateTargets(inputs, seriesLength, numberCategories)
 
     val identityInitialization = identityInitialization()
-    val gaussianInitialization = gaussianInitialization(random, 0.0, 0.001)
+    val gaussianInitialization = gaussianInitialization(random, 0.0f, 0.001f)
     val zeroInitialization = zeroInitialization()
 
-    val optimizationStrategy = stochasticGradientDescent(0.001)
+    val optimizationStrategy = stochasticGradientDescent(0.001f)
 
     val encoderUnit = simpleRecurrentUnit(
         seriesLength,

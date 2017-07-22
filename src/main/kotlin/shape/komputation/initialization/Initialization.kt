@@ -1,14 +1,14 @@
 package shape.komputation.initialization
 
-fun initializeColumnVector(strategy: InitializationStrategy, numberRows: Int): DoubleArray {
+fun initializeColumnVector(strategy: InitializationStrategy, numberRows: Int): FloatArray {
 
     return initializeWeights(strategy, numberRows,1, numberRows)
 
 }
 
-fun initializeWeights(strategy: InitializationStrategy, numberRows: Int, numberColumns : Int, numberIncoming : Int): DoubleArray {
+fun initializeWeights(strategy: InitializationStrategy, numberRows: Int, numberColumns : Int, numberIncoming : Int): FloatArray {
 
-    val array = DoubleArray(numberRows * numberColumns)
+    val array = FloatArray(numberRows * numberColumns)
 
     for (indexRow in 0..numberRows - 1) {
 

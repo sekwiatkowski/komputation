@@ -6,8 +6,8 @@ import shape.komputation.cpu.functions.stackRows
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.matrix.DoubleMatrix
 import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuConcatenation internal constructor(name : String? = null, inputDimension : Int, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseCpuForwardLayer(name), Optimizable {
@@ -19,7 +19,7 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
 
     private val heights = IntArray(this.numberNetworks)
 
-    override fun forward(input : DoubleMatrix, isTraining : Boolean) : DoubleMatrix {
+    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         for (indexNetwork in (0..this.numberNetworks-1)) {
 
@@ -40,7 +40,7 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
     }
 
     // Chain is the same for (1, 2) and (2, 1)
-    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
+    override fun backward(chain : FloatMatrix) : FloatMatrix {
 
         val chainSplit = splitRows(chain, this.heights)
 
@@ -68,7 +68,7 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         for (network in this.networks) {
 

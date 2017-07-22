@@ -37,7 +37,7 @@
 */
 
 template <int blockSize>
-__global__ void logisticLossKernel (double *predictions, double *targets, double *sums, double *result)
+__global__ void logisticLossKernel (float *predictions, float *targets, float *sums, float *result)
 {
 
     int threadId = threadIdx.x;
@@ -46,7 +46,7 @@ __global__ void logisticLossKernel (double *predictions, double *targets, double
 
     int globalId = blockId * numberBlocks + threadId;
 
-    extern __shared__ double sharedData[];
+    extern __shared__ float sharedData[];
 
     sharedData[threadId] = targets[globalId] * predictions[globalId];
 
@@ -72,7 +72,7 @@ __global__ void logisticLossKernel (double *predictions, double *targets, double
 
         }
 
-        result[0] = -log(loss);
+        result[0] = -logf(loss);
 
     }
 

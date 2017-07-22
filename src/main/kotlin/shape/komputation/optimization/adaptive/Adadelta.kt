@@ -6,11 +6,11 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
-fun adadelta(decay : Double = 0.95, epsilon: Double = 1e-6) =
+fun adadelta(decay : Float = 0.95f, epsilon: Float = 1e-6f) =
 
     Adadelta(decay, epsilon)
 
-class Adadelta(private val decay : Double = 0.95, private val epsilon: Double = 1e-6) : OptimizationInstruction {
+class Adadelta(private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 

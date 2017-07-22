@@ -3,15 +3,15 @@ package shape.komputation.cpu.layers.forward.activation
 import shape.komputation.cpu.functions.activation.backwardRelu
 import shape.komputation.cpu.functions.activation.relu
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {
 
-    private var forwardEntries = DoubleArray(0)
+    private var forwardEntries = FloatArray(0)
 
-    override fun forward(input : DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val result = DoubleMatrix(input.numberRows, input.numberColumns, relu(input.entries))
+        val result = FloatMatrix(input.numberRows, input.numberColumns, relu(input.entries))
 
         this.forwardEntries = result.entries
 
@@ -19,22 +19,22 @@ class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivati
 
     }
 
-    override fun forward(input: DoubleMatrix, mask: BooleanArray): DoubleMatrix {
+    override fun forward(input: FloatMatrix, mask: BooleanArray): FloatMatrix {
 
         val inputEntries = input.entries
 
-        val forwardEntries = DoubleArray(input.numberRows * input.numberColumns) { index ->
+        val forwardEntries = FloatArray(input.numberRows * input.numberColumns) { index ->
 
             if(mask[index]) {
                 relu(inputEntries[index])
             }
             else {
-                0.0
+                0.0f
             }
 
         }
 
-        val result = DoubleMatrix(input.numberRows, input.numberColumns, forwardEntries)
+        val result = FloatMatrix(input.numberRows, input.numberColumns, forwardEntries)
 
         this.forwardEntries = forwardEntries
 
@@ -42,13 +42,13 @@ class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivati
 
     }
 
-    override fun backward(chain : DoubleMatrix) : DoubleMatrix {
+    override fun backward(chain : FloatMatrix) : FloatMatrix {
 
         val chainEntries = chain.entries
 
         val backwardEntries = backwardRelu(this.forwardEntries, chainEntries)
 
-        return DoubleMatrix(chain.numberRows, chain.numberColumns, backwardEntries)
+        return FloatMatrix(chain.numberRows, chain.numberColumns, backwardEntries)
 
     }
 

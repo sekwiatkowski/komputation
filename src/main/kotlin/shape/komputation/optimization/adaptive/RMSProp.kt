@@ -6,11 +6,11 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
-fun rmsprop(learningRate: Double, decay : Double = 0.9, epsilon: Double = 1e-6) =
+fun rmsprop(learningRate: Float, decay : Float = 0.9f, epsilon: Float = 1e-6f) =
 
     RMSProp(learningRate, decay, epsilon)
 
-class RMSProp(private val learningRate: Double, private val decay : Double = 0.9, private val epsilon: Double = 1e-6) : OptimizationInstruction {
+class RMSProp(private val learningRate: Float, private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 

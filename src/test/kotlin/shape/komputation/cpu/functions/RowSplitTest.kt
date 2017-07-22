@@ -2,15 +2,15 @@ package shape.komputation.cpu.functions
 
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.doubleMatrixFromRows
+import shape.komputation.matrix.floatMatrixFromRows
 
 class RowSplitTest {
 
-    val firstRow = doubleArrayOf(1.0, 2.0)
-    val secondRow = doubleArrayOf(3.0, 4.0)
-    val thirdRow = doubleArrayOf(5.0, 6.0)
+    val firstRow = floatArrayOf(1.0f, 2.0f)
+    val secondRow = floatArrayOf(3.0f, 4.0f)
+    val thirdRow = floatArrayOf(5.0f, 6.0f)
 
-    val matrix = doubleMatrixFromRows(
+    val matrix = floatMatrixFromRows(
         firstRow,
         secondRow,
         thirdRow
@@ -23,17 +23,17 @@ class RowSplitTest {
             matrix,
             intArrayOf(1, 2))
 
-        val firstExpected = doubleMatrixFromRows(
+        val firstExpected = floatMatrixFromRows(
             firstRow
         )
 
-        val secondExpected = doubleMatrixFromRows(
+        val secondExpected = floatMatrixFromRows(
             secondRow,
             thirdRow
         )
 
-        assertMatrixEquality(firstExpected, firstActual, 0.01)
-        assertMatrixEquality(secondExpected, secondActual, 0.01)
+        assertMatrixEquality(firstExpected, firstActual, 0.01f)
+        assertMatrixEquality(secondExpected, secondActual, 0.01f)
 
     }
 
@@ -42,17 +42,17 @@ class RowSplitTest {
 
         val (firstActual, secondActual) = splitRows(matrix, intArrayOf(2, 1))
 
-        val firstExpected = doubleMatrixFromRows(
+        val firstExpected = floatMatrixFromRows(
             firstRow,
             secondRow
         )
 
-        val secondExpected = doubleMatrixFromRows(
+        val secondExpected = floatMatrixFromRows(
             thirdRow
         )
 
-        assertMatrixEquality(firstExpected, firstActual, 0.01)
-        assertMatrixEquality(secondExpected, secondActual, 0.01)
+        assertMatrixEquality(firstExpected, firstActual, 0.01f)
+        assertMatrixEquality(secondExpected, secondActual, 0.01f)
 
     }
 

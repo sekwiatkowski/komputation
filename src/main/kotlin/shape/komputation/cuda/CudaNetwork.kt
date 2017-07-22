@@ -9,7 +9,7 @@ import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.loss.CudaLossFunctionInstruction
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
 import shape.komputation.optimization.Optimizable
@@ -57,11 +57,11 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     fun train(
         inputs: Array<Matrix>,
-        targets: Array<DoubleMatrix>,
+        targets: Array<FloatMatrix>,
         loss: CudaLossFunctionInstruction,
         numberIterations : Int,
         batchSize : Int,
-        afterEachIteration : ((index : Int, loss : Double) -> Unit)? = null): Long {
+        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): Long {
 
         val lossFunction = loss.buildForCuda(this.cudaContext)
 
@@ -90,7 +90,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
             var id = 0
 
-            var iterationLoss = if(trackLoss) 0.0 else Double.NaN
+            var iterationLoss = if(trackLoss) 0.0f else Float.NaN
 
             for (batch in batches) {
 
@@ -134,7 +134,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                 }
 
-                val scalingFactor = 1.0.div(batch.size.toDouble())
+                val scalingFactor = 1.0f.div(batch.size.toFloat())
 
                 this.optimize(scalingFactor)
 
@@ -175,7 +175,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     }
 
-    fun optimize(scalingFactor : Double) {
+    fun optimize(scalingFactor : Float) {
 
         for (optimizable in this.optimizables) {
 

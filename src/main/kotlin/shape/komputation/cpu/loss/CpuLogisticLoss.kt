@@ -1,24 +1,25 @@
 package shape.komputation.cpu.loss
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMath
+import shape.komputation.matrix.FloatMatrix
 
 class CpuLogisticLoss : CpuLossFunction {
 
     // -log(probability of the correct target)
-    override fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double {
+    override fun forward(predictions: FloatMatrix, targets : FloatMatrix): Float {
 
         val predictionEntries = predictions.entries
         val targetEntries = targets.entries
 
-        var loss = 0.0
+        var loss = 0.0f
 
         for (index in 0..predictionEntries.size-1) {
 
             val target = targetEntries[index]
 
-            if (target == 1.0) {
+            if (target == 1.0f) {
 
-                loss -= Math.log(predictionEntries[index])
+                loss -= FloatMath.log(predictionEntries[index])
 
             }
 
@@ -29,29 +30,29 @@ class CpuLogisticLoss : CpuLossFunction {
     }
 
     // -1/target probability if target = 1.0, 0.0 otherwise
-    override fun backward(predictions: DoubleMatrix, targets : DoubleMatrix) : DoubleMatrix {
+    override fun backward(predictions: FloatMatrix, targets : FloatMatrix) : FloatMatrix {
 
         val predictionEntries = predictions.entries
         val targetEntries = targets.entries
 
-        val derivatives = DoubleArray(predictionEntries.size) { index ->
+        val derivatives = FloatArray(predictionEntries.size) { index ->
 
             val target = targetEntries[index]
 
-            if (target == 1.0) {
+            if (target == 1.0f) {
 
-                -1.0.div(predictionEntries[index])
+                -1.0f.div(predictionEntries[index])
 
             }
             else {
 
-                0.0
+                0.0f
 
             }
 
         }
 
-        return DoubleMatrix(predictions.numberRows, predictions.numberColumns, derivatives)
+        return FloatMatrix(predictions.numberRows, predictions.numberColumns, derivatives)
 
     }
 

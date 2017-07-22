@@ -3,22 +3,22 @@ package shape.komputation.cpu.layers.forward.dropout
 import shape.komputation.cpu.functions.generateMask
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.HadamardCombination
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleConstantColumnVector
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatConstantColumnVector
 import java.util.*
 
 class CpuDropoutLayer internal constructor(
     name : String?,
     private val dimension : Int,
     private val random : Random,
-    private val keepProbability : Double,
+    private val keepProbability : Float,
     private val activation: DropoutCompliant,
     private val takeExpectation : HadamardCombination) : BaseCpuForwardLayer(name) {
 
     private var mask = BooleanArray(0)
-    private var expectation = doubleConstantColumnVector(this.dimension, this.keepProbability)
+    private var expectation = floatConstantColumnVector(this.dimension, this.keepProbability)
 
-    override fun forward(input: DoubleMatrix, isTraining: Boolean) =
+    override fun forward(input: FloatMatrix, isTraining: Boolean) =
 
         if (isTraining) {
 
@@ -38,18 +38,23 @@ class CpuDropoutLayer internal constructor(
 
         }
 
-    override fun backward(chain: DoubleMatrix): DoubleMatrix {
+    override fun backward(chain: FloatMatrix): FloatMatrix {
 
         // d f(x) * m / d f(x) = m
 
         val chainEntries = chain.entries
 
-        val diffChainWrtSparseActivation = DoubleMatrix(chain.numberRows, chain.numberColumns, DoubleArray(this.dimension) { index ->
+        val diffChainWrtSparseActivation = FloatMatrix(chain.numberRows, chain.numberColumns, FloatArray(this.dimension) { index ->
 
             if (this.mask[index]) {
+
                 chainEntries[index]
-            } else {
-                0.0
+
+            }
+            else {
+
+                0.0f
+
             }
 
         })

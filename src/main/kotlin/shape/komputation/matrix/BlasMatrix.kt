@@ -1,30 +1,42 @@
 package shape.komputation.matrix
 
-import no.uib.cipr.matrix.DenseMatrix
+import org.jblas.FloatMatrix
+import org.jblas.SimpleBlas
 
-class BlasMatrix(private val matrix: DenseMatrix) {
+class BlasMatrix(private val matrix: FloatMatrix) {
 
-    fun numberRows () = matrix.numRows()
-    fun numberColumns () = matrix.numColumns()
+    fun numberRows () = this.matrix.rows
+    fun numberColumns () = this.matrix.columns
 
     fun getEntries() =
 
         this.matrix.data!!
 
-    fun multiply(otherMatrix : BlasMatrix) =
+    fun multiply(otherMatrix : BlasMatrix): BlasMatrix {
 
-        BlasMatrix(this.matrix.mult(otherMatrix.matrix, DenseMatrix(this.numberRows(), otherMatrix.numberColumns())) as DenseMatrix)
+        val result = FloatMatrix(this.numberRows(), otherMatrix.numberColumns())
 
-    fun multiplyAdd(otherMatrix : BlasMatrix, bias : BlasMatrix) =
+        SimpleBlas.gemm(1.0f, this.matrix, otherMatrix.matrix, 1.0f, result)
 
-        BlasMatrix(this.matrix.multAdd(otherMatrix.matrix, bias.matrix) as DenseMatrix)
+        return BlasMatrix(result)
+    }
+
+    fun multiplyAdd(otherMatrix : BlasMatrix, bias : BlasMatrix): BlasMatrix {
+
+        val result = FloatMatrix(this.numberRows(), otherMatrix.numberColumns())
+
+        SimpleBlas.gemm(1.0f, this.matrix, otherMatrix.matrix, 1.0f, result)
+
+        return BlasMatrix(result.add(bias.matrix))
+
+    }
 
 }
 
-fun createBlasMatrix(numberRows: Int, numberColumns: Int, entries : DoubleArray, deep : Boolean = false) =
+fun createBlasMatrix(numberRows: Int, numberColumns: Int, entries : FloatArray) =
 
-    BlasMatrix(DenseMatrix(numberRows, numberColumns, entries, deep))
+    BlasMatrix(FloatMatrix(numberRows, numberColumns, *entries))
 
-fun createBlasVector(entries: DoubleArray, deep: Boolean = false) =
+fun createBlasVector(entries: FloatArray) =
 
-    createBlasMatrix(entries.size, 1, entries, deep)
+    createBlasMatrix(entries.size, 1, entries)

@@ -6,15 +6,15 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
-fun adam(learningRate : Double = 0.001, firstMomentDecay : Double = 0.9, secondMomentDecay : Double = 0.999, epsilon : Double = 1e-8) =
+fun adam(learningRate : Float = 0.001f, firstMomentDecay : Float = 0.9f, secondMomentDecay : Float = 0.999f, epsilon : Float = 1e-8f) =
 
     Adam(learningRate, firstMomentDecay, secondMomentDecay, epsilon)
 
 class Adam(
-    private val learningRate : Double = 0.001,
-    private val firstMomentDecay : Double = 0.9,
-    private val secondMomentDecay : Double = 0.999,
-    private val epsilon : Double = 1e-8) : OptimizationInstruction {
+    private val learningRate : Float,
+    private val firstMomentDecay : Float,
+    private val secondMomentDecay : Float,
+    private val epsilon : Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 

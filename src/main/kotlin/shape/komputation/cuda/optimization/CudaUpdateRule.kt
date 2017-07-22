@@ -4,6 +4,6 @@ import jcuda.Pointer
 
 interface CudaUpdateRule {
 
-    fun update(pointerToDeviceParameter: Pointer, scalingFactor : Double, pointerToDeviceGradient : Pointer)
+    fun update(pointerToDeviceParameter: Pointer, scalingFactor : Float, pointerToDeviceGradient : Pointer)
 
 }

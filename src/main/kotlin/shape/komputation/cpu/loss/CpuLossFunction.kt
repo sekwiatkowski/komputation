@@ -1,11 +1,11 @@
 package shape.komputation.cpu.loss
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 interface CpuLossFunction {
 
-    fun forward(predictions: DoubleMatrix, targets : DoubleMatrix): Double
+    fun forward(predictions: FloatMatrix, targets : FloatMatrix): Float
 
-    fun backward(predictions: DoubleMatrix, targets : DoubleMatrix): DoubleMatrix
+    fun backward(predictions: FloatMatrix, targets : FloatMatrix): FloatMatrix
 
 }

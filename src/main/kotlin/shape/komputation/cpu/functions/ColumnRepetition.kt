@@ -1,10 +1,10 @@
 package shape.komputation.cpu.functions
 
-fun repeatColumn(column: DoubleArray, n: Int): DoubleArray {
+fun repeatColumn(column: FloatArray, n: Int): FloatArray {
 
     val numberRows = column.size
 
-    val repetition = DoubleArray(numberRows * n)
+    val repetition = FloatArray(numberRows * n)
 
     for(indexColumn in 0..n - 1) {
 

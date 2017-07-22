@@ -6,11 +6,11 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
-fun nesterov(learningRate: Double, momentum : Double) =
+fun nesterov(learningRate: Float, momentum : Float) =
 
     Nesterov(learningRate, momentum)
 
-class Nesterov(private val learningRate: Double, private val momentum : Double) : OptimizationInstruction {
+class Nesterov(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 

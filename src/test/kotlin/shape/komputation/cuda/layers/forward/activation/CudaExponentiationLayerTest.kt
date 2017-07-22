@@ -4,6 +4,7 @@ import jcuda.jcublas.cublasHandle
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.CudaContext
 import shape.komputation.layers.forward.activation.exponentiationLayer
+import shape.komputation.matrix.FloatMath
 
 class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
 
@@ -14,8 +15,8 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardOneDimension() {
 
-        val input = doubleArrayOf(1.0)
-        val expected = doubleArrayOf(Math.exp(1.0))
+        val input = floatArrayOf(1.0f)
+        val expected = floatArrayOf(FloatMath.exp(1.0f))
 
         testForward(input, expected)
 
@@ -24,8 +25,8 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardTwoDimensions() {
 
-        val input = doubleArrayOf(0.0, 1.0)
-        val expected = doubleArrayOf(1.0, Math.exp(1.0))
+        val input = floatArrayOf(0.0f, 1.0f)
+        val expected = floatArrayOf(1.0f, FloatMath.exp(1.0f))
 
         testForward(input, expected)
 
@@ -35,9 +36,9 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardOneDimension() {
 
-        val input = doubleArrayOf(1.0)
-        val chain = doubleArrayOf(2.0)
-        val expected = doubleArrayOf(2.0 * Math.exp(1.0))
+        val input = floatArrayOf(1.0f)
+        val chain = floatArrayOf(2.0f)
+        val expected = floatArrayOf(2.0f * FloatMath.exp(1.0f))
 
         testBackward(input, chain, expected)
 
@@ -46,9 +47,9 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardTwoDimensions() {
 
-        val input = doubleArrayOf(0.0, 1.0)
-        val chain = doubleArrayOf(2.0, 3.0)
-        val expected = doubleArrayOf(2.0, 3.0 * Math.exp(1.0))
+        val input = floatArrayOf(0.0f, 1.0f)
+        val chain = floatArrayOf(2.0f, 3.0f)
+        val expected = floatArrayOf(2.0f, 3.0f * FloatMath.exp(1.0f))
 
         testBackward(input, chain, expected)
 

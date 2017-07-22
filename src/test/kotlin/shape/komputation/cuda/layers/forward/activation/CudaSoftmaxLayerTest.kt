@@ -17,22 +17,22 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testForwardOneRowOneColumn() {
 
-        val input = doubleArrayOf(0.0)
+        val input = floatArrayOf(0.0f)
         val numberRows = 1
         val numberColumns = 1
 
-        testForward(numberRows, numberColumns, input, doubleArrayOf(1.0))
+        testForward(numberRows, numberColumns, input, floatArrayOf(1.0f))
 
     }
 
     @Test
     fun testForwardTwoRowsOneColumn1() {
 
-        val input = doubleArrayOf(0.0, 0.0)
+        val input = floatArrayOf(0.0f, 0.0f)
         val numberRows = 2
         val numberColumns = 1
 
-        val expected = doubleArrayOf(0.5, 0.5)
+        val expected = floatArrayOf(0.5f, 0.5f)
 
         testForward(numberRows, numberColumns, input, expected)
 
@@ -41,25 +41,25 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testForwardTwoRowsOneColumn2() {
 
-        val input = doubleArrayOf(0.0, 1.0)
+        val input = floatArrayOf(0.0f, 1.0f)
         val numberRows = 2
         val numberColumns = 1
 
-        val expected = doubleArrayOf(0.268941421, 0.731058579)
+        val expected = floatArrayOf(0.268941421f, 0.731058579f)
 
         testForward(numberRows, numberColumns, input, expected)
 
     }
 
-    private fun testForward(numberRows: Int, numberColumns: Int, input: DoubleArray, expected: DoubleArray) {
+    private fun testForward(numberRows: Int, numberColumns: Int, input: FloatArray, expected: FloatArray) {
 
         val actual = forward(numberRows, numberColumns, input)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun forward(numberRows: Int, numberColumns: Int, input: DoubleArray): DoubleArray {
+    private fun forward(numberRows: Int, numberColumns: Int, input: FloatArray): FloatArray {
 
         val numberEntries = numberRows * numberColumns
 
@@ -88,8 +88,8 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testBackwardOneRowOneColumn() {
 
-        val input = doubleArrayOf(1.0)
-        val chain = doubleArrayOf(1.0)
+        val input = floatArrayOf(1.0f)
+        val chain = floatArrayOf(1.0f)
         val numberRows = 1
         val numberColumns = 1
 
@@ -100,8 +100,8 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testBackwardTwoRowsOneColumn1() {
 
-        val input = doubleArrayOf(1.0, 1.0)
-        val chain = doubleArrayOf(1.0, 1.0)
+        val input = floatArrayOf(1.0f, 1.0f)
+        val chain = floatArrayOf(1.0f, 1.0f)
         val numberRows = 2
         val numberColumns = 1
 
@@ -112,8 +112,8 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testBackwardTwoRowsOneColumn2() {
 
-        val input = doubleArrayOf(0.0, 1.0)
-        val chain = doubleArrayOf(1.0, 1.0)
+        val input = floatArrayOf(0.0f, 1.0f)
+        val chain = floatArrayOf(1.0f, 1.0f)
         val numberRows = 2
         val numberColumns = 1
 
@@ -124,8 +124,8 @@ class CudaSoftmaxLayerTest {
     @Test
     fun testBackwardOneRowTwoColumns() {
 
-        val input = doubleArrayOf(1.0, 2.0)
-        val chain = doubleArrayOf(1.0, 2.0)
+        val input = floatArrayOf(1.0f, 2.0f)
+        val chain = floatArrayOf(1.0f, 2.0f)
         val numberRows = 1
         val numberColumns = 2
 
@@ -134,7 +134,7 @@ class CudaSoftmaxLayerTest {
     }
 
 
-    private fun testBackward(numberRows: Int, numberColumns: Int, input: DoubleArray, chain : DoubleArray) {
+    private fun testBackward(numberRows: Int, numberColumns: Int, input: FloatArray, chain : FloatArray) {
 
         val forwardEntries = columnWiseSoftmax(input, numberRows, numberColumns)
         val expected = backwardColumnWiseSoftmax(numberRows, numberColumns, forwardEntries, chain)
@@ -164,7 +164,7 @@ class CudaSoftmaxLayerTest {
 
         cudaContext.destroy()
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 

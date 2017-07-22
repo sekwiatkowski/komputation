@@ -4,21 +4,21 @@ import shape.komputation.cpu.layers.BaseCpuEntryPoint
 import shape.komputation.cpu.optimization.SparseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateSparsely
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
 
 class CpuLookupLayer internal constructor(
     name : String?,
-    private val vectors: Array<DoubleArray>,
+    private val vectors: Array<FloatArray>,
     private val dimension : Int,
     private val gradientAccumulator: SparseAccumulator,
     private val update: UpdateRule? = null) : BaseCpuEntryPoint(name), Optimizable {
 
     private var input : IntArray? = null
 
-    override fun forward(input: Matrix) : DoubleMatrix {
+    override fun forward(input: Matrix) : FloatMatrix {
 
         input as IntMatrix
 
@@ -34,8 +34,7 @@ class CpuLookupLayer internal constructor(
             word^(1)_d   word^(2)_d   ...   word^(T)_d
         */
 
-
-        val result = DoubleArray(inputSize * this.dimension)
+        val result = FloatArray(inputSize * this.dimension)
 
         var start = 0
 
@@ -53,12 +52,12 @@ class CpuLookupLayer internal constructor(
 
         }
 
-        return DoubleMatrix(this.dimension, inputSize, result)
+        return FloatMatrix(this.dimension, inputSize, result)
 
     }
 
 
-    override fun backward(chain : DoubleMatrix): DoubleMatrix {
+    override fun backward(chain : FloatMatrix): FloatMatrix {
 
         this.gradientAccumulator.accumulate(this.input!!, chain.entries)
 
@@ -66,7 +65,7 @@ class CpuLookupLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.update != null) {
 

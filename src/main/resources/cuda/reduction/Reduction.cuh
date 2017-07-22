@@ -1,5 +1,5 @@
 template <int blockSize>
-__device__ void reduceWarp(volatile double* sharedData, int indexSharedData) {
+__device__ void reduceWarp(volatile float* sharedData, int indexSharedData) {
 
     if(blockSize >= 64) sharedData[indexSharedData] += sharedData[indexSharedData + 32];
     if(blockSize >= 32) sharedData[indexSharedData] += sharedData[indexSharedData + 16];
@@ -12,7 +12,7 @@ __device__ void reduceWarp(volatile double* sharedData, int indexSharedData) {
 
 // This function works based on the assumptions that the number of threads per block is set to a power of 2.
 template <int blockSize>
-__device__ void reduce(int threadId, double* sharedData, int offsetSharedData) {
+__device__ void reduce(int threadId, float* sharedData, int offsetSharedData) {
 
     int indexSharedData = offsetSharedData + threadId;
 

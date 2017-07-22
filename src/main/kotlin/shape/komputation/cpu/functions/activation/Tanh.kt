@@ -1,21 +1,19 @@
 package shape.komputation.cpu.functions.activation
 
-fun tanh(input: DoubleArray) =
+import shape.komputation.matrix.FloatMath
 
-    DoubleArray(input.size) { index ->
+fun tanh(input: FloatArray) =
 
-        tanh(input[index])
+    FloatArray(input.size) { index ->
+
+        FloatMath.tanh(input[index])
 
     }
 
-fun tanh(x: Double) =
+fun differentiateTanh(input: FloatArray) =
 
-    (2.0 / (1.0 + Math.exp(-2.0*x))) - 1.0
+    FloatArray(input.size) { index ->
 
-fun differentiateTanh(input: DoubleArray) =
-
-    DoubleArray(input.size) { index ->
-
-        1 - Math.pow(input[index], 2.0)
+        1.0f - (input[index] * input[index])
 
     }

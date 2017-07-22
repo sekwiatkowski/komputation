@@ -10,19 +10,19 @@ class DenseAccumulatorTest {
 
         val accumulator = DenseAccumulator(1)
 
-        accumulator.accumulate(doubleArrayOf(1.0))
+        accumulator.accumulate(floatArrayOf(1.0f))
 
-        val firstExpected = doubleArrayOf(1.0)
+        val firstExpected = floatArrayOf(1.0f)
         val firstActual = accumulator.getAccumulation()
 
         assertArrayEquals(firstExpected, firstActual)
 
         accumulator.reset()
 
-        accumulator.accumulate(doubleArrayOf(1.0))
-        accumulator.accumulate(doubleArrayOf(2.0))
+        accumulator.accumulate(floatArrayOf(1.0f))
+        accumulator.accumulate(floatArrayOf(2.0f))
 
-        val secondExpected = doubleArrayOf(3.0)
+        val secondExpected = floatArrayOf(3.0f)
         val secondActual = accumulator.getAccumulation()
 
         assertArrayEquals(secondExpected, secondActual)

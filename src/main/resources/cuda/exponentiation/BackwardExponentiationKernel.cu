@@ -1,5 +1,5 @@
 extern "C"
-__global__ void backwardExponentiationKernel (int length, double *forwardResults, double *chain, double *backwardResults)
+__global__ void backwardExponentiationKernel (int length, float *forwardResults, float *chain, float *backwardResults)
 {
 
     int globalId = blockDim.x * blockIdx.x + threadIdx.x;

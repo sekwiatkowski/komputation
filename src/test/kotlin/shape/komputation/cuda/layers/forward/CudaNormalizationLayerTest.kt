@@ -9,13 +9,14 @@ import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
 import shape.komputation.layers.forward.normalizationLayer
+import shape.komputation.matrix.FloatMath
 
 class CudaNormalizationLayerTest {
 
     @Test
     fun testForwardOneRowOneColumn() {
 
-        val input = doubleArrayOf(1.0)
+        val input = floatArrayOf(1.0f)
 
         this.forward(input, 1, 1)
 
@@ -24,8 +25,8 @@ class CudaNormalizationLayerTest {
     @Test
     fun testForwardTwoRowsOneColumn() {
 
-        val input = doubleArrayOf(1.0, 1.0)
-        val expected = doubleArrayOf(0.5, 0.5)
+        val input = floatArrayOf(1.0f, 1.0f)
+        val expected = floatArrayOf(0.5f, 0.5f)
 
         testForward(input, 2, 1, expected)
 
@@ -34,8 +35,8 @@ class CudaNormalizationLayerTest {
     @Test
     fun testForwardTwoRowsTwoColumns() {
 
-        val input = doubleArrayOf(1.0, 1.0, 1.0, 3.0)
-        val expected = doubleArrayOf(0.5, 0.5, 0.25, 0.75)
+        val input = floatArrayOf(1.0f, 1.0f, 1.0f, 3.0f)
+        val expected = floatArrayOf(0.5f, 0.5f, 0.25f, 0.75f)
 
         testForward(input, 2, 2, expected)
 
@@ -44,8 +45,8 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardOneRowOneColumn() {
 
-        val input = doubleArrayOf(1.0)
-        val chain = doubleArrayOf(1.0)
+        val input = floatArrayOf(1.0f)
+        val chain = floatArrayOf(1.0f)
 
         this.backward(1, 1, input, chain)
 
@@ -54,9 +55,9 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardTwoRowsOneColumn1() {
 
-        val input = doubleArrayOf(1.0, 1.0)
-        val chain = doubleArrayOf(1.0, 1.0)
-        val expected = doubleArrayOf(0.0, 0.0)
+        val input = floatArrayOf(1.0f, 1.0f)
+        val chain = floatArrayOf(1.0f, 1.0f)
+        val expected = floatArrayOf(0.0f, 0.0f)
 
         testBackward(2, 1, input, chain, expected)
 
@@ -65,9 +66,9 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardTwoRowsOneColumn2() {
 
-        val input = doubleArrayOf(1.0, 2.0)
-        val chain = doubleArrayOf(1.0, 1.0)
-        val expected = doubleArrayOf(0.0, 0.0)
+        val input = floatArrayOf(1.0f, 2.0f)
+        val chain = floatArrayOf(1.0f, 1.0f)
+        val expected = floatArrayOf(0.0f, 0.0f)
 
         testBackward(2, 1, input, chain, expected)
 
@@ -76,12 +77,12 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardTwoRowsOneColumn3() {
 
-        val input = doubleArrayOf(1.0, 1.0)
-        val chain = doubleArrayOf(2.0, 1.0)
-        val sum = 2.0
-        val expectedFirst = (2.0 * 1.0 - 1.0 * 1.0) / Math.pow(sum, 2.0)
-        val expectedSecond = (-2.0 * 1.0 + 1.0 * 1.0) / Math.pow(sum, 2.0)
-        val expected = doubleArrayOf(expectedFirst, expectedSecond)
+        val input = floatArrayOf(1.0f, 1.0f)
+        val chain = floatArrayOf(2.0f, 1.0f)
+        val sum = 2.0f
+        val expectedFirst = (2.0f * 1.0f - 1.0f * 1.0f) / FloatMath.pow(sum, 2.0f)
+        val expectedSecond = (-2.0f * 1.0f + 1.0f * 1.0f) / FloatMath.pow(sum, 2.0f)
+        val expected = floatArrayOf(expectedFirst, expectedSecond)
 
         testBackward(2, 1, input, chain, expected)
 
@@ -90,12 +91,12 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardOneRowTwoColumns() {
 
-        val input = doubleArrayOf(1.0, 2.0)
-        val chain = doubleArrayOf(1.0, 2.0)
+        val input = floatArrayOf(1.0f, 2.0f)
+        val chain = floatArrayOf(1.0f, 2.0f)
         val numberRows = 1
         val numberColumns = 2
 
-        val expected = doubleArrayOf(0.0, 0.0)
+        val expected = floatArrayOf(0.0f, 0.0f)
 
         testBackward(numberRows, numberColumns, input, chain, expected)
 
@@ -104,35 +105,35 @@ class CudaNormalizationLayerTest {
     @Test
     fun testBackwardTwoRowsTwoColumns() {
 
-        val input = doubleArrayOf(0.0, 1.0, 2.0, 3.0)
-        val chain = doubleArrayOf(4.0, 5.0, 6.0, 7.0)
+        val input = floatArrayOf(0.0f, 1.0f, 2.0f, 3.0f)
+        val chain = floatArrayOf(4.0f, 5.0f, 6.0f, 7.0f)
         val numberRows = 2
         val numberColumns = 2
 
-        val firstSum = 0.0+1.0
-        val firstSquaredSum = Math.pow(firstSum, 2.0)
-        val secondSum = 2.0+3.0
-        val secondSquaredSum = Math.pow(secondSum, 2.0)
+        val firstSum = 0.0f+1.0f
+        val firstSquaredSum = firstSum * firstSum
+        val secondSum = 2.0f+3.0f
+        val secondSquaredSum = secondSum * secondSum
 
-        val expected = doubleArrayOf(
-            (4.0 * 1.0 - 5.0 * 1.0) / firstSquaredSum,
-            (-4.0 * 0.0 + 5.0 * 0.0) / firstSquaredSum,
-            (6.0 * 3.0 - 7.0 * 3.0) / secondSquaredSum,
-            (-6.0 * 2.0 + 7.0 * 2.0) / secondSquaredSum)
+        val expected = floatArrayOf(
+            (4.0f * 1.0f - 5.0f * 1.0f) / firstSquaredSum,
+            (-4.0f * 0.0f + 5.0f * 0.0f) / firstSquaredSum,
+            (6.0f * 3.0f - 7.0f * 3.0f) / secondSquaredSum,
+            (-6.0f * 2.0f + 7.0f * 2.0f) / secondSquaredSum)
 
         testBackward(numberRows, numberColumns, input, chain, expected)
 
     }
 
-    private fun testForward(input: DoubleArray, numberRows : Int, numberColumns : Int, expected: DoubleArray) {
+    private fun testForward(input: FloatArray, numberRows : Int, numberColumns : Int, expected: FloatArray) {
 
         val actual = forward(input, numberRows, numberColumns)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun forward(input: DoubleArray, numberRows: Int, numberColumns: Int): DoubleArray {
+    private fun forward(input: FloatArray, numberRows: Int, numberColumns: Int): FloatArray {
 
         val context = setUpCudaContext()
 
@@ -157,15 +158,15 @@ class CudaNormalizationLayerTest {
     }
 
 
-    private fun testBackward(numberRows : Int, numberColumns : Int, input : DoubleArray, chain: DoubleArray, expected: DoubleArray) {
+    private fun testBackward(numberRows : Int, numberColumns : Int, input : FloatArray, chain: FloatArray, expected: FloatArray) {
 
         val actual = backward(numberRows, numberColumns, input, chain)
 
-        assertArrayEquals(expected, actual, 0.001)
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun backward(numberRows: Int, numberColumns: Int, input: DoubleArray, chain: DoubleArray): DoubleArray {
+    private fun backward(numberRows: Int, numberColumns: Int, input: FloatArray, chain: FloatArray): FloatArray {
 
         val context = setUpCudaContext()
 

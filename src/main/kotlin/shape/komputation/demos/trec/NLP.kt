@@ -13,9 +13,9 @@ object NLP {
             .flatMap { tokens -> tokens }
             .toSet()
 
-    fun embedVocabulary(vocabulary: Set<String>, embeddingFile: File): Map<String, DoubleArray> {
+    fun embedVocabulary(vocabulary: Set<String>, embeddingFile: File): Map<String, FloatArray> {
 
-        val embeddingMap = hashMapOf<String, DoubleArray>()
+        val embeddingMap = hashMapOf<String, FloatArray>()
 
         embeddingFile.bufferedReader().use { reader ->
 
@@ -29,7 +29,7 @@ object NLP {
 
                     if (vocabulary.contains(word)) {
 
-                        val embedding = split.drop(1).map { it.toDouble() }.toDoubleArray()
+                        val embedding = split.drop(1).map { it.toFloat() }.toFloatArray()
 
                         embeddingMap.put(word, embedding)
 

@@ -8,26 +8,26 @@ class StochasticGradientDescentTest {
     @Test
     fun testOneDimension() {
 
-        val sgd = CpuStochasticGradientDescent(0.1)
+        val sgd = CpuStochasticGradientDescent(0.1f)
 
-        val parameter = doubleArrayOf(1.0)
+        val parameter = floatArrayOf(1.0f)
 
-        sgd.updateDensely(parameter, doubleArrayOf(0.2), 1)
+        sgd.updateDensely(parameter, floatArrayOf(0.2f), 1)
 
-        assertArrayEquals(doubleArrayOf(0.98), parameter)
+        assertArrayEquals(floatArrayOf(0.98f), parameter)
 
     }
 
     @Test
     fun testTwoDimensions() {
 
-        val sgd = CpuStochasticGradientDescent(0.1)
+        val sgd = CpuStochasticGradientDescent(0.1f)
 
-        val parameter = doubleArrayOf(1.0, 2.0)
+        val parameter = floatArrayOf(1.0f, 2.0f)
 
-        sgd.updateDensely(parameter, doubleArrayOf(0.1, 0.2), 2)
+        sgd.updateDensely(parameter, floatArrayOf(0.1f, 0.2f), 2)
 
-        assertArrayEquals(doubleArrayOf(0.99, 1.98), parameter)
+        assertArrayEquals(floatArrayOf(0.99f, 1.98f), parameter)
 
     }
 

@@ -11,7 +11,7 @@ import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -23,7 +23,7 @@ class SimpleRecurrentUnit internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Optimizable {
 
-    override fun forwardStep(step : Int, state: DoubleMatrix, input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forwardStep(step : Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // weighted state = state weights * state
         val weightedState = this.previousStateWeighting.forwardStep(step, state, isTraining)
@@ -56,7 +56,7 @@ class SimpleRecurrentUnit internal constructor(
 
     }
 
-    override fun backwardStep(step : Int, chain: DoubleMatrix): Pair<DoubleMatrix, DoubleMatrix> {
+    override fun backwardStep(step : Int, chain: FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
 
         // d new state / state pre-activation
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
@@ -84,7 +84,7 @@ class SimpleRecurrentUnit internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         this.previousStateWeighting.optimize(scalingFactor)
         this.inputWeighting.optimize(scalingFactor)

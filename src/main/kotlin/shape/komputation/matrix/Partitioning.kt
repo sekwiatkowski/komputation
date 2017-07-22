@@ -4,7 +4,7 @@ fun partitionIndices(size : Int, batchSize : Int): Array<Array<Int>> {
 
     var count = 0
 
-    val numberBatches = Math.ceil(size.toDouble().div(batchSize.toDouble())).toInt()
+    val numberBatches = IntMath.ceil(size.toDouble().div(batchSize.toDouble()))
 
     val batches = Array(numberBatches) {
 

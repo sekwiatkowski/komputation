@@ -1,9 +1,9 @@
 package shape.komputation
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
-fun assertMatrixEquality(expected: DoubleMatrix, actual: DoubleMatrix, delta : Double) {
+fun assertMatrixEquality(expected: FloatMatrix, actual: FloatMatrix, delta : Float) {
 
     assertEquals(expected.numberRows, actual.numberRows)
     assertEquals(expected.numberColumns, actual.numberColumns)

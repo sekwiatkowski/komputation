@@ -2,9 +2,9 @@ package shape.komputation.cpu.layers.forward.encoder
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleZeroColumnVector
-import shape.komputation.matrix.doubleZeroMatrix
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuSingleOutputEncoder internal constructor(
@@ -20,9 +20,9 @@ class CpuSingleOutputEncoder internal constructor(
 
     private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
 
-    override fun forward(input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        var currentState = doubleZeroColumnVector(this.hiddenDimension)
+        var currentState = floatZeroColumnVector(this.hiddenDimension)
 
         for (indexStep in this.startAtTheBeginning) {
 
@@ -36,9 +36,9 @@ class CpuSingleOutputEncoder internal constructor(
 
     }
 
-    override fun backward(incoming: DoubleMatrix): DoubleMatrix {
+    override fun backward(incoming: FloatMatrix): FloatMatrix {
 
-        val seriesBackwardWrtInput = doubleZeroMatrix(this.inputDimension, this.numberSteps)
+        val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
 
         var stateChain = incoming
 
@@ -58,7 +58,7 @@ class CpuSingleOutputEncoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Double) {
+    override fun optimize(scalingFactor : Float) {
 
         if (this.unit is Optimizable) {
 

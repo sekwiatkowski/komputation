@@ -1,4 +1,4 @@
-__device__ double backwardSigmoid (double forward, double chain)
+__device__ float backwardSigmoid (float forward, float chain)
 {
 
     return forward * (1.0 - forward) * chain;
@@ -6,7 +6,7 @@ __device__ double backwardSigmoid (double forward, double chain)
 }
 
 extern "C"
-__global__ void backwardSigmoidKernel (int length, double *forward, double *chain, double *destination)
+__global__ void backwardSigmoidKernel (int length, float *forward, float *chain, float *destination)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

@@ -30,7 +30,7 @@ class ProjectionLayer(
         val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
         val weightUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(numberWeightRows, numberWeightColumns)
 
-        val bias : DoubleArray?
+        val bias : FloatArray?
         val biasUpdateRule: UpdateRule?
         val biasAccumulator: DenseAccumulator?
 
@@ -63,7 +63,7 @@ class ProjectionLayer(
         val weights = initializeWeights(this.weightInitializationStrategy, numberWeightRows, numberWeightColumns, this.inputDimension)
         val weightUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(numberWeightRows, numberWeightColumns)
 
-        val bias : DoubleArray?
+        val bias : FloatArray?
         val biasUpdateRule: CudaUpdateRule?
 
         if (this.biasInitializationStrategy != null) {

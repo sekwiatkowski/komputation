@@ -7,7 +7,7 @@ object MnistData {
 
     val numberCategories = 10
 
-    private fun loadMnist(csvFile: File, size: Int): Pair<Array<Matrix>, Array<DoubleMatrix>> {
+    private fun loadMnist(csvFile: File, size: Int): Pair<Array<Matrix>, Array<FloatMatrix>> {
 
         val inputs = Array<Matrix>(size) { EMPTY_DOUBLE_MATRIX }
         val targets = Array(size) { EMPTY_DOUBLE_MATRIX }
@@ -23,7 +23,7 @@ object MnistData {
                 val category = split.first().toInt()
 
                 val target = oneHotVector(numberCategories, category)
-                val input = doubleColumnVector(*split.drop(1).map { it.toDouble().div(255.0) }.toDoubleArray())
+                val input = floatColumnVector(*split.drop(1).map { it.toFloat().div(255.0f) }.toFloatArray())
 
                 targets[index] = target
                 inputs[index] = input

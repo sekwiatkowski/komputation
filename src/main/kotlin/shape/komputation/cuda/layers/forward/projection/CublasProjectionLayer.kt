@@ -15,12 +15,12 @@ import shape.komputation.optimization.Optimizable
 class CublasProjectionLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
-    private val initialWeights: DoubleArray,
+    private val initialWeights: FloatArray,
     private val numberWeightRows: Int,
     private val numberWeightColumns: Int,
     private val weightUpdateRule: CudaUpdateRule? = null,
 
-    private val initialBias: DoubleArray? = null,
+    private val initialBias: FloatArray? = null,
     private val biasUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
@@ -131,7 +131,7 @@ class CublasProjectionLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Double) {
+    override fun optimize(scalingFactor: Float) {
 
         if (this.weightUpdateRule != null) {
 

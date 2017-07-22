@@ -8,8 +8,8 @@ class ColumnRepetitionTest {
     @Test
     fun test1() {
 
-        val actual = repeatColumn(doubleArrayOf(1.0), 1)
-        val expected = doubleArrayOf(1.0)
+        val actual = repeatColumn(floatArrayOf(1.0f), 1)
+        val expected = floatArrayOf(1.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -18,8 +18,8 @@ class ColumnRepetitionTest {
     @Test
     fun test2() {
 
-        val actual = repeatColumn(doubleArrayOf(1.0), 2)
-        val expected = doubleArrayOf(1.0, 1.0)
+        val actual = repeatColumn(floatArrayOf(1.0f), 2)
+        val expected = floatArrayOf(1.0f, 1.0f)
 
         assertArrayEquals(expected, actual)
 
@@ -28,8 +28,8 @@ class ColumnRepetitionTest {
     @Test
     fun test3() {
 
-        val actual = repeatColumn(doubleArrayOf(1.0, 2.0), 2)
-        val expected = doubleArrayOf(1.0, 2.0, 1.0, 2.0)
+        val actual = repeatColumn(floatArrayOf(1.0f, 2.0f), 2)
+        val expected = floatArrayOf(1.0f, 2.0f, 1.0f, 2.0f)
 
         assertArrayEquals(expected, actual)
 

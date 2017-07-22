@@ -1,22 +1,22 @@
 package shape.komputation.demos.xor
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleScalar
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatScalar
 
 object XorData {
 
     val input = arrayOf<Matrix>(
-        doubleColumnVector(0.0, 0.0),
-        doubleColumnVector(1.0, 0.0),
-        doubleColumnVector(0.0, 1.0),
-        doubleColumnVector(1.0, 1.0))
+        floatColumnVector(0.0f, 0.0f),
+        floatColumnVector(1.0f, 0.0f),
+        floatColumnVector(0.0f, 1.0f),
+        floatColumnVector(1.0f, 1.0f))
 
     val targets = arrayOf(
-        doubleScalar(0.0),
-        doubleScalar(1.0),
-        doubleScalar(1.0),
-        doubleScalar(0.0)
+        floatScalar(0.0f),
+        floatScalar(1.0f),
+        floatScalar(1.0f),
+        floatScalar(0.0f)
     )
 
 }

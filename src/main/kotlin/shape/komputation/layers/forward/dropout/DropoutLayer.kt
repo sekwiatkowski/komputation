@@ -11,7 +11,7 @@ class DropoutLayer(
     private val name : String?,
     private val dimension: Int,
     private val random: Random,
-    private val keepProbability: Double,
+    private val keepProbability: Float,
     private val activation: CpuDropoutCompliantInstruction) : CpuForwardLayerInstruction {
 
     override fun buildForCpu(): CpuDropoutLayer {
@@ -27,10 +27,10 @@ class DropoutLayer(
 
 }
 
-fun dropoutLayer(dimension: Int, random: Random, keepProbability: Double, activation: CpuDropoutCompliantInstruction) =
+fun dropoutLayer(dimension: Int, random: Random, keepProbability: Float, activation: CpuDropoutCompliantInstruction) =
 
     dropoutLayer(null, dimension, random, keepProbability, activation)
 
-fun dropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Double, activation: CpuDropoutCompliantInstruction) =
+fun dropoutLayer(name : String?, dimension: Int, random: Random, keepProbability: Float, activation: CpuDropoutCompliantInstruction) =
 
     DropoutLayer(name, dimension, random, keepProbability, activation)

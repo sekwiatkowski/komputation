@@ -1,40 +1,40 @@
 package shape.komputation.cpu.functions
 
-fun add(a: DoubleArray, b: DoubleArray) =
+fun add(a: FloatArray, b: FloatArray) =
 
-    DoubleArray(a.size) { index ->
+    FloatArray(a.size) { index ->
 
         a[index] + b[index]
 
     }
 
-fun subtract(a: DoubleArray, b: DoubleArray) =
+fun subtract(a: FloatArray, b: FloatArray) =
 
-    DoubleArray(a.size) { index ->
+    FloatArray(a.size) { index ->
 
         a[index] - b[index]
 
     }
 
-fun hadamard(a: DoubleArray, b: DoubleArray) =
+fun hadamard(a: FloatArray, b: FloatArray) =
 
-    DoubleArray(a.size) { index ->
+    FloatArray(a.size) { index ->
 
         a[index] * b[index]
 
     }
 
-fun negate(vector: DoubleArray) =
+fun negate(vector: FloatArray) =
 
-    DoubleArray(vector.size) { index ->
+    FloatArray(vector.size) { index ->
 
         -vector[index]
 
     }
 
-fun scale(vector: DoubleArray, scalar : Double) =
+fun scale(vector: FloatArray, scalar : Float) =
 
-    DoubleArray(vector.size) { index ->
+    FloatArray(vector.size) { index ->
 
         scalar * vector[index]
 

@@ -8,26 +8,24 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeWeights
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.identityLayer
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.OptimizationInstruction
 
 class SeriesWeighting internal constructor(
     private val name : String?,
     private val weightings: Array<BaseCpuForwardLayer>,
-    private val weights: DoubleArray,
+    private val weights: FloatArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule?) {
 
-    private val numberWeightEntries = weights.size
-
-    fun forwardStep(step : Int, input: DoubleMatrix, isTraining : Boolean): DoubleMatrix {
+    fun forwardStep(step : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         return this.weightings[step].forward(input, isTraining)
 
     }
 
-    fun backwardStep(step: Int, chain: DoubleMatrix) : DoubleMatrix {
+    fun backwardStep(step: Int, chain: FloatMatrix) : FloatMatrix {
 
         val backward = this.weightings[step].backward(chain)
 
@@ -42,7 +40,7 @@ class SeriesWeighting internal constructor(
 
     }
 
-    fun optimize(scalingFactor : Double) {
+    fun optimize(scalingFactor : Float) {
 
         if (this.updateRule != null) {
 
@@ -132,7 +130,7 @@ private fun stepWeighting(
     name : String?,
     numberWeightRows: Int,
     numberWeightColumns: Int,
-    weights : DoubleArray,
+    weights : FloatArray,
     weightAccumulator: DenseAccumulator,
     weightUpdateRule : UpdateRule? = null) =
 

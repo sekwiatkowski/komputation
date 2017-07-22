@@ -10,7 +10,7 @@ class FindMaxIndicesInRowsTest {
     fun testOneByOne() {
 
         val expected = intArrayOf(0)
-        val actual = findMaxIndicesInRows(doubleArrayOf(1.0), 1, 1)
+        val actual = findMaxIndicesInRows(floatArrayOf(1.0f), 1, 1)
 
         assertArrayEquals(expected, actual)
 
@@ -20,7 +20,7 @@ class FindMaxIndicesInRowsTest {
     fun testTwoByOne() {
 
         val expected = intArrayOf(0, 1)
-        val actual = findMaxIndicesInRows(doubleArrayOf(1.0, 1.0), 2, 1)
+        val actual = findMaxIndicesInRows(floatArrayOf(1.0f, 1.0f), 2, 1)
 
         assertArrayEquals(expected, actual)
 
@@ -30,7 +30,7 @@ class FindMaxIndicesInRowsTest {
     fun testTwoByTwo() {
 
         val expected = intArrayOf(2, 3)
-        val actual = findMaxIndicesInRows(doubleArrayOf(1.0, 2.0, 3.0, 4.0), 2, 2)
+        val actual = findMaxIndicesInRows(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f), 2, 2)
 
         assertArrayEquals(expected, actual)
 
@@ -40,7 +40,7 @@ class FindMaxIndicesInRowsTest {
     fun testTwoByTwoReversed() {
 
         val expected = intArrayOf(0, 1)
-        val actual = findMaxIndicesInRows(doubleArrayOf(4.0, 3.0, 2.0, 1.0), 2, 2)
+        val actual = findMaxIndicesInRows(floatArrayOf(4.0f, 3.0f, 2.0f, 1.0f), 2, 2)
 
         assertArrayEquals(expected, actual)
 
@@ -54,15 +54,15 @@ class FindMaxIndex {
     @Test
     fun testOneDimension() {
 
-        assertEquals(findMaxIndex(doubleArrayOf(1.0)), 0)
+        assertEquals(findMaxIndex(floatArrayOf(1.0f)), 0)
 
     }
 
     @Test
     fun testTwoDimensions() {
 
-        assertEquals(findMaxIndex(doubleArrayOf(1.0, 2.0)), 1)
-        assertEquals(findMaxIndex(doubleArrayOf(2.0, 1.0)), 0)
+        assertEquals(findMaxIndex(floatArrayOf(1.0f, 2.0f)), 1)
+        assertEquals(findMaxIndex(floatArrayOf(2.0f, 1.0f)), 0)
 
     }
 

@@ -1,4 +1,4 @@
-__device__ double backwardRelu (double forward, double chain)
+__device__ float backwardRelu (float forward, float chain)
 {
 
     if(forward > 0.0) {
@@ -15,7 +15,7 @@ __device__ double backwardRelu (double forward, double chain)
 }
 
 extern "C"
-__global__ void backwardReluKernel (int length, double *forward, double *chain, double *destination)
+__global__ void backwardReluKernel (int length, float *forward, float *chain, float *destination)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

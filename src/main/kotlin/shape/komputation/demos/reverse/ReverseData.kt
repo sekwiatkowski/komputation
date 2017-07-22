@@ -1,8 +1,8 @@
 package shape.komputation.demos.reverse
 
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.doubleZeroMatrix
+import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.matrix.oneHotArray
 import java.util.*
 
@@ -12,11 +12,11 @@ object ReverseData {
 
         Array<Matrix>(numberExamples) {
 
-            val input = doubleZeroMatrix(numberCategories, seriesLength)
+            val input = floatZeroMatrix(numberCategories, seriesLength)
 
             for (indexStep in 0..seriesLength - 1) {
 
-                input.setColumn(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0))
+                input.setColumn(indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0f))
 
             }
 
@@ -26,11 +26,11 @@ object ReverseData {
 
     fun generateTargets(inputs : Array<Matrix>, seriesLength: Int, numberCategories: Int) =
 
-        Array<DoubleMatrix>(inputs.size) { index ->
+        Array(inputs.size) { index ->
 
-            val matrix = inputs[index] as DoubleMatrix
+            val matrix = inputs[index] as FloatMatrix
 
-            val reversedSequenceMatrix = doubleZeroMatrix(numberCategories, seriesLength)
+            val reversedSequenceMatrix = floatZeroMatrix(numberCategories, seriesLength)
 
             for (indexStep in 0..seriesLength - 1) {
 

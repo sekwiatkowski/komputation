@@ -7,12 +7,12 @@ import shape.komputation.cpu.optimization.UpdateRule
     history update: v = m * v - learning_rate * dx
     parameter update: x = x - m * v_backup + v + m * v
 */
-class CpuNesterov(private val learningRate: Double, private val momentum: Double, size : Int) : UpdateRule {
+class CpuNesterov(private val learningRate: Float, private val momentum: Float, size : Int) : UpdateRule {
 
-    private val history = DoubleArray(size)
-    private val backup = DoubleArray(size)
+    private val history = FloatArray(size)
+    private val backup = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: DoubleArray, gradient: DoubleArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
 
         for(localIndex in 0..gradientSize-1) {
 
@@ -21,7 +21,7 @@ class CpuNesterov(private val learningRate: Double, private val momentum: Double
             this.backup[historyIndex] = this.history[historyIndex]
 
             // Discount the previous history
-            val updatedHistoryEntry = this.computeHistoryUpdate(historyIndex, gradient, localIndex)
+            val updatedHistoryEntry = this.computeHistoryUpdate(historyIndex, gradient[localIndex])
 
             // Update the history
             this.history[historyIndex] = updatedHistoryEntry
@@ -40,8 +40,8 @@ class CpuNesterov(private val learningRate: Double, private val momentum: Double
     }
 
     // Subtract the scaled gradient (looking ahead)
-    private fun computeHistoryUpdate(historyIndex: Int, gradient: DoubleArray, localIndex: Int) =
+    private fun computeHistoryUpdate(historyIndex: Int, derivative: Float) =
 
-        this.momentum * this.history[historyIndex] - this.learningRate * gradient[localIndex]
+        this.momentum * this.history[historyIndex] - this.learningRate * derivative
 
 }

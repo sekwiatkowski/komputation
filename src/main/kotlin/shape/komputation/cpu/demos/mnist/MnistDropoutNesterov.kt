@@ -35,9 +35,9 @@ fun main(args: Array<String>) {
     val hiddenDimension = 100
     val numberCategories = MnistData.numberCategories
 
-    val initialization = gaussianInitialization(random, 0.0, 0.1)
+    val initialization = gaussianInitialization(random, 0.0f, 0.1f)
 
-    val optimizer = nesterov(0.005, 0.1)
+    val optimizer = nesterov(0.005f, 0.1f)
 
     val firstProjection = projectionLayer(
         inputDimension,
@@ -59,11 +59,11 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(inputDimension),
         firstProjection,
-        dropoutLayer(hiddenDimension, random, 0.85, reluLayer(hiddenDimension)),
+        dropoutLayer(hiddenDimension, random, 0.85f, reluLayer(hiddenDimension)),
         outputLayer
     )
 
-    val afterEachIteration = { _ : Int, _ : Double ->
+    val afterEachIteration = { _ : Int, _ : Float ->
 
         val accuracy = network
             .test(
@@ -76,7 +76,8 @@ fun main(args: Array<String>) {
                 }
             )
             .count { correct -> correct }
-            .div(MnistData.numberTestExamples.toDouble())
+            .toFloat()
+            .div(MnistData.numberTestExamples.toFloat())
 
         println(accuracy)
 

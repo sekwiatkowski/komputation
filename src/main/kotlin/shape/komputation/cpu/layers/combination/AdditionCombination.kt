@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.combination
 
 import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.layers.CombinationLayer
-import shape.komputation.matrix.DoubleMatrix
+import shape.komputation.matrix.FloatMatrix
 
 /*
    Ex:
@@ -15,17 +15,17 @@ import shape.komputation.matrix.DoubleMatrix
 */
 class AdditionCombination internal constructor(name : String? = null) : CombinationLayer(name) {
 
-    override fun forward(first: DoubleMatrix, second: DoubleMatrix) =
+    override fun forward(first: FloatMatrix, second: FloatMatrix) =
 
-        DoubleMatrix(first.numberRows, first.numberColumns, add(first.entries, second.entries))
+        FloatMatrix(first.numberRows, first.numberColumns, add(first.entries, second.entries))
 
     // d (x + y) / d x = 1
-    override fun backwardFirst(chain: DoubleMatrix) =
+    override fun backwardFirst(chain: FloatMatrix) =
 
         chain
 
     // d (x + y) / d y = 1
-    override fun backwardSecond(chain: DoubleMatrix) =
+    override fun backwardSecond(chain: FloatMatrix) =
 
         chain
 

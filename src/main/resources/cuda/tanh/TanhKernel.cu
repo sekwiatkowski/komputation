@@ -1,12 +1,12 @@
-__device__ double tanh (double x)
+__device__ float tanh (float x)
 {
 
-    return (2.0 / (1.0 + exp(-2.0*x))) - 1.0;
+    return (2.0 / (1.0 + expf(-2.0*x))) - 1.0;
 
 }
 
 extern "C"
-__global__ void tanhKernel (int length, double *source, double *destination)
+__global__ void tanhKernel (int length, float *source, float *destination)
 {
 
     int index = blockDim.x * blockIdx.x + threadIdx.x;

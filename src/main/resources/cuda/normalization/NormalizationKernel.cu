@@ -34,7 +34,7 @@
 
 
 template <int blockSize>
-__global__ void normalizationKernel (int numberCategories, double* input, double* result, double* sums)
+__global__ void normalizationKernel (int numberCategories, float* input, float* result, float* sums)
 {
 
     /*
@@ -45,7 +45,7 @@ __global__ void normalizationKernel (int numberCategories, double* input, double
     int blockId = blockIdx.x;
     int globalId = blockIdx.x * blockDim.x + threadId;
 
-    extern __shared__ double sharedData[];
+    extern __shared__ float sharedData[];
 
     // Recall that the block size is a power of 2.
     // In many cases the number of threads will thus exceed the number of categories.

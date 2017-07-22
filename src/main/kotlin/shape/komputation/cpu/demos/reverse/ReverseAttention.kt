@@ -11,6 +11,7 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.decoder.attentiveDecoder
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
 import shape.komputation.loss.logisticLoss
+import shape.komputation.matrix.IntMath
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -19,7 +20,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val seriesLength = 6
     val numberCategories = 10
-    val numberExamples = Math.pow(10.toDouble(), seriesLength.toDouble()).toInt()
+    val numberExamples = IntMath.pow(10, seriesLength)
     val hiddenDimension = 10
     val numberIterations = 10
     val batchSize = 1
@@ -28,9 +29,9 @@ fun main(args: Array<String>) {
     val targets = ReverseData.generateTargets(inputs, seriesLength, numberCategories)
 
     val identityInitializationStrategy = identityInitialization()
-    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0, 0.001)
+    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)
 
-    val optimizationStrategy = stochasticGradientDescent(0.001)
+    val optimizationStrategy = stochasticGradientDescent(0.001f)
 
     val encoderUnit = simpleRecurrentUnit(
         seriesLength,

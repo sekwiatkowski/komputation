@@ -1,5 +1,5 @@
 extern "C"
-__global__ void backwardSquaredLossKernel (int length, double *predictions, double *targets, double *result)
+__global__ void backwardSquaredLossKernel (int length, float *predictions, float *targets, float *result)
 {
 
     int index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -9,7 +9,5 @@ __global__ void backwardSquaredLossKernel (int length, double *predictions, doub
         result[index] = predictions[index] - targets[index];
 
     }
-
-    __syncthreads();
 
 }

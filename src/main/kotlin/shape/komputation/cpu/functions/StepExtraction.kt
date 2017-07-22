@@ -2,7 +2,7 @@ package shape.komputation.cpu.functions
 
 import java.util.*
 
-fun extractStep(chainEntries : DoubleArray, indexStep : Int, stepSize : Int): DoubleArray {
+fun extractStep(chainEntries : FloatArray, indexStep : Int, stepSize : Int): FloatArray {
 
     val start = indexStep * stepSize
     val end = start + stepSize

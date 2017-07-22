@@ -1,28 +1,29 @@
 package shape.komputation.cuda.functions
 
 import jcuda.Pointer
-import jcuda.Sizeof
-import jcuda.jcublas.JCublas2.*
+import jcuda.jcublas.JCublas2.cublasCreate
+import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setVector
-import shape.komputation.matrix.DoubleMatrix
-import shape.komputation.matrix.doubleColumnVector
-import shape.komputation.matrix.doubleRowVector
-import shape.komputation.matrix.doubleScalar
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatRowVector
+import shape.komputation.matrix.floatScalar
 
 class CublasProjectionBackwardTest {
 
     @Test
     fun testBackwardProjectionWrtInput1() {
 
-        val weights = doubleScalar(2.0)
-        val chain = doubleArrayOf(3.0)
-        val expected = doubleArrayOf(6.0)
+        val weights = floatArrayOf(2.0f)
+        val chain = floatArrayOf(3.0f)
+        val expected = floatArrayOf(6.0f)
 
-        checkBackwardProjectionWrtInput(weights, chain, expected)
+        checkBackwardProjectionWrtInput(1, 1, weights, chain, expected)
 
     }
 
@@ -40,11 +41,11 @@ class CublasProjectionBackwardTest {
             weights^T >> 2 3
          */
 
-        val weights = doubleColumnVector(2.0, 3.0)
-        val chain = doubleArrayOf(4.0, 5.0)
-        val expected = doubleArrayOf(2.0*4.0 + 3.0*5.0)
+        val weights = floatArrayOf(2.0f, 3.0f)
+        val chain = floatArrayOf(4.0f, 5.0f)
+        val expected = floatArrayOf(2.0f*4.0f + 3.0f*5.0f)
 
-        checkBackwardProjectionWrtInput(weights, chain, expected)
+        checkBackwardProjectionWrtInput(2, 1, weights, chain, expected)
 
     }
 
@@ -63,11 +64,11 @@ class CublasProjectionBackwardTest {
                          3 5 53
          */
 
-        val weights = DoubleMatrix(2, 2, doubleArrayOf(2.0, 4.0, 3.0, 5.0))
-        val chain = doubleArrayOf(6.0, 7.0)
-        val expected = doubleArrayOf(40.0, 53.0)
+        val weights = floatArrayOf(2.0f, 4.0f, 3.0f, 5.0f)
+        val chain = floatArrayOf(6.0f, 7.0f)
+        val expected = floatArrayOf(40.0f, 53.0f)
 
-        checkBackwardProjectionWrtInput(weights, chain, expected)
+        checkBackwardProjectionWrtInput(2, 2, weights, chain, expected)
 
     }
 
@@ -80,9 +81,9 @@ class CublasProjectionBackwardTest {
     @Test
     fun testBackwardProjectionWrtWeight1() {
 
-        val weights = doubleScalar(2.0)
-        val chain = doubleArrayOf(3.0)
-        val expected = doubleArrayOf(6.0)
+        val weights = floatScalar(2.0f)
+        val chain = floatArrayOf(3.0f)
+        val expected = floatArrayOf(6.0f)
 
         checkBackwardProjectionWrtWeights(weights, chain, expected)
 
@@ -97,36 +98,33 @@ class CublasProjectionBackwardTest {
     @Test
     fun testBackwardProjectionWrtWeight2() {
 
-        val weights = doubleRowVector(2.0, 3.0)
-        val chain = doubleArrayOf(4.0, 5.0)
-        val expected = doubleArrayOf(8.0, 10.0, 12.0, 15.0)
+        val weights = floatRowVector(2.0f, 3.0f)
+        val chain = floatArrayOf(4.0f, 5.0f)
+        val expected = floatArrayOf(8.0f, 10.0f, 12.0f, 15.0f)
 
         checkBackwardProjectionWrtWeights(weights, chain, expected)
 
     }
 
-    private fun checkBackwardProjectionWrtInput(weights: DoubleMatrix, chain: DoubleArray, expected: DoubleArray) {
+    private fun checkBackwardProjectionWrtInput(numberWeightRows : Int, numberWeightColumns : Int, weights: FloatArray, chain: FloatArray, expected: FloatArray) {
 
-        val numberWeightRows = weights.numberRows
-        val numberWeightColumns = weights.numberColumns
         val numberWeightEntries = numberWeightRows * numberWeightColumns
 
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
         val deviceWeights = Pointer()
-        setVector(weights.entries, numberWeightEntries, deviceWeights)
+        setVector(weights, numberWeightEntries, deviceWeights)
 
         val deviceChain = Pointer()
         setVector(chain, numberWeightRows, deviceChain)
 
-        val hostResult = DoubleArray(numberWeightColumns)
         val deviceResult = Pointer()
-        setVector(hostResult, numberWeightColumns, deviceResult)
+        allocateDeviceMemory(deviceResult, numberWeightColumns)
 
         cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
 
-        cublasGetVector(numberWeightColumns, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
+        val hostResult = getVector(deviceResult, numberWeightColumns)
 
         cudaFree(deviceWeights)
         cudaFree(deviceChain)
@@ -134,11 +132,11 @@ class CublasProjectionBackwardTest {
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, hostResult, 0.001)
+        assertArrayEquals(expected, hostResult, 0.001f)
 
     }
 
-    private fun checkBackwardProjectionWrtWeights(input : DoubleMatrix, chain : DoubleArray, expected: DoubleArray) {
+    private fun checkBackwardProjectionWrtWeights(input : FloatMatrix, chain : FloatArray, expected: FloatArray) {
 
         val inputEntries = input.entries
         val inputDimension = inputEntries.size
@@ -156,13 +154,12 @@ class CublasProjectionBackwardTest {
         val deviceChain = Pointer()
         setVector(chain, chainDimension, deviceChain)
 
-        val hostResult = DoubleArray(resultDimension)
         val deviceResult = Pointer()
-        setVector(hostResult, resultDimension, deviceResult)
+        allocateDeviceMemory(deviceResult, resultDimension)
 
         cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, deviceResult, chainDimension, inputDimension)
 
-        cublasGetVector(resultDimension, Sizeof.DOUBLE, deviceResult, 1, Pointer.to(hostResult), 1)
+        val hostResult = getVector(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)
@@ -170,7 +167,7 @@ class CublasProjectionBackwardTest {
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, hostResult, 0.001)
+        assertArrayEquals(expected, hostResult, 0.001f)
 
     }
 

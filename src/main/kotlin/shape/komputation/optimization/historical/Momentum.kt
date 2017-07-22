@@ -6,11 +6,11 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.optimization.CudaOptimizationStrategy
 import shape.komputation.optimization.OptimizationInstruction
 
-fun momentum(learningRate: Double, momentum : Double) =
+fun momentum(learningRate: Float, momentum : Float) =
 
     Momentum(learningRate, momentum)
 
-class Momentum(private val learningRate: Double, private val momentum : Double) : OptimizationInstruction {
+class Momentum(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
 
     override fun buildForCpu() : CpuOptimizationStrategy {
 
