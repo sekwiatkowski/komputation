@@ -6,9 +6,9 @@ import shape.komputation.cpu.functions.hadamard
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.FloatMatrix
 
-class CpuSigmoidLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {
+class CpuSigmoidLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
 
-    private var forwardEntries : FloatArray = FloatArray(0)
+    private var forwardEntries = FloatArray(numberEntries)
 
     private var differentiation : FloatArray? = null
 
@@ -16,9 +16,9 @@ class CpuSigmoidLayer internal constructor(name : String? = null) : BaseCpuActiv
 
         this.differentiation = null
 
-        val result = FloatMatrix(input.numberRows, input.numberColumns, sigmoid(input.entries))
+        sigmoid(input.entries, this.forwardEntries, this.numberEntries)
 
-        this.forwardEntries = result.entries
+        val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
         return result
 

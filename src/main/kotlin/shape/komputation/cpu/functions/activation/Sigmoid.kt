@@ -2,13 +2,15 @@ package shape.komputation.cpu.functions.activation
 
 import shape.komputation.matrix.FloatMath
 
-fun sigmoid(input: FloatArray) =
+fun sigmoid(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(input.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
-        sigmoid(input[index])
+        result[index] = sigmoid(input[index])
 
     }
+
+}
 
 fun sigmoid(x: Float) =
 

@@ -81,7 +81,7 @@ class AttentiveDecoder(
         val activationName = concatenateNames(this.name, "decoding-activation")
         val activations = Array(this.numberSteps) { index ->
 
-            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.decodingDimension, this.numberSteps).buildForCpu()
+            cpuActivationLayer(concatenateNames(activationName, index.toString()), this.activationFunction, this.decodingDimension, 1).buildForCpu()
 
         }
 

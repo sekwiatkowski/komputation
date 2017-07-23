@@ -11,7 +11,7 @@ class SigmoidLayer(private val name : String?, private val numberEntries: Int) :
 
     override fun buildForCpu() =
 
-        CpuSigmoidLayer(this.name)
+        CpuSigmoidLayer(this.name, this.numberEntries)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
 
