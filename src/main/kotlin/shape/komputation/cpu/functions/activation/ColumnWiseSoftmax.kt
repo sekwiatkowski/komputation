@@ -3,9 +3,7 @@ package shape.komputation.cpu.functions.activation
 import shape.komputation.matrix.FloatMath
 import java.util.*
 
-fun columnWiseSoftmax(input: FloatArray, numberRows : Int, numberColumns : Int): FloatArray {
-
-    val results = FloatArray(input.size)
+fun columnWiseSoftmax(input: FloatArray, numberRows : Int, numberColumns : Int, result : FloatArray) {
 
     for (indexColumn in 0..numberColumns - 1) {
 
@@ -19,25 +17,21 @@ fun columnWiseSoftmax(input: FloatArray, numberRows : Int, numberColumns : Int):
             val exponentiation = FloatMath.exp(input[indexEntry])
             sum += exponentiation
 
-            results[indexEntry] = exponentiation
+            result[indexEntry] = exponentiation
 
         }
 
         for (indexRow in 0..numberRows - 1) {
 
-            results[start + indexRow] /= sum
+            result[start + indexRow] /= sum
 
         }
 
     }
 
-    return results
-
 }
 
-fun backwardColumnWiseSoftmax(numberForwardRows: Int, numberForwardColumns: Int, forwardEntries: FloatArray, chainEntries: FloatArray): FloatArray {
-
-    val gradient = FloatArray(numberForwardRows * numberForwardColumns)
+fun backwardColumnWiseSoftmax(numberForwardRows: Int, numberForwardColumns: Int, forwardEntries: FloatArray, chainEntries: FloatArray, result : FloatArray) {
 
     for (indexColumn in 0..numberForwardColumns - 1) {
 
@@ -74,11 +68,10 @@ fun backwardColumnWiseSoftmax(numberForwardRows: Int, numberForwardColumns: Int,
 
             }
 
-            gradient[start + outerIndexRow] = derivative
+            result[start + outerIndexRow] = derivative
 
         }
 
     }
 
-    return gradient
 }

@@ -4,18 +4,16 @@ import shape.komputation.cpu.functions.activation.backwardColumnWiseSoftmax
 import shape.komputation.cpu.functions.activation.columnWiseSoftmax
 import shape.komputation.matrix.FloatMatrix
 
-class CpuSoftmaxLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name) {
+class CpuSoftmaxLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
 
-    private var forwardEntries = FloatArray(0)
+    private var forwardEntries = FloatArray(this.numberRows * this.numberColumns)
+    private var backwardEntries = FloatArray(this.numberRows * this.numberColumns)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        val numberRows = input.numberRows
-        val numberColumns = input.numberColumns
+        columnWiseSoftmax(input.entries, this.numberRows, this.numberColumns, this.forwardEntries)
 
-        val result = FloatMatrix(numberRows, numberColumns, columnWiseSoftmax(input.entries, numberRows, numberColumns))
-
-        this.forwardEntries = result.entries
+        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
         return result
 
@@ -28,14 +26,9 @@ class CpuSoftmaxLayer internal constructor(name : String? = null) : BaseCpuActiv
      */
     override fun backward(chain : FloatMatrix): FloatMatrix {
 
-        val chainEntries = chain.entries
+        backwardColumnWiseSoftmax(this.numberRows, this.numberColumns, this.forwardEntries, chain.entries, this.backwardEntries)
 
-        val numberRows = chain.numberRows
-        val numberColumns = chain.numberColumns
-
-        val gradient = backwardColumnWiseSoftmax(numberRows, numberColumns, this.forwardEntries, chainEntries)
-
-        return FloatMatrix(numberRows, numberColumns, gradient)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 
     }
 

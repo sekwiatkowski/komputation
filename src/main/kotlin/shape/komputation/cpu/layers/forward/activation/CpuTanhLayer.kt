@@ -53,13 +53,13 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
 
         if (!this.hasCachedDifferentiation) {
 
-            this.differentiation = differentiateTanh(this.forwardEntries)
+            differentiateTanh(this.forwardEntries, this.differentiation, this.numberEntries)
 
             this.hasCachedDifferentiation = true
 
         }
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, differentiation))
+        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.differentiation))
 
     }
 

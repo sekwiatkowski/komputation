@@ -13,7 +13,7 @@ class SoftmaxLayer(private val name : String?, private val numberRows : Int, pri
 
     override fun buildForCpu() =
 
-        CpuSoftmaxLayer(this.name)
+        CpuSoftmaxLayer(this.name, this.numberRows, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaSoftmaxLayer {
 
