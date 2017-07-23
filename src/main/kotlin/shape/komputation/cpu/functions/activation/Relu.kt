@@ -1,12 +1,14 @@
 package shape.komputation.cpu.functions.activation
 
-fun relu(input: FloatArray) =
+fun relu(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(input.size) { index ->
+    for(index in 0..numberEntries-1) {
 
-        relu(input[index])
+        result[index] = relu(input[index])
 
     }
+
+}
 
 fun relu(entry: Float) =
 

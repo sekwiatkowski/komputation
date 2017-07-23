@@ -11,7 +11,7 @@ class ReluLayer(private val name : String?, private val numberEntries : Int) : C
 
     override fun buildForCpu() =
 
-        CpuReluLayer(this.name)
+        CpuReluLayer(this.name, this.numberEntries)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle): CudaReluLayer {
 

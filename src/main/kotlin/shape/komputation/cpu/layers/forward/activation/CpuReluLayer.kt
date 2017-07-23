@@ -5,15 +5,15 @@ import shape.komputation.cpu.functions.activation.relu
 import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.FloatMatrix
 
-class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name), DropoutCompliant {
+class CpuReluLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
 
-    private var forwardEntries = FloatArray(0)
+    private var forwardEntries = FloatArray(this.numberEntries)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val result = FloatMatrix(input.numberRows, input.numberColumns, relu(input.entries))
+        relu(input.entries, forwardEntries, input.numberRows * input.numberColumns)
 
-        this.forwardEntries = result.entries
+        val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
         return result
 
@@ -23,14 +23,16 @@ class CpuReluLayer internal constructor(name : String? = null) : BaseCpuActivati
 
         val inputEntries = input.entries
 
-        val forwardEntries = FloatArray(input.numberRows * input.numberColumns) { index ->
+        for (index in 0..this.numberEntries - 11) {
 
-            if(mask[index]) {
-                relu(inputEntries[index])
-            }
-            else {
-                0.0f
-            }
+            this.forwardEntries[index] =
+
+                if(mask[index]) {
+                    relu(inputEntries[index])
+                }
+                else {
+                    0.0f
+                }
 
         }
 
