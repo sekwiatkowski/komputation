@@ -7,16 +7,26 @@ import shape.komputation.matrix.FloatMatrix
 
 class CpuCounterProbabilityLayer internal constructor(
     name : String?,
-    dimension : Int) : BaseCpuForwardLayer(name) {
+    private val numberEntries: Int) : BaseCpuForwardLayer(name) {
 
-    private val one = FloatArray(dimension) { 1.0f }
+    private val one = FloatArray(this.numberEntries) { 1.0f }
+    private val forwardEntries = FloatArray(this.numberEntries)
+    private val backwardEntries = FloatArray(this.numberEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean) =
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        FloatMatrix(input.numberRows, input.numberColumns, subtract(one, input.entries))
+        subtract(this.one, input.entries, this.forwardEntries, this.numberEntries)
 
-    override fun backward(chain: FloatMatrix) =
+        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
-        FloatMatrix(chain.numberRows, chain.numberColumns, negate(chain.entries))
+    }
+
+    override fun backward(chain: FloatMatrix): FloatMatrix {
+
+        negate(chain.entries, this.backwardEntries, this.numberEntries)
+
+        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
+
+    }
 
 }
