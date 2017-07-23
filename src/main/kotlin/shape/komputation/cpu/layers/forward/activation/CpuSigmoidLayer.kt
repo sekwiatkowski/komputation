@@ -8,13 +8,13 @@ import shape.komputation.matrix.FloatMatrix
 
 class CpuSigmoidLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
 
-    private var forwardEntries = FloatArray(numberEntries)
-
-    private var differentiation : FloatArray? = null
+    private val forwardEntries = FloatArray(this.numberEntries)
+    private val differentiation = FloatArray(this.numberEntries)
+    private var hasCachedDifferentiation = false
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        this.differentiation = null
+        this.hasCachedDifferentiation = false
 
         sigmoid(input.entries, this.forwardEntries, this.numberEntries)
 
@@ -26,13 +26,13 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
     override fun forward(input: FloatMatrix, mask: BooleanArray): FloatMatrix {
 
-        this.differentiation = null
+        this.hasCachedDifferentiation = false
 
         val inputEntries = input.entries
 
-        this.forwardEntries = FloatArray(input.numberRows * input.numberColumns) { index ->
+        for (index in 0..numberEntries - 1) {
 
-            if(mask[index]) sigmoid(inputEntries[index]) else 0.0f
+            this.forwardEntries[index] = if(mask[index]) sigmoid(inputEntries[index]) else 0.0f
 
         }
 
@@ -48,13 +48,15 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
      */
     override fun backward(chain : FloatMatrix) : FloatMatrix {
 
-        if (this.differentiation == null) {
+        if (!this.hasCachedDifferentiation) {
 
-            this.differentiation = differentiateSigmoid(this.forwardEntries)
+            differentiateSigmoid(this.forwardEntries, this.differentiation, this.numberEntries)
+
+            this.hasCachedDifferentiation = true
 
         }
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, differentiation!!))
+        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.differentiation))
 
     }
 

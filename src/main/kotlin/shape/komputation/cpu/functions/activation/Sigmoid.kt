@@ -16,12 +16,14 @@ fun sigmoid(x: Float) =
 
     1.0f / (1.0f + FloatMath.exp(-x))
 
-fun differentiateSigmoid(forwardEntries: FloatArray) =
+fun differentiateSigmoid(forwardEntries: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(forwardEntries.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
         val forward = forwardEntries[index]
 
-        forward * (1.0f - forward)
+        result[index] = forward * (1.0f - forward)
 
     }
+
+}
