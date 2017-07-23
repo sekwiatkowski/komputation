@@ -4,14 +4,25 @@ import shape.komputation.cpu.functions.transpose
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.FloatMatrix
 
-class CpuTranspositionLayer internal constructor(name : String? = null) : BaseCpuForwardLayer(name)  {
+class CpuTranspositionLayer internal constructor(name : String? = null, numberEntries : Int) : BaseCpuForwardLayer(name)  {
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean) =
+    private val forwardEntries = FloatArray(numberEntries)
+    private val backwardEntries = FloatArray(numberEntries)
 
-        FloatMatrix(input.numberColumns, input.numberRows, transpose(input.numberRows, input.numberColumns, input.entries))
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-    override fun backward(chain: FloatMatrix) =
+        transpose(input.numberRows, input.numberColumns, input.entries, this.forwardEntries)
 
-        FloatMatrix(chain.numberColumns, chain.numberRows, transpose(chain.numberRows, chain.numberColumns, chain.entries))
+        return FloatMatrix(input.numberColumns, input.numberRows, this.forwardEntries)
+
+    }
+
+    override fun backward(chain: FloatMatrix): FloatMatrix {
+
+        transpose(chain.numberRows, chain.numberColumns, chain.entries, this.backwardEntries)
+
+        return FloatMatrix(chain.numberColumns, chain.numberRows, this.backwardEntries)
+
+    }
 
 }

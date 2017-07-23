@@ -1,14 +1,14 @@
 package shape.komputation.cpu.functions
 
-fun transpose(numberRows: Int, numberColumns: Int, entries: FloatArray): FloatArray {
+fun transpose(numberRows: Int, numberColumns: Int, entries: FloatArray, result : FloatArray) {
 
     if(numberRows == 1 || numberColumns == 1) {
 
-        return entries
+        System.arraycopy(entries, 0, result, 0, entries.size)
+
+        return
 
     }
-
-    val result = FloatArray(entries.size)
 
     for (indexColumn in 0..numberColumns-1) {
 
@@ -21,7 +21,5 @@ fun transpose(numberRows: Int, numberColumns: Int, entries: FloatArray): FloatAr
         }
 
     }
-
-    return result
 
 }

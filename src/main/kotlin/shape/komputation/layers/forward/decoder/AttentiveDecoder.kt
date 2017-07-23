@@ -58,9 +58,9 @@ class AttentiveDecoder(
         val scoringWeightingStepName = concatenateNames(this.name, "scoring-weighting-step")
         val scoringWeighting = seriesWeighting(scoringWeightingSeriesName, scoringWeightingStepName, this.numberSteps, false, this.encodingDimension, 1, this.weightInitialization, this.optimization)
 
-        val softmax = Array(this.numberSteps) { softmaxLayer(this.numberSteps).buildForCpu() }
+        val softmax = Array(this.numberSteps) { softmaxLayer(1, this.numberSteps).buildForCpu() }
 
-        val transposition = Array(this.numberSteps) { transpositionLayer().buildForCpu() }
+        val transposition = Array(this.numberSteps) { transpositionLayer(this.numberSteps).buildForCpu() }
 
         val attendedEncodingWeightingSeriesName = concatenateNames(this.name, "attended-encoding-weighting")
         val attendedEncodingWeightingStepName = concatenateNames(this.name, "attended-encoding-weighting-step")
