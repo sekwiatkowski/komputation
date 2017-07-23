@@ -94,7 +94,9 @@ class CpuSingleInputDecoder internal constructor(
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                floatColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
+                add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries, diffOutputPreActivationWrtState.entries, this.outputDimension)
+
+                floatColumnVector(*diffOutputPreActivationWrtState.entries)
 
             }
             else {
@@ -126,7 +128,9 @@ class CpuSingleInputDecoder internal constructor(
         if (diffStatePreActivationWrtInput != null) {
 
             // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
-            add(chainStep, diffStatePreActivationWrtInput)
+            add(chainStep, diffStatePreActivationWrtInput, diffStatePreActivationWrtInput, this.outputDimension)
+
+            diffStatePreActivationWrtInput
 
         }
         // ... except in the case of the last step (t = T)

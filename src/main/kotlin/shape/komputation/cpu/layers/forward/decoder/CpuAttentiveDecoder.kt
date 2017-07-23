@@ -113,6 +113,8 @@ class CpuAttentiveDecoder internal constructor(
 
     }
 
+    private val sumWrtDecoderStateEntries = FloatArray(this.decodingDimension)
+
     override fun backward(chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
@@ -132,7 +134,9 @@ class CpuAttentiveDecoder internal constructor(
 
                 } else {
 
-                    add(diffOutputWrtDecoderState, diffNextDecoderStateWrtDecoderState!!)
+                    add(diffOutputWrtDecoderState, diffNextDecoderStateWrtDecoderState!!, this.sumWrtDecoderStateEntries, this.decodingDimension)
+
+                    this.sumWrtDecoderStateEntries
 
                 }))
 

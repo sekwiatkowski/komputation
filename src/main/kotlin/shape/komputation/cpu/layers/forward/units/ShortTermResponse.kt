@@ -132,7 +132,7 @@ fun shortTermResponse(
     val shortTermAdditions = Array(numberSteps) { indexStep ->
 
         val shortTermAdditionName = concatenateNames(name, "addition-step-$indexStep")
-        AdditionCombination(shortTermAdditionName)
+        AdditionCombination(shortTermAdditionName, hiddenDimension)
 
     }
 

@@ -1,12 +1,14 @@
 package shape.komputation.cpu.functions
 
-fun add(a: FloatArray, b: FloatArray) =
+fun add(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(a.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
-        a[index] + b[index]
+        result[index] = a[index] + b[index]
 
     }
+
+}
 
 fun subtract(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
 

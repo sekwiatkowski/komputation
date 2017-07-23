@@ -29,7 +29,7 @@ class HighwayLayer(
 
         val carryHadamard = hadamardCombination(this.name)
 
-        val addition = additionCombination(this.name)
+        val addition = additionCombination(this.name, this.dimension)
 
         val highwayLayer = CpuHighwayLayer(this.name, this.dimension, transformation, transformationFraction, transformationHadamard, counterProbability, carryHadamard, addition)
 

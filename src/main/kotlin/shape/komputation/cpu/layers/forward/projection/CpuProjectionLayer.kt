@@ -32,7 +32,7 @@ class CpuProjectionLayer internal constructor(
 
     override fun forward(input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        this.inputEntries = input.entries
+        this.inputEntries = input.entries.copyOf()
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
 

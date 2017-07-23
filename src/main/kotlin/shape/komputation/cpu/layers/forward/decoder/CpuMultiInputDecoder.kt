@@ -72,6 +72,8 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
+    private val stateSumEntries = FloatArray(this.hiddenDimension)
+
     // Incoming gradient: d chain / d series prediction
     override fun backward(chain: FloatMatrix): FloatMatrix {
 
@@ -88,7 +90,9 @@ class CpuMultiInputDecoder internal constructor(
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                floatColumnVector(*add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries))
+                add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries, this.stateSumEntries, this.hiddenDimension)
+
+                floatColumnVector(*stateSumEntries)
 
             }
             else {

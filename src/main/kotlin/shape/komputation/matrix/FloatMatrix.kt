@@ -1,6 +1,6 @@
 package shape.komputation.matrix
 
-val EMPTY_DOUBLE_MATRIX = FloatMatrix(0, 0, floatArrayOf())
+val EMPTY_FLOAT_MATRIX = FloatMatrix(0, 0, floatArrayOf())
 
 fun floatZeroMatrix(numberRows: Int, numberColumns : Int) = FloatMatrix(numberRows, numberColumns, FloatArray(numberRows * numberColumns))
 

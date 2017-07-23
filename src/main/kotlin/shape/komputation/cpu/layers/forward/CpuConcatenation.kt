@@ -6,7 +6,7 @@ import shape.komputation.cpu.functions.stackRows
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.entry.inputLayer
-import shape.komputation.matrix.EMPTY_DOUBLE_MATRIX
+import shape.komputation.matrix.EMPTY_FLOAT_MATRIX
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 
@@ -15,7 +15,7 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
     private val networks = continuations.map { layers -> Network(inputLayer(inputDimension), *layers) }
     private val numberNetworks = this.networks.size
 
-    private val results = Array(this.numberNetworks) { EMPTY_DOUBLE_MATRIX }
+    private val results = Array(this.numberNetworks) { EMPTY_FLOAT_MATRIX }
 
     private val heights = IntArray(this.numberNetworks)
 

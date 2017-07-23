@@ -9,8 +9,8 @@ object MnistData {
 
     private fun loadMnist(csvFile: File, size: Int): Pair<Array<Matrix>, Array<FloatMatrix>> {
 
-        val inputs = Array<Matrix>(size) { EMPTY_DOUBLE_MATRIX }
-        val targets = Array(size) { EMPTY_DOUBLE_MATRIX }
+        val inputs = Array<Matrix>(size) { EMPTY_FLOAT_MATRIX }
+        val targets = Array(size) { EMPTY_FLOAT_MATRIX }
 
         csvFile
             .bufferedReader()

@@ -156,7 +156,7 @@ fun simpleRecurrentUnit(
     val additions = Array(numberSteps) { indexStep ->
 
         val additionName = concatenateNames(name, "addition-step-$indexStep")
-        additionCombination(additionName)
+        additionCombination(additionName, hiddenDimension)
 
     }
 

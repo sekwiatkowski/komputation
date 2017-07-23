@@ -185,7 +185,7 @@ fun minimalGatedUnit(
     val forgetAdditions = Array(numberSteps) { indexStep ->
 
         val forgetAdditionName = concatenateNames(name, "forget-addition-step-$indexStep")
-        additionCombination(forgetAdditionName)
+        additionCombination(forgetAdditionName, hiddenDimension)
 
     }
 
@@ -238,7 +238,7 @@ fun minimalGatedUnit(
     val stateAdditions = Array(numberSteps) { indexStep ->
 
         val shortTermAdditionName = concatenateNames(name, "state-addition-step-$indexStep")
-        additionCombination(shortTermAdditionName)
+        additionCombination(shortTermAdditionName, hiddenDimension)
 
     }
 

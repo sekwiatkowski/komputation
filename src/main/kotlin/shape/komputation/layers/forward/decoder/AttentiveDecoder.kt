@@ -44,7 +44,7 @@ class AttentiveDecoder(
 
             val attentionAdditionName = concatenateNames(this.name, "attention-addition-$indexStep")
 
-            additionCombination(attentionAdditionName)
+            additionCombination(attentionAdditionName, this.numberSteps * this.encodingDimension)
 
         }
 
@@ -52,7 +52,7 @@ class AttentiveDecoder(
         val attentionPreviousStateWeightingStepName = concatenateNames(this.name, "attention-previous-state-weighting-step")
         val attentionPreviousStateWeighting = seriesWeighting(attentionPreviousStateWeightingSeriesName, attentionPreviousStateWeightingStepName, this.numberSteps, true, this.decodingDimension, this.encodingDimension, this.weightInitialization, this.optimization)
 
-        val tanh = Array(this.numberSteps) { tanhLayer(this.encodingDimension * this.numberSteps).buildForCpu() }
+        val tanh = Array(this.numberSteps) { tanhLayer(this.numberSteps * this.encodingDimension).buildForCpu() }
 
         val scoringWeightingSeriesName = concatenateNames(this.name, "scoring-weighting")
         val scoringWeightingStepName = concatenateNames(this.name, "scoring-weighting-step")
@@ -74,7 +74,7 @@ class AttentiveDecoder(
 
             val decodingAdditionName = concatenateNames(this.name, "decoding-addition-$indexStep")
 
-            AdditionCombination(decodingAdditionName)
+            AdditionCombination(decodingAdditionName, this.decodingDimension)
 
         }
 

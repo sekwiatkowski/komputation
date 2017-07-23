@@ -44,7 +44,7 @@ class CpuMultiOutputEncoder internal constructor(
 
         val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
 
-        var stateChain = EMPTY_DOUBLE_MATRIX
+        var stateChain = floatZeroColumnVector(this.hiddenDimension)
 
         val incomingEntries = incoming.entries
 
@@ -60,7 +60,9 @@ class CpuMultiOutputEncoder internal constructor(
                 }
                 else {
 
-                    add(stateChain.entries, incomingStepEntries)
+                    add(stateChain.entries, incomingStepEntries, incomingStepEntries, this.hiddenDimension)
+
+                    incomingStepEntries
 
                 }
 

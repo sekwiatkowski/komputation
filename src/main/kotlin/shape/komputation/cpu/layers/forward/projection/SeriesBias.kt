@@ -13,13 +13,20 @@ import shape.komputation.optimization.OptimizationInstruction
 class SeriesBias internal constructor(
     private val name : String?,
     private val bias: FloatArray,
+    private val numberEntries: Int,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule? = null) {
 
-    fun forwardStep(input : FloatMatrix) =
+    private val forwardEntries = FloatArray(this.numberEntries)
 
-        FloatMatrix(input.numberRows, input.numberColumns, add(input.entries, bias))
+    fun forwardStep(input : FloatMatrix): FloatMatrix {
+
+        add(input.entries, this.bias, this.forwardEntries, this.numberEntries)
+
+        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
+
+    }
 
     fun backwardStep(chain: FloatMatrix) {
 
@@ -73,6 +80,6 @@ fun seriesBias(
 
     val updateRule = optimizationStrategy?.buildForCpu()?.invoke(dimension, 1)
 
-    return SeriesBias(name, bias, seriesAccumulator, batchAccumulator, updateRule)
+    return SeriesBias(name, bias, dimension, seriesAccumulator, batchAccumulator, updateRule)
 
 }
