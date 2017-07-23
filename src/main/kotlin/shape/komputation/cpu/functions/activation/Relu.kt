@@ -16,15 +16,19 @@ fun relu(entry: Float) =
 
 // d relu(x) / d x = d max(x, 0) / d x
 // = 1 if x > 0.0, 0.0 otherwise
-fun backwardRelu(forwardEntries : FloatArray, chainEntries : FloatArray) =
+fun backwardRelu(forwardEntries : FloatArray, chainEntries : FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(forwardEntries.size) { index ->
+    for(index in 0..numberEntries-1) {
 
         val forwardEntry = forwardEntries[index]
 
-        if (forwardEntry > 0.0)
-            chainEntries[index]
-        else
-            0.0f
+        result[index] =
+
+            if (forwardEntry > 0.0)
+                chainEntries[index]
+            else
+                0.0f
 
     }
+
+}

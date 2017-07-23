@@ -40,7 +40,7 @@ fun main(args: Array<String>) {
 
         arrayOf(
             convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-            reluLayer(numberFilters),
+            reluLayer(numberFilters * (2 - filterWidth + 1)),
             maxPoolingLayer()
         )
 

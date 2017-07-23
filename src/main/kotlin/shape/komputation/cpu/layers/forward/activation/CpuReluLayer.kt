@@ -7,7 +7,8 @@ import shape.komputation.matrix.FloatMatrix
 
 class CpuReluLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
 
-    private var forwardEntries = FloatArray(this.numberEntries)
+    private val forwardEntries = FloatArray(this.numberEntries)
+    private val backwardEntries = FloatArray(this.numberEntries)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
@@ -23,7 +24,7 @@ class CpuReluLayer internal constructor(name : String? = null, private val numbe
 
         val inputEntries = input.entries
 
-        for (index in 0..this.numberEntries - 11) {
+        for (index in 0..this.numberEntries - 1) {
 
             this.forwardEntries[index] =
 
@@ -38,19 +39,15 @@ class CpuReluLayer internal constructor(name : String? = null, private val numbe
 
         val result = FloatMatrix(input.numberRows, input.numberColumns, forwardEntries)
 
-        this.forwardEntries = forwardEntries
-
         return result
 
     }
 
     override fun backward(chain : FloatMatrix) : FloatMatrix {
 
-        val chainEntries = chain.entries
+        backwardRelu(this.forwardEntries, chain.entries, this.backwardEntries, this.numberEntries)
 
-        val backwardEntries = backwardRelu(this.forwardEntries, chainEntries)
-
-        return FloatMatrix(chain.numberRows, chain.numberColumns, backwardEntries)
+        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
 
     }
 
