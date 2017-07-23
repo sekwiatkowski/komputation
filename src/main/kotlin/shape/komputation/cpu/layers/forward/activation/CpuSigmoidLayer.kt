@@ -30,7 +30,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         val inputEntries = input.entries
 
-        for (index in 0..numberEntries - 1) {
+        for (index in 0..this.numberEntries - 1) {
 
             this.forwardEntries[index] = if(mask[index]) sigmoid(inputEntries[index]) else 0.0f
 

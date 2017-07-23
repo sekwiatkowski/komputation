@@ -2,18 +2,24 @@ package shape.komputation.cpu.functions.activation
 
 import shape.komputation.matrix.FloatMath
 
-fun tanh(input: FloatArray) =
+fun tanh(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(input.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
-        FloatMath.tanh(input[index])
+        result[index] = FloatMath.tanh(input[index])
+
+    }
+
+}
+
+fun differentiateTanh(input: FloatArray, result : FloatArray, numberEntries : Int) {
+
+    for (index in 0..numberEntries - 1) {
+
+        val inputEntry = input[index]
+
+        result[index] = 1.0f - (inputEntry * inputEntry)
 
     }
 
-fun differentiateTanh(input: FloatArray) =
-
-    FloatArray(input.size) { index ->
-
-        1.0f - (input[index] * input[index])
-
-    }
+}

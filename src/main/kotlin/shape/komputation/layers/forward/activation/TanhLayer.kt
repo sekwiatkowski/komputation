@@ -11,7 +11,7 @@ class TanhLayer(private val name : String?, private val numberEntries : Int) : C
 
     override fun buildForCpu() =
 
-        CpuTanhLayer(this.name)
+        CpuTanhLayer(this.name, this.numberEntries)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaTanhLayer {
 
