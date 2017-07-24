@@ -11,7 +11,7 @@ class ColumnRepetitionLayer(private val name : String?, private val numberRows :
 
 }
 
-fun columnRepetitionLayer(n : Int, numberRows : Int, numberColumns : Int) =
+fun columnRepetitionLayer(numberRows : Int, numberColumns : Int) =
 
     ColumnRepetitionLayer(null, numberRows, numberColumns)
 

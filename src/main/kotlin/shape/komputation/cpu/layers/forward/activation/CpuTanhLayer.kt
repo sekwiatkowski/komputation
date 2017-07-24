@@ -11,6 +11,8 @@ import shape.komputation.matrix.FloatMatrix
 class CpuTanhLayer internal constructor(name: String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
 
     private val forwardEntries = FloatArray(this.numberEntries)
+    private val backwardEntries = FloatArray(this.numberEntries)
+
     private var differentiation = FloatArray(this.numberEntries)
     private var hasCachedDifferentiation = false
 
@@ -59,7 +61,9 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
 
         }
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.differentiation))
+        hadamard(chain.entries, this.differentiation, this.backwardEntries, this.numberEntries)
+
+        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
 
     }
 

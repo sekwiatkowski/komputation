@@ -18,18 +18,19 @@ import shape.komputation.optimization.Optimizable
 class CpuSingleInputDecoder internal constructor(
     name : String?,
     private val numberSteps : Int,
+    private val hiddenDimension : Int,
     private val outputDimension : Int,
     private val unit : RecurrentUnit,
     private val weighting: SeriesWeighting,
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(encoderOutput: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    private val decoding = floatZeroMatrix(this.outputDimension, this.numberSteps)
 
-        val seriesOutput = floatZeroMatrix(this.outputDimension, this.numberSteps)
+    override fun forward(encoding: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // Use the encoder output as the first state
-        var state = encoderOutput
+        var state = encoding
         // The first input is empty since there is no previous output
         var input = floatZeroColumnVector(this.outputDimension)
 
@@ -39,7 +40,7 @@ class CpuSingleInputDecoder internal constructor(
 
             val output = this.forwardOutput(indexStep, newState, isTraining)
 
-            seriesOutput.setColumn(indexStep, output.entries)
+            this.decoding.setColumn(indexStep, output.entries)
 
             state = newState
 
@@ -48,7 +49,7 @@ class CpuSingleInputDecoder internal constructor(
 
         }
 
-        return seriesOutput
+        return this.decoding
 
     }
 
@@ -88,13 +89,13 @@ class CpuSingleInputDecoder internal constructor(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val chainStep = extractStep(chainEntries, indexStep, outputDimension)
+            val chainStep = extractStep(chainEntries, indexStep, this.outputDimension)
 
             val diffOutputPreActivationWrtState = backwardOutput(indexStep, chainStep, diffStatePreActivationWrtInput?.entries)
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
-                add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries, diffOutputPreActivationWrtState.entries, this.outputDimension)
+                add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries, diffOutputPreActivationWrtState.entries, this.hiddenDimension)
 
                 floatColumnVector(*diffOutputPreActivationWrtState.entries)
 
@@ -120,27 +121,27 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
+    private val outputSum = FloatArray(this.outputDimension)
+
     private fun backwardOutput(indexStep: Int, chainStep: FloatArray, diffStatePreActivationWrtInput: FloatArray?): FloatMatrix {
 
-        val outputSum = floatColumnVector(*
-
-        // The input gradient for step t+1 is added to the chain step t ...
-        if (diffStatePreActivationWrtInput != null) {
+        // The input gradient for step t+1 is added to the chain step t
+        val addition = if (diffStatePreActivationWrtInput != null) {
 
             // d chain / d output(index+1) * d output(index+1) / d input(index + 1) *  d input(index + 1) / d output(index)
-            add(chainStep, diffStatePreActivationWrtInput, diffStatePreActivationWrtInput, this.outputDimension)
+            add(diffStatePreActivationWrtInput, chainStep, this.outputSum, this.outputDimension)
 
-            diffStatePreActivationWrtInput
+            this.outputSum
 
         }
-        // ... except in the case of the last step (t = T)
+        // except in the case of the last step (t = T)
         else {
 
             chainStep
 
-        })
+        }
 
-        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(outputSum)
+        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(floatColumnVector(*addition))
 
         this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
 

@@ -19,6 +19,8 @@ class SeriesWeighting internal constructor(
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule?) {
 
+    private val numberWeightEntries = this.weights.size
+
     fun forwardStep(step : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         return this.weightings[step].forward(input, isTraining)
@@ -44,7 +46,7 @@ class SeriesWeighting internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), scalingFactor, this.updateRule)
+            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries, scalingFactor, this.updateRule)
 
         }
 

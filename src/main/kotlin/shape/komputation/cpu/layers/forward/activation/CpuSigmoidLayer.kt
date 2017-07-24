@@ -10,6 +10,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
     private val forwardEntries = FloatArray(this.numberEntries)
     private val differentiation = FloatArray(this.numberEntries)
+    private val backwardEntries = FloatArray(this.numberEntries)
     private var hasCachedDifferentiation = false
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
@@ -56,7 +57,9 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         }
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, hadamard(chain.entries, this.differentiation))
+        hadamard(chain.entries, this.differentiation, backwardEntries, this.numberEntries)
+
+        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
 
     }
 

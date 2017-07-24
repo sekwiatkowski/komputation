@@ -20,13 +20,15 @@ fun subtract(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : 
 
 }
 
-fun hadamard(a: FloatArray, b: FloatArray) =
+fun hadamard(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    FloatArray(a.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
-        a[index] * b[index]
+        result[index] = a[index] * b[index]
 
     }
+
+}
 
 fun negate(vector: FloatArray, result : FloatArray, numberEntries: Int) {
 
@@ -38,10 +40,12 @@ fun negate(vector: FloatArray, result : FloatArray, numberEntries: Int) {
 
 }
 
-fun scale(vector: FloatArray, scalar : Float) =
+fun scale(vector: FloatArray, scalar : Float, numberEntries: Int) {
 
-    FloatArray(vector.size) { index ->
+    for (index in 0..numberEntries - 1) {
 
-        scalar * vector[index]
+        vector[index] = scalar * vector[index]
 
     }
+
+}

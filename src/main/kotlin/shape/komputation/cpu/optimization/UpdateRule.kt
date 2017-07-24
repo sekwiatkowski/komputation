@@ -6,6 +6,6 @@ interface UpdateRule {
 
         updateSparsely(0, parameters, gradient, gradientSize)
 
-    fun updateSparsely(start : Int, parameters : FloatArray, gradient : FloatArray, gradientSize : Int)
+    fun updateSparsely(start : Int, parameters : FloatArray, gradient : FloatArray, numberEntries: Int)
 
 }

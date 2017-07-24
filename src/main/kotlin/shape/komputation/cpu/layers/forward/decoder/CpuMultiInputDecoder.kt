@@ -24,9 +24,9 @@ class CpuMultiInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    private val decoding = floatZeroMatrix(this.outputDimension, this.numberSteps)
 
-        val seriesOutput = floatZeroMatrix(this.outputDimension, this.numberSteps)
+    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // Start with a zero state
         var state = floatZeroColumnVector(this.hiddenDimension)
@@ -42,11 +42,11 @@ class CpuMultiInputDecoder internal constructor(
             val output = this.forwardOutput(indexStep, state, isTraining)
 
             // Store the n-th output
-            seriesOutput.setColumn(indexStep, output.entries)
+            this.decoding.setColumn(indexStep, output.entries)
 
         }
 
-        return seriesOutput
+        return this.decoding
 
     }
 

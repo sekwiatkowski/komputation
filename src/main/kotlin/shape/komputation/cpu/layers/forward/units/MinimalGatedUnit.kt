@@ -224,14 +224,14 @@ fun minimalGatedUnit(
     val shortTermHadamards = Array(numberSteps) { indexStep ->
 
         val shortTermHadamardName = concatenateNames(name, "short-term-hadamard-step-$indexStep")
-        hadamardCombination(shortTermHadamardName)
+        hadamardCombination(shortTermHadamardName, hiddenDimension)
 
     }
 
     val longTermHadamards = Array(numberSteps) { indexStep ->
 
         val shortTermHadamardName = concatenateNames(name, "long-term-hadamard-step-$indexStep")
-        hadamardCombination(shortTermHadamardName)
+        hadamardCombination(shortTermHadamardName, hiddenDimension)
 
     }
 

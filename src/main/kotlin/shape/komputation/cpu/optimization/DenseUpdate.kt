@@ -2,10 +2,10 @@ package shape.komputation.cpu.optimization
 
 import shape.komputation.cpu.functions.scale
 
-fun updateDensely(parameters: FloatArray, gradient : FloatArray, scalingFactor : Float, rule : UpdateRule) {
+fun updateDensely(parameters: FloatArray, gradient : FloatArray, dimension : Int, scalingFactor : Float, rule : UpdateRule) {
 
-    val scaledGradient = scale(gradient, scalingFactor)
+    scale(gradient, scalingFactor, dimension)
 
-    rule.updateDensely(parameters, scaledGradient, scaledGradient.size)
+    rule.updateDensely(parameters, gradient, dimension)
 
 }

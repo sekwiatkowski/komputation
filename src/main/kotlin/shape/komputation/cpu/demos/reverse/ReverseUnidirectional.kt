@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
     val gaussianInitialization = gaussianInitialization(random, 0.0f, 0.001f)
     val zeroInitialization = zeroInitialization()
 
-    val optimizationStrategy = stochasticGradientDescent(0.001f)
+    val optimizationStrategy = stochasticGradientDescent(0.0005f)
 
     val encoderUnit = simpleRecurrentUnit(
         seriesLength,

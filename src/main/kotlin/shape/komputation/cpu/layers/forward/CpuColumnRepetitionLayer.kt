@@ -8,6 +8,7 @@ import shape.komputation.matrix.FloatMatrix
 class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuForwardLayer(name) {
 
     private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
+    private val backwardEntries = FloatArray(this.numberRows)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
@@ -23,9 +24,9 @@ class CpuColumnRepetitionLayer internal constructor(name : String? = null, priva
         val numberChainRows = chain.numberRows
         val numberChainColumns = chain.numberColumns
 
-        val result = sumRows(chainEntries, numberChainRows, numberChainColumns)
+        sumRows(numberChainRows, numberChainColumns, chainEntries, this.backwardEntries)
 
-        return FloatMatrix(numberChainRows, 1, result)
+        return FloatMatrix(numberChainRows, 1, this.backwardEntries)
 
     }
 

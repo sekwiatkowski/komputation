@@ -53,6 +53,7 @@ class SingleInputDecoder(
         val decoder = CpuSingleInputDecoder(
             this.name,
             this.numberSteps,
+            this.hiddenDimension,
             this.outputDimension,
             this.unit,
             weighting,

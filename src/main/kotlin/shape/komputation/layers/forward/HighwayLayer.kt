@@ -5,6 +5,7 @@ import shape.komputation.cpu.layers.combination.hadamardCombination
 import shape.komputation.cpu.layers.forward.CpuHighwayLayer
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -19,17 +20,23 @@ class HighwayLayer(
 
     override fun buildForCpu(): CpuHighwayLayer {
 
-        val transformation = denseLayer(this.name, this.dimension, this.dimension, this.weightInitialization, this.transformationBiasInitialization, this.transformationFunction, this.optimization).buildForCpu()
+        val transformationName = concatenateNames(this.name, "transformation")
+        val transformation = denseLayer(transformationName, this.dimension, this.dimension, this.weightInitialization, this.transformationBiasInitialization, this.transformationFunction, this.optimization).buildForCpu()
 
-        val transformationFraction = denseLayer(this.name, this.dimension, this.dimension, this.weightInitialization, this.transformationFractionBiasInitialization, ActivationFunction.Sigmoid, this.optimization).buildForCpu()
+        val transformationFractionName = concatenateNames(this.name, "transformation-fraction")
+        val transformationFraction = denseLayer(transformationFractionName, this.dimension, this.dimension, this.weightInitialization, this.transformationFractionBiasInitialization, ActivationFunction.Sigmoid, this.optimization).buildForCpu()
 
-        val transformationHadamard = hadamardCombination(this.name)
+        val transformationHadamardName = concatenateNames(this.name, "transformation-hadamard")
+        val transformationHadamard = hadamardCombination(transformationHadamardName, this.dimension)
 
-        val counterProbability = counterProbabilityLayer(this.name, this.dimension).buildForCpu()
+        val counterProbabilityName = concatenateNames(this.name, "counter-probability")
+        val counterProbability = counterProbabilityLayer(counterProbabilityName, this.dimension).buildForCpu()
 
-        val carryHadamard = hadamardCombination(this.name)
+        val carryHadamardName = concatenateNames(this.name, "carry-hadamard")
+        val carryHadamard = hadamardCombination(carryHadamardName, this.dimension)
 
-        val addition = additionCombination(this.name, this.dimension)
+        val additionName = concatenateNames(this.name, "addition")
+        val addition = additionCombination(additionName, this.dimension)
 
         val highwayLayer = CpuHighwayLayer(this.name, this.dimension, transformation, transformationFraction, transformationHadamard, counterProbability, carryHadamard, addition)
 

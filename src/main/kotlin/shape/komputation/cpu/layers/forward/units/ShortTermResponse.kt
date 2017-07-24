@@ -117,7 +117,7 @@ fun shortTermResponse(
     val shortTermForgetting = Array(numberSteps) { indexStep ->
 
         val shortTermForgettingName = concatenateNames(name, "forgetting-step-$indexStep")
-        hadamardCombination(shortTermForgettingName)
+        hadamardCombination(shortTermForgettingName, hiddenDimension)
 
     }
 

@@ -18,11 +18,11 @@ class CpuAdam(
 
     private var step = 0.0f
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, gradientSize : Int) {
+    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
 
         this.step += 1.0f
 
-        for (index in 0..gradientSize - 1) {
+        for (index in 0..numberEntries - 1) {
 
             val derivative = gradient[index]
 

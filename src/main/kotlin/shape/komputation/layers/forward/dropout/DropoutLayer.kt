@@ -17,7 +17,7 @@ class DropoutLayer(
     override fun buildForCpu(): CpuDropoutLayer {
 
         val takeExpectationName = concatenateNames(this.name, "take-expectation")
-        val takeExpectation = hadamardCombination(takeExpectationName)
+        val takeExpectation = hadamardCombination(takeExpectationName, this.dimension)
 
         val activation = this.activation.buildForCpu()
 
