@@ -16,4 +16,5 @@ fun sumRows(numberRows: Int, numberColumns : Int, entries: FloatArray, result : 
         result[indexRow] = sum
 
     }
+
 }

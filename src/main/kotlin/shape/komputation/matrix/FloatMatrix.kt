@@ -59,13 +59,6 @@ fun floatMatrixFromColumns(vararg columns: FloatArray): FloatMatrix {
 
 }
 
-fun sequence(numberSteps : Int, generateStep : (Int) -> FloatArray): FloatMatrix {
-
-    return floatMatrixFromColumns(*Array(numberSteps, generateStep))
-
-}
-
-
 fun oneHotArray(size: Int, index: Int, value : Float = 1.0f): FloatArray {
 
     val array = FloatArray(size)

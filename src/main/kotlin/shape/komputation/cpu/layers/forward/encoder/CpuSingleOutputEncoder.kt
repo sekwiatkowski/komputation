@@ -1,10 +1,11 @@
 package shape.komputation.cpu.layers.forward.encoder
 
+import shape.komputation.cpu.functions.getStep
+import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatZeroColumnVector
-import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuSingleOutputEncoder internal constructor(
@@ -20,15 +21,20 @@ class CpuSingleOutputEncoder internal constructor(
 
     private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
 
+    private val inputStepEntries = FloatArray(this.inputDimension)
+    private val inputStep = FloatMatrix(this.inputDimension, 1, this.inputStepEntries)
+
     override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         var currentState = floatZeroColumnVector(this.hiddenDimension)
 
+        val inputEntries = input.entries
+
         for (indexStep in this.startAtTheBeginning) {
 
-            val stepInput = input.getColumn(this.stepIndices[indexStep])
+            getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
 
-            currentState = this.unit.forwardStep(indexStep, currentState, stepInput, isTraining)
+            currentState = this.unit.forwardStep(indexStep, currentState, this.inputStep, isTraining)
 
         }
 
@@ -38,7 +44,7 @@ class CpuSingleOutputEncoder internal constructor(
 
     override fun backward(incoming: FloatMatrix): FloatMatrix {
 
-        val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
+        val seriesBackwardWrtInput = FloatArray(this.inputDimension * this.numberSteps)
 
         var stateChain = incoming
 
@@ -48,7 +54,7 @@ class CpuSingleOutputEncoder internal constructor(
 
             stateChain = diffWrtPreviousState
 
-            seriesBackwardWrtInput.setColumn(this.stepIndices[indexStep], diffWrtInput.entries)
+            setStep(seriesBackwardWrtInput, this.stepIndices[indexStep], diffWrtInput.entries, this.inputDimension)
 
         }
 

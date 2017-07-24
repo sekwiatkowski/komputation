@@ -1,12 +1,14 @@
 package shape.komputation.cpu.layers.forward.decoder
 
 import shape.komputation.cpu.functions.add
-import shape.komputation.cpu.functions.extractStep
+import shape.komputation.cpu.functions.getStep
+import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
@@ -24,7 +26,11 @@ class CpuMultiInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    private val decoding = floatZeroMatrix(this.outputDimension, this.numberSteps)
+    private val forwardEntries = FloatArray(this.outputDimension * this.numberSteps)
+    private val backwardEntries = FloatArray(this.inputDimension * this.numberSteps)
+
+    private val inputStepEntries = FloatArray(this.inputDimension)
+    private val inputStep = FloatMatrix(this.inputDimension, 1, this.inputStepEntries)
 
     override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
@@ -34,19 +40,19 @@ class CpuMultiInputDecoder internal constructor(
         for (indexStep in 0..this.numberSteps - 1) {
 
             // Extract the n-th step input
-            val stepInput = input.getColumn(indexStep)
+            getStep(input.entries, indexStep, this.inputStepEntries, this.inputDimension)
 
             // Compute the new state
-            state = this.unit.forwardStep(indexStep, state, stepInput, isTraining)
+            state = this.unit.forwardStep(indexStep, state, inputStep, isTraining)
 
             val output = this.forwardOutput(indexStep, state, isTraining)
 
             // Store the n-th output
-            this.decoding.setColumn(indexStep, output.entries)
+            setStep(this.forwardEntries, indexStep, output.entries, this.outputDimension)
 
         }
 
-        return this.decoding
+        return FloatMatrix(this.outputDimension, this.numberSteps, this.forwardEntries)
 
     }
 
@@ -72,6 +78,7 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
+    private val chainStepEntries = FloatArray(this.hiddenDimension)
     private val stateSumEntries = FloatArray(this.hiddenDimension)
 
     // Incoming gradient: d chain / d series prediction
@@ -79,12 +86,12 @@ class CpuMultiInputDecoder internal constructor(
 
         val chainEntries = chain.entries
 
-        val diffStatePreActivationWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
         var diffStatePreActivationWrtPreviousState : FloatMatrix? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val chainStep = floatColumnVector(*extractStep(chainEntries, indexStep, outputDimension))
+            getStep(chainEntries, indexStep, this.chainStepEntries, this.outputDimension)
+            val chainStep = floatColumnVector(*this.chainStepEntries)
 
             val diffOutputPreActivationWrtState = this.backwardOutput(indexStep, chainStep)
 
@@ -103,7 +110,7 @@ class CpuMultiInputDecoder internal constructor(
 
             val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
 
-            diffStatePreActivationWrtInput.setColumn(indexStep, newDiffStatePreActivationWrtInput.entries)
+            setStep(this.backwardEntries, indexStep, newDiffStatePreActivationWrtInput.entries, this.inputDimension)
             diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
 
         }
@@ -113,7 +120,7 @@ class CpuMultiInputDecoder internal constructor(
         this.weighting.backwardSeries()
         this.bias?.backwardSeries()
 
-        return diffStatePreActivationWrtInput
+        return FloatMatrix(this.inputDimension, this.numberSteps, this.backwardEntries)
 
     }
 

@@ -1,9 +1,6 @@
 package shape.komputation.cpu.layers.forward.decoder
 
-import shape.komputation.cpu.functions.add
-import shape.komputation.cpu.functions.backwardProjectionWrtInput
-import shape.komputation.cpu.functions.backwardProjectionWrtWeights
-import shape.komputation.cpu.functions.extractStep
+import shape.komputation.cpu.functions.*
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
@@ -43,10 +40,11 @@ class CpuAttentiveDecoder internal constructor(
     private var encodingEntries = FloatArray(this.encodingSize)
     private val encodingAccumulator = DenseAccumulator(this.encodingSize)
 
+    private val outputEntries = FloatArray(this.decodingDimension * this.numberSteps)
+
     override fun forward(encodings : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         var previousDecoderState = floatZeroColumnVector(this.decodingDimension)
-        val output = floatZeroMatrix(this.encodingDimension, this.numberSteps)
 
         this.encodingEntries = encodings.entries
 
@@ -103,17 +101,18 @@ class CpuAttentiveDecoder internal constructor(
 
             val newDecoderState = this.activations[indexStep].forward(newDecoderStatePreActivation, isTraining)
 
-            output.setColumn(indexStep, newDecoderState.entries)
+            setStep(this.outputEntries, indexStep, newDecoderState.entries, this.decodingDimension)
 
             previousDecoderState = newDecoderState
 
         }
 
-        return output
+        return FloatMatrix(this.decodingDimension, this.numberSteps, this.outputEntries)
 
     }
 
     private val sumWrtDecoderStateEntries = FloatArray(this.decodingDimension)
+    private val diffOutputWrtDecoderState = FloatArray(this.decodingDimension)
 
     override fun backward(chain: FloatMatrix): FloatMatrix {
 
@@ -125,7 +124,7 @@ class CpuAttentiveDecoder internal constructor(
 
             val isLastStep = indexStep + 1 == this.numberSteps
 
-            val diffOutputWrtDecoderState = extractStep(chainEntries, indexStep, this.decodingDimension)
+            getStep(chainEntries, indexStep, diffOutputWrtDecoderState, this.decodingDimension)
 
             val sumWrtDecoderState = floatColumnVector(*(
                 if (isLastStep) {

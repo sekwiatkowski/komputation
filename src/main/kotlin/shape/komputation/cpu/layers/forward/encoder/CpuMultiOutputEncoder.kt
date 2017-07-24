@@ -1,7 +1,8 @@
 package shape.komputation.cpu.layers.forward.encoder
 
 import shape.komputation.cpu.functions.add
-import shape.komputation.cpu.functions.extractStep
+import shape.komputation.cpu.functions.getStep
+import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.*
@@ -20,23 +21,28 @@ class CpuMultiOutputEncoder internal constructor(
 
     private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
 
+    private val forwardEntries = FloatArray(this.numberSteps * this.hiddenDimension)
+
+    private val inputStepEntries = FloatArray(this.inputDimension)
+    private val inputStep = FloatMatrix(this.inputDimension, 1, inputStepEntries)
+
     override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         var state = floatZeroColumnVector(this.hiddenDimension)
 
-        val output = floatZeroMatrix(this.hiddenDimension, this.numberSteps)
+        val inputEntries = input.entries
 
         for (indexStep in this.startAtTheBeginning) {
 
-            val stepInput = input.getColumn(this.stepIndices[indexStep])
+            getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
 
-            state = this.unit.forwardStep(indexStep, state, stepInput, isTraining)
+            state = this.unit.forwardStep(indexStep, state, this.inputStep, isTraining)
 
-            output.setColumn(indexStep, state.entries)
+            setStep(this.forwardEntries, indexStep, state.entries, this.hiddenDimension)
 
         }
 
-        return output
+        return FloatMatrix(this.hiddenDimension, this.numberSteps, this.forwardEntries)
 
     }
 
@@ -48,9 +54,11 @@ class CpuMultiOutputEncoder internal constructor(
 
         val incomingEntries = incoming.entries
 
+        val incomingStepEntries = FloatArray(this.hiddenDimension)
+
         for (indexStep in this.startAtTheEnd) {
 
-            val incomingStepEntries = extractStep(incomingEntries, indexStep, this.hiddenDimension)
+            getStep(incomingEntries, indexStep, incomingStepEntries, this.hiddenDimension)
 
             val chainEntries =
 
@@ -70,7 +78,7 @@ class CpuMultiOutputEncoder internal constructor(
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            seriesBackwardWrtInput.setColumn(this.stepIndices[indexStep], backwardStatePreActivationWrtInput.entries)
+            setStep(seriesBackwardWrtInput.entries, indexStep, backwardStatePreActivationWrtInput.entries, this.inputDimension)
 
         }
 

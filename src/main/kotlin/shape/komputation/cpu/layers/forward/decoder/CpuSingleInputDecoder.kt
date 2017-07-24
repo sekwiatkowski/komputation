@@ -1,7 +1,8 @@
 package shape.komputation.cpu.layers.forward.decoder
 
 import shape.komputation.cpu.functions.add
-import shape.komputation.cpu.functions.extractStep
+import shape.komputation.cpu.functions.getStep
+import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
@@ -10,7 +11,6 @@ import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
-import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 // The first input is empty.
@@ -25,7 +25,7 @@ class CpuSingleInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    private val decoding = floatZeroMatrix(this.outputDimension, this.numberSteps)
+    private val decoding = FloatArray(this.outputDimension * this.numberSteps)
 
     override fun forward(encoding: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
@@ -40,7 +40,7 @@ class CpuSingleInputDecoder internal constructor(
 
             val output = this.forwardOutput(indexStep, newState, isTraining)
 
-            this.decoding.setColumn(indexStep, output.entries)
+            setStep(this.decoding, indexStep, output.entries, this.outputDimension)
 
             state = newState
 
@@ -49,7 +49,7 @@ class CpuSingleInputDecoder internal constructor(
 
         }
 
-        return this.decoding
+        return FloatMatrix(this.outputDimension, this.numberSteps, this.decoding)
 
     }
 
@@ -75,6 +75,8 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
+    private val chainStepEntries = FloatArray(this.outputDimension)
+
     // Incoming gradient: d chain / d series prediction
     override fun backward(chain: FloatMatrix): FloatMatrix {
 
@@ -89,9 +91,9 @@ class CpuSingleInputDecoder internal constructor(
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            val chainStep = extractStep(chainEntries, indexStep, this.outputDimension)
+            getStep(chainEntries, indexStep, this.chainStepEntries, this.outputDimension)
 
-            val diffOutputPreActivationWrtState = backwardOutput(indexStep, chainStep, diffStatePreActivationWrtInput?.entries)
+            val diffOutputPreActivationWrtState = backwardOutput(indexStep, this.chainStepEntries, diffStatePreActivationWrtInput?.entries)
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
@@ -101,6 +103,7 @@ class CpuSingleInputDecoder internal constructor(
 
             }
             else {
+
                 diffOutputPreActivationWrtState
 
             }
