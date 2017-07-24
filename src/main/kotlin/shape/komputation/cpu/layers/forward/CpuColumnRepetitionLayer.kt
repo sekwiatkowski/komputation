@@ -5,14 +5,15 @@ import shape.komputation.cpu.functions.sumRows
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.FloatMatrix
 
-class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val n : Int) : BaseCpuForwardLayer(name) {
+class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuForwardLayer(name) {
+
+    private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        val inputEntries = input.entries
-        val inputSize = inputEntries.size
+        repeatColumn(input.entries, this.forwardEntries, this.numberColumns)
 
-        return FloatMatrix(inputSize, n, repeatColumn(inputEntries, n))
+        return FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
     }
 

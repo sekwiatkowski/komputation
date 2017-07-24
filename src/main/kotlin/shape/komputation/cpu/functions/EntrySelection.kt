@@ -1,5 +1,11 @@
 package shape.komputation.cpu.functions
 
-fun selectEntries(input: FloatArray, indices : IntArray) =
+fun selectEntries(input: FloatArray, indices : IntArray, result : FloatArray, numberIndices : Int) {
 
-    FloatArray(indices.size) { index -> input[indices[index]] }
+    for (index in 0..numberIndices - 1) {
+
+        result[index] = input[indices[index]]
+
+    }
+
+}

@@ -24,7 +24,9 @@ fun project(input: FloatArray, numberInputRows : Int, numberInputColumns: Int, w
         }
         else {
 
-            val expandedBias = repeatColumn(bias, numberInputColumns)
+            val expandedBias = FloatArray(numberWeightRows * numberInputColumns)
+
+            repeatColumn(bias, expandedBias, numberInputColumns)
 
             return weightMatrix.multiplyAdd(inputMatrix, createBlasMatrix(bias.size, numberInputColumns, expandedBias)).getEntries()
 
@@ -119,9 +121,9 @@ fun backwardProjectionWrtWeights(
 
 }
 
-fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberChainRows: Int, numberChainColumns: Int) =
+fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberChainRows: Int, numberChainColumns: Int, result : FloatArray) {
 
-    FloatArray(numberBiasRows) { indexRow ->
+    for (indexRow in 0..numberBiasRows - 1) {
 
         var derivative = 0.0f
 
@@ -131,6 +133,9 @@ fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberCha
 
         }
 
-        derivative
+        result[indexRow] = derivative
 
     }
+
+
+}

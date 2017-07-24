@@ -42,7 +42,7 @@ fun main(args: Array<String>) {
     val network = Network(
         lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
-        maxPoolingLayer(),
+        maxPoolingLayer(numberFilters),
         reluLayer(numberFilters),
         denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
     )

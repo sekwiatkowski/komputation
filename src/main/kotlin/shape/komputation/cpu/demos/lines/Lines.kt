@@ -32,7 +32,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(inputDimension),
         convolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, optimization),
-        maxPoolingLayer(),
+        maxPoolingLayer(numberFilters),
         reluLayer(numberFilters),
         denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
     )

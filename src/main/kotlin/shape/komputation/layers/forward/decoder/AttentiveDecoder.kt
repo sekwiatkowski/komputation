@@ -37,7 +37,7 @@ class AttentiveDecoder(
 
             val columnRepetitionLayerName = concatenateNames(this.name, "column-repetition-$indexStep")
 
-            columnRepetitionLayer(columnRepetitionLayerName, this.numberSteps).buildForCpu()
+            columnRepetitionLayer(columnRepetitionLayerName, this.encodingDimension, this.numberSteps).buildForCpu()
         }
 
         val attentionAdditions = Array(this.numberSteps) { indexStep ->

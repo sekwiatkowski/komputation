@@ -19,6 +19,7 @@ class SeriesBias internal constructor(
     private val updateRule: UpdateRule? = null) {
 
     private val forwardEntries = FloatArray(this.numberEntries)
+    private val backwardEntries = FloatArray(this.numberEntries)
 
     fun forwardStep(input : FloatMatrix): FloatMatrix {
 
@@ -30,9 +31,9 @@ class SeriesBias internal constructor(
 
     fun backwardStep(chain: FloatMatrix) {
 
-        val backwardWrtBias = backwardProjectionWrtBias(this.bias.size, chain.entries, chain.numberRows, chain.numberColumns)
+        backwardProjectionWrtBias(this.bias.size, chain.entries, chain.numberRows, chain.numberColumns, backwardEntries)
 
-        this.seriesAccumulator.accumulate(backwardWrtBias)
+        this.seriesAccumulator.accumulate(this.backwardEntries)
 
     }
 

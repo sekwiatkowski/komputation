@@ -30,6 +30,8 @@ class CpuProjectionLayer internal constructor(
 
     private val numberWeightEntries = numberWeightRows * numberWeightColumns
 
+    private val backwardWrtBias = if(this.bias != null) FloatArray(bias.size) else null
+
     override fun forward(input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.inputEntries = input.entries.copyOf()
@@ -73,9 +75,9 @@ class CpuProjectionLayer internal constructor(
 
         if (this.biasAccumulator != null) {
 
-            val backwardWrtBias = backwardProjectionWrtBias(this.bias!!.size, chainEntries, numberChainRows, numberChainColumns)
+            backwardProjectionWrtBias(this.bias!!.size, chainEntries, numberChainRows, numberChainColumns, this.backwardWrtBias!!)
 
-            this.biasAccumulator.accumulate(backwardWrtBias)
+            this.biasAccumulator.accumulate(this.backwardWrtBias)
 
         }
 

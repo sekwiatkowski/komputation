@@ -107,7 +107,7 @@ class TrecTraining {
                     .map { filterWidth ->
                         arrayOf(
                             convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, optimization),
-                            maxPoolingLayer(),
+                            maxPoolingLayer(numberFilters),
                             dropoutLayer(numberFilters, random, 0.8f, reluLayer(numberFilters))
                         )
                     }

@@ -2,6 +2,7 @@ package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.functions.backwardExpansionForConvolution
 import shape.komputation.cpu.functions.convolutionsPerColumn
+import shape.komputation.cpu.functions.convolutionsPerRow
 import shape.komputation.cpu.functions.expandForConvolution
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.FloatMatrix
@@ -33,7 +34,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
 
-        this.convolutionsPerRow = shape.komputation.cpu.functions.convolutionsPerRow(this.numberInputColumns, this.filterWidth)
+        this.convolutionsPerRow = convolutionsPerRow(this.numberInputColumns, this.filterWidth)
         val convolutionsPerColumn = convolutionsPerColumn(this.numberInputRows, this.filterHeight)
 
         val expanded = expandForConvolution(input.entries, this.numberInputRows, this.convolutionsPerRow, convolutionsPerColumn, filterWidth, filterHeight)
