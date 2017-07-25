@@ -5,12 +5,11 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cpu.functions.activation.backwardColumnWiseSoftmax
-import shape.komputation.cpu.functions.activation.columnWiseSoftmax
 import shape.komputation.cuda.getVector
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setVector
 import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.matrix.FloatMatrix
 
 class CudaSoftmaxLayerTest {
 
@@ -138,17 +137,18 @@ class CudaSoftmaxLayerTest {
 
         val numberEntries = numberRows * numberColumns
 
-        val forwardEntries = FloatArray(numberEntries)
-        columnWiseSoftmax(input, numberRows, numberColumns, forwardEntries)
-
-        val expected = FloatArray(numberEntries)
-        backwardColumnWiseSoftmax(numberRows, numberColumns, forwardEntries, chain, expected)
-
         val cudaContext = setUpCudaContext()
 
-        val softmaxLayer = softmaxLayer(numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val softmaxLayer = softmaxLayer(numberRows, numberColumns)
 
-        softmaxLayer.acquire()
+        val cpuSoftmaxLayer = softmaxLayer.buildForCpu()
+        cpuSoftmaxLayer.forward(FloatMatrix(numberRows, numberColumns, input), true)
+        val cpuBackward = cpuSoftmaxLayer.backward(FloatMatrix(numberRows, numberColumns, chain))
+        val expected = cpuBackward.entries
+
+        val cudaSoftmaxLayer = softmaxLayer.buildForCuda(cudaContext, cublasHandle())
+
+        cudaSoftmaxLayer.acquire()
 
         val deviceInput = Pointer()
         setVector(input, numberEntries, deviceInput)
@@ -156,14 +156,14 @@ class CudaSoftmaxLayerTest {
         val deviceChain = Pointer()
         setVector(chain, numberEntries, deviceChain)
 
-        softmaxLayer.forward(deviceInput)
-        val deviceBackwardResult = softmaxLayer.backward(deviceChain)
+        cudaSoftmaxLayer.forward(deviceInput)
+        val deviceBackwardResult = cudaSoftmaxLayer.backward(deviceChain)
         val actual = getVector(deviceBackwardResult, numberEntries)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)
 
-        softmaxLayer.release()
+        cudaSoftmaxLayer.release()
 
         cudaContext.destroy()
 

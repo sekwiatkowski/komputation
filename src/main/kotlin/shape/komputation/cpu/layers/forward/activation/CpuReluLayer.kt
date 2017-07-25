@@ -12,7 +12,7 @@ class CpuReluLayer internal constructor(name : String? = null, private val numbe
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        relu(input.entries, forwardEntries, input.numberRows * input.numberColumns)
+        relu(input.entries, this.forwardEntries, input.numberRows * input.numberColumns)
 
         val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 

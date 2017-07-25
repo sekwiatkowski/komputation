@@ -11,21 +11,16 @@ import shape.komputation.layers.forward.normalizationLayer
 
 class SoftmaxLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
+    private val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows * this.numberColumns)
+    private val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns)
+
     override fun buildForCpu() =
 
-        CpuSoftmaxLayer(this.name, this.numberRows, this.numberColumns)
+        CpuSoftmaxLayer(this.name, this.exponentiationLayer.buildForCpu(), this.normalizationLayer.buildForCpu())
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaSoftmaxLayer {
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
 
-        val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows * this.numberColumns).buildForCuda(context, cublasHandle)
-
-        val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns).buildForCuda(context, cublasHandle)
-
-        val softmaxLayer = CudaSoftmaxLayer(this.name, exponentiationLayer, normalizationLayer)
-
-        return softmaxLayer
-
-    }
+        CudaSoftmaxLayer(this.name, this.exponentiationLayer.buildForCuda(context, cublasHandle), this.normalizationLayer.buildForCuda(context, cublasHandle))
 
 }
 

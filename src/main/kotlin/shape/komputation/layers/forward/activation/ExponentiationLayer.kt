@@ -1,11 +1,18 @@
 package shape.komputation.layers.forward.activation
 
 import jcuda.jcublas.cublasHandle
+import shape.komputation.cpu.layers.CpuForwardLayer
+import shape.komputation.cpu.layers.forward.activation.CpuExponentiationLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
+import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class ExponentiationLayer(private val name : String?, private val numberEntries: Int) : CudaForwardLayerInstruction {
+class ExponentiationLayer(private val name : String?, private val numberEntries: Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+
+    override fun buildForCpu() =
+
+        CpuExponentiationLayer(this.name, this.numberEntries)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaExponentiationLayer {
 

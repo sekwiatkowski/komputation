@@ -43,10 +43,12 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [Tanh](./src/main/kotlin/shape/komputation/layers/forward/activation/TanhLayer.kt)
 
 - Other layers:
-  - [Concatenation](./src/main/kotlin/shape/komputation/layers/forward/Concatenation.kt)
-  - [Transposition](./src/main/kotlin/shape/komputation/layers/forward/TranspositionLayer.kt)
-  - [Counter-probability](./src/main/kotlin/shape/komputation/layers/forward/CounterProbabilityLayer.kt)
   - [Column repetition](./src/main/kotlin/shape/komputation/layers/forward/ColumnRepetitionLayer.kt)
+  - [Concatenation](./src/main/kotlin/shape/komputation/layers/forward/Concatenation.kt)
+  - [Counter-probability](./src/main/kotlin/shape/komputation/layers/forward/CounterProbabilityLayer.kt)
+  - [Exponentiation](./src/main/kotlin/shape/komputation/layers/forward/activation/ExponentiationLayer.kt)
+  - [Normalization](./src/main/kotlin/shape/komputation/layers/forward/NormalizationLayer.kt)
+  - [Transposition](./src/main/kotlin/shape/komputation/layers/forward/TranspositionLayer.kt)
 
 ## Demos
 

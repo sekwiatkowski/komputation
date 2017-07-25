@@ -71,9 +71,9 @@ class CudaNormalizationLayer internal constructor(
         this.backwardKernel.launch(
             Pointer.to(
                 this.pointerToNumberCategories,
-                this.pointerToDeviceInput,
-                this.pointerToDeviceSums,
                 Pointer.to(chain),
+                this.pointerToDeviceForwardResult,
+                this.pointerToDeviceSums,
                 this.pointerToDeviceBackwardResult
             ),
             this.numberColumns,
