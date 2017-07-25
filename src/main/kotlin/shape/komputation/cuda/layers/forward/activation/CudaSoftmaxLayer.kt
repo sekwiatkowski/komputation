@@ -17,11 +17,11 @@ class CudaSoftmaxLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer): Pointer {
+    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
 
-        val exponentiated = this.exponentiationLayer.forward(input)
+        val exponentiated = this.exponentiationLayer.forward(input, isTraining)
 
-        return this.normalizationLayer.forward(exponentiated)
+        return this.normalizationLayer.forward(exponentiated, isTraining)
 
     }
 

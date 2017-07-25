@@ -24,7 +24,7 @@ fun compileKernel(
 
     val numberHeaders = headerFiles.size
 
-    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headerSources, includeNames);
+    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headerSources, includeNames)
 
     for (nameExpression in nameExpressions) {
 

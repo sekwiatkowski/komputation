@@ -48,7 +48,7 @@ class CudaNormalizationLayer internal constructor(
 
     private var pointerToDeviceInput = Pointer()
 
-    override fun forward(input : Pointer): Pointer {
+    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
 
         this.pointerToDeviceInput = Pointer.to(input)
 

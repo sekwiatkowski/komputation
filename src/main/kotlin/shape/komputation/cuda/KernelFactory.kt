@@ -4,6 +4,11 @@ import java.io.File
 
 class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
+    fun dropoutTrainingKernel() = createKernel(
+        "dropoutTrainingKernel",
+        "dropoutTrainingKernel",
+        "dropout/DropoutTrainingKernel.cu")
+
     fun exponentiationKernel() = createKernel(
         "exponentiationKernel",
         "exponentiationKernel",
@@ -100,7 +105,7 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "backwardLogisticLossKernel",
         "logisticloss/BackwardLogisticLossKernel.cu")
 
-    private fun resolveRelativePath(relativePath: String)  =
+    private fun resolveRelativePath(relativePath: String) =
 
         File(this.javaClass.getResource("/cuda/$relativePath").toURI())
 

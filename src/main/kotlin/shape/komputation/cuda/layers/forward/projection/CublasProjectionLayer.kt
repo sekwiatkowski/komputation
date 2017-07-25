@@ -72,7 +72,7 @@ class CublasProjectionLayer internal constructor(
 
     private var deviceInput = Pointer()
 
-    override fun forward(input : Pointer): Pointer {
+    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
 
         this.deviceInput = input
 

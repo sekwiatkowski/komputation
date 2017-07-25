@@ -5,7 +5,9 @@ import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.trec.NLP
 import shape.komputation.demos.trec.TRECData
 import shape.komputation.initialization.heInitialization
+import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.uniformInitialization
+import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
@@ -48,7 +50,7 @@ class TrecTraining {
         val random = Random(1)
         val initialization = uniformInitialization(random, -0.1f, 0.1f)
 
-        val optimization = rmsprop(0.0015f, 0.9f, 0.01f)
+        val optimization = momentum(0.00085f, 0.9f)
 
         val batchSize = 1
 
@@ -114,10 +116,10 @@ class TrecTraining {
                 *filterWidths
                     .map { filterWidth ->
                         arrayOf(
-                            convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, optimization),
+                            convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
                             maxPoolingLayer(numberFilters),
                             reluLayer(numberFilters),
-                            dropoutLayer(random, numberFilters, 0.8f)
+                            dropoutLayer(random, numberFilters, 0.75f)
                         )
                     }
                     .toTypedArray()

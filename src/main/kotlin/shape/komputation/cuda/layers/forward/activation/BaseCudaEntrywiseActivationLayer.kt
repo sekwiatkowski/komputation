@@ -1,7 +1,7 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
-import jcuda.runtime.JCuda
+import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceMemory
 import shape.komputation.layers.Resourceful
@@ -37,7 +37,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer): Pointer {
+    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
 
         val forwardParameters = Pointer.to(
             this.deviceInputDimension,
@@ -71,8 +71,8 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
         this.forwardKernel.release()
         this.backwardKernel.release()
 
-        JCuda.cudaFree(this.deviceForwardResult)
-        JCuda.cudaFree(this.deviceBackwardResult)
+        cudaFree(this.deviceForwardResult)
+        cudaFree(this.deviceBackwardResult)
 
     }
 

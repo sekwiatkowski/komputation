@@ -83,7 +83,7 @@ class CudaProjectionLayerTest {
         val deviceInput = Pointer()
         setVector(input, inputDimension, deviceInput)
 
-        val deviceResult = projectionLayer.forward(deviceInput)
+        val deviceResult = projectionLayer.forward(deviceInput, true)
 
         val actual = getVector(deviceResult, outputDimension)
 
@@ -169,7 +169,7 @@ class CudaProjectionLayerWithBiasTest {
         val deviceInput = Pointer()
         setVector(input, inputDimension, deviceInput)
 
-        val deviceResult = projectionLayer.forward(deviceInput)
+        val deviceResult = projectionLayer.forward(deviceInput, true)
 
         val actual = getVector(deviceResult, outputDimension)
 

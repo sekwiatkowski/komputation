@@ -144,7 +144,7 @@ class CudaNormalizationLayerTest {
         val numberEntries = numberRows * numberColumns
         setVector(input, numberEntries, deviceInput)
 
-        val deviceResult = layer.forward(deviceInput)
+        val deviceResult = layer.forward(deviceInput, false)
         val actual = getVector(deviceResult, numberEntries)
 
         cudaFree(deviceInput)
@@ -181,7 +181,7 @@ class CudaNormalizationLayerTest {
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
         layer.acquire()
 
-        layer.forward(deviceInput)
+        layer.forward(deviceInput, true)
         val deviceBackwardResult = layer.backward(deviceChain)
         val actual = getVector(deviceBackwardResult, numberEntries)
 

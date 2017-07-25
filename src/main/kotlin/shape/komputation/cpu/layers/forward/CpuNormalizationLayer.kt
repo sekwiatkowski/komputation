@@ -13,16 +13,13 @@ import shape.komputation.matrix.FloatMatrix
  */
 class CpuNormalizationLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
 
-    private var inputEntries = FloatArray(this.numberRows * this.numberColumns)
     private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
     private val sumEntries = FloatArray(this.numberColumns)
     private val backwardEntries = FloatArray(this.numberRows * this.numberColumns)
 
     override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        this.inputEntries = input.entries
-
-        normalize(this.numberRows, this.numberColumns, inputEntries, this.sumEntries, this.forwardEntries)
+        normalize(this.numberRows, this.numberColumns, input.entries, this.sumEntries, this.forwardEntries)
 
         val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
@@ -32,7 +29,7 @@ class CpuNormalizationLayer internal constructor(name : String? = null, private 
 
     override fun backward(chain : FloatMatrix) : FloatMatrix {
 
-        backwardNormalization(this.numberRows, this.numberColumns, chain.entries, this.inputEntries, this.forwardEntries, this.sumEntries, this.backwardEntries)
+        backwardNormalization(this.numberRows, this.numberColumns, chain.entries, this.forwardEntries, this.sumEntries, this.backwardEntries)
 
         return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 

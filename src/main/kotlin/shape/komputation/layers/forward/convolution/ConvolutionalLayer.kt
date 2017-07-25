@@ -12,7 +12,8 @@ class ConvolutionalLayer(
     private val numberFilters: Int,
     private val filterWidth: Int,
     private val filterHeight : Int,
-    private val initialization: InitializationStrategy,
+    private val weightInitialization: InitializationStrategy,
+    private val biasInitialization: InitializationStrategy,
     private val optimization: OptimizationInstruction? = null) : CpuForwardLayerInstruction {
 
     override fun buildForCpu(): CpuConvolutionalLayer {
@@ -21,7 +22,7 @@ class ConvolutionalLayer(
         val expansionLayer = expansionLayer(expansionLayerName, this.filterWidth, this.filterHeight).buildForCpu()
 
         val projectionLayerName = concatenateNames(name, "projection")
-        val projectionLayer = projectionLayer(projectionLayerName, this.filterWidth * this.filterHeight, this.numberFilters, this.initialization, this.initialization, this.optimization).buildForCpu()
+        val projectionLayer = projectionLayer(projectionLayerName, this.filterWidth * this.filterHeight, this.numberFilters, this.weightInitialization, this.biasInitialization, this.optimization).buildForCpu()
 
         return CpuConvolutionalLayer(name, expansionLayer, projectionLayer)
 
@@ -34,10 +35,11 @@ fun convolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
     filterHeight : Int,
-    initialization: InitializationStrategy,
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null): ConvolutionalLayer {
 
-    return convolutionalLayer(null, numberFilters, filterWidth, filterHeight, initialization, optimization)
+    return convolutionalLayer(null, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)
 
 }
 
@@ -46,7 +48,8 @@ fun convolutionalLayer(
     numberFilters: Int,
     filterWidth: Int,
     filterHeight : Int,
-    initialization: InitializationStrategy,
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
 
-    ConvolutionalLayer(name, numberFilters, filterWidth, filterHeight, initialization, optimization)
+    ConvolutionalLayer(name, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)

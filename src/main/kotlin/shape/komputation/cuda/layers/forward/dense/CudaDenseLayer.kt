@@ -24,11 +24,11 @@ class CudaDenseLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer): Pointer {
+    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
 
-        val projected = this.projectionLayer.forward(input)
+        val projected = this.projectionLayer.forward(input, isTraining)
 
-        val activated = this.activationLayer.forward(projected)
+        val activated = this.activationLayer.forward(projected, isTraining)
 
         return activated
 

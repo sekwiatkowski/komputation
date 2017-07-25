@@ -1,7 +1,6 @@
 package shape.komputation.layers.forward
 
 import jcuda.jcublas.cublasHandle
-import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.cpu.layers.forward.CpuNormalizationLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer

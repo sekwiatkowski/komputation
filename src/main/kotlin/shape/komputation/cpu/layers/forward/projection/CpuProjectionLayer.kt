@@ -64,9 +64,9 @@ class CpuProjectionLayer internal constructor(
             numberChainRows)
 
         val backwardWrtWeights = backwardProjectionWrtWeights(
-            numberWeightEntries,
-            numberWeightRows,
-            numberWeightColumns,
+            this.numberWeightEntries,
+            this.numberWeightRows,
+            this.numberWeightColumns,
             this.inputEntries,
             this.numberInputRows,
             chainEntries,

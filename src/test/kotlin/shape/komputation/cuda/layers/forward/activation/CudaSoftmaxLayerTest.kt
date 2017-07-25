@@ -71,7 +71,7 @@ class CudaSoftmaxLayerTest {
         val deviceInput = Pointer()
         setVector(input, numberEntries, deviceInput)
 
-        val deviceResult = softmaxLayer.forward(deviceInput)
+        val deviceResult = softmaxLayer.forward(deviceInput, true)
         val actual = getVector(deviceResult, numberEntries)
 
         cudaFree(deviceInput)
@@ -156,7 +156,7 @@ class CudaSoftmaxLayerTest {
         val deviceChain = Pointer()
         setVector(chain, numberEntries, deviceChain)
 
-        cudaSoftmaxLayer.forward(deviceInput)
+        cudaSoftmaxLayer.forward(deviceInput, true)
         val deviceBackwardResult = cudaSoftmaxLayer.backward(deviceChain)
         val actual = getVector(deviceBackwardResult, numberEntries)
 

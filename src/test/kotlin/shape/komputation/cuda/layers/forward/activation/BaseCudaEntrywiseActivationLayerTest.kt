@@ -25,7 +25,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
         val deviceInput = Pointer()
         setVector(input, numberEntries, deviceInput)
 
-        val deviceResult = layer.forward(deviceInput)
+        val deviceResult = layer.forward(deviceInput, true)
         val actual = getVector(deviceResult, numberEntries)
 
         JCuda.cudaFree(deviceInput)
@@ -49,7 +49,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
 
         val deviceInput = Pointer()
         setVector(input, numberEntries, deviceInput)
-        layer.forward(deviceInput)
+        layer.forward(deviceInput, true)
 
         val deviceChain = Pointer()
         setVector(chain, numberEntries, deviceChain)

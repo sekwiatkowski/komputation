@@ -25,13 +25,13 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(id : Int, input : Matrix) : Pointer {
+    fun forward(id : Int, input : Matrix, isTraining : Boolean) : Pointer {
 
         var output = this.entryPoint.forward(id, input)
 
         for (layer in this.layers) {
 
-            output = layer.forward(output)
+            output = layer.forward(output, isTraining)
 
         }
 
@@ -118,7 +118,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                     }
 
-                    val devicePredictions = this.forward(id++, input)
+                    val devicePredictions = this.forward(id++, input, true)
 
                     val pointerToDevicePredictions = Pointer.to(devicePredictions)
 

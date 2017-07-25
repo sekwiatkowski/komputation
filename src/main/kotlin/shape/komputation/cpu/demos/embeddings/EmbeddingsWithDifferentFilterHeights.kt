@@ -39,7 +39,7 @@ fun main(args: Array<String>) {
     val createConvolutionSubnetwork = { filterWidth : Int ->
 
         arrayOf(
-            convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy),
+            convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
             reluLayer(numberFilters * (2 - filterWidth + 1)),
             maxPoolingLayer(numberFilters)
         )

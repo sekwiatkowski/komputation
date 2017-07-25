@@ -57,13 +57,13 @@ fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: Floa
 
  */
 
-fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: FloatArray, inputEntries: FloatArray, forwardEntries: FloatArray, denominators: FloatArray, result: FloatArray) {
+fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: FloatArray, forwardEntries: FloatArray, denominators: FloatArray, result: FloatArray) {
 
     for (indexColumn in 0..numberColumns - 1) {
 
         val startColumn = indexColumn * numberRows
 
-        var multiplicationSum = 0.0f
+        var productSum = 0.0f
 
         for (indexRow in 0..numberRows - 1) {
 
@@ -72,7 +72,7 @@ fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: Flo
             val chainEntry = chainEntries[indexEntry]
             val forwardEntry = forwardEntries[indexEntry]
 
-            multiplicationSum -= chainEntry * forwardEntry
+            productSum -= chainEntry * forwardEntry
 
         }
 
@@ -81,7 +81,7 @@ fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: Flo
             val indexEntry = startColumn + indexRow
             val chainEntry = chainEntries[indexRow]
 
-            result[indexEntry] = (multiplicationSum + chainEntry) / denominators[indexColumn]
+            result[indexEntry] = (productSum + chainEntry) / denominators[indexColumn]
 
         }
 
