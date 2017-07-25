@@ -40,11 +40,11 @@ fun negate(vector: FloatArray, result : FloatArray, numberEntries: Int) {
 
 }
 
-fun scale(vector: FloatArray, scalar : Float, numberEntries: Int) {
+fun scale(vector: FloatArray, scalar : Float, result : FloatArray, numberEntries: Int) {
 
     for (index in 0..numberEntries - 1) {
 
-        vector[index] = scalar * vector[index]
+        result[index] = scalar * vector[index]
 
     }
 

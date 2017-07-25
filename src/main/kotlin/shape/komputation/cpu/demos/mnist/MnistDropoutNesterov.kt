@@ -59,7 +59,8 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(inputDimension),
         firstProjection,
-        dropoutLayer(hiddenDimension, random, 0.85f, reluLayer(hiddenDimension)),
+        dropoutLayer(random, hiddenDimension, 0.85f),
+        reluLayer(hiddenDimension),
         outputLayer
     )
 

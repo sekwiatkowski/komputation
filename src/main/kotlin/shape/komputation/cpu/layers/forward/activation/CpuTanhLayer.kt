@@ -1,14 +1,12 @@
 package shape.komputation.cpu.layers.forward.activation
 
 import shape.komputation.cpu.functions.activation.differentiateTanh
-import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.cpu.functions.activation.tanh
 import shape.komputation.cpu.functions.hadamard
-import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.FloatMath
 import shape.komputation.matrix.FloatMatrix
 
-class CpuTanhLayer internal constructor(name: String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
+class CpuTanhLayer internal constructor(name: String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name) {
 
     private val forwardEntries = FloatArray(this.numberEntries)
     private val backwardEntries = FloatArray(this.numberEntries)
@@ -25,30 +23,6 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
         val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
         return result
-    }
-
-    override fun forward(input: FloatMatrix, mask: BooleanArray): FloatMatrix {
-
-        this.hasCachedDifferentiation = false
-
-        val inputEntries = input.entries
-
-        for (index in 0..this.numberEntries - 1) {
-
-            this.forwardEntries[index] =
-
-                if(mask[index])
-
-                    FloatMath.tanh(inputEntries[index])
-
-                else
-
-                    0.0f
-
-        }
-
-        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
-
     }
 
     override fun backward(chain : FloatMatrix): FloatMatrix {

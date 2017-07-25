@@ -4,10 +4,10 @@ import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.activation.CpuReluLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.forward.activation.CudaReluLayer
-import shape.komputation.layers.CpuDropoutCompliantInstruction
+import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class ReluLayer(private val name : String?, private val numberEntries : Int) : CpuDropoutCompliantInstruction, CudaActivationLayerInstruction {
+class ReluLayer(private val name : String?, private val numberEntries : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 

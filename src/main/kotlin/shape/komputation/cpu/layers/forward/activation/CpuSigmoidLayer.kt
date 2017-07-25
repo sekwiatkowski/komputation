@@ -3,10 +3,9 @@ package shape.komputation.cpu.layers.forward.activation
 import shape.komputation.cpu.functions.activation.differentiateSigmoid
 import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.cpu.functions.hadamard
-import shape.komputation.cpu.layers.forward.dropout.DropoutCompliant
 import shape.komputation.matrix.FloatMatrix
 
-class CpuSigmoidLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name), DropoutCompliant {
+class CpuSigmoidLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name) {
 
     private val forwardEntries = FloatArray(this.numberEntries)
     private val differentiation = FloatArray(this.numberEntries)
@@ -22,22 +21,6 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
         val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
         return result
-
-    }
-
-    override fun forward(input: FloatMatrix, mask: BooleanArray): FloatMatrix {
-
-        this.hasCachedDifferentiation = false
-
-        val inputEntries = input.entries
-
-        for (index in 0..this.numberEntries - 1) {
-
-            this.forwardEntries[index] = if(mask[index]) sigmoid(inputEntries[index]) else 0.0f
-
-        }
-
-        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
     }
 
