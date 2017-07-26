@@ -7,9 +7,9 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.getVector
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatScalar
 
@@ -73,14 +73,14 @@ class CublasProjectionForwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        setVector(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
+        setFloatArray(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
 
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
-        allocateDeviceMemory(deviceResult, resultDimension)
+        allocateDeviceFloatMemory(deviceResult, resultDimension)
 
         val deviceWeights = Pointer()
-        setVector(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
+        setFloatArray(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
 
         cublasProject(
             cublasHandle,
@@ -90,7 +90,7 @@ class CublasProjectionForwardTest {
             weightMatrix.numberColumns,
             deviceResult)
 
-        val actual = getVector(deviceResult, resultDimension)
+        val actual = getFloatArray(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceResult)
@@ -108,15 +108,15 @@ class CublasProjectionForwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        setVector(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
+        setFloatArray(inputMatrix.entries, inputMatrix.entries.size, deviceInput)
         val deviceResult = Pointer()
         val resultDimension = weightMatrix.numberRows
-        allocateDeviceMemory(deviceResult, resultDimension)
+        allocateDeviceFloatMemory(deviceResult, resultDimension)
 
         val deviceWeights = Pointer()
-        setVector(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
+        setFloatArray(weightMatrix.entries, weightMatrix.entries.size, deviceWeights)
         val deviceBias = Pointer()
-        setVector(bias, bias.size, deviceBias)
+        setFloatArray(bias, bias.size, deviceBias)
 
         cublasProjectWithBias(
             cublasHandle,
@@ -128,7 +128,7 @@ class CublasProjectionForwardTest {
             bias.size,
             deviceResult)
 
-        val actual = getVector(deviceResult, resultDimension)
+        val actual = getFloatArray(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceResult)

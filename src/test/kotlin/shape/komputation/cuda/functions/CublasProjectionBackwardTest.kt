@@ -7,9 +7,9 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.getVector
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatRowVector
 import shape.komputation.matrix.floatScalar
@@ -114,17 +114,17 @@ class CublasProjectionBackwardTest {
         cublasCreate(cublasHandle)
 
         val deviceWeights = Pointer()
-        setVector(weights, numberWeightEntries, deviceWeights)
+        setFloatArray(weights, numberWeightEntries, deviceWeights)
 
         val deviceChain = Pointer()
-        setVector(chain, numberWeightRows, deviceChain)
+        setFloatArray(chain, numberWeightRows, deviceChain)
 
         val deviceResult = Pointer()
-        allocateDeviceMemory(deviceResult, numberWeightColumns)
+        allocateDeviceFloatMemory(deviceResult, numberWeightColumns)
 
         cublasBackwardProjectionWrtInput(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
 
-        val hostResult = getVector(deviceResult, numberWeightColumns)
+        val hostResult = getFloatArray(deviceResult, numberWeightColumns)
 
         cudaFree(deviceWeights)
         cudaFree(deviceChain)
@@ -149,17 +149,17 @@ class CublasProjectionBackwardTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        setVector(inputEntries, inputDimension, deviceInput)
+        setFloatArray(inputEntries, inputDimension, deviceInput)
 
         val deviceChain = Pointer()
-        setVector(chain, chainDimension, deviceChain)
+        setFloatArray(chain, chainDimension, deviceChain)
 
         val deviceResult = Pointer()
-        allocateDeviceMemory(deviceResult, resultDimension)
+        allocateDeviceFloatMemory(deviceResult, resultDimension)
 
         cublasBackwardProjectionWrtWeights(cublasHandle, deviceInput, deviceChain, deviceResult, chainDimension, inputDimension)
 
-        val hostResult = getVector(deviceResult, resultDimension)
+        val hostResult = getFloatArray(deviceResult, resultDimension)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)

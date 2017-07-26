@@ -5,9 +5,9 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.getVector
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setUpCudaContext
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.matrix.FloatMatrix
 
@@ -69,10 +69,10 @@ class CudaSoftmaxLayerTest {
         softmaxLayer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, numberEntries, deviceInput)
+        setFloatArray(input, numberEntries, deviceInput)
 
         val deviceResult = softmaxLayer.forward(deviceInput, true)
-        val actual = getVector(deviceResult, numberEntries)
+        val actual = getFloatArray(deviceResult, numberEntries)
 
         cudaFree(deviceInput)
 
@@ -132,7 +132,6 @@ class CudaSoftmaxLayerTest {
 
     }
 
-
     private fun testBackward(numberRows: Int, numberColumns: Int, input: FloatArray, chain : FloatArray) {
 
         val numberEntries = numberRows * numberColumns
@@ -151,14 +150,14 @@ class CudaSoftmaxLayerTest {
         cudaSoftmaxLayer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, numberEntries, deviceInput)
+        setFloatArray(input, numberEntries, deviceInput)
 
         val deviceChain = Pointer()
-        setVector(chain, numberEntries, deviceChain)
+        setFloatArray(chain, numberEntries, deviceChain)
 
         cudaSoftmaxLayer.forward(deviceInput, true)
         val deviceBackwardResult = cudaSoftmaxLayer.backward(deviceChain)
-        val actual = getVector(deviceBackwardResult, numberEntries)
+        val actual = getFloatArray(deviceBackwardResult, numberEntries)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)

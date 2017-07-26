@@ -20,19 +20,19 @@ class CudaLogisticLoss(
     private val deviceLoss = Pointer()
     private val pointerToDeviceLoss = Pointer.to(this.deviceLoss)
 
-    private val forwardSharedMemoryBytes = computeDeviceByteSize(this.blockSize).toInt()
+    private val forwardSharedMemoryBytes = computeDeviceFloatArraySize(this.blockSize).toInt()
 
     private val deviceBackwardResult = Pointer()
     private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     override fun acquire() {
 
-        allocateDeviceMemory(this.deviceSums, this.numberSteps)
-        allocateDeviceMemory(this.deviceLoss, 1)
+        allocateDeviceFloatMemory(this.deviceSums, this.numberSteps)
+        allocateDeviceFloatMemory(this.deviceLoss, 1)
 
         this.forwardKernel.acquire()
 
-        allocateDeviceMemory(this.deviceBackwardResult, this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
 
         this.backwardKernel.acquire()
 
@@ -57,7 +57,7 @@ class CudaLogisticLoss(
 
     override fun accessAccumulation() =
 
-        getVector(this.deviceLoss, 1)[0]
+        getFloatArray(this.deviceLoss, 1)[0]
 
     override fun reset() {
 

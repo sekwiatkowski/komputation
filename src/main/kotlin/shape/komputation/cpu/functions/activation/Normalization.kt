@@ -79,7 +79,7 @@ fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: Flo
         for (indexRow in 0..numberRows - 1) {
 
             val indexEntry = startColumn + indexRow
-            val chainEntry = chainEntries[indexRow]
+            val chainEntry = chainEntries[indexEntry]
 
             result[indexEntry] = (productSum + chainEntry) / denominators[indexColumn]
 

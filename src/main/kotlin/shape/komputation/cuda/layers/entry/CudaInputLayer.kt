@@ -3,7 +3,7 @@ package shape.komputation.cuda.layers.entry
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.layers.CudaEntryPoint
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
@@ -29,7 +29,7 @@ class CudaInputLayer(private val dimension : Int) : CudaEntryPoint, Resourceful 
 
             val deviceInput = Pointer()
 
-            setVector(input.entries, this.dimension, deviceInput)
+            setFloatArray(input.entries, this.dimension, deviceInput)
 
             this.memory[id] = deviceInput
 

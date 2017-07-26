@@ -3,11 +3,11 @@ package shape.komputation.cuda.layers.forward.projection
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.functions.*
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setVectorToZero
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
@@ -54,17 +54,17 @@ class CublasProjectionLayer internal constructor(
 
     override fun acquire() {
 
-        allocateDeviceMemory(this.deviceResult, this.numberWeightRows)
+        allocateDeviceFloatMemory(this.deviceResult, this.numberWeightRows)
 
-        allocateDeviceMemory(this.deviceBackwardWrtInput, this.inputDimension)
-        allocateDeviceMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
-        allocateDeviceMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardWrtInput, this.inputDimension)
+        allocateDeviceFloatMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
+        allocateDeviceFloatMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
-        setVector(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
+        setFloatArray(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
 
         if(this.hasBias) {
 
-            setVector(this.initialBias!!, this.numberBiasEntries, this.deviceBias)
+            setFloatArray(this.initialBias!!, this.numberBiasEntries, this.deviceBias)
 
         }
 

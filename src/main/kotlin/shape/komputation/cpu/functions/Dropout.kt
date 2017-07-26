@@ -1,12 +1,27 @@
 package shape.komputation.cpu.functions
 
+import shape.komputation.matrix.xorShift
 import java.util.*
 
-fun mask(random : Random, keepProbability: Float, result : BooleanArray, numberEntries : Int) {
+fun seed(random : Random, result: IntArray, numberEntries: Int) {
 
     for (index in 0..numberEntries - 1) {
 
-        result[index] = random.nextFloat() <= keepProbability
+        result[index] = random.nextInt()
+
+    }
+
+}
+
+fun mask(seeds : IntArray, limit : Int, result : BooleanArray, numberEntries : Int) {
+
+    for (index in 0..numberEntries-1) {
+
+        val updatedSeed = xorShift(seeds[index])
+
+        seeds[index] = updatedSeed
+
+        result[index] = updatedSeed > limit
 
     }
 

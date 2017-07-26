@@ -3,7 +3,7 @@ package shape.komputation.cuda.layers.forward.activation
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
-import shape.komputation.cuda.allocateDeviceMemory
+import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMath
 
@@ -27,11 +27,11 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     override fun acquire() {
 
-        allocateDeviceMemory(this.deviceForwardResult, this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.numberEntries)
 
         this.forwardKernel.acquire()
 
-        allocateDeviceMemory(this.deviceBackwardResult, this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
 
         this.backwardKernel.acquire()
 

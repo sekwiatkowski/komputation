@@ -108,7 +108,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
                         val target = targets[indexExample]
 
                         val deviceTargets = Pointer()
-                        setVector(target.entries, targetSize, deviceTargets)
+                        setFloatArray(target.entries, targetSize, deviceTargets)
 
                         val pointerToDeviceTargets = Pointer.to(deviceTargets)
 

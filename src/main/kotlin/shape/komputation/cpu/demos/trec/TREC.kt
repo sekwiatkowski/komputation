@@ -4,27 +4,17 @@ import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.trec.NLP
 import shape.komputation.demos.trec.TRECData
-import shape.komputation.initialization.heInitialization
-import shape.komputation.initialization.identityInitialization
 import shape.komputation.initialization.uniformInitialization
-import shape.komputation.initialization.zeroInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
-import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
-import shape.komputation.optimization.adaptive.adadelta
-import shape.komputation.optimization.adaptive.adagrad
-import shape.komputation.optimization.adaptive.adam
-import shape.komputation.optimization.adaptive.rmsprop
-import shape.komputation.optimization.historical.momentum
 import shape.komputation.optimization.historical.nesterov
-import shape.komputation.optimization.stochasticGradientDescent
 import java.io.File
 import java.util.*
 
@@ -50,7 +40,9 @@ class TrecTraining {
         val random = Random(1)
         val initialization = uniformInitialization(random, -0.1f, 0.1f)
 
-        val optimization = momentum(0.00085f, 0.9f)
+        val optimization = nesterov(0.001f, 0.85f)
+
+        val keepProbability = 0.85f
 
         val batchSize = 1
 
@@ -63,7 +55,7 @@ class TrecTraining {
         val filterHeight = embeddingDimension
         val numberFilterWidths = filterWidths.size
 
-        val numberIterations = 10
+        val numberIterations = 20
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -119,7 +111,7 @@ class TrecTraining {
                             convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
                             maxPoolingLayer(numberFilters),
                             reluLayer(numberFilters),
-                            dropoutLayer(random, numberFilters, 0.75f)
+                            dropoutLayer(numberFilters, random, keepProbability)
                         )
                     }
                     .toTypedArray()

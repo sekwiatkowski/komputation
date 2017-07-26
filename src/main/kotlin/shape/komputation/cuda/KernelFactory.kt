@@ -9,6 +9,16 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "dropoutTrainingKernel",
         "dropout/DropoutTrainingKernel.cu")
 
+    fun dropoutRuntimeKernel() = createKernel(
+        "dropoutRuntimeKernel",
+        "dropoutRuntimeKernel",
+        "dropout/DropoutRuntimeKernel.cu")
+
+    fun backwardDropoutKernel() = createKernel(
+        "backwardDropoutKernel",
+        "backwardDropoutKernel",
+        "dropout/BackwardDropoutKernel.cu")
+
     fun exponentiationKernel() = createKernel(
         "exponentiationKernel",
         "exponentiationKernel",

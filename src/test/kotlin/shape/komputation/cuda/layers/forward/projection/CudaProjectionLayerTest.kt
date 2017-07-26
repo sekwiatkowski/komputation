@@ -5,9 +5,9 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.getVector
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setUpCudaContext
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.initialization.providedInitialization
 import shape.komputation.layers.forward.projection.projectionLayer
 
@@ -81,11 +81,11 @@ class CudaProjectionLayerTest {
         projectionLayer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, inputDimension, deviceInput)
+        setFloatArray(input, inputDimension, deviceInput)
 
         val deviceResult = projectionLayer.forward(deviceInput, true)
 
-        val actual = getVector(deviceResult, outputDimension)
+        val actual = getFloatArray(deviceResult, outputDimension)
 
         projectionLayer.release()
 
@@ -167,11 +167,11 @@ class CudaProjectionLayerWithBiasTest {
         projectionLayer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, inputDimension, deviceInput)
+        setFloatArray(input, inputDimension, deviceInput)
 
         val deviceResult = projectionLayer.forward(deviceInput, true)
 
-        val actual = getVector(deviceResult, outputDimension)
+        val actual = getFloatArray(deviceResult, outputDimension)
 
         projectionLayer.release()
 

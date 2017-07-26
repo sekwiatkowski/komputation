@@ -4,9 +4,9 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import shape.komputation.cuda.CudaContext
-import shape.komputation.cuda.getVector
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setUpCudaContext
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 
 abstract class BaseCudaEntrywiseActivationLayerTest {
 
@@ -23,10 +23,10 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
         layer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, numberEntries, deviceInput)
+        setFloatArray(input, numberEntries, deviceInput)
 
         val deviceResult = layer.forward(deviceInput, true)
-        val actual = getVector(deviceResult, numberEntries)
+        val actual = getFloatArray(deviceResult, numberEntries)
 
         JCuda.cudaFree(deviceInput)
 
@@ -48,14 +48,14 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
         layer.acquire()
 
         val deviceInput = Pointer()
-        setVector(input, numberEntries, deviceInput)
+        setFloatArray(input, numberEntries, deviceInput)
         layer.forward(deviceInput, true)
 
         val deviceChain = Pointer()
-        setVector(chain, numberEntries, deviceChain)
+        setFloatArray(chain, numberEntries, deviceChain)
         val deviceResult = layer.backward(deviceChain)
 
-        val actual = getVector(deviceResult, numberEntries)
+        val actual = getFloatArray(deviceResult, numberEntries)
 
         JCuda.cudaFree(deviceInput)
         JCuda.cudaFree(deviceChain)

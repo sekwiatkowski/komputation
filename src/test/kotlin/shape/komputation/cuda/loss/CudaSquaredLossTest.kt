@@ -5,9 +5,9 @@ import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cuda.getVector
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setUpCudaContext
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.FloatMath
 
@@ -58,9 +58,9 @@ class CudaSquaredLossTest {
         val cudaContext = setUpCudaContext()
 
         val devicePredictions = Pointer()
-        setVector(predictions, size, devicePredictions)
+        setFloatArray(predictions, size, devicePredictions)
         val deviceTargets = Pointer()
-        setVector(targets, size, deviceTargets)
+        setFloatArray(targets, size, deviceTargets)
 
         val loss = squaredLoss(size).buildForCuda(cudaContext)
 
@@ -112,17 +112,17 @@ class CudaSquaredLossTest {
         val context = setUpCudaContext()
 
         val devicePredictions = Pointer()
-        setVector(predictions, size, devicePredictions)
+        setFloatArray(predictions, size, devicePredictions)
 
         val deviceTargets = Pointer()
-        setVector(targets, size, deviceTargets)
+        setFloatArray(targets, size, deviceTargets)
 
         val loss = squaredLoss(size).buildForCuda(context)
 
         loss.acquire()
 
         val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
-        val actual = getVector(deviceResult, size)
+        val actual = getFloatArray(deviceResult, size)
 
         loss.release()
 

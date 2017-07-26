@@ -1,6 +1,7 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.Resourceful
 
@@ -21,7 +22,9 @@ class CudaSoftmaxLayer internal constructor(
 
         val exponentiated = this.exponentiationLayer.forward(input, isTraining)
 
-        return this.normalizationLayer.forward(exponentiated, isTraining)
+        val normalized = this.normalizationLayer.forward(exponentiated, isTraining)
+
+        return normalized
 
     }
 
@@ -29,7 +32,9 @@ class CudaSoftmaxLayer internal constructor(
 
         val backwardNormalization = this.normalizationLayer.backward(chain)
 
-        return this.exponentiationLayer.backward(backwardNormalization)
+        val backwardExponentiation = this.exponentiationLayer.backward(backwardNormalization)
+
+        return backwardExponentiation
 
     }
 

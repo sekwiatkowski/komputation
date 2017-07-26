@@ -3,7 +3,6 @@ package shape.komputation.layers.forward.dropout
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.dropout.CpuDropoutLayer
 import shape.komputation.cuda.CudaContext
-import shape.komputation.cuda.layers.CudaForwardLayer
 import shape.komputation.cuda.layers.forward.dropout.CudaDropoutLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
@@ -11,19 +10,23 @@ import java.util.*
 
 class DropoutLayer(
     private val name : String?,
-    private val random: Random,
-    private val numberEntries: Int,
-    private val keepProbability: Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+    private val numberEntries : Int,
+    private val random : Random,
+    private val keepProbability : Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuDropoutLayer(this.name, this.random, this.numberEntries, this.keepProbability)
+        CpuDropoutLayer(this.name, this.numberEntries, this.random, this.keepProbability)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaDropoutLayer {
 
-        val dropoutTrainingKernel = context.kernelFactory.dropoutTrainingKernel()
+        val kernelFactory = context.kernelFactory
 
-        val layer = CudaDropoutLayer(this.name, dropoutTrainingKernel)
+        val trainingKernel = kernelFactory.dropoutTrainingKernel()
+        val runtimeKernel = kernelFactory.dropoutRuntimeKernel()
+        val backwardKernel = kernelFactory.backwardDropoutKernel()
+
+        val layer = CudaDropoutLayer(this.name, trainingKernel, runtimeKernel, backwardKernel, context.maximumNumberThreadsPerBlock, this.numberEntries, this.random, this.keepProbability)
 
         return layer
 
@@ -31,10 +34,10 @@ class DropoutLayer(
 
 }
 
-fun dropoutLayer(random: Random, numberEntries: Int, keepProbability: Float) =
+fun dropoutLayer(numberEntries: Int, random: Random, keepProbability: Float) =
 
-    dropoutLayer(null, random, numberEntries, keepProbability)
+    dropoutLayer(null, numberEntries, random, keepProbability)
 
-fun dropoutLayer(name: String?, random: Random, numberEntries: Int, keepProbability: Float) =
+fun dropoutLayer(name: String?, numberEntries: Int, random: Random, keepProbability: Float) =
 
-    DropoutLayer(name, random, numberEntries, keepProbability)
+    DropoutLayer(name, numberEntries, random, keepProbability)

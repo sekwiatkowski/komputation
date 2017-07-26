@@ -4,13 +4,13 @@ import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
-import shape.komputation.cuda.allocateDeviceMemory
-import shape.komputation.cuda.computeDeviceByteSize
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeDeviceFloatArraySize
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtInput
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
-import shape.komputation.cuda.setVector
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
@@ -73,23 +73,23 @@ class CudaProjectionLayer internal constructor(
 
     private val blockSize = 32
     private val numberBlocks = (this.numberWeightRows + this.blockSize - 1) / this.blockSize
-    private val sharedMemoryBytes = computeDeviceByteSize(this.blockSize).toInt()
+    private val sharedMemoryBytes = computeDeviceFloatArraySize(this.blockSize).toInt()
 
     override fun acquire() {
 
-        setVector(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
+        setFloatArray(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
 
         if(this.initialBias != null) {
 
-            setVector(this.initialBias, this.numberBiasEntries, this.deviceBias)
+            setFloatArray(this.initialBias, this.numberBiasEntries, this.deviceBias)
 
         }
 
-        allocateDeviceMemory(this.deviceResult, this.numberWeightRows)
+        allocateDeviceFloatMemory(this.deviceResult, this.numberWeightRows)
 
-        allocateDeviceMemory(this.deviceBackwardWrtInput, this.inputDimension)
-        allocateDeviceMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
-        allocateDeviceMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardWrtInput, this.inputDimension)
+        allocateDeviceFloatMemory(this.deviceWeightGradientAccumulator, this.numberWeightEntries)
+        allocateDeviceFloatMemory(this.deviceBiasGradientAccumulator, this.numberBiasEntries)
 
         if (this.weightUpdateRule is Resourceful) {
 

@@ -1,6 +1,5 @@
 #include "reduction/Reduction.cuh"
 
-// One block per chain
 template <int blockSize>
 __global__ void backwardNormalizationKernel (int numberRows, float* chain, float* forward, float* sums, float* results)
 {

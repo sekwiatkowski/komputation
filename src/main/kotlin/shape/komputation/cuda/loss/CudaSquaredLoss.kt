@@ -17,18 +17,18 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
 
     private val deviceTargetDimension = Pointer.to(intArrayOf(this.targetDimension))
 
-    private val accumulationSharedMemoryBytes = computeDeviceByteSize(this.targetDimension).toInt()
+    private val accumulationSharedMemoryBytes = computeDeviceFloatArraySize(this.targetDimension).toInt()
 
     override fun acquire() {
 
         this.forwardKernel.acquire()
 
-        allocateDeviceMemory(this.deviceForwardResults, this.targetDimension)
-        allocateDeviceMemory(this.deviceLoss, 1)
+        allocateDeviceFloatMemory(this.deviceForwardResults, this.targetDimension)
+        allocateDeviceFloatMemory(this.deviceLoss, 1)
 
         this.backwardKernel.acquire()
 
-        allocateDeviceMemory(this.deviceBackwardResults, this.targetDimension)
+        allocateDeviceFloatMemory(this.deviceBackwardResults, this.targetDimension)
 
     }
 
@@ -64,7 +64,7 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
 
     override fun accessAccumulation() =
 
-        getVector(this.deviceLoss, 1)[0]
+        getFloatArray(this.deviceLoss, 1)[0]
 
     override fun reset() {
 
