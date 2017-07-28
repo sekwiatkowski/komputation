@@ -13,22 +13,22 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
         exponentiationLayer(numberEntries).buildForCuda(context, cublasHandle())
 
     @Test
-    fun testForwardOneDimension() {
+    fun testForwardOneOfTwoInstancesOneDimensional() {
 
-        val input = floatArrayOf(1.0f)
-        val expected = floatArrayOf(FloatMath.exp(1.0f))
+        val input = floatArrayOf(1.0f, 0.0f)
+        val expected = floatArrayOf(FloatMath.exp(1.0f), 0.0f)
 
-        testForward(input, expected)
+        testForward(input, 1, 2, expected)
 
     }
 
     @Test
-    fun testForwardTwoDimensions() {
+    fun testForwardOneOfTwoInstancesTwoDimensional() {
 
-        val input = floatArrayOf(0.0f, 1.0f)
-        val expected = floatArrayOf(1.0f, FloatMath.exp(1.0f))
+        val input = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
+        val expected = floatArrayOf(FloatMath.exp(1.0f), FloatMath.exp(2.0f), 0.0f, 0.0f)
 
-        testForward(input, expected)
+        testForward(input, 1, 2, expected)
 
     }
 

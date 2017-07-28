@@ -6,14 +6,26 @@ __device__ float sigmoid (float x)
 }
 
 extern "C"
-__global__ void sigmoidKernel (int length, float *source, float *destination)
+__global__ void sigmoidKernel (int batchSize, int numberEntriesPerInstance, float *source, float *destination)
 {
 
-    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    int indexInstance = blockIdx.x;
+    int startInstance = indexInstance * numberEntriesPerInstance;
+    int indexEntryInInstance = blockIdx.y * blockDim.y + threadIdx.x;
+    int indexEntryInBatch = startInstance + indexEntryInInstance;
 
-    if(index < length) {
+    if(indexEntryInInstance < numberEntriesPerInstance) {
 
-        destination[index] = sigmoid(source[index]);
+        if(indexInstance < batchSize) {
+
+            destination[indexEntryInBatch] = sigmoid(source[indexEntryInBatch]);
+
+        }
+        else {
+
+            destination[indexEntryInBatch] = 0.0;
+
+        }
 
     }
 

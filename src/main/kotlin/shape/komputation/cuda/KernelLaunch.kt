@@ -4,11 +4,11 @@ import jcuda.Pointer
 import jcuda.driver.CUfunction
 import jcuda.driver.JCudaDriver.cuLaunchKernel
 
-fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocks: Int, numberThreadsPerBlock: Int, sharedMemoryBytes : Int) =
+fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocksInXDimension: Int, numberBlocksInYDimension: Int, numberThreadsPerBlock: Int, sharedMemoryBytes : Int) =
 
     cuLaunchKernel(
         function,
-        numberBlocks, 1, 1,
+        numberBlocksInXDimension, numberBlocksInXDimension, 1,
         numberThreadsPerBlock, 1, 1,
         sharedMemoryBytes,
         null,

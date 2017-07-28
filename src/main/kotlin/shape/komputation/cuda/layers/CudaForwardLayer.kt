@@ -4,8 +4,8 @@ import jcuda.Pointer
 
 interface CudaForwardLayer {
 
-    fun forward(input : Pointer, isTraining : Boolean): Pointer
+    fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer
 
-    fun backward(chain : Pointer) : Pointer
+    fun backward(chain : Pointer, batchSize : Int) : Pointer
 
 }

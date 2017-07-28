@@ -8,30 +8,40 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CudaInputLayer(private val dimension : Int) : CudaEntryPoint, Resourceful {
+class CudaInputLayer(private val numberEntries: Int) : CudaEntryPoint, Resourceful {
 
     private val memory = hashMapOf<Int, Pointer>()
 
-    override fun acquire() {
+    override fun acquire(maximumBatchSize : Int) {
 
     }
 
-    override fun forward(id : Int, input: Matrix) =
+    override fun forward(batchId : Int, inputIndices: IntArray, batchSize : Int, inputs: Array<Matrix>) =
 
-        if (this.memory.containsKey(id)) {
+        if (this.memory.containsKey(batchId)) {
 
-            this.memory[id]!!
+            this.memory[batchId]!!
 
         }
         else {
 
-            input as FloatMatrix
+            val numberBatchEntries = this.numberEntries * batchSize
+            val batchEntries = FloatArray(numberBatchEntries)
+
+            for ((index, indexInput) in inputIndices.withIndex()) {
+
+                val input = inputs[indexInput]
+
+                input as FloatMatrix
+
+                System.arraycopy(input.entries, 0, batchEntries, index * this.numberEntries, this.numberEntries)
+
+            }
 
             val deviceInput = Pointer()
+            setFloatArray(batchEntries, numberBatchEntries, deviceInput)
 
-            setFloatArray(input.entries, this.dimension, deviceInput)
-
-            this.memory[id] = deviceInput
+            this.memory[batchId] = deviceInput
 
             deviceInput
 

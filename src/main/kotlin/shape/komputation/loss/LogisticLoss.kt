@@ -16,8 +16,8 @@ class LogisticLoss(private val numberCategories : Int, private val numberSteps :
 
         val blockSize = Math.pow(2.0, Math.ceil(Math.log(this.numberCategories.toDouble()) / Math.log(2.0))).toInt()
 
-        val forwardKernel = kernelFactory.logisticLoss(blockSize)
-        val backwardKernel = kernelFactory.backwardLogisticLoss()
+        val forwardKernel = { kernelFactory.logisticLoss(blockSize) }
+        val backwardKernel = { kernelFactory.backwardLogisticLoss() }
 
         return CudaLogisticLoss(forwardKernel, backwardKernel, this.numberCategories, this.numberSteps, blockSize)
 

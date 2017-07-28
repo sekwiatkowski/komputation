@@ -2,13 +2,16 @@ package shape.komputation.cuda.layers.forward
 
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
-import org.junit.jupiter.api.Test
-import shape.komputation.layers.forward.dropout.dropoutLayer
-import java.util.*
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.matrix.floatColumnVector
 import org.junit.jupiter.api.Assertions.assertArrayEquals
-import shape.komputation.cuda.*
+import org.junit.jupiter.api.Test
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.layers.forward.dropout.dropoutLayer
+import shape.komputation.matrix.floatColumnVector
+import java.util.*
 
 class CudaDropoutLayerTest {
 
@@ -50,12 +53,12 @@ class CudaDropoutLayerTest {
 
         val cudaLayer = dropoutLayer(numberEntries, Random(1), keepProbability).buildForCuda(cudaContext, cublasHandle())
 
-        cudaLayer.acquire()
+        cudaLayer.acquire(1)
 
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = cudaLayer.forward(deviceInput, isTraining)
+        val deviceResult = cudaLayer.forward(deviceInput, 1, isTraining)
         val cudaResult = getFloatArray(deviceResult, numberEntries)
 
         cudaLayer.release()
@@ -99,7 +102,7 @@ class CudaDropoutLayerTest {
 
         val cudaLayer = dropoutLayer(numberEntries, Random(1), if(keep) 1.0f else 0.0f).buildForCuda(cudaContext, cublasHandle())
 
-        cudaLayer.acquire()
+        cudaLayer.acquire(1)
 
         val deviceInput = Pointer()
         allocateDeviceFloatMemory(deviceInput, numberEntries)
@@ -107,8 +110,8 @@ class CudaDropoutLayerTest {
         val deviceChain = Pointer()
         setFloatArray(chain, numberEntries, deviceChain)
 
-        cudaLayer.forward(deviceInput, true)
-        val deviceResult = cudaLayer.backward(deviceChain)
+        cudaLayer.forward(deviceInput, 1, true)
+        val deviceResult = cudaLayer.backward(deviceChain, 1)
 
         val cudaResult = getFloatArray(deviceResult, numberEntries)
 

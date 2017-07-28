@@ -17,8 +17,9 @@ import shape.komputation.optimization.OptimizationInstruction
 
 class DenseLayer(
     private val name : String?,
-    private val inputDimension : Int,
-    private val outputDimension : Int,
+    private val numberInputRows : Int,
+    private val numberInputColumns : Int,
+    private val numberOutputRows : Int,
     private val weightInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
     private val activationFunction: ActivationFunction,
@@ -27,13 +28,13 @@ class DenseLayer(
     private val projectionName = concatenateNames(this.name, "projection")
     private val activationName = concatenateNames(this.name, "activation")
 
-    private val projection = projectionLayer(this.projectionName, this.inputDimension, this.outputDimension, this.weightInitialization, this.biasInitialization, this.optimization)
+    private val projection = projectionLayer(this.projectionName, this.numberInputRows, this.numberInputColumns, this.numberOutputRows, this.weightInitialization, this.biasInitialization, this.optimization)
 
     override fun buildForCpu(): CpuDenseLayer {
 
         val projectionLayer = projection.buildForCpu()
 
-        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.outputDimension, 1).buildForCpu()
+        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1).buildForCpu()
 
         return CpuDenseLayer(this.name, projectionLayer, activationLayer)
 
@@ -41,9 +42,9 @@ class DenseLayer(
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaForwardLayer {
 
-        val projectionLayer = projection.buildForCuda(context, cublasHandle)
+        val projectionLayer = this.projection.buildForCuda(context, cublasHandle)
 
-        val activationLayer = cudaActivationLayer(this.activationName, this.activationFunction, this.outputDimension).buildForCuda(context, cublasHandle)
+        val activationLayer = cudaActivationLayer(this.activationName, this.activationFunction, this.numberOutputRows).buildForCuda(context, cublasHandle)
 
         return CudaDenseLayer(this.name, projectionLayer, activationLayer)
 
@@ -63,6 +64,7 @@ fun denseLayer(
     denseLayer(
         null,
         inputDimension,
+        1,
         outputDimension,
         weightInitializationStrategy,
         biasInitializationStrategy,
@@ -72,8 +74,28 @@ fun denseLayer(
 
 fun denseLayer(
     name : String?,
-    inputDimension : Int,
-    outputDimension : Int,
+    inputDimension: Int,
+    outputDimension: Int,
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy?,
+    activationFunction: ActivationFunction,
+    optimization: OptimizationInstruction?) =
+
+    denseLayer(
+        name,
+        inputDimension,
+        1,
+        outputDimension,
+        weightInitialization,
+        biasInitialization,
+        activationFunction,
+        optimization)
+
+fun denseLayer(
+    name : String?,
+    numberInputRows: Int,
+    numberInputColumns: Int,
+    numberOutputRows: Int,
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activationFunction: ActivationFunction,
@@ -81,8 +103,9 @@ fun denseLayer(
 
     DenseLayer(
         name,
-        inputDimension,
-        outputDimension,
+        numberInputRows,
+        numberInputColumns,
+        numberOutputRows,
         weightInitialization,
         biasInitialization,
         activationFunction,

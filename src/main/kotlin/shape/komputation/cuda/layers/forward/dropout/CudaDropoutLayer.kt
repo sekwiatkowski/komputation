@@ -1,19 +1,21 @@
 package shape.komputation.cuda.layers.forward.dropout
 
 import jcuda.Pointer
-import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
-import shape.komputation.layers.Resourceful
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.seed
-import shape.komputation.cuda.*
+import shape.komputation.cuda.Kernel
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
+import shape.komputation.cuda.setIntArray
+import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMath
 import java.util.*
 
 class CudaDropoutLayer internal constructor(
     name : String? = null,
-    private val trainingKernel: Kernel,
-    private val runtimeKernel: Kernel,
-    private val backwardKernel: Kernel,
+    private val createTrainingKernel: () -> Kernel,
+    private val createRuntimeKernel: () -> Kernel,
+    private val createBackwardKernel: () -> Kernel,
     maximumThreadsPerBlock : Int,
     private val numberEntries: Int,
     private val random: Random,
@@ -32,17 +34,19 @@ class CudaDropoutLayer internal constructor(
     private val deviceMasks = Pointer()
     private val pointerToDeviceMasks = Pointer.to(this.deviceMasks)
 
+    private var trainingKernel : Kernel? = null
+    private var runtimeKernel : Kernel? = null
     private val deviceForwardResults = Pointer()
     private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
 
+    private var backwardKernel : Kernel? = null
     private val deviceBackwardResults = Pointer()
     private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
 
-    override fun acquire() {
+    override fun acquire(maximumBatchSize : Int) {
 
-        this.trainingKernel.acquire()
-        this.runtimeKernel.acquire()
-        this.backwardKernel.acquire()
+        this.trainingKernel = this.createTrainingKernel()
+        this.runtimeKernel = this.createRuntimeKernel()
 
         val seeds = IntArray(this.numberEntries)
         seed(this.random, seeds, this.numberEntries)
@@ -51,17 +55,19 @@ class CudaDropoutLayer internal constructor(
 
         allocateDeviceFloatMemory(this.deviceMasks, this.numberEntries)
         allocateDeviceFloatMemory(this.deviceForwardResults, this.numberEntries)
+
+        this.backwardKernel = this.createBackwardKernel()
         allocateDeviceFloatMemory(this.deviceBackwardResults, this.numberEntries)
 
     }
 
-    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
+    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
 
         val pointerToInput = Pointer.to(input)
 
         if(isTraining) {
 
-            this.trainingKernel.launch(
+            this.trainingKernel!!.launch(
                 Pointer.to(
                     this.pointerToNumberEntries,
                     this.pointerToDropoutProbability,
@@ -71,6 +77,7 @@ class CudaDropoutLayer internal constructor(
                     this.pointerToDeviceForwardResults
                 ),
                 this.numberBlocks,
+                batchSize,
                 this.numberThreads,
                 0
             )
@@ -78,7 +85,7 @@ class CudaDropoutLayer internal constructor(
         }
         else {
 
-            this.runtimeKernel.launch(
+            this.runtimeKernel!!.launch(
                 Pointer.to(
                     this.pointerToNumberEntries,
                     this.pointerToKeepProbability,
@@ -86,6 +93,7 @@ class CudaDropoutLayer internal constructor(
                     this.pointerToDeviceForwardResults
                 ),
                 this.numberBlocks,
+                batchSize,
                 this.numberThreads,
                 0
             )
@@ -97,9 +105,9 @@ class CudaDropoutLayer internal constructor(
     }
 
 
-    override fun backward(chain : Pointer) : Pointer {
+    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
 
-        this.backwardKernel.launch(
+        this.backwardKernel!!.launch(
             Pointer.to(
                 this.pointerToNumberEntries,
                 Pointer.to(chain),
@@ -107,6 +115,7 @@ class CudaDropoutLayer internal constructor(
                 this.pointerToDeviceBackwardResults
             ),
             this.numberBlocks,
+            batchSize,
             this.numberThreads,
             0
         )
@@ -117,15 +126,15 @@ class CudaDropoutLayer internal constructor(
 
     override fun release() {
 
+        this.trainingKernel!!.destroy()
         cudaFree(this.deviceBackwardResults)
 
         cudaFree(this.deviceForwardResults)
         cudaFree(this.deviceMasks)
         cudaFree(this.deviceSeeds)
 
-        this.backwardKernel.release()
-        this.runtimeKernel.release()
-        this.trainingKernel.release()
+        this.backwardKernel!!.destroy()
+        this.runtimeKernel!!.destroy()
 
     }
 

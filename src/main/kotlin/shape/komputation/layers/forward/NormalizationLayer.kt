@@ -21,8 +21,8 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
         val normalizationLayer = CudaNormalizationLayer(
             this.name,
-            kernelFactory.normalizationKernel(blockSize),
-            kernelFactory.backwardNormalizationKernel(blockSize),
+            { kernelFactory.normalization(blockSize) },
+            { kernelFactory.backwardNormalization(blockSize) },
             blockSize,
             this.numberRows,
             this.numberColumns)

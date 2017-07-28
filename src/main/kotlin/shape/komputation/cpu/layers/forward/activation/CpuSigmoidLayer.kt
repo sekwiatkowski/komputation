@@ -40,7 +40,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         }
 
-        hadamard(chain.entries, this.differentiation, backwardEntries, this.numberEntries)
+        hadamard(chain.entries, this.differentiation, this.backwardEntries, this.numberEntries)
 
         return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
 

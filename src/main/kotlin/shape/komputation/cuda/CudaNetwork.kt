@@ -25,13 +25,13 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(id : Int, input : Matrix, isTraining : Boolean) : Pointer {
+    fun forward(batchId: Int, indices: IntArray, batchSize: Int, inputs: Array<Matrix>, isTraining: Boolean) : Pointer {
 
-        var output = this.entryPoint.forward(id, input)
+        var output = this.entryPoint.forward(batchId, indices, batchSize, inputs)
 
         for (layer in this.layers) {
 
-            output = layer.forward(output, isTraining)
+            output = layer.forward(output, batchSize, isTraining)
 
         }
 
@@ -39,7 +39,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     }
 
-    fun backward(lossGradient : Pointer): Pointer {
+    fun backward(lossGradient : Pointer, batchSize: Int): Pointer {
 
         var chain = lossGradient
 
@@ -47,7 +47,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
             val layer = this.layers[indexLayer]
 
-            chain = layer.backward(chain)
+            chain = layer.backward(chain, batchSize)
 
         }
 
@@ -60,20 +60,20 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         targets: Array<FloatMatrix>,
         loss: CudaLossFunctionInstruction,
         numberIterations : Int,
-        batchSize : Int,
+        maximumBatchSize: Int,
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): Long {
 
         val lossFunction = loss.buildForCuda(this.cudaContext)
 
         val numberExamples = inputs.size
 
-        val batches = partitionIndices(numberExamples, batchSize)
+        val batches = partitionIndices(numberExamples, maximumBatchSize)
 
-        this.acquireLayerResources()
+        this.acquireLayerResources(maximumBatchSize)
 
         if (lossFunction is Resourceful) {
 
-            lossFunction.acquire()
+            lossFunction.acquire(maximumBatchSize)
 
         }
 
@@ -88,59 +88,64 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         repeat(numberIterations) { indexIteration ->
 
-            var id = 0
-
             var iterationLoss = if(trackLoss) 0.0f else Float.NaN
 
-            for (batch in batches) {
+            for ((batchId, batch) in batches.withIndex()) {
 
-                for (indexExample in batch) {
+                val currentBatchSize = batch.size
 
-                    val input = inputs[indexExample]
+                val pointerToTargets =
 
-                    val pointerToTargets = if (targetMemory.containsKey(id)) {
+                    if (targetMemory.containsKey(batchId)) {
 
-                        targetMemory[id]!!
+                    targetMemory[batchId]!!
 
                     }
                     else {
 
-                        val target = targets[indexExample]
+                        val batchTargetSize = maximumBatchSize * targetSize
+                        val batchTargets = FloatArray(batchTargetSize)
+
+                        for (indexExample in batch) {
+
+                            val target = targets[indexExample]
+
+                            System.arraycopy(target.entries, 0, batchTargets, indexExample * targetSize, targetSize)
+
+                        }
 
                         val deviceTargets = Pointer()
-                        setFloatArray(target.entries, targetSize, deviceTargets)
+                        setFloatArray(batchTargets, batchTargetSize, deviceTargets)
 
                         val pointerToDeviceTargets = Pointer.to(deviceTargets)
 
-                        targetMemory[id] = pointerToDeviceTargets
+                        targetMemory[batchId] = pointerToDeviceTargets
 
                         pointerToDeviceTargets
 
                     }
 
-                    val devicePredictions = this.forward(id++, input, true)
+                val devicePredictions = this.forward(batchId, batch, currentBatchSize, inputs, true)
+                val pointerToDevicePredictions = Pointer.to(devicePredictions)
 
-                    val pointerToDevicePredictions = Pointer.to(devicePredictions)
+                if (trackLoss) {
 
-                    if (trackLoss) {
-
-                        lossFunction.accumulate(pointerToDevicePredictions, pointerToTargets)
-
-                    }
-
-                    val lossGradient = lossFunction.backward(pointerToDevicePredictions, pointerToTargets)
-
-                    this.backward(lossGradient)
+                    lossFunction.accumulate(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
 
                 }
 
-                val scalingFactor = 1.0f.div(batch.size.toFloat())
+                val lossGradient = lossFunction.backward(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
 
+                this.backward(lossGradient, currentBatchSize)
+
+                val scalingFactor = 1.0f.div(batch.size.toFloat())
                 this.optimize(scalingFactor)
 
                 if (trackLoss) {
 
-                    iterationLoss += lossFunction.accessAccumulation()
+                    val batchLoss = lossFunction.accessAccumulation()
+
+                    iterationLoss += batchLoss
 
                     lossFunction.reset()
 
@@ -185,13 +190,13 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     }
 
-    fun acquireLayerResources() {
+    fun acquireLayerResources(maximumBatchSize: Int) {
 
         cublasCreate(this.cublasHandle)
 
         if (this.entryPoint is Resourceful) {
 
-            this.entryPoint.acquire()
+            this.entryPoint.acquire(maximumBatchSize)
 
         }
 
@@ -199,7 +204,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
             if (layer is Resourceful) {
 
-                layer.acquire()
+                layer.acquire(maximumBatchSize)
 
             }
 

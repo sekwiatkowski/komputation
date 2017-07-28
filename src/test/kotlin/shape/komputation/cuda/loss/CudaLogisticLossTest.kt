@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
-import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.loss.logisticLoss
 import shape.komputation.matrix.FloatMath
 
@@ -87,9 +87,9 @@ class CudaLogisticLossTest {
 
         val loss = logisticLoss(numberCategories, numberSteps).buildForCuda(cudaContext)
 
-        loss.acquire()
+        loss.acquire(1)
 
-        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
+        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets), 1)
 
         val actual = loss.accessAccumulation()
 
@@ -118,9 +118,9 @@ class CudaLogisticLossTest {
 
         val loss = logisticLoss(numberCategories, numberSteps).buildForCuda(context)
 
-        loss.acquire()
+        loss.acquire(1)
 
-        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
+        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets), 1)
         val actual = getFloatArray(deviceResult, size)
 
         loss.release()

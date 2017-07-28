@@ -22,13 +22,15 @@ class DropoutLayer(
 
         val kernelFactory = context.kernelFactory
 
-        val trainingKernel = kernelFactory.dropoutTrainingKernel()
-        val runtimeKernel = kernelFactory.dropoutRuntimeKernel()
-        val backwardKernel = kernelFactory.backwardDropoutKernel()
-
-        val layer = CudaDropoutLayer(this.name, trainingKernel, runtimeKernel, backwardKernel, context.maximumNumberThreadsPerBlock, this.numberEntries, this.random, this.keepProbability)
-
-        return layer
+        return CudaDropoutLayer(
+            this.name,
+            { kernelFactory.dropoutTraining() },
+            { kernelFactory.dropoutRuntime() },
+            { kernelFactory.backwardDropout() },
+            context.maximumNumberThreadsPerBlock,
+            this.numberEntries,
+            this.random,
+            this.keepProbability)
 
     }
 

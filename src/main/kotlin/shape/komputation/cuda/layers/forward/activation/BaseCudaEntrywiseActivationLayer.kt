@@ -8,59 +8,73 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMath
 
 abstract class BaseCudaEntrywiseActivationLayer internal constructor(
-    name : String? = null,
-    private val forwardKernel: Kernel,
-    private val backwardKernel: Kernel,
+    name: String? = null,
+    private val createForwardKernel: () -> Kernel,
+    private val createBackwardKernel: () -> Kernel,
     maximumThreadsPerBlock: Int,
-    private val numberEntries : Int) : BaseCudaActivationLayer(name), Resourceful {
+    private val numberEntries: Int) : BaseCudaActivationLayer(name), Resourceful {
 
+    private var numberBlocksInXDimension = -1
     private val numberThreads = Math.min(this.numberEntries, maximumThreadsPerBlock)
-    private val numberBlocks = IntMath.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble())
+    private val numberBlocksInYDimension = IntMath.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble())
 
+    private var forwardKernel : Kernel? = null
     private val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
+    private var backwardKernel : Kernel? = null
     private val deviceBackwardResult = Pointer()
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    private val deviceInputDimension = Pointer.to(intArrayOf(this.numberEntries))
+    private val pointerToNumberEntriesPerInstance = Pointer.to(intArrayOf(this.numberEntries))
 
-    override fun acquire() {
+    private val batchSize = intArrayOf(-1)
+    private val pointerToBatchSize = Pointer.to(batchSize)
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, this.numberEntries)
+    override fun acquire(maximumBatchSize: Int) {
 
-        this.forwardKernel.acquire()
+        allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberEntries)
+        this.forwardKernel = this.createForwardKernel()
 
-        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberEntries)
+        this.backwardKernel = this.createBackwardKernel()
 
-        this.backwardKernel.acquire()
+        this.numberBlocksInXDimension = maximumBatchSize
 
     }
 
-    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
+    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+
+        this.batchSize[0] = batchSize
 
         val forwardParameters = Pointer.to(
-            this.deviceInputDimension,
+            this.pointerToBatchSize,
+            this.pointerToNumberEntriesPerInstance,
             Pointer.to(input),
             this.pointerToDeviceForwardResult
         )
 
-        this.forwardKernel.launch(forwardParameters, this.numberBlocks, this.numberThreads, 0)
+        this.forwardKernel!!.launch(
+            forwardParameters,
+            this.numberBlocksInXDimension,
+            this.numberBlocksInYDimension,
+            this.numberThreads,
+            0)
 
         return this.deviceForwardResult
 
     }
 
-    override fun backward(chain : Pointer) : Pointer {
+    override fun backward(chain : Pointer, batchSize: Int) : Pointer {
 
         val backwardParameters = Pointer.to(
-            this.deviceInputDimension,
+            this.pointerToNumberEntriesPerInstance,
             this.pointerToDeviceForwardResult,
             Pointer.to(chain),
-            pointerToDeviceBackwardResult
+            this.pointerToDeviceBackwardResult
         )
 
-        this.backwardKernel.launch(backwardParameters, this.numberBlocks, this.numberThreads, 0)
+        this.backwardKernel!!.launch(backwardParameters, batchSize, this.numberBlocksInYDimension, this.numberThreads, 0)
 
         return this.deviceBackwardResult
 
@@ -68,11 +82,13 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     override fun release() {
 
-        this.forwardKernel.release()
-        this.backwardKernel.release()
+        this.forwardKernel!!.destroy()
+        this.backwardKernel!!.destroy()
 
         cudaFree(this.deviceForwardResult)
         cudaFree(this.deviceBackwardResult)
+
+        this.numberBlocksInXDimension = -1
 
     }
 

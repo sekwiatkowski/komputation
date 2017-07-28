@@ -2,7 +2,7 @@ package shape.komputation.layers
 
 interface Resourceful {
 
-    fun acquire()
+    fun acquire(maximumBatchSize : Int)
 
     fun release()
 

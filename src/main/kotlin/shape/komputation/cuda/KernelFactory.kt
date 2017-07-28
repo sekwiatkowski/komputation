@@ -4,55 +4,43 @@ import java.io.File
 
 class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
-    fun dropoutTrainingKernel() = createKernel(
+    fun bias() = createKernel(
+        "biasKernel",
+        "biasKernel",
+        "bias/BiasKernel.cu")
+
+    fun dropoutTraining() = createKernel(
         "dropoutTrainingKernel",
         "dropoutTrainingKernel",
         "dropout/DropoutTrainingKernel.cu")
 
-    fun dropoutRuntimeKernel() = createKernel(
+    fun dropoutRuntime() = createKernel(
         "dropoutRuntimeKernel",
         "dropoutRuntimeKernel",
         "dropout/DropoutRuntimeKernel.cu")
 
-    fun backwardDropoutKernel() = createKernel(
+    fun backwardDropout() = createKernel(
         "backwardDropoutKernel",
         "backwardDropoutKernel",
         "dropout/BackwardDropoutKernel.cu")
 
-    fun exponentiationKernel() = createKernel(
+    fun exponentiation() = createKernel(
         "exponentiationKernel",
         "exponentiationKernel",
         "exponentiation/ExponentiationKernel.cu")
 
-    fun backwardExponentiationKernel() = createKernel(
+    fun backwardExponentiation() = createKernel(
         "backwardExponentiationKernel",
         "backwardExponentiationKernel",
         "exponentiation/BackwardExponentiationKernel.cu")
 
-    fun projectionKernel() = createKernel(
-        "projectionKernel",
-        "projectionKernel",
-        "projection/ProjectionKernel.cu",
-        listOf("projection/Projection.cuh"))
-
-    fun projectionWithBiasKernel() = createKernel(
-        "projectionWithBiasKernel",
-        "projectionWithBiasKernel",
-        "projection/ProjectionWithBiasKernel.cu",
-        listOf("projection/Projection.cuh"))
-
-    fun accumulationKernel() = createKernel(
-        "accumulationKernel",
-        "accumulationKernel",
-        "accumulation/AccumulationKernel.cu")
-
-    fun normalizationKernel(blockSize : Int) = createKernel(
+    fun normalization(blockSize : Int) = createKernel(
         "normalizationKernel",
         "normalizationKernel<$blockSize>",
         "normalization/NormalizationKernel.cu",
         listOf("reduction/Reduction.cuh"))
 
-    fun backwardNormalizationKernel(blockSize: Int) = createKernel(
+    fun backwardNormalization(blockSize: Int) = createKernel(
         "backwardNormalizationKernel",
         "backwardNormalizationKernel<$blockSize>",
         "normalization/BackwardNormalizationKernel.cu",

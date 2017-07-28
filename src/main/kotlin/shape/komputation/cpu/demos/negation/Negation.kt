@@ -26,6 +26,6 @@ fun main(args: Array<String>) {
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
-    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 1, printLoss)
+    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 2, printLoss)
 
 }

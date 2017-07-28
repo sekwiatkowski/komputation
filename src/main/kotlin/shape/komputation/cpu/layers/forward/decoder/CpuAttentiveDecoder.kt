@@ -12,7 +12,9 @@ import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
-import shape.komputation.matrix.*
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatZeroColumnVector
 import shape.komputation.optimization.Optimizable
 
 class CpuAttentiveDecoder internal constructor(
@@ -51,7 +53,7 @@ class CpuAttentiveDecoder internal constructor(
         // encoding weights * encodings
         val projectedEncoding = this.encodingProjection.forward(encodings, isTraining)
 
-        val blasEncodingMatrix = createBlasMatrix(this.encodingDimension, this.numberSteps, this.encodingEntries)
+        val blasEncodingMatrix = org.jblas.FloatMatrix(this.encodingDimension, this.numberSteps, *this.encodingEntries)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
@@ -79,9 +81,17 @@ class CpuAttentiveDecoder internal constructor(
             val transposedAttentionDistribution = this.transposition[indexStep].forward(attentionDistribution, isTraining)
 
             // attended encoding = encodings * normalized scores as column vector
-            val blasTransposedAttentionDistribution = createBlasMatrix(this.numberSteps, 1, transposedAttentionDistribution.entries)
+            val blasTransposedAttentionDistribution = org.jblas.FloatMatrix(this.numberSteps, 1, *transposedAttentionDistribution.entries)
 
-            val attendedEncoding = FloatMatrix(encodingDimension, 1, blasEncodingMatrix.multiply(blasTransposedAttentionDistribution).getEntries())
+            val blasAttendedEncoding = org.jblas.FloatMatrix(this.encodingDimension, 1)
+
+            multiply(
+                blasEncodingMatrix,
+                blasTransposedAttentionDistribution,
+                blasAttendedEncoding
+            )
+
+            val attendedEncoding = FloatMatrix(this.encodingDimension, 1, blasAttendedEncoding.data)
 
             // weighted attended encoding = attended encoding weights * attended encoding
             val weightedAttendedEncoding = this.attendedEncodingWeighting.forwardStep(indexStep, attendedEncoding, isTraining)
@@ -113,6 +123,8 @@ class CpuAttentiveDecoder internal constructor(
 
     private val sumWrtDecoderStateEntries = FloatArray(this.decodingDimension)
     private val diffOutputWrtDecoderState = FloatArray(this.decodingDimension)
+
+    private val diffAttendedEncodingWrtEncoding = FloatArray(this.encodingSize)
 
     override fun backward(chain: FloatMatrix): FloatMatrix {
 
@@ -181,14 +193,14 @@ class CpuAttentiveDecoder internal constructor(
                d Ea^t / d e(1)_2 = a_1 */
 
             val diffAttendedEncodingWrtEncoding = backwardProjectionWrtWeights(
-                this.encodingSize,
                 this.encodingDimension,
                 this.numberSteps,
                 this.attentionDistributionEntries,
                 this.numberSteps,
                 diffPreActivationWrtAttendedEncodingEntries,
                 diffPreActivationWrtAttendedEncodingNumberRows,
-                diffPreActivationWrtAttendedEncodingNumberColumns)
+                diffPreActivationWrtAttendedEncodingNumberColumns,
+                this.diffAttendedEncodingWrtEncoding)
 
             this.encodingAccumulator.accumulate(diffAttendedEncodingWrtEncoding)
 

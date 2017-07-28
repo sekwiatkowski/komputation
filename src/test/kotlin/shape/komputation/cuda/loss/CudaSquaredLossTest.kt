@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
-import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.FloatMath
 
@@ -18,10 +18,10 @@ class CudaSquaredLossTest {
 
         val expected = 0.5f * FloatMath.pow(4.0f-2.0f, 2.0f)
 
-        val predictions = floatArrayOf(4.0f)
-        val targets = floatArrayOf(2.0f)
+        val predictions = floatArrayOf(4.0f, 0.0f)
+        val targets = floatArrayOf(2.0f, 0.0f)
 
-        testForward(predictions, targets, expected)
+        testForward(predictions, targets, 1, 2, expected)
 
     }
 
@@ -31,27 +31,14 @@ class CudaSquaredLossTest {
 
         val expected = 0.5f * (FloatMath.pow(4.0f-2.0f, 2.0f) + FloatMath.pow(6.0f-3.0f, 2.0f))
 
-        val predictions = floatArrayOf(4.0f, 6.0f)
-        val targets = floatArrayOf(2.0f, 3.0f)
+        val predictions = floatArrayOf(4.0f, 6.0f, 0.0f, 0.0f)
+        val targets = floatArrayOf(2.0f, 3.0f, 0.0f, 0.0f)
 
-        testForward(predictions, targets, expected)
-
-    }
-
-    @Test
-    fun testForwardThreeDimensions() {
-
-        val expected = 0.5f * (FloatMath.pow(4.0f-2.0f, 2.0f) + FloatMath.pow(6.0f-3.0f, 2.0f) + FloatMath.pow(8.0f-4.0f, 2.0f))
-
-        val predictions = floatArrayOf(4.0f, 6.0f, 8.0f)
-        val targets = floatArrayOf(2.0f, 3.0f, 4.0f)
-
-        testForward(predictions, targets, expected)
+        testForward(predictions, targets, 1, 2, expected)
 
     }
 
-
-    private fun testForward(predictions: FloatArray, targets: FloatArray, expected: Float) {
+    private fun testForward(predictions: FloatArray, targets: FloatArray, batchSize : Int, maximumBatchSize : Int, expected: Float) {
 
         val size = predictions.size
 
@@ -64,9 +51,9 @@ class CudaSquaredLossTest {
 
         val loss = squaredLoss(size).buildForCuda(cudaContext)
 
-        loss.acquire()
+        loss.acquire(maximumBatchSize)
 
-        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
+        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets), batchSize)
 
         val actual = loss.accessAccumulation()
 
@@ -84,12 +71,12 @@ class CudaSquaredLossTest {
     @Test
     fun testBackwardOneDimension() {
 
-        val expected = floatArrayOf(2.0f)
+        val expected = floatArrayOf(2.0f, 0.0f)
 
-        val predictions = floatArrayOf(4.0f)
-        val targets = floatArrayOf(2.0f)
+        val predictions = floatArrayOf(4.0f, 0.0f)
+        val targets = floatArrayOf(2.0f, 0.0f)
 
-        testBackward(predictions, targets, expected)
+        testBackward(predictions, targets, 1, 2, expected)
 
     }
 
@@ -101,11 +88,11 @@ class CudaSquaredLossTest {
         val predictions = floatArrayOf(4.0f, 6.0f)
         val targets = floatArrayOf(2.0f, 3.0f)
 
-        testBackward(predictions, targets, expected)
+        testBackward(predictions, targets, 1, 2, expected)
 
     }
 
-    private fun testBackward(predictions: FloatArray, targets: FloatArray, expected: FloatArray) {
+    private fun testBackward(predictions: FloatArray, targets: FloatArray, batchSize : Int, maximumBatchSize : Int, expected: FloatArray) {
 
         val size = predictions.size
 
@@ -119,9 +106,9 @@ class CudaSquaredLossTest {
 
         val loss = squaredLoss(size).buildForCuda(context)
 
-        loss.acquire()
+        loss.acquire(maximumBatchSize)
 
-        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets))
+        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets), batchSize)
         val actual = getFloatArray(deviceResult, size)
 
         loss.release()

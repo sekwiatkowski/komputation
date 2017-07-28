@@ -6,8 +6,8 @@ import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
-import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.layers.forward.normalizationLayer
 import shape.komputation.matrix.FloatMath
 
@@ -138,13 +138,13 @@ class CudaNormalizationLayerTest {
         val context = setUpCudaContext()
 
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
-        layer.acquire()
+        layer.acquire(1)
 
         val deviceInput = Pointer()
         val numberEntries = numberRows * numberColumns
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = layer.forward(deviceInput, false)
+        val deviceResult = layer.forward(deviceInput, 1,false)
         val actual = getFloatArray(deviceResult, numberEntries)
 
         cudaFree(deviceInput)
@@ -179,10 +179,10 @@ class CudaNormalizationLayerTest {
         setFloatArray(chain, numberEntries, deviceChain)
 
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
-        layer.acquire()
+        layer.acquire(1)
 
-        layer.forward(deviceInput, true)
-        val deviceBackwardResult = layer.backward(deviceChain)
+        layer.forward(deviceInput, 1,true)
+        val deviceBackwardResult = layer.backward(deviceChain, 1)
         val actual = getFloatArray(deviceBackwardResult, numberEntries)
 
         layer.release()

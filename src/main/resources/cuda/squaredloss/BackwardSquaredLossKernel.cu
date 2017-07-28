@@ -1,12 +1,21 @@
 extern "C"
-__global__ void backwardSquaredLossKernel (int length, float *predictions, float *targets, float *result)
+__global__ void backwardSquaredLossKernel (int batchSize, int numberInstancePerEntry, float *predictions, float *targets, float *result)
 {
 
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    int indexInstance = blockIdx.x;
+    int startInstance = indexInstance * numberInstancePerEntry;
 
-    if(index < length) {
+    int indexEntryInInstance = threadIdx.x;
+    int indexEntryInBatch = startInstance + indexEntryInInstance;
 
-        result[index] = predictions[index] - targets[index];
+    if(indexInstance < batchSize) {
+
+        result[indexEntryInBatch] = predictions[indexEntryInBatch] - targets[indexEntryInBatch];
+
+    }
+    else {
+
+        result[indexEntryInBatch] = 0.0;
 
     }
 

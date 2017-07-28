@@ -4,7 +4,7 @@ import shape.komputation.cuda.Kernel
 
 class CudaReluLayer internal constructor(
     name : String? = null,
-    forwardKernel: Kernel,
-    backwardKernel: Kernel,
+    createForwardKernel: () -> Kernel,
+    createBackwardKernel: () -> Kernel,
     maximumThreadsPerBlock: Int,
-    numberEntries : Int) : BaseCudaEntrywiseActivationLayer(name, forwardKernel, backwardKernel, maximumThreadsPerBlock, numberEntries)
+    numberEntries : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, maximumThreadsPerBlock, numberEntries)

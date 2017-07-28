@@ -6,7 +6,7 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMath
 
 class CudaStochasticGradientDescent(
-    private val kernel: Kernel,
+    private val createKernel: () -> Kernel,
     maximumThreadsPerBlock: Int,
     private val size : Int,
     private val learningRate: Float) : CudaUpdateRule, Resourceful {
@@ -17,9 +17,11 @@ class CudaStochasticGradientDescent(
     private val numberThreads = Math.min(this.size, maximumThreadsPerBlock)
     private val numberBlocks = IntMath.ceil(this.size.toDouble() / numberThreads.toDouble())
 
-    override fun acquire() {
+    private var kernel : Kernel? = null
 
-        this.kernel.acquire()
+    override fun acquire(maximumBatchSize : Int) {
+
+        this.kernel = this.createKernel()
 
     }
 
@@ -30,15 +32,18 @@ class CudaStochasticGradientDescent(
 
         this.scalingFactorArray[0] = scalingFactor
 
-        this.kernel.launch(
-            Pointer.to(
-                this.pointerToSize,
-                pointerToDeviceParameter,
-                this.pointerToScalingFactor,
-                this.pointerToLearningRate,
-                pointerToDeviceGradient
-            ),
+        val parameters = Pointer.to(
+            this.pointerToSize,
+            this.pointerToScalingFactor,
+            this.pointerToLearningRate,
+            pointerToDeviceParameter,
+            pointerToDeviceGradient
+        )
+
+        this.kernel!!.launch(
+            parameters,
             this.numberBlocks,
+            1,
             this.numberThreads,
             0
         )
@@ -47,7 +52,7 @@ class CudaStochasticGradientDescent(
 
     override fun release() {
 
-        this.kernel.release()
+        this.kernel!!.destroy()
 
     }
 

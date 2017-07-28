@@ -2,7 +2,8 @@ package shape.komputation.cuda
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.runtime.JCuda.*
+import jcuda.runtime.JCuda.cudaMalloc
+import jcuda.runtime.JCuda.cudaMemcpy
 import jcuda.runtime.cudaMemcpyKind.cudaMemcpyDeviceToHost
 import jcuda.runtime.cudaMemcpyKind.cudaMemcpyHostToDevice
 

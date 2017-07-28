@@ -17,10 +17,11 @@ class TanhLayer(private val name : String?, private val numberEntries : Int) : C
 
         val kernelFactory = context.kernelFactory
 
-        val forwardKernel = kernelFactory.tanh()
-        val backwardKernel = kernelFactory.backwardTanh()
-
-        return CudaTanhLayer(this.name, forwardKernel, backwardKernel, context.maximumNumberThreadsPerBlock, this.numberEntries)
+        return CudaTanhLayer(
+            this.name,
+            { kernelFactory.tanh() },
+            { kernelFactory.backwardTanh() },
+            context.maximumNumberThreadsPerBlock, this.numberEntries)
 
 
     }

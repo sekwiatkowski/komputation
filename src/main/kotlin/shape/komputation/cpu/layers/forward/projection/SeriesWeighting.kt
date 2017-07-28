@@ -136,4 +136,4 @@ private fun stepWeighting(
     weightAccumulator: DenseAccumulator,
     weightUpdateRule : UpdateRule? = null) =
 
-    CpuProjectionLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule)
+    CpuWeightingLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule)

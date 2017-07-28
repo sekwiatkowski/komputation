@@ -4,7 +4,6 @@ import jcuda.Pointer
 import jcuda.driver.CUfunction
 import jcuda.nvrtc.JNvrtc.nvrtcDestroyProgram
 import jcuda.nvrtc.nvrtcProgram
-import shape.komputation.layers.Resourceful
 import java.io.File
 
 class Kernel(
@@ -13,12 +12,12 @@ class Kernel(
     private val name : String,
     private val nameExpression : String,
     private val headerFiles : Array<File>,
-    private val includeNames : Array<String>) : Resourceful {
+    private val includeNames : Array<String>) {
 
     private val program = nvrtcProgram()
     private val kernel = CUfunction()
 
-    override fun acquire() {
+    init {
 
         compileKernel(this.program, this.computeCapabilities, this.cuFile, this.name, arrayOf(this.nameExpression), this.headerFiles, this.includeNames)
 
@@ -26,11 +25,11 @@ class Kernel(
 
     }
 
-    fun launch(pointerToParameters: Pointer, numberBlocks : Int, numberThreadsPerBlock : Int, sharedMemoryBytes : Int) =
+    fun launch(pointerToParameters: Pointer, numberBlocksInXDimension : Int, numberBlocksInYDimension : Int, numberThreadsPerBlock : Int, sharedMemoryBytes : Int) =
 
-        launchKernel(this.kernel, pointerToParameters, numberBlocks, numberThreadsPerBlock, sharedMemoryBytes)
+        launchKernel(this.kernel, pointerToParameters, numberBlocksInXDimension, numberBlocksInYDimension, numberThreadsPerBlock, sharedMemoryBytes)
 
-    override fun release() {
+    fun destroy() {
 
         nvrtcDestroyProgram(this.program)
 

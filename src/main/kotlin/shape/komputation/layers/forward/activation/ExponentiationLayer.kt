@@ -1,7 +1,6 @@
 package shape.komputation.layers.forward.activation
 
 import jcuda.jcublas.cublasHandle
-import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuExponentiationLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
@@ -18,13 +17,10 @@ class ExponentiationLayer(private val name : String?, private val numberEntries:
 
         val kernelFactory = context.kernelFactory
 
-        val forwardKernel = kernelFactory.exponentiationKernel()
-        val backwardKernel = kernelFactory.backwardExponentiationKernel()
-
         val exponentiationLayer = CudaExponentiationLayer(
             this.name,
-            forwardKernel,
-            backwardKernel,
+            { kernelFactory.exponentiation() },
+            { kernelFactory.backwardExponentiation() },
             context.maximumNumberThreadsPerBlock,
             this.numberEntries)
 

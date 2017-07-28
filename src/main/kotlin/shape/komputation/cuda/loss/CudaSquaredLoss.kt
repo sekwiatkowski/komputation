@@ -4,31 +4,50 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.*
 
-class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKernel: Kernel, private val targetDimension : Int, private val forwardBlockSize: Int) : CudaLossFunction {
+class CudaSquaredLoss(
+    private val createForwardKernel: (Int) -> Kernel,
+    private val createBackwardKernel: () -> Kernel,
+    private val numberEntries: Int) : CudaLossFunction {
 
-    private val deviceForwardResults = Pointer()
-    private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
+    private fun computeBlockSize(numberEntries : Int, maximumBatchSize : Int) =
 
+        maximumBatchSize * Math.pow(2.0, Math.ceil(Math.log(numberEntries.toDouble()) / Math.log(2.0))).toInt()
+
+    private val deviceForwardResult = Pointer()
+    private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
+
+    private var forwardKernel : Kernel? = null
+
+    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
+
+    private var numberBatchEntries = intArrayOf(this.numberEntries)
+    private val pointerToNumberBatchEntries = Pointer.to(numberBatchEntries)
+
+    private val accumulationSharedMemoryBytes = computeDeviceFloatArraySize(this.numberEntries).toInt()
+
+    private var backwardKernel : Kernel? = null
     private val deviceBackwardResults = Pointer()
-    private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
+    private val pointerToBackwardResults = Pointer.to(this.deviceBackwardResults)
 
-    private val deviceLoss = Pointer()
-    private val pointerToDeviceLoss = Pointer.to(this.deviceLoss)
+    private val currentBatchSize = intArrayOf(-1)
+    private val pointerToBatchSize = Pointer.to(this.currentBatchSize)
 
-    private val deviceTargetDimension = Pointer.to(intArrayOf(this.targetDimension))
+    private var maximumBatchSize = -1
+    private var blockSize = -1
 
-    private val accumulationSharedMemoryBytes = computeDeviceFloatArraySize(this.targetDimension).toInt()
+    override fun acquire(maximumBatchSize: Int) {
 
-    override fun acquire() {
+        this.maximumBatchSize = maximumBatchSize
+        this.blockSize = computeBlockSize(this.numberEntries, maximumBatchSize)
+        this.numberBatchEntries[0] = maximumBatchSize * this.numberEntries
 
-        this.forwardKernel.acquire()
+        this.forwardKernel = this.createForwardKernel(this.blockSize)
 
-        allocateDeviceFloatMemory(this.deviceForwardResults, this.targetDimension)
-        allocateDeviceFloatMemory(this.deviceLoss, 1)
+        allocateDeviceFloatMemory(this.deviceForwardResult, 1)
 
-        this.backwardKernel.acquire()
+        this.backwardKernel = this.createBackwardKernel()
 
-        allocateDeviceFloatMemory(this.deviceBackwardResults, this.targetDimension)
+        allocateDeviceFloatMemory(this.deviceBackwardResults, this.numberEntries * maximumBatchSize)
 
     }
 
@@ -36,54 +55,59 @@ class CudaSquaredLoss(private val forwardKernel: Kernel, private val backwardKer
 
         cudaFree(this.deviceBackwardResults)
 
-        this.backwardKernel.release()
+        this.backwardKernel!!.destroy()
 
-        cudaFree(this.deviceLoss)
-        cudaFree(this.deviceForwardResults)
+        cudaFree(this.deviceForwardResult)
 
-        this.forwardKernel.release()
+        this.forwardKernel!!.destroy()
+
+        this.maximumBatchSize = -1
 
     }
 
-    override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer) {
+    override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize : Int) {
 
         val parameters = Pointer.to(
-            this.deviceTargetDimension,
+            this.pointerToNumberBatchEntries,
             pointerToPredictions,
             pointerToTargets,
-            this.pointerToDeviceForwardResults,
-            this.pointerToDeviceLoss)
+            this.pointerToForwardResult)
 
-        this.forwardKernel.launch(
+        this.forwardKernel!!.launch(
             parameters,
             1,
-            this.forwardBlockSize,
+            1,
+            this.blockSize,
             this.accumulationSharedMemoryBytes)
 
     }
 
     override fun accessAccumulation() =
 
-        getFloatArray(this.deviceLoss, 1)[0]
+        getFloatArray(this.deviceForwardResult, 1)[0]
 
     override fun reset() {
 
-        setVectorToZero(this.deviceLoss, 1)
+        setVectorToZero(this.deviceForwardResult, 1)
 
     }
 
-    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer): Pointer {
+    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize: Int): Pointer {
+
+        this.currentBatchSize[0] = batchSize
 
         val parameters = Pointer.to(
-            this.deviceTargetDimension,
+            this.pointerToBatchSize,
+            this.pointerToNumberEntries,
             pointerToPredictions,
             pointerToTargets,
-            this.pointerToDeviceBackwardResults)
+            this.pointerToBackwardResults)
 
-        this.backwardKernel.launch(
+        this.backwardKernel!!.launch(
             parameters,
+            this.maximumBatchSize,
             1,
-            this.targetDimension,
+            this.numberEntries,
             0)
 
         return this.deviceBackwardResults

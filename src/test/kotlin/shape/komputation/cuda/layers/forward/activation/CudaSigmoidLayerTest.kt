@@ -13,45 +13,22 @@ class CudaSigmoidLayerTest : BaseCudaEntrywiseActivationLayerTest() {
         sigmoidLayer(numberEntries).buildForCuda(context, cublasHandle())
 
     @Test
-    fun testForwardOneDimension() {
+    fun testForwardOneOfTwoInstancesOneDimensional() {
 
-        val input = floatArrayOf(0.0f)
-        val expected = floatArrayOf(0.5f)
+        val input = floatArrayOf(1.0f, 0.0f)
+        val expected = floatArrayOf(sigmoid(1.0f), 0.0f)
 
-        testForward(input, expected)
-
-    }
-
-    @Test
-    fun testForwardTwoDimensions() {
-
-        val input = floatArrayOf(0.0f, 1.0f)
-        val expected = floatArrayOf(0.5f, 0.731058579f)
-
-        testForward(input, expected)
-
-    }
-
-
-    @Test
-    fun testBackwardOneDimension() {
-
-        val input = floatArrayOf(0.0f)
-        val chain = floatArrayOf(1.0f)
-        val expected = floatArrayOf(0.25f)
-
-        testBackward(input, chain, expected)
+        testForward(input, 1, 2, expected)
 
     }
 
     @Test
-    fun testBackwardTwoDimensions() {
+    fun testForwardOneOfTwoInstancesTwoDimensional() {
 
-        val input = floatArrayOf(0.0f, 1.0f)
-        val chain = floatArrayOf(1.0f, 2.0f)
-        val expected = floatArrayOf(1.0f * 0.5f * (1.0f - 0.5f), 2.0f * sigmoid(1.0f) * (1.0f - sigmoid(1.0f)))
+        val input = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
+        val expected = floatArrayOf(sigmoid(1.0f), sigmoid(2.0f), 0.0f, 0.0f)
 
-        testBackward(input, chain, expected)
+        testForward(input, 1, 2, expected)
 
     }
 

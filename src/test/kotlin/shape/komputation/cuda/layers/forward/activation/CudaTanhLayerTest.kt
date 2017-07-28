@@ -13,43 +13,22 @@ class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
         tanhLayer(numberEntries).buildForCuda(context, cublasHandle())
 
     @Test
-    fun testForwardOneDimension1() {
+    fun testForwardOneOfTwoInstancesOneDimensional() {
 
-        val input = floatArrayOf(0.0f)
-        val expected = floatArrayOf(0.0f)
+        val input = floatArrayOf(1.0f, 0.0f)
+        val expected = floatArrayOf(FloatMath.tanh(1.0f), 0.0f)
 
-        testForward(input, expected)
-
-    }
-
-    @Test
-    fun testForwardOneDimension2() {
-
-        val input = floatArrayOf(1.0f)
-        val expected = floatArrayOf(0.761594156f)
-
-        testForward(input, expected)
-
-    }
-
-
-    @Test
-    fun testForwardOneDimension3() {
-
-        val input = floatArrayOf(-1.0f)
-        val expected = floatArrayOf(-0.761594156f)
-
-        testForward(input, expected)
+        testForward(input, 1, 2, expected)
 
     }
 
     @Test
-    fun testForwardTwoDimensions() {
+    fun testForwardOneOfTwoInstancesTwoDimensional() {
 
-        val input = floatArrayOf(-2.0f, 3.0f)
-        val expected = floatArrayOf(-0.96402758f, 0.995054754f)
+        val input = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
+        val expected = floatArrayOf(FloatMath.tanh(1.0f), FloatMath.tanh(2.0f), 0.0f, 0.0f)
 
-        testForward(input, expected)
+        testForward(input, 1, 2, expected)
 
     }
 

@@ -1,19 +1,22 @@
 __device__ float backwardSigmoid (float forward, float chain)
 {
 
-    return forward * (1.0 - forward) * chain;
+    return forward * (1.0f - forward) * chain;
 
 }
 
 extern "C"
-__global__ void backwardSigmoidKernel (int length, float *forward, float *chain, float *destination)
+__global__ void backwardSigmoidKernel (int numberEntriesPerInstance, float *forward, float *chain, float *destination)
 {
 
-    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    int indexInstance = blockIdx.x;
+    int startInstance = indexInstance * numberEntriesPerInstance;
+    int indexEntryInInstance = blockIdx.y * blockDim.y + threadIdx.x;
+    int indexEntryInBatch = startInstance + indexEntryInInstance;
 
-    if(index < length) {
+    if(indexEntryInInstance < numberEntriesPerInstance) {
 
-        destination[index] = backwardSigmoid(forward[index], chain[index]);
+        destination[indexEntryInBatch] = backwardSigmoid(forward[indexEntryInBatch], chain[indexEntryInBatch]);
 
     }
 

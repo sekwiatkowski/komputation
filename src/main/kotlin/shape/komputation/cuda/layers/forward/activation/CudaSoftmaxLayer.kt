@@ -1,7 +1,6 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
-import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.Resourceful
 
@@ -10,29 +9,29 @@ class CudaSoftmaxLayer internal constructor(
     private val exponentiationLayer: CudaExponentiationLayer,
     private val normalizationLayer: CudaNormalizationLayer) : BaseCudaActivationLayer(name), Resourceful {
 
-    override fun acquire() {
+    override fun acquire(maximumBatchSize : Int) {
 
-        this.exponentiationLayer.acquire()
+        this.exponentiationLayer.acquire(maximumBatchSize)
 
-        this.normalizationLayer.acquire()
+        this.normalizationLayer.acquire(maximumBatchSize)
 
     }
 
-    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
+    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
 
-        val exponentiated = this.exponentiationLayer.forward(input, isTraining)
+        val exponentiated = this.exponentiationLayer.forward(input, batchSize, isTraining)
 
-        val normalized = this.normalizationLayer.forward(exponentiated, isTraining)
+        val normalized = this.normalizationLayer.forward(exponentiated, batchSize, isTraining)
 
         return normalized
 
     }
 
-    override fun backward(chain : Pointer) : Pointer {
+    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
 
-        val backwardNormalization = this.normalizationLayer.backward(chain)
+        val backwardNormalization = this.normalizationLayer.backward(chain, batchSize)
 
-        val backwardExponentiation = this.exponentiationLayer.backward(backwardNormalization)
+        val backwardExponentiation = this.exponentiationLayer.backward(backwardNormalization, batchSize)
 
         return backwardExponentiation
 

@@ -5,8 +5,8 @@ import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
-import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
 
 class CudaStochasticGradientDescentTest {
 
@@ -19,9 +19,9 @@ class CudaStochasticGradientDescentTest {
         val numberColumns = 1
         val size = numberRows * numberColumns
 
-        val stochasticGradientDescent = CudaStochasticGradientDescent(cudaContext.kernelFactory.stochasticGradientDescent(), cudaContext.maximumNumberThreadsPerBlock, numberRows * numberColumns, 0.1f)
+        val stochasticGradientDescent = CudaStochasticGradientDescent({ cudaContext.kernelFactory.stochasticGradientDescent() }, cudaContext.maximumNumberThreadsPerBlock, numberRows * numberColumns, 0.1f)
 
-        stochasticGradientDescent.acquire()
+        stochasticGradientDescent.acquire(1)
 
         val deviceParameter = Pointer()
         setFloatArray(floatArrayOf(2.0f), size, deviceParameter)

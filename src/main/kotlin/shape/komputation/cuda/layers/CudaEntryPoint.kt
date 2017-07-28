@@ -5,7 +5,7 @@ import shape.komputation.matrix.Matrix
 
 interface CudaEntryPoint {
 
-    fun forward(id : Int, input: Matrix) : Pointer
+    fun forward(batchId : Int, inputIndices: IntArray, batchSize : Int, inputs: Array<Matrix>) : Pointer
 
     fun backward(chain : Pointer) : Pointer
 

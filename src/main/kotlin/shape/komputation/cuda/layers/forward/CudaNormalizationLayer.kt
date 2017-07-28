@@ -5,14 +5,13 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.computeDeviceFloatArraySize
-import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.layers.Resourceful
 
 class CudaNormalizationLayer internal constructor(
     name : String? = null,
-    private val forwardKernel: Kernel,
-    private val backwardKernel: Kernel,
+    private val createForwardKernel: () -> Kernel,
+    private val createBackwardKernel: () -> Kernel,
     private val numberThreadsPerBlock: Int,
     private val numberRows : Int,
     private val numberColumns : Int) : BaseCudaActivationLayer(name), Resourceful {
@@ -26,31 +25,33 @@ class CudaNormalizationLayer internal constructor(
 
     private val pointerToNumberCategories = Pointer.to(intArrayOf(this.numberRows))
 
+    private var forwardKernel : Kernel? = null
     private val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
+    private var backwardKernel : Kernel? = null
     private val deviceSums = Pointer()
     private val pointerToDeviceSums = Pointer.to(this.deviceSums)
 
     private val deviceBackwardResult = Pointer()
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    override fun acquire() {
+    override fun acquire(maximumBatchSize : Int) {
 
         allocateDeviceFloatMemory(this.deviceForwardResult, this.numberEntries)
         allocateDeviceFloatMemory(this.deviceSums, this.numberColumns)
 
-        this.forwardKernel.acquire()
+        this.forwardKernel = this.createForwardKernel()
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
 
-        this.backwardKernel.acquire()
+        this.backwardKernel = this.createBackwardKernel()
 
     }
 
     private var pointerToDeviceInput = Pointer()
 
-    override fun forward(input : Pointer, isTraining : Boolean): Pointer {
+    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
 
         this.pointerToDeviceInput = Pointer.to(input)
 
@@ -61,14 +62,14 @@ class CudaNormalizationLayer internal constructor(
             this.pointerToDeviceSums
         )
 
-        this.forwardKernel.launch(parameters, this.numberBlocks, this.numberThreadsPerBlock, this.forwardSharedMemoryBytes)
+        this.forwardKernel!!.launch(parameters, this.numberBlocks, batchSize, this.numberThreadsPerBlock, this.forwardSharedMemoryBytes)
 
         return this.deviceForwardResult
 
     }
 
 
-    override fun backward(chain : Pointer) : Pointer {
+    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
 
         val parameters = Pointer.to(
             this.pointerToNumberCategories,
@@ -78,7 +79,7 @@ class CudaNormalizationLayer internal constructor(
             this.pointerToDeviceBackwardResult
         )
 
-        this.backwardKernel.launch(parameters, this.numberBlocks, this.numberThreadsPerBlock, this.backwardSharedMemoryBytes)
+        this.backwardKernel!!.launch(parameters, this.numberBlocks, batchSize, this.numberThreadsPerBlock, this.backwardSharedMemoryBytes)
 
         return this.deviceBackwardResult
 
@@ -88,12 +89,12 @@ class CudaNormalizationLayer internal constructor(
 
         cudaFree(this.deviceBackwardResult)
 
-        this.backwardKernel.release()
+        this.backwardKernel!!.destroy()
 
         cudaFree(this.deviceForwardResult)
         cudaFree(this.deviceSums)
 
-        this.forwardKernel.release()
+        this.forwardKernel!!.destroy()
 
     }
 

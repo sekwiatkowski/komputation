@@ -6,13 +6,15 @@ import shape.komputation.cuda.*
 
 // int length, float *predictions, float *targets, float *result
 class CudaLogisticLoss(
-    private val forwardKernel : Kernel,
-    private val backwardKernel : Kernel,
+    private val createForwardKernel : () -> Kernel,
+    private val createBackwardKernel : () -> Kernel,
     private val numberCategories : Int,
     private val numberSteps : Int,
     private val blockSize : Int) : CudaLossFunction {
 
     private val numberEntries = numberCategories * numberSteps
+
+    private var forwardKernel : Kernel? = null
 
     private val deviceSums = Pointer()
     private val pointerToDeviceSums = Pointer.to(this.deviceSums)
@@ -22,23 +24,25 @@ class CudaLogisticLoss(
 
     private val forwardSharedMemoryBytes = computeDeviceFloatArraySize(this.blockSize).toInt()
 
+    private var backwardKernel : Kernel? = null
+
     private val deviceBackwardResult = Pointer()
     private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    override fun acquire() {
+    override fun acquire(maximumBatchSize : Int) {
 
         allocateDeviceFloatMemory(this.deviceSums, this.numberSteps)
         allocateDeviceFloatMemory(this.deviceLoss, 1)
 
-        this.forwardKernel.acquire()
+        this.forwardKernel = this.createForwardKernel()
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
 
-        this.backwardKernel.acquire()
+        this.backwardKernel = this.createBackwardKernel()
 
     }
 
-    override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer) {
+    override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize: Int) {
 
         val parameters = Pointer.to(
             pointerToPredictions,
@@ -47,9 +51,10 @@ class CudaLogisticLoss(
             this.pointerToDeviceLoss
         )
 
-        this.forwardKernel.launch(
+        this.forwardKernel!!.launch(
             parameters,
             this.numberSteps,
+            batchSize,
             this.blockSize,
             this.forwardSharedMemoryBytes)
 
@@ -65,7 +70,7 @@ class CudaLogisticLoss(
 
     }
 
-    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer): Pointer {
+    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize : Int): Pointer {
 
         val parameters = Pointer.to(
             pointerToPredictions,
@@ -73,9 +78,10 @@ class CudaLogisticLoss(
             this.pointerToBackwardResult
         )
 
-        this.backwardKernel.launch(
+        this.backwardKernel!!.launch(
             parameters,
             1,
+            batchSize,
             this.numberEntries,
             0)
 
@@ -85,12 +91,12 @@ class CudaLogisticLoss(
 
     override fun release() {
 
-        this.forwardKernel.release()
+        this.forwardKernel!!.destroy()
 
         cudaFree(this.deviceSums)
         cudaFree(this.deviceLoss)
 
-        this.backwardKernel.release()
+        this.backwardKernel!!.destroy()
 
         cudaFree(this.deviceBackwardResult)
 

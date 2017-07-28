@@ -9,123 +9,145 @@ import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
 private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
 private val pointerToZero = Pointer.to(floatArrayOf(0.0f))
 
-fun cublasProject(cublasHandle: cublasHandle, deviceInput: Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceResult: Pointer) =
+fun cublasOuterProduct(
+    cublasHandle: cublasHandle,
+    firstDimension: Int,
+    deviceFirst: Pointer,
+    secondDimension: Int,
+    deviceSecond: Pointer,
+    deviceResult: Pointer) =
 
-    // C = alpha * op(A) * op(B) + beta * C
+    cublasSger(
+        cublasHandle,
+        firstDimension,
+        secondDimension,
+        pointerToOne,
+        deviceFirst,
+        1,
+        deviceSecond,
+        1,
+        deviceResult,
+        firstDimension
+    )
+
+fun cublasMatrixVectorMultiplication(
+    cublasHandle: cublasHandle,
+    deviceMatrix: Pointer,
+    numberMatrixRows: Int,
+    numberMatrixColumns: Int,
+    deviceVector: Pointer,
+    deviceResult: Pointer) =
 
     cublasSgemv(
         cublasHandle,
         CUBLAS_OP_N, // no transposition
-        numberWeightRows, // number of rows of matrix A
-        numberWeightColumns, // number of columns of matrix A
+        numberMatrixRows, // number of rows of matrix A
+        numberMatrixColumns, // number of columns of matrix A
         pointerToOne, // alpha
-        deviceWeights, // weight pointer
-        numberWeightRows, // number weight rows
-        deviceInput, // input pointer
+        deviceMatrix, // weight pointer
+        numberMatrixRows, // number weight rows
+        deviceVector, // input pointer
         1, // storage spacing between elements of x
         pointerToZero, // beta
         deviceResult, // result pointer
         1) // storage spacing between elements of y
 
 
-fun cublasProjectWithBias(cublasHandle: cublasHandle, deviceInput: Pointer, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceBias: Pointer, biasDimension: Int, deviceResult: Pointer): Int {
-
-    cublasDcopy(cublasHandle, biasDimension, deviceBias, 1, deviceResult, 1)
-
-    // C = alpha * op(A) * op(B) + beta * C
-
-    return cublasSgemv(
-        cublasHandle,
-        CUBLAS_OP_N, // no transposition
-        numberWeightRows, // number of rows of matrix A
-        numberWeightColumns, // number of columns of matrix A
-        pointerToOne, // alpha
-        deviceWeights, // weight pointer
-        numberWeightRows, // number weight rows
-        deviceInput, // input pointer
-        1, // storage spacing between elements of x
-        pointerToOne, // beta
-        deviceResult, // result pointer
-        1 // storage spacing between elements of y
-    )
-
-}
-
-
-/*
-    Differentiation w.r.t input:
-
-    d Wx / d x = w_11 + w_21
-                 w_12 + w_22
-                 w_13 + w_23
-
-    gemv solution:
-                              chain_1
-                              chain_2
-    transposed W >> w_11 w_21
-                    w_12 w_22
-                    w_13 w_23
- */
-fun cublasBackwardProjectionWrtInput(cublasHandle: cublasHandle, deviceWeights: Pointer, numberWeightRows: Int, numberWeightColumns: Int, deviceChain: Pointer, deviceResult : Pointer) =
+fun cublasTransposedMatrixVectorMultiplication(
+    cublasHandle: cublasHandle,
+    deviceMatrix: Pointer,
+    numberMatrixRows: Int,
+    numberMatrixColumns: Int,
+    deviceVector: Pointer,
+    deviceResult: Pointer) =
 
     cublasSgemv(
         cublasHandle,
-        CUBLAS_OP_T, // transpose
-        numberWeightRows, // number of rows of matrix A
-        numberWeightColumns, // number of columns of matrix A
-        pointerToOne, // alpha
-        deviceWeights, // weight pointer
-        numberWeightRows, // number weight rows
-        deviceChain, // input pointer
-        1, // storage spacing between elements of x
-        pointerToZero, // beta
-        deviceResult, // result pointer
-        1 // specifies the storage spacing between elements of y
-    )
-
-/*
-    Differentiation w.r.t weights:
-
-    d Wx / d W = x_1 x_2 x_3
-                 x_1 x_2 x_3
-
-    ger solution:
-            x1 x2 x3 << transposed x
-    chain_1
-    chain_2
- */
-fun cublasBackwardProjectionWrtWeights(cublasHandle: cublasHandle, deviceInput: Pointer, deviceChain: Pointer, deviceAccumulator: Pointer, numberWeightRows: Int, numberWeightColumns : Int) =
-
-    cublasSger(
-        cublasHandle,
-        numberWeightRows, // rows of matrix A
-        numberWeightColumns, // columns of matrix A
-        pointerToOne, // alpha
-        deviceChain,
+        CUBLAS_OP_T,
+        numberMatrixRows,
+        numberMatrixColumns,
+        pointerToOne,
+        deviceMatrix,
+        numberMatrixRows,
+        deviceVector,
         1,
-        deviceInput,
-        1,
-        deviceAccumulator,
-        numberWeightRows // rows of matrix A
-    )
+        pointerToZero,
+        deviceResult,
+        1)
 
-fun cublasBackwardProjectionWrtBias(cublasHandle: cublasHandle, deviceChain: Pointer, chainDimension : Int, deviceAccumulator: Pointer) {
+fun cublasMatrixMatrixMultiplication(
+    cublasHandle: cublasHandle,
+    deviceA: Pointer,
+    numberARows: Int,
+    numberAColumns: Int,
+    deviceB: Pointer,
+    numberBRows: Int,
+    numberBColumns: Int,
+    deviceResult: Pointer) =
 
-    cublasSgeam(
+    cublasSgemm(
         cublasHandle,
         CUBLAS_OP_N,
         CUBLAS_OP_N,
-        chainDimension,
-        1,
+        numberARows,
+        numberBColumns,
+        numberAColumns,
         pointerToOne,
-        deviceChain,
-        chainDimension,
+        deviceA,
+        numberARows,
+        deviceB,
+        numberBRows,
+        pointerToZero,
+        deviceResult,
+        numberARows)
+
+fun cublasTransposedMatrixMatrixMultiplication(
+    cublasHandle: cublasHandle,
+    deviceA: Pointer,
+    numberARows: Int,
+    numberAColumns: Int,
+    deviceB: Pointer,
+    numberBRows: Int,
+    numberBColumns: Int,
+    deviceResult: Pointer) =
+
+    cublasSgemm(
+        cublasHandle,
+        CUBLAS_OP_T,
+        CUBLAS_OP_N,
+        numberARows,
+        numberBColumns,
+        numberAColumns,
         pointerToOne,
-        deviceAccumulator,
-        chainDimension,
-        deviceAccumulator,
-        chainDimension
-    )
+        deviceA,
+        numberARows,
+        deviceB,
+        numberBRows,
+        pointerToZero,
+        deviceResult,
+        numberARows)
 
+fun cublasMatrixTransposedMatrixMultiplication(
+    cublasHandle: cublasHandle,
+    deviceA: Pointer,
+    numberARows: Int,
+    numberAColumns: Int,
+    deviceB: Pointer,
+    numberBRows: Int,
+    deviceResult: Pointer) =
 
-}
+    cublasSgemm(
+        cublasHandle,
+        CUBLAS_OP_N,
+        CUBLAS_OP_T,
+        numberARows,
+        numberBRows,
+        numberAColumns,
+        pointerToOne,
+        deviceA,
+        numberARows,
+        deviceB,
+        numberBRows,
+        pointerToZero,
+        deviceResult,
+        numberARows)

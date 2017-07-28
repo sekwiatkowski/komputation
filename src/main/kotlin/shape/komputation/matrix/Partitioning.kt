@@ -1,23 +1,15 @@
 package shape.komputation.matrix
 
-fun partitionIndices(size : Int, batchSize : Int): Array<Array<Int>> {
-
-    var count = 0
+fun partitionIndices(size : Int, batchSize : Int): Array<IntArray> {
 
     val numberBatches = IntMath.ceil(size.toDouble().div(batchSize.toDouble()))
 
-    val batches = Array(numberBatches) {
+    return Array(numberBatches) { indexBatch ->
 
-        val currentBatchSize = Math.min(size - count, batchSize)
+        val start = indexBatch * batchSize
 
-        Array(currentBatchSize) {
-
-            count++
-
-        }
+        IntArray(batchSize) { index -> start + index }
 
     }
-
-    return batches
 
 }
