@@ -21,7 +21,7 @@ class ReluLayer(private val name : String?, private val numberEntries : Int) : C
             this.name,
             { kernelFactory.relu() },
             { kernelFactory.backwardRelu() },
-            context.maximumNumberThreadsPerBlock,
+            context.maximumNumberOfThreadsPerBlock,
             this.numberEntries)
 
     }

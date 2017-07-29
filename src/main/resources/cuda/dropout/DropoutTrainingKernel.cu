@@ -1,10 +1,12 @@
 __device__  int xorShift(int seed) {
 
-    seed ^= seed << 13;
-    seed ^= seed >> 17;
-    seed ^= seed << 5;
+    int updated = seed;
 
-    return seed;
+    updated ^= updated << 13;
+    updated ^= updated >> 17;
+    updated ^= updated << 5;
+
+    return updated;
 
 }
 

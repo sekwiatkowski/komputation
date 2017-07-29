@@ -27,7 +27,7 @@ class DropoutLayer(
             { kernelFactory.dropoutTraining() },
             { kernelFactory.dropoutRuntime() },
             { kernelFactory.backwardDropout() },
-            context.maximumNumberThreadsPerBlock,
+            context.maximumNumberOfThreadsPerBlock,
             this.numberEntries,
             this.random,
             this.keepProbability)

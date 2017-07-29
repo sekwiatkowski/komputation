@@ -5,10 +5,13 @@ import jcuda.driver.CUdevice
 import jcuda.driver.JCudaDriver.*
 
 data class CudaContext(
-    val context : CUcontext,
-    val computeCapabilities : Pair<Int, Int>,
-    val maximumNumberThreadsPerBlock: Int,
-    val numberBlocks : Int) {
+    val context: CUcontext,
+    val computeCapabilities: Pair<Int, Int>,
+    val numberMultiprocessors: Int,
+    val maximumNumberOfResidentThreadsPerMultiprocessor: Int,
+    val maximumNumberOfBlocks: Int,
+    val maximumNumberOfThreadsPerBlock: Int,
+    val warpSize: Int) {
 
     val kernelFactory = KernelFactory(this.computeCapabilities)
 
@@ -30,10 +33,13 @@ fun setUpCudaContext(deviceId : Int = 0): CudaContext {
 
     val computeCapability = queryComputeCapability(device)
 
-    val maximumNumberOfThreads = queryMaximumNumberOfThreadsPerBlock(device)
+    val numberOfMultiprocessor = queryNumberOfMultiprocessor(device)
     val maximumNumberOfBlocks = queryMaximumNumberOfBlocks(device)
+    val maximumNumberOfResidentThreads = queryMaximumNumberOfResidentThreads(device)
+    val maximumNumberOfThreadsPerBlock = queryMaximumNumberOfThreadsPerBlock(device)
+    val warpSize = queryWarpSize(device)
 
-    return CudaContext(context, computeCapability, maximumNumberOfThreads, maximumNumberOfBlocks)
+    return CudaContext(context, computeCapability, numberOfMultiprocessor, maximumNumberOfResidentThreads, maximumNumberOfBlocks, maximumNumberOfThreadsPerBlock, warpSize)
 
 }
 

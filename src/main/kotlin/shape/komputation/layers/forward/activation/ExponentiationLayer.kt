@@ -21,7 +21,7 @@ class ExponentiationLayer(private val name : String?, private val numberEntries:
             this.name,
             { kernelFactory.exponentiation() },
             { kernelFactory.backwardExponentiation() },
-            context.maximumNumberThreadsPerBlock,
+            context.maximumNumberOfThreadsPerBlock,
             this.numberEntries)
 
         return exponentiationLayer

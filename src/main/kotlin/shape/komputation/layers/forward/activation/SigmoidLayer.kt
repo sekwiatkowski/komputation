@@ -21,7 +21,7 @@ class SigmoidLayer(private val name : String?, private val numberEntries: Int) :
             name,
             { kernelFactory.sigmoid() },
             { kernelFactory.backwardSigmoid() },
-            context.maximumNumberThreadsPerBlock,
+            context.maximumNumberOfThreadsPerBlock,
             this.numberEntries)
 
     }

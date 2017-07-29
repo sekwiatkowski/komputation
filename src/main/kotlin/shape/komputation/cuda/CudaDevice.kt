@@ -35,13 +35,25 @@ fun queryComputeCapability(device: CUdevice) =
     queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR) to
     queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR)
 
-fun queryMaximumNumberOfThreadsPerBlock(device: CUdevice) =
+fun queryNumberOfMultiprocessor(device: CUdevice) =
 
-    queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)
+    queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_MULTIPROCESSOR_COUNT)
 
 fun queryMaximumNumberOfBlocks(device: CUdevice) =
 
     queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_MAX_GRID_DIM_X)
+
+fun queryMaximumNumberOfThreadsPerBlock(device: CUdevice) =
+
+    queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_BLOCK)
+
+fun queryMaximumNumberOfResidentThreads(device: CUdevice) =
+
+    queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR)
+
+fun queryWarpSize(device: CUdevice) =
+
+    queryDeviceAttribute(device, CU_DEVICE_ATTRIBUTE_WARP_SIZE)
 
 private fun buildString(bytes: ByteArray): String {
 

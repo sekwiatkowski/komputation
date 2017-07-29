@@ -21,7 +21,7 @@ class TanhLayer(private val name : String?, private val numberEntries : Int) : C
             this.name,
             { kernelFactory.tanh() },
             { kernelFactory.backwardTanh() },
-            context.maximumNumberThreadsPerBlock, this.numberEntries)
+            context.maximumNumberOfThreadsPerBlock, this.numberEntries)
 
 
     }

@@ -8,7 +8,7 @@ fun launchKernel(function : CUfunction, parameters : Pointer, numberBlocksInXDim
 
     cuLaunchKernel(
         function,
-        numberBlocksInXDimension, numberBlocksInXDimension, 1,
+        numberBlocksInXDimension, numberBlocksInYDimension, 1,
         numberThreadsPerBlock, 1, 1,
         sharedMemoryBytes,
         null,

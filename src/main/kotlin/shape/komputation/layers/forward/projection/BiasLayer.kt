@@ -35,7 +35,7 @@ class BiasLayer(
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberInputRows, this.numberInputColumns)
 
-        val layer = CublasBiasLayer(this.name, cublasHandle, context.maximumNumberThreadsPerBlock, this.numberInputRows, this.numberInputColumns, { context.kernelFactory.bias() }, bias, updateRule)
+        val layer = CublasBiasLayer(this.name, cublasHandle, context.maximumNumberOfThreadsPerBlock, this.numberInputRows, this.numberInputColumns, { context.kernelFactory.bias() }, bias, updateRule)
 
         return layer
 

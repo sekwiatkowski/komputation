@@ -48,16 +48,18 @@ class CudaDropoutLayer internal constructor(
         this.trainingKernel = this.createTrainingKernel()
         this.runtimeKernel = this.createRuntimeKernel()
 
-        val seeds = IntArray(this.numberEntries)
-        seed(this.random, seeds, maximumBatchSize * this.numberEntries)
+        val numberBatchEntries = maximumBatchSize * this.numberEntries
 
-        setIntArray(seeds, maximumBatchSize * this.numberEntries, this.deviceSeeds)
+        val seeds = IntArray(numberBatchEntries)
+        seed(this.random, seeds, numberBatchEntries)
 
-        allocateDeviceFloatMemory(this.deviceMasks, maximumBatchSize * this.numberEntries)
-        allocateDeviceFloatMemory(this.deviceForwardResults, maximumBatchSize * this.numberEntries)
+        setIntArray(seeds, numberBatchEntries, this.deviceSeeds)
+
+        allocateDeviceFloatMemory(this.deviceMasks, numberBatchEntries)
+        allocateDeviceFloatMemory(this.deviceForwardResults, numberBatchEntries)
 
         this.backwardKernel = this.createBackwardKernel()
-        allocateDeviceFloatMemory(this.deviceBackwardResults, maximumBatchSize * this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResults, numberBatchEntries)
 
     }
 

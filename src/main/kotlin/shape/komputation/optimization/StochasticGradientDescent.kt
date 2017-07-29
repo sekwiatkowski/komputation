@@ -28,7 +28,7 @@ class StochasticGradientDescent(private val learningRate: Float) : OptimizationI
 
             CudaStochasticGradientDescent(
                 { context.kernelFactory.stochasticGradientDescent() },
-                context.maximumNumberThreadsPerBlock,
+                context.maximumNumberOfThreadsPerBlock,
                 numberRows * numberColumns,
                 this.learningRate)
 
