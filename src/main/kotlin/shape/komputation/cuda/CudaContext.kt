@@ -2,9 +2,7 @@ package shape.komputation.cuda
 
 import jcuda.driver.CUcontext
 import jcuda.driver.CUdevice
-import jcuda.driver.JCudaDriver
-import jcuda.driver.JCudaDriver.cuCtxCreate
-import jcuda.driver.JCudaDriver.cuInit
+import jcuda.driver.JCudaDriver.*
 
 data class CudaContext(
     val context : CUcontext,
@@ -56,4 +54,4 @@ fun createCudaContext(device : CUdevice): CUcontext {
 
 fun destroyCudaContext(context : CUcontext) =
 
-    JCudaDriver.cuCtxDestroy(context)
+    cuCtxDestroy(context)

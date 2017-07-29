@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.initialization.providedInitialization
+import shape.komputation.layers.forward.projection.biasLayer
 
 class CublasBiasLayerTest {
 
@@ -25,12 +27,18 @@ class CublasBiasLayerTest {
         val numberInputRows = 2
         val numberInputColumns = 2
         val numberEntries = numberInputRows * numberInputColumns
-        val biasLayer = CublasBiasLayer(null, cublasHandle, numberInputRows, cudaContext.maximumNumberThreadsPerBlock, numberInputColumns, { cudaContext.kernelFactory.bias() }, floatArrayOf(1.0f, 2.0f), null)
+        val bias = floatArrayOf(1.0f, 2.0f)
+
+        val biasLayer = biasLayer(numberInputRows, numberInputColumns, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
 
         val maximumBatchSize = 2
         biasLayer.acquire(maximumBatchSize)
 
         val deviceInput = Pointer()
+        /*
+            1 + 1    3 + 1
+            2 + 1    4 + 1
+        */
         setFloatArray(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f), 4, deviceInput)
         val deviceResult = biasLayer.forward(deviceInput, 1, true)
 
@@ -57,7 +65,9 @@ class CublasBiasLayerTest {
 
         val numberInputRows = 2
         val numberInputColumns = 2
-        val biasLayer = CublasBiasLayer(null, cublasHandle, numberInputRows, cudaContext.maximumNumberThreadsPerBlock, numberInputColumns, { cudaContext.kernelFactory.bias() }, floatArrayOf(1.0f, 2.0f), null)
+        val bias = floatArrayOf(1.0f, 2.0f)
+
+        val biasLayer = biasLayer(numberInputRows, numberInputColumns, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
 
         val maximumBatchSize = 2
         biasLayer.acquire(maximumBatchSize)

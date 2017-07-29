@@ -121,7 +121,7 @@ fun cublasBackwardProjectionWrtWeights(
             cublasHandle,
             numberChainRows,
             deviceChain,
-            numberChainColumns,
+            numberInputRows,
             deviceInput,
             deviceResult)
 

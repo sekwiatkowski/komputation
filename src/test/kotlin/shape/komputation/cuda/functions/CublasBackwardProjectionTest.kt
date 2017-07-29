@@ -10,11 +10,12 @@ import org.junit.jupiter.api.Test
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatRowVector
+import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatScalar
 
-class CublasProjectionBackwardTest {
+class CublasBackwardProjectionTest {
 
     @Test
     fun testBackwardProjectionWrtInput1() {
@@ -72,41 +73,9 @@ class CublasProjectionBackwardTest {
 
     }
 
-    /*
-    gemv solution:
-            x1 x2 x3 << transposed x
-    chain_1
-    chain_2
-    */
-    @Test
-    fun testBackwardProjectionWrtWeight1() {
-
-        val weights = floatScalar(2.0f)
-        val chain = floatArrayOf(3.0f)
-        val expected = floatArrayOf(6.0f)
-
-        checkBackwardProjectionWrtWeights(weights, chain, expected)
-
-    }
-
-    /*
-           2  3
-        4  8 12
-        5 10 15
-     */
-
-    @Test
-    fun testBackwardProjectionWrtWeight2() {
-
-        val weights = floatRowVector(2.0f, 3.0f)
-        val chain = floatArrayOf(4.0f, 5.0f)
-        val expected = floatArrayOf(8.0f, 10.0f, 12.0f, 15.0f)
-
-        checkBackwardProjectionWrtWeights(weights, chain, expected)
-
-    }
-
     private fun checkBackwardProjectionWrtInput(numberWeightRows : Int, numberWeightColumns : Int, weights: FloatArray, chain: FloatArray, expected: FloatArray) {
+
+        val context = setUpCudaContext()
 
         val numberWeightEntries = numberWeightRows * numberWeightColumns
 
@@ -132,34 +101,77 @@ class CublasProjectionBackwardTest {
 
         cublasDestroy(cublasHandle)
 
+        context.destroy()
+
         assertArrayEquals(expected, hostResult, 0.001f)
 
     }
 
-    private fun checkBackwardProjectionWrtWeights(input : FloatMatrix, chain : FloatArray, expected: FloatArray) {
+    /*
+    gemv solution:
+            x1 x2 x3 << transposed x
+    chain_1
+    chain_2
+    */
+    @Test
+    fun testBackwardProjectionWrtWeights1() {
 
+        val input = floatScalar(2.0f)
+        val chain = floatScalar(3.0f)
+        val expected = floatArrayOf(6.0f)
+
+        checkBackwardProjectionWrtWeights(input, chain, expected)
+
+    }
+
+    /*
+           2  3
+        4  8 12
+        5 10 15
+     */
+
+    @Test
+    fun testBackwardProjectionWrtWeights2() {
+
+        val input = floatColumnVector(2.0f, 3.0f)
+        val chain = floatColumnVector(4.0f, 5.0f)
+        val expected = floatArrayOf(8.0f, 10.0f, 12.0f, 15.0f)
+
+        checkBackwardProjectionWrtWeights(input, chain, expected)
+
+    }
+
+    private fun checkBackwardProjectionWrtWeights(input: FloatMatrix, chain : FloatMatrix, expected: FloatArray) {
+
+        val context = setUpCudaContext()
+
+        val numberInputRows = input.numberRows
+        val numberInputColumns = input.numberColumns
         val inputEntries = input.entries
-        val inputDimension = inputEntries.size
+        val numberInputEntries = inputEntries.size
 
-        val chainDimension = chain.size
+        val numberChainColumns = chain.numberColumns
+        val numberChainRows = chain.numberRows
+        val chainEntries = chain.entries
+        val numberChainEntries = chainEntries.size
 
-        val resultDimension = inputDimension * chainDimension
+        val numberWeightEntries = numberChainRows * numberInputRows
 
         val cublasHandle = cublasHandle()
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        setFloatArray(inputEntries, inputDimension, deviceInput)
+        setFloatArray(inputEntries, numberInputEntries, deviceInput)
 
         val deviceChain = Pointer()
-        setFloatArray(chain, chainDimension, deviceChain)
+        setFloatArray(chainEntries, numberChainEntries, deviceChain)
 
         val deviceResult = Pointer()
-        allocateDeviceFloatMemory(deviceResult, resultDimension)
+        allocateDeviceFloatMemory(deviceResult, numberWeightEntries)
 
-        cublasBackwardProjectionWrtWeights(cublasHandle, deviceChain, resultDimension, 1, deviceInput, inputDimension, 1, deviceResult)
+        cublasBackwardProjectionWrtWeights(cublasHandle, deviceChain, numberChainRows, numberChainColumns, deviceInput, numberInputRows, numberInputColumns, deviceResult)
 
-        val hostResult = getFloatArray(deviceResult, resultDimension)
+        val actual = getFloatArray(deviceResult, numberWeightEntries)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)
@@ -167,9 +179,10 @@ class CublasProjectionBackwardTest {
 
         cublasDestroy(cublasHandle)
 
-        assertArrayEquals(expected, hostResult, 0.001f)
+        context.destroy()
+
+        assertArrayEquals(expected, actual, 0.001f)
 
     }
-
 
 }

@@ -1,7 +1,7 @@
 package shape.komputation.matrix
 
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Test
 
 class PartitioningTest {
 
@@ -9,7 +9,7 @@ class PartitioningTest {
     fun test1() {
 
         val actual = partitionIndices(2, 1)
-        val expected = arrayOf(arrayOf(0), arrayOf(1))
+        val expected = arrayOf(intArrayOf(0), intArrayOf(1))
 
         assertArrayEquals(expected, actual)
 
@@ -20,7 +20,7 @@ class PartitioningTest {
     fun test2() {
 
         val actual = partitionIndices(2, 2)
-        val expected = arrayOf(arrayOf(0, 1))
+        val expected = arrayOf(intArrayOf(0, 1))
 
         assertArrayEquals(expected, actual)
 
@@ -30,7 +30,7 @@ class PartitioningTest {
     fun test3() {
 
         val actual = partitionIndices(2, 3)
-        val expected = arrayOf(arrayOf(0, 1))
+        val expected = arrayOf(intArrayOf(0, 1))
 
         assertArrayEquals(expected, actual)
 

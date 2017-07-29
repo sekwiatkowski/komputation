@@ -27,7 +27,7 @@ class CudaDropoutLayerTest {
         val cpuLayer = dropoutLayer(numberEntries, Random(1), keepProbability).buildForCpu()
         val cpuResult = cpuLayer.forward(floatColumnVector(*input), true).entries
 
-        val cudaResult = runForward(input, numberEntries, keepProbability, true)
+        val cudaResult = forward(input, numberEntries, keepProbability, true)
 
         assertArrayEquals(cpuResult, cudaResult, 0.001f)
 
@@ -40,14 +40,14 @@ class CudaDropoutLayerTest {
         val keepProbability = 0.5f
 
         val expected = floatArrayOf(0.5f, 1.0f)
-        val actual = runForward(input, input.size, keepProbability, false)
+        val actual = forward(input, input.size, keepProbability, false)
 
         assertArrayEquals(expected, actual, 0.001f)
 
     }
 
 
-    private fun runForward(input: FloatArray, numberEntries: Int, keepProbability: Float, isTraining : Boolean): FloatArray {
+    private fun forward(input: FloatArray, numberEntries: Int, keepProbability: Float, isTraining : Boolean): FloatArray {
 
         val cudaContext = setUpCudaContext()
 

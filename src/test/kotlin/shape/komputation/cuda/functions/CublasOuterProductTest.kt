@@ -12,6 +12,11 @@ import shape.komputation.cuda.setFloatArray
 
 class CublasOuterProductTest {
 
+    /*
+          1 2 3
+        1 1 2 3
+        2 2 4 6
+     */
     @Test
     fun test() {
 
@@ -41,7 +46,7 @@ class CublasOuterProductTest {
         )
 
         val actual = getFloatArray(resultPointer, firstDimension * secondDimension)
-        val expected = floatArrayOf(1.0f, 2.0f, 3.0f, 2.0f, 4.0f, 6.0f)
+        val expected = floatArrayOf(1.0f, 2.0f, 2.0f, 4.0f, 3.0f, 6.0f)
 
         cublasDestroy(cublasHandle)
 
