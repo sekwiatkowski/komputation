@@ -47,11 +47,13 @@ class CublasWeightingLayer internal constructor(
 
     private var maximumBatchSize = -1
     private var numberBatchInputColumns = -1
+    private var numberBatchResultColumns = -1
 
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize
         this.numberBatchInputColumns = maximumBatchSize * this.numberInputColumns
+        this.numberBatchResultColumns = maximumBatchSize * this.numberResultColumns
 
         setFloatArray(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
         allocateDeviceFloatMemory(this.deviceBackwardWrtWeights, this.numberWeightEntries)
@@ -91,7 +93,7 @@ class CublasWeightingLayer internal constructor(
                 this.numberWeightColumns,
                 this.deviceInput,
                 this.numberInputRows,
-                this.numberInputColumns * batchSize,
+                this.numberBatchInputColumns,
                 this.deviceForwardResult)
 
         }
@@ -108,8 +110,8 @@ class CublasWeightingLayer internal constructor(
             this.numberWeightRows,
             this.numberWeightColumns,
             chain,
-            this.numberInputRows,
-            this.numberBatchInputColumns,
+            this.numberResultRows,
+            this.numberBatchResultColumns,
             this.deviceBackwardResult)
 
         cublasBackwardProjectionWrtWeights(
@@ -120,7 +122,8 @@ class CublasWeightingLayer internal constructor(
             this.deviceInput,
             this.numberInputRows,
             this.numberBatchInputColumns,
-            this.deviceBackwardWrtWeights)
+            this.deviceBackwardWrtWeights,
+            this.numberWeightEntries)
 
         return this.deviceBackwardResult
 

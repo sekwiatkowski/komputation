@@ -1,3 +1,5 @@
+#include "zero/Zero.cuh"
+
 __device__ float backwardRelu (float forward, float chain)
 {
 
@@ -15,14 +17,32 @@ __device__ float backwardRelu (float forward, float chain)
 }
 
 extern "C"
-__global__ void backwardReluKernel (int length, float *forward, float *chain, float *destination)
-{
+__global__ void backwardReluKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *forward, float *chain, float *destination) {
 
-    int index = blockDim.x * blockIdx.x + threadIdx.x;
+    // What's the first entry index within the instance that this thread should operate on?
+    int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(index < length) {
+    // Continue if this index is smaller than the dimension of the instance.
+    if(startIndexWithinInstance < numberEntriesPerInstance) {
 
-        destination[index] = backwardRelu(forward[index], chain[index]);
+        // What's the first entry index within the batch that this thread should operate on?
+        int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
+
+        // Is the instance greater than the current batch size?
+        if(blockIdx.x >= batchSize) {
+
+            setToZero(destination, startIndexWithinBatch, numberIterations);
+
+        }
+        else {
+
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                destination[indexEntry] = backwardRelu(forward[indexEntry], chain[indexEntry]);
+
+            }
+
+        }
 
     }
 

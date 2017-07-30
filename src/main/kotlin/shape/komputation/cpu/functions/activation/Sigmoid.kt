@@ -22,8 +22,12 @@ fun differentiateSigmoid(forwardEntries: FloatArray, result : FloatArray, number
 
         val forward = forwardEntries[index]
 
-        result[index] = forward * (1.0f - forward)
+        result[index] = differentiateSigmoid(forward)
 
     }
 
 }
+
+fun differentiateSigmoid(forward: Float) =
+
+    forward * (1.0f - forward)

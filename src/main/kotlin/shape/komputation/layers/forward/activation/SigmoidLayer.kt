@@ -18,11 +18,14 @@ class SigmoidLayer(private val name : String?, private val numberEntries: Int) :
         val kernelFactory = context.kernelFactory
 
         return CudaSigmoidLayer(
-            name,
+            this.name,
+            this.numberEntries,
             { kernelFactory.sigmoid() },
             { kernelFactory.backwardSigmoid() },
             context.maximumNumberOfThreadsPerBlock,
-            this.numberEntries)
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
     }
 

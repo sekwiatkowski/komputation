@@ -15,6 +15,7 @@ fun main(args: Array<String>) {
 
     val inputDimension = 1
     val outputDimension = 1
+    val batchSize = 2
 
     val random = Random(1)
     val initialization = heInitialization(random)
@@ -26,6 +27,6 @@ fun main(args: Array<String>) {
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
-    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, 2, printLoss)
+    network.train(NegationData.inputs, NegationData.targets, squaredLoss(outputDimension), 10_000, batchSize, printLoss)
 
 }

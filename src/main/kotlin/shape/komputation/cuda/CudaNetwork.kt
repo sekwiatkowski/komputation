@@ -98,7 +98,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                     if (targetMemory.containsKey(batchId)) {
 
-                    targetMemory[batchId]!!
+                        targetMemory[batchId]!!
 
                     }
                     else {
@@ -106,11 +106,11 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
                         val batchTargetSize = maximumBatchSize * targetSize
                         val batchTargets = FloatArray(batchTargetSize)
 
-                        for (indexExample in batch) {
+                        for ((batchIndex, globalIndex) in batch.withIndex()) {
 
-                            val target = targets[indexExample]
+                            val target = targets[globalIndex]
 
-                            System.arraycopy(target.entries, 0, batchTargets, indexExample * targetSize, targetSize)
+                            System.arraycopy(target.entries, 0, batchTargets, batchIndex * targetSize, targetSize)
 
                         }
 

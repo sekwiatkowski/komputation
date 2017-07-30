@@ -19,10 +19,13 @@ class ReluLayer(private val name : String?, private val numberEntries : Int) : C
 
         return CudaReluLayer(
             this.name,
+            this.numberEntries,
             { kernelFactory.relu() },
             { kernelFactory.backwardRelu() },
-            context.maximumNumberOfThreadsPerBlock,
-            this.numberEntries)
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
     }
 

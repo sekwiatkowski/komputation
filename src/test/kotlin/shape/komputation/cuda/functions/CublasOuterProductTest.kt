@@ -34,7 +34,8 @@ class CublasOuterProductTest {
         setFloatArray(secondVector, secondDimension, secondPointer)
 
         val resultPointer = Pointer()
-        allocateDeviceFloatMemory(resultPointer, firstDimension * secondDimension)
+        val numberResultEntries = firstDimension * secondDimension
+        allocateDeviceFloatMemory(resultPointer, numberResultEntries)
 
         cublasOuterProduct(
             cublasHandle,
@@ -42,10 +43,11 @@ class CublasOuterProductTest {
             firstPointer,
             secondDimension,
             secondPointer,
-            resultPointer
+            resultPointer,
+            numberResultEntries
         )
 
-        val actual = getFloatArray(resultPointer, firstDimension * secondDimension)
+        val actual = getFloatArray(resultPointer, numberResultEntries)
         val expected = floatArrayOf(1.0f, 2.0f, 2.0f, 4.0f, 3.0f, 6.0f)
 
         cublasDestroy(cublasHandle)

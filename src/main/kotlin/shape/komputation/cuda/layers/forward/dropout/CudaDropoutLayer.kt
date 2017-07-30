@@ -5,24 +5,30 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.seed
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeKernelLaunchConfigurationForElementWiseFunctions
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
-import shape.komputation.matrix.IntMath
 import java.util.*
 
 class CudaDropoutLayer internal constructor(
     name : String? = null,
+    private val numberEntries: Int,
+    private val random: Random,
+    keepProbability : Float,
     private val createTrainingKernel: () -> Kernel,
     private val createRuntimeKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    maximumThreadsPerBlock : Int,
-    private val numberEntries: Int,
-    private val random: Random,
-    keepProbability : Float) : BaseCudaActivationLayer(name), Resourceful {
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps : Int,
+    private val warpSize : Int,
+    private val maximumNumberThreadsPerBlock : Int) : BaseCudaActivationLayer(name), Resourceful {
 
-    private val numberThreads = Math.min(this.numberEntries, maximumThreadsPerBlock)
-    private val numberBlocks = IntMath.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble())
+    private var numberBlocksInXDimension = -1
+    private var numberBlocksInYDimension = -1
+    private var numberThreadsPerBlock = -1
+    private var numberIterations = intArrayOf(-1)
+    private val pointerToNumberIterations = Pointer.to(numberIterations)
 
     private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
     private val pointerToKeepProbability = Pointer.to(floatArrayOf(keepProbability))
@@ -43,6 +49,9 @@ class CudaDropoutLayer internal constructor(
     private val deviceBackwardResults = Pointer()
     private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
 
+    private val batchSize = intArrayOf(-1)
+    private val pointerToBatchSize = Pointer.to(this.batchSize)
+
     override fun acquire(maximumBatchSize : Int) {
 
         this.trainingKernel = this.createTrainingKernel()
@@ -61,9 +70,17 @@ class CudaDropoutLayer internal constructor(
         this.backwardKernel = this.createBackwardKernel()
         allocateDeviceFloatMemory(this.deviceBackwardResults, numberBatchEntries)
 
+        this.numberBlocksInXDimension = maximumBatchSize
+        val (numberBlocksInYDimension, numberThreadsPerBlock, numberIterations) = computeKernelLaunchConfigurationForElementWiseFunctions(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.numberBlocksInYDimension = numberBlocksInYDimension
+        this.numberThreadsPerBlock = numberThreadsPerBlock
+        this.numberIterations[0] = numberIterations
+
     }
 
     override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+
+        this.batchSize[0] = batchSize
 
         val pointerToInput = Pointer.to(input)
 
@@ -71,16 +88,18 @@ class CudaDropoutLayer internal constructor(
 
             this.trainingKernel!!.launch(
                 Pointer.to(
+                    this.pointerToBatchSize,
                     this.pointerToNumberEntries,
+                    this.pointerToNumberIterations,
                     this.pointerToDropoutProbability,
                     pointerToInput,
                     this.pointerToDeviceSeeds,
                     this.pointerToDeviceMasks,
                     this.pointerToDeviceForwardResults
                 ),
-                this.numberBlocks,
-                batchSize,
-                this.numberThreads,
+                this.numberBlocksInXDimension,
+                this.numberBlocksInYDimension,
+                this.numberThreadsPerBlock,
                 0
             )
 
@@ -89,14 +108,16 @@ class CudaDropoutLayer internal constructor(
 
             this.runtimeKernel!!.launch(
                 Pointer.to(
+                    this.pointerToBatchSize,
                     this.pointerToNumberEntries,
+                    this.pointerToNumberIterations,
                     this.pointerToKeepProbability,
                     pointerToInput,
                     this.pointerToDeviceForwardResults
                 ),
-                this.numberBlocks,
-                batchSize,
-                this.numberThreads,
+                this.numberBlocksInXDimension,
+                this.numberBlocksInYDimension,
+                this.numberThreadsPerBlock,
                 0
             )
 
@@ -111,14 +132,16 @@ class CudaDropoutLayer internal constructor(
 
         this.backwardKernel!!.launch(
             Pointer.to(
+                this.pointerToBatchSize,
                 this.pointerToNumberEntries,
+                this.pointerToNumberIterations,
                 Pointer.to(chain),
                 this.pointerToDeviceMasks,
                 this.pointerToDeviceBackwardResults
             ),
-            this.numberBlocks,
-            batchSize,
-            this.numberThreads,
+            this.numberBlocksInXDimension,
+            this.numberBlocksInYDimension,
+            this.numberThreadsPerBlock,
             0
         )
 

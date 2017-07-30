@@ -35,11 +35,11 @@ class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardOneDimension() {
 
-        val input = floatArrayOf(1.0f)
-        val chain = floatArrayOf(1.0f)
-        val expected = floatArrayOf(1.0f * (1.0f - FloatMath.pow(FloatMath.tanh(1.0f), 2.0f)))
+        val input = floatArrayOf(1.0f, 0.0f)
+        val chain = floatArrayOf(1.0f, 0.0f)
+        val expected = floatArrayOf(1.0f * (1.0f - FloatMath.pow(FloatMath.tanh(1.0f), 2.0f)), 0.0f)
 
-        testBackward(input, chain, expected)
+        testBackward(input, chain, 1, 2, expected)
 
     }
 

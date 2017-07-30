@@ -24,13 +24,16 @@ class DropoutLayer(
 
         return CudaDropoutLayer(
             this.name,
+            this.numberEntries,
+            this.random,
+            this.keepProbability,
             { kernelFactory.dropoutTraining() },
             { kernelFactory.dropoutRuntime() },
             { kernelFactory.backwardDropout() },
-            context.maximumNumberOfThreadsPerBlock,
-            this.numberEntries,
-            this.random,
-            this.keepProbability)
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
     }
 

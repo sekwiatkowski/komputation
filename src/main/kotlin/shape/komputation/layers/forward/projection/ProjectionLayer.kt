@@ -75,9 +75,9 @@ class ProjectionLayer(
 
             val biasName = concatenateNames(this.name, "bias")
 
-            val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberInputRows)
-            val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberInputRows, 1)
-            biasLayer = CublasBiasLayer(biasName, cublasHandle, context.maximumNumberOfThreadsPerBlock, this.numberInputRows, this.numberInputColumns, { context.kernelFactory.bias() }, initializedBias, biasUpdateRule)
+            val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
+            val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberOutputRows, 1)
+            biasLayer = CublasBiasLayer(biasName, cublasHandle, context.maximumNumberOfThreadsPerBlock, this.numberOutputRows, this.numberInputColumns, { context.kernelFactory.bias() }, initializedBias, biasUpdateRule)
 
         }
         else {

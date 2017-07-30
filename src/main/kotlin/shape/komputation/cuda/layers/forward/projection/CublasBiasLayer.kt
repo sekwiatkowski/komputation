@@ -46,22 +46,24 @@ class CublasBiasLayer internal constructor(
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
 
-    private var numberBatchColumns = -1
+    private var numberBatchInputColumns = -1
 
     override fun acquire(maximumBatchSize : Int) {
 
-        this.numberBatchColumns = this.numberInputColumns * maximumBatchSize
+        this.numberBatchInputColumns = maximumBatchSize * this.numberInputColumns
 
         this.kernel = this.createKernel()
 
         setFloatArray(this.initialBias, this.numberInputEntries, this.deviceBias)
-        allocateDeviceFloatMemory(this.deviceForwardResult, this.numberInputEntries * maximumBatchSize)
 
-        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberInputEntries * maximumBatchSize)
+        val numberBatchResultEntries = maximumBatchSize * this.numberInputEntries
+        allocateDeviceFloatMemory(this.deviceForwardResult, numberBatchResultEntries)
+
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberInputEntries)
 
         this.biasUpdateRule?.acquire(maximumBatchSize)
 
-        setFloatArray(FloatArray(this.numberBatchColumns) { 1f }, this.numberBatchColumns, this.deviceOnes)
+        setFloatArray(FloatArray(this.numberBatchInputColumns) { 1f }, this.numberBatchInputColumns, this.deviceOnes)
 
     }
 
@@ -94,7 +96,7 @@ class CublasBiasLayer internal constructor(
             this.cublasHandle,
             chain,
             this.numberInputRows,
-            this.numberBatchColumns,
+            this.numberBatchInputColumns,
             this.deviceOnes,
             this.deviceBackwardResult)
 

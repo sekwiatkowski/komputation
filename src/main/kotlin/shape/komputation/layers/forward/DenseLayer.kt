@@ -59,7 +59,7 @@ fun denseLayer(
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy?,
     activationFunction: ActivationFunction,
-    optimizationStrategy: OptimizationInstruction?) =
+    optimizationStrategy: OptimizationInstruction? = null) =
 
     denseLayer(
         null,
@@ -79,7 +79,7 @@ fun denseLayer(
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activationFunction: ActivationFunction,
-    optimization: OptimizationInstruction?) =
+    optimization: OptimizationInstruction? = null) =
 
     denseLayer(
         name,
@@ -99,7 +99,7 @@ fun denseLayer(
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activationFunction: ActivationFunction,
-    optimization: OptimizationInstruction?) =
+    optimization: OptimizationInstruction? = null) =
 
     DenseLayer(
         name,

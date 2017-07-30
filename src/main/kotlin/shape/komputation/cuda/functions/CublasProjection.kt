@@ -5,6 +5,7 @@ import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
+import shape.komputation.cuda.setVectorToZero
 
 private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
 private val pointerToZero = Pointer.to(floatArrayOf(0.0f))
@@ -15,9 +16,12 @@ fun cublasOuterProduct(
     deviceFirst: Pointer,
     secondDimension: Int,
     deviceSecond: Pointer,
-    deviceResult: Pointer) =
+    deviceResult: Pointer,
+    resultDimension : Int): Int {
 
-    cublasSger(
+    setVectorToZero(deviceResult, resultDimension)
+
+    return cublasSger(
         cublasHandle,
         firstDimension,
         secondDimension,
@@ -29,6 +33,8 @@ fun cublasOuterProduct(
         deviceResult,
         firstDimension
     )
+
+}
 
 fun cublasMatrixVectorMultiplication(
     cublasHandle: cublasHandle,
@@ -115,9 +121,9 @@ fun cublasTransposedMatrixMatrixMultiplication(
         cublasHandle,
         CUBLAS_OP_T,
         CUBLAS_OP_N,
-        numberARows,
-        numberBColumns,
-        numberAColumns,
+        numberAColumns, // number of rows of matrix op(A) and C
+        numberBColumns, // number of columns of matrix op(B) and C
+        numberARows, // number of columns of op(A) and rows of op(B)
         pointerToOne,
         deviceA,
         numberARows,
@@ -125,7 +131,7 @@ fun cublasTransposedMatrixMatrixMultiplication(
         numberBRows,
         pointerToZero,
         deviceResult,
-        numberARows)
+        numberAColumns)
 
 fun cublasMatrixTransposedMatrixMultiplication(
     cublasHandle: cublasHandle,

@@ -19,10 +19,13 @@ class ExponentiationLayer(private val name : String?, private val numberEntries:
 
         val exponentiationLayer = CudaExponentiationLayer(
             this.name,
+            this.numberEntries,
             { kernelFactory.exponentiation() },
             { kernelFactory.backwardExponentiation() },
-            context.maximumNumberOfThreadsPerBlock,
-            this.numberEntries)
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         return exponentiationLayer
 

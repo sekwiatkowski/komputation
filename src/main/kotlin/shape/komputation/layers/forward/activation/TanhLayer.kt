@@ -19,9 +19,13 @@ class TanhLayer(private val name : String?, private val numberEntries : Int) : C
 
         return CudaTanhLayer(
             this.name,
+            this.numberEntries,
             { kernelFactory.tanh() },
             { kernelFactory.backwardTanh() },
-            context.maximumNumberOfThreadsPerBlock, this.numberEntries)
+            context.maximumNumberOfThreadsPerBlock,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
 
     }

@@ -1,3 +1,5 @@
+#include "zero/Zero.cuh"
+
 __device__ float tanh (float x)
 {
 
@@ -6,24 +8,30 @@ __device__ float tanh (float x)
 }
 
 extern "C"
-__global__ void tanhKernel (int batchSize, int numberEntriesPerInstance, float *source, float *destination)
-{
+__global__ void tanhKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *source, float *destination) {
 
-    int indexInstance = blockIdx.x;
-    int startInstance = indexInstance * numberEntriesPerInstance;
-    int indexEntryInInstance = blockIdx.y * blockDim.y + threadIdx.x;
-    int indexEntryInBatch = startInstance + indexEntryInInstance;
+    // What's the first entry index within the instance that this thread should operate on?
+    int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(indexEntryInInstance < numberEntriesPerInstance) {
+    // Continue if this index is smaller than the dimension of the instance.
+    if(startIndexWithinInstance < numberEntriesPerInstance) {
 
-        if(indexInstance < batchSize) {
+        // What's the first entry index within the batch that this thread should operate on?
+        int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
 
-            destination[indexEntryInBatch] = tanh(source[indexEntryInBatch]);
+        // Is the instance greater than the current batch size?
+        if(blockIdx.x >= batchSize) {
+
+            setToZero(destination, startIndexWithinBatch, numberIterations);
 
         }
         else {
 
-            destination[indexEntryInBatch] = 0.0;
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                destination[indexEntry] = tanh(source[indexEntry]);
+
+            }
 
         }
 

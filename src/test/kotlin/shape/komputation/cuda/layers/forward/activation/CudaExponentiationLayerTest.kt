@@ -36,11 +36,11 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardOneDimension() {
 
-        val input = floatArrayOf(1.0f)
-        val chain = floatArrayOf(2.0f)
-        val expected = floatArrayOf(2.0f * FloatMath.exp(1.0f))
+        val input = floatArrayOf(1.0f, 0.0f)
+        val chain = floatArrayOf(2.0f, 0.0f)
+        val expected = floatArrayOf(2.0f * FloatMath.exp(1.0f), 0.0f)
 
-        testBackward(input, chain, expected)
+        testBackward(input, chain, 1, 2, expected)
 
     }
 
@@ -51,7 +51,7 @@ class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
         val chain = floatArrayOf(2.0f, 3.0f)
         val expected = floatArrayOf(2.0f, 3.0f * FloatMath.exp(1.0f))
 
-        testBackward(input, chain, expected)
+        testBackward(input, chain, 1, 1, expected)
 
     }
 

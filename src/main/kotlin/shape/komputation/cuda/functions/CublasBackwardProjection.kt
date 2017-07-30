@@ -83,8 +83,6 @@ fun cublasBackwardProjectionWrtInput(
 
     }
 
-private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
-
 /*
     chain11 * w11 * x1 + chain11 * w12 * x2, chain12 * w11 * y1 + chain12 * w12 * y2
     chain21 * w21 * x1 + chain21 * w22 * x2, chain22 * w21 * y1 + chain22 * w22 * y2
@@ -112,7 +110,8 @@ fun cublasBackwardProjectionWrtWeights(
     deviceInput: Pointer,
     numberInputRows : Int,
     numberInputColumns : Int,
-    deviceResult: Pointer) =
+    deviceResult: Pointer,
+    numberResultEntries: Int) =
 
     // X is a vector
     if(numberInputColumns == 1) {
@@ -123,7 +122,8 @@ fun cublasBackwardProjectionWrtWeights(
             deviceChain,
             numberInputRows,
             deviceInput,
-            deviceResult)
+            deviceResult,
+            numberResultEntries)
 
     }
     // X is a matrix

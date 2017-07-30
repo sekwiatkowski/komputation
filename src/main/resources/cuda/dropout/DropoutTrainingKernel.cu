@@ -1,3 +1,5 @@
+#include "zero/Zero.cuh"
+
 __device__  int xorShift(int seed) {
 
     int updated = seed;
@@ -25,20 +27,39 @@ __device__ float generateMask(float seed, float dropoutProbability) {
 }
 
 extern "C"
-__global__ void dropoutTrainingKernel (int numberEntries, float dropoutProbability, float* input, int* seeds, float* masks, float* result)
+__global__ void dropoutTrainingKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float dropoutProbability, float* input, int* seeds, float* masks, float* result)
 {
 
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    // What's the first entry index within the instance that this thread should operate on?
+    int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(index < numberEntries) {
+    // Continue if this index is smaller than the dimension of the instance.
+    if(startIndexWithinInstance < numberEntriesPerInstance) {
 
-        int newSeed = xorShift(seeds[index]);
-        seeds[index] = newSeed;
+        // What's the first entry index within the batch that this thread should operate on?
+        int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
 
-        float mask = generateMask((float)newSeed, dropoutProbability);
-        masks[index] = mask;
+        // Is the instance greater than the current batch size?
+        if(blockIdx.x >= batchSize) {
 
-        result[index] = mask * input[index];
+            setToZero(result, startIndexWithinBatch, numberIterations);
+
+        }
+        else {
+
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                int newSeed = xorShift(seeds[indexEntry]);
+                seeds[indexEntry] = newSeed;
+
+                float mask = generateMask((float)newSeed, dropoutProbability);
+                masks[indexEntry] = mask;
+
+                result[indexEntry] = mask * input[indexEntry];
+
+            }
+
+        }
 
     }
 

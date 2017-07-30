@@ -8,10 +8,10 @@ data class CudaContext(
     val context: CUcontext,
     val computeCapabilities: Pair<Int, Int>,
     val numberMultiprocessors: Int,
-    val maximumNumberOfResidentThreadsPerMultiprocessor: Int,
+    val maximumNumberOfResidentWarpsPerMultiprocessor: Int,
+    val warpSize: Int,
     val maximumNumberOfBlocks: Int,
-    val maximumNumberOfThreadsPerBlock: Int,
-    val warpSize: Int) {
+    val maximumNumberOfThreadsPerBlock: Int) {
 
     val kernelFactory = KernelFactory(this.computeCapabilities)
 
@@ -34,12 +34,13 @@ fun setUpCudaContext(deviceId : Int = 0): CudaContext {
     val computeCapability = queryComputeCapability(device)
 
     val numberOfMultiprocessor = queryNumberOfMultiprocessor(device)
+    val warpSize = queryWarpSize(device)
     val maximumNumberOfBlocks = queryMaximumNumberOfBlocks(device)
     val maximumNumberOfResidentThreads = queryMaximumNumberOfResidentThreads(device)
+    val maximumNumberOfResidentWarps = maximumNumberOfResidentThreads / warpSize
     val maximumNumberOfThreadsPerBlock = queryMaximumNumberOfThreadsPerBlock(device)
-    val warpSize = queryWarpSize(device)
 
-    return CudaContext(context, computeCapability, numberOfMultiprocessor, maximumNumberOfResidentThreads, maximumNumberOfBlocks, maximumNumberOfThreadsPerBlock, warpSize)
+    return CudaContext(context, computeCapability, numberOfMultiprocessor, maximumNumberOfResidentWarps, warpSize, maximumNumberOfBlocks, maximumNumberOfThreadsPerBlock)
 
 }
 

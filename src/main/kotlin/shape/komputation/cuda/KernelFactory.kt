@@ -12,27 +12,32 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
     fun dropoutTraining() = createKernel(
         "dropoutTrainingKernel",
         "dropoutTrainingKernel",
-        "dropout/DropoutTrainingKernel.cu")
+        "dropout/DropoutTrainingKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun dropoutRuntime() = createKernel(
         "dropoutRuntimeKernel",
         "dropoutRuntimeKernel",
-        "dropout/DropoutRuntimeKernel.cu")
+        "dropout/DropoutRuntimeKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun backwardDropout() = createKernel(
         "backwardDropoutKernel",
         "backwardDropoutKernel",
-        "dropout/BackwardDropoutKernel.cu")
+        "dropout/BackwardDropoutKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun exponentiation() = createKernel(
         "exponentiationKernel",
         "exponentiationKernel",
-        "exponentiation/ExponentiationKernel.cu")
+        "exponentiation/ExponentiationKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun backwardExponentiation() = createKernel(
         "backwardExponentiationKernel",
         "backwardExponentiationKernel",
-        "exponentiation/BackwardExponentiationKernel.cu")
+        "exponentiation/BackwardExponentiationKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun normalization(blockSize : Int) = createKernel(
         "normalizationKernel",
@@ -49,32 +54,38 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
     fun sigmoid() = createKernel(
         "sigmoidKernel",
         "sigmoidKernel",
-        "sigmoid/SigmoidKernel.cu")
+        "sigmoid/SigmoidKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun backwardSigmoid() = createKernel(
         "backwardSigmoidKernel",
         "backwardSigmoidKernel",
-        "sigmoid/BackwardSigmoidKernel.cu")
+        "sigmoid/BackwardSigmoidKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun relu() = createKernel(
         "reluKernel",
         "reluKernel",
-        "relu/ReluKernel.cu")
+        "relu/ReluKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun backwardRelu() = createKernel(
         "backwardReluKernel",
         "backwardReluKernel",
-        "relu/BackwardReluKernel.cu")
+        "relu/BackwardReluKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun tanh() = createKernel(
         "tanhKernel",
         "tanhKernel",
-        "tanh/TanhKernel.cu")
+        "tanh/TanhKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun backwardTanh() = createKernel(
         "backwardTanhKernel",
         "backwardTanhKernel",
-        "tanh/BackwardTanhKernel.cu")
+        "tanh/BackwardTanhKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun stochasticGradientDescent() = createKernel(
         "stochasticGradientDescentKernel",

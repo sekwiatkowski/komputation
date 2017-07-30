@@ -4,7 +4,10 @@ import shape.komputation.cuda.Kernel
 
 class CudaExponentiationLayer internal constructor(
     name : String? = null,
+    numberEntries : Int,
     createForwardKernel: () -> Kernel,
     createBackwardKernel : () -> Kernel,
-    maximumThreadsPerBlock : Int,
-    numberEntries : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, maximumThreadsPerBlock, numberEntries)
+    numberMultiprocessors : Int,
+    numberResidentWarps : Int,
+    warpSize : Int,
+    maximumNumberThreadsPerBlock : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, numberEntries, numberMultiprocessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock)

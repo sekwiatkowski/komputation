@@ -169,7 +169,7 @@ class CublasBackwardProjectionTest {
         val deviceResult = Pointer()
         allocateDeviceFloatMemory(deviceResult, numberWeightEntries)
 
-        cublasBackwardProjectionWrtWeights(cublasHandle, deviceChain, numberChainRows, numberChainColumns, deviceInput, numberInputRows, numberInputColumns, deviceResult)
+        cublasBackwardProjectionWrtWeights(cublasHandle, deviceChain, numberChainRows, numberChainColumns, deviceInput, numberInputRows, numberInputColumns, deviceResult, numberChainRows * numberInputColumns)
 
         val actual = getFloatArray(deviceResult, numberWeightEntries)
 

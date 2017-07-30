@@ -4,19 +4,24 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeKernelLaunchConfigurationForElementWiseFunctions
 import shape.komputation.layers.Resourceful
-import shape.komputation.matrix.IntMath
 
 abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     name: String? = null,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    maximumThreadsPerBlock: Int,
-    private val numberEntries: Int) : BaseCudaActivationLayer(name), Resourceful {
+    private val numberEntries: Int,
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps : Int,
+    private val warpSize : Int,
+    private val maximumNumberThreadsPerBlock : Int) : BaseCudaActivationLayer(name), Resourceful {
 
     private var numberBlocksInXDimension = -1
-    private val numberThreads = Math.min(this.numberEntries, maximumThreadsPerBlock)
-    private val numberBlocksInYDimension = IntMath.ceil(this.numberEntries.toDouble() / this.numberThreads.toDouble())
+    private var numberBlocksInYDimension = -1
+    private var numberThreadsPerBlock = -1
+    private var numberIterations = intArrayOf(-1)
+    private val pointerToNumberIterations = Pointer.to(numberIterations)
 
     private var forwardKernel : Kernel? = null
     private val deviceForwardResult = Pointer()
@@ -29,7 +34,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val pointerToNumberEntriesPerInstance = Pointer.to(intArrayOf(this.numberEntries))
 
     private val batchSize = intArrayOf(-1)
-    private val pointerToBatchSize = Pointer.to(batchSize)
+    private val pointerToBatchSize = Pointer.to(this.batchSize)
 
     override fun acquire(maximumBatchSize: Int) {
 
@@ -40,6 +45,10 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
         this.backwardKernel = this.createBackwardKernel()
 
         this.numberBlocksInXDimension = maximumBatchSize
+        val (numberBlocksInYDimension, numberThreadsPerBlock, numberIterations) = computeKernelLaunchConfigurationForElementWiseFunctions(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.numberBlocksInYDimension = numberBlocksInYDimension
+        this.numberThreadsPerBlock = numberThreadsPerBlock
+        this.numberIterations[0] = numberIterations
 
     }
 
@@ -50,6 +59,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
         val forwardParameters = Pointer.to(
             this.pointerToBatchSize,
             this.pointerToNumberEntriesPerInstance,
+            this.pointerToNumberIterations,
             Pointer.to(input),
             this.pointerToDeviceForwardResult
         )
@@ -58,7 +68,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
             forwardParameters,
             this.numberBlocksInXDimension,
             this.numberBlocksInYDimension,
-            this.numberThreads,
+            this.numberThreadsPerBlock,
             0)
 
         return this.deviceForwardResult
@@ -68,13 +78,20 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     override fun backward(chain : Pointer, batchSize: Int) : Pointer {
 
         val backwardParameters = Pointer.to(
+            this.pointerToBatchSize,
             this.pointerToNumberEntriesPerInstance,
+            this.pointerToNumberIterations,
             this.pointerToDeviceForwardResult,
             Pointer.to(chain),
             this.pointerToDeviceBackwardResult
         )
 
-        this.backwardKernel!!.launch(backwardParameters, batchSize, this.numberBlocksInYDimension, this.numberThreads, 0)
+        this.backwardKernel!!.launch(
+            backwardParameters,
+            this.numberBlocksInXDimension,
+            this.numberBlocksInYDimension,
+            this.numberThreadsPerBlock,
+            0)
 
         return this.deviceBackwardResult
 

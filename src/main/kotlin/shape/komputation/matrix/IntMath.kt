@@ -10,5 +10,18 @@ object IntMath {
 
         Math.pow(base.toDouble(), exponent.toDouble()).toInt()
 
+    fun min(a: Int, b: Int) =
+
+        if (b >= a) {
+
+            a
+
+        }
+        else {
+
+            b
+
+        }
+
 
 }
