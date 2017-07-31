@@ -5,7 +5,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.seed
 import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
-import shape.komputation.cuda.computeKernelLaunchConfigurationForElementWiseFunctions
+import shape.komputation.cuda.computeEntrywiseLaunchConfiguration
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
@@ -71,10 +71,10 @@ class CudaDropoutLayer internal constructor(
         allocateDeviceFloatMemory(this.deviceBackwardResults, numberBatchEntries)
 
         this.numberBlocksInXDimension = maximumBatchSize
-        val (numberBlocksInYDimension, numberThreadsPerBlock, numberIterations) = computeKernelLaunchConfigurationForElementWiseFunctions(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
-        this.numberBlocksInYDimension = numberBlocksInYDimension
-        this.numberThreadsPerBlock = numberThreadsPerBlock
-        this.numberIterations[0] = numberIterations
+        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.numberBlocksInYDimension = launchConfiguration.numberBlocks
+        this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
+        this.numberIterations[0] = launchConfiguration.numberIterations
 
     }
 

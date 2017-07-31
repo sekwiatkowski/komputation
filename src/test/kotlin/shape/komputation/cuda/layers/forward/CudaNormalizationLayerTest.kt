@@ -17,8 +17,9 @@ class CudaNormalizationLayerTest {
     fun testForwardOneRowOneColumn() {
 
         val input = floatArrayOf(1.0f)
+        val expected = floatArrayOf(1.0f)
 
-        this.forward(input, 1, 1)
+        testForward(input, 1, 1, 1, 1, expected)
 
     }
 
@@ -28,7 +29,7 @@ class CudaNormalizationLayerTest {
         val input = floatArrayOf(1.0f, 1.0f)
         val expected = floatArrayOf(0.5f, 0.5f)
 
-        testForward(input, 2, 1, expected)
+        testForward(input, 1, 1, 2, 1, expected)
 
     }
 
@@ -38,7 +39,17 @@ class CudaNormalizationLayerTest {
         val input = floatArrayOf(1.0f, 1.0f, 1.0f, 3.0f)
         val expected = floatArrayOf(0.5f, 0.5f, 0.25f, 0.75f)
 
-        testForward(input, 2, 2, expected)
+        testForward(input, 1, 1, 2, 2, expected)
+
+    }
+
+    @Test
+    fun testForwardTwoRowsTwoColumnsIncompleteBatch() {
+
+        val input = floatArrayOf(1.0f, 1.0f, 1.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f)
+        val expected = floatArrayOf(0.5f, 0.5f, 0.25f, 0.75f, 0.0f, 0.0f, 0.0f, 0.0f)
+
+        testForward(input, 1, 2, 2, 2, expected)
 
     }
 
@@ -48,7 +59,7 @@ class CudaNormalizationLayerTest {
         val input = floatArrayOf(1.0f)
         val chain = floatArrayOf(1.0f)
 
-        this.backward(1, 1, input, chain)
+        this.backward(input, 1, 1, 1, 1, chain)
 
     }
 
@@ -59,7 +70,7 @@ class CudaNormalizationLayerTest {
         val chain = floatArrayOf(1.0f, 1.0f)
         val expected = floatArrayOf(0.0f, 0.0f)
 
-        testBackward(2, 1, input, chain, expected)
+        testBackward(input, 1, 1, 2, 1, chain, expected)
 
     }
 
@@ -70,7 +81,7 @@ class CudaNormalizationLayerTest {
         val chain = floatArrayOf(1.0f, 1.0f)
         val expected = floatArrayOf(0.0f, 0.0f)
 
-        testBackward(2, 1, input, chain, expected)
+        testBackward(input, 1, 1,2, 1, chain, expected)
 
     }
 
@@ -84,7 +95,7 @@ class CudaNormalizationLayerTest {
         val expectedSecond = (-2.0f * 1.0f + 1.0f * 1.0f) / FloatMath.pow(sum, 2.0f)
         val expected = floatArrayOf(expectedFirst, expectedSecond)
 
-        testBackward(2, 1, input, chain, expected)
+        testBackward(input, 1, 1, 2, 1, chain, expected)
 
     }
 
@@ -98,7 +109,7 @@ class CudaNormalizationLayerTest {
 
         val expected = floatArrayOf(0.0f, 0.0f)
 
-        testBackward(numberRows, numberColumns, input, chain, expected)
+        testBackward(input, 1, 1, numberRows, numberColumns, chain, expected)
 
     }
 
@@ -121,31 +132,33 @@ class CudaNormalizationLayerTest {
             (6.0f * 3.0f - 7.0f * 3.0f) / secondSquaredSum,
             (-6.0f * 2.0f + 7.0f * 2.0f) / secondSquaredSum)
 
-        testBackward(numberRows, numberColumns, input, chain, expected)
+        testBackward(input, 1, 1, numberRows, numberColumns, chain, expected)
 
     }
 
-    private fun testForward(input: FloatArray, numberRows : Int, numberColumns : Int, expected: FloatArray) {
+    private fun testForward(input: FloatArray, batchSize : Int, maximumBatchSize : Int, numberRows : Int, numberColumns : Int, expected: FloatArray) {
 
-        val actual = forward(input, numberRows, numberColumns)
+        val actual = forward(input, batchSize, maximumBatchSize, numberRows, numberColumns)
 
         assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun forward(input: FloatArray, numberRows: Int, numberColumns: Int): FloatArray {
+    private fun forward(input: FloatArray, batchSize : Int, maximumBatchSize : Int, numberRows: Int, numberColumns: Int): FloatArray {
 
         val context = setUpCudaContext()
 
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
-        layer.acquire(1)
+        layer.acquire(maximumBatchSize)
 
         val deviceInput = Pointer()
-        val numberEntries = numberRows * numberColumns
-        setFloatArray(input, numberEntries, deviceInput)
+        val numberInstanceEntries = numberRows * numberColumns
+        val numberBatchEntries = maximumBatchSize * numberInstanceEntries
 
-        val deviceResult = layer.forward(deviceInput, 1,false)
-        val actual = getFloatArray(deviceResult, numberEntries)
+        setFloatArray(input, numberBatchEntries, deviceInput)
+
+        val deviceResult = layer.forward(deviceInput, batchSize,false)
+        val actual = getFloatArray(deviceResult, numberBatchEntries)
 
         cudaFree(deviceInput)
 
@@ -157,33 +170,33 @@ class CudaNormalizationLayerTest {
 
     }
 
+    private fun testBackward(input: FloatArray, batchSize : Int, maximumBatchSize : Int, numberRows: Int, numberColumns: Int, chain: FloatArray, expected: FloatArray) {
 
-    private fun testBackward(numberRows : Int, numberColumns : Int, input : FloatArray, chain: FloatArray, expected: FloatArray) {
-
-        val actual = backward(numberRows, numberColumns, input, chain)
+        val actual = backward(input, batchSize, maximumBatchSize, numberRows, numberColumns, chain)
 
         assertArrayEquals(expected, actual, 0.001f)
 
     }
 
-    private fun backward(numberRows: Int, numberColumns: Int, input: FloatArray, chain: FloatArray): FloatArray {
+    private fun backward(input: FloatArray, batchSize : Int, maximumBatchSize : Int, numberRows: Int, numberColumns: Int, chain: FloatArray): FloatArray {
 
         val context = setUpCudaContext()
 
         val numberEntries = numberRows * numberColumns
+        val numberBatchEntries = maximumBatchSize * numberEntries
 
         val deviceInput = Pointer()
-        setFloatArray(input, numberEntries, deviceInput)
+        setFloatArray(input, numberBatchEntries, deviceInput)
 
         val deviceChain = Pointer()
-        setFloatArray(chain, numberEntries, deviceChain)
+        setFloatArray(chain, numberBatchEntries, deviceChain)
 
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
-        layer.acquire(1)
+        layer.acquire(maximumBatchSize)
 
-        layer.forward(deviceInput, 1,true)
-        val deviceBackwardResult = layer.backward(deviceChain, 1)
-        val actual = getFloatArray(deviceBackwardResult, numberEntries)
+        layer.forward(deviceInput, batchSize,true)
+        val deviceBackwardResult = layer.backward(deviceChain, batchSize)
+        val actual = getFloatArray(deviceBackwardResult, numberBatchEntries)
 
         layer.release()
 

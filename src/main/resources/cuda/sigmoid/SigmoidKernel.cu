@@ -19,18 +19,18 @@ __global__ void sigmoidKernel (int batchSize, int numberEntriesPerInstance, int 
         int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
 
         // Is the instance greater than the current batch size?
-        if(blockIdx.x >= batchSize) {
-
-            setToZero(destination, startIndexWithinBatch, numberIterations);
-
-        }
-        else {
+        if(blockIdx.x < batchSize) {
 
             for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
 
                 destination[indexEntry] = sigmoid(source[indexEntry]);
 
             }
+
+        }
+        else {
+
+            setToZero(destination, startIndexWithinBatch, numberIterations);
 
         }
 

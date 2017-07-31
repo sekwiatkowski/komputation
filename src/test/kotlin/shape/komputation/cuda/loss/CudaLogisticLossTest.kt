@@ -21,7 +21,7 @@ class CudaLogisticLossTest {
 
         val expected = -FloatMath.log(0.7f)
 
-        testForward(predictions, targets, 2, 1, expected)
+        testForward(predictions, targets, 1, 1, 1, 2, expected)
 
     }
 
@@ -33,7 +33,7 @@ class CudaLogisticLossTest {
 
         val expected = -FloatMath.log(0.5f)
 
-        testForward(predictions, targets, 3, 1, expected)
+        testForward(predictions, targets, 1, 1, 1, 3, expected)
 
     }
 
@@ -45,7 +45,7 @@ class CudaLogisticLossTest {
 
         val expected = -FloatMath.log(0.7f) - FloatMath.log(0.4f)
 
-        testForward(predictions, targets, 2, 2, expected)
+        testForward(predictions, targets, 1, 1, 2, 2, expected)
 
     }
 
@@ -74,7 +74,7 @@ class CudaLogisticLossTest {
     }
 
 
-    private fun testForward(predictions: FloatArray, targets: FloatArray, numberCategories : Int, numberSteps : Int, expected: Float) {
+    private fun testForward(predictions: FloatArray, targets: FloatArray, batchSize: Int, maximumBatchSize: Int, numberSteps: Int, numberCategories: Int, expected: Float) {
 
         val size = predictions.size
 
@@ -87,9 +87,9 @@ class CudaLogisticLossTest {
 
         val loss = logisticLoss(numberCategories, numberSteps).buildForCuda(cudaContext)
 
-        loss.acquire(1)
+        loss.acquire(maximumBatchSize)
 
-        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets), 1)
+        loss.accumulate(Pointer.to(devicePredictions), Pointer.to(deviceTargets), batchSize)
 
         val actual = loss.accessAccumulation()
 

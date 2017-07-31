@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
 
     val inputDimension = 2
     val outputDimension = 1
-    val batchSize = 2
+    val batchSize = 4
 
     val random = Random(1)
     val initialization = heInitialization(random)

@@ -147,8 +147,6 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                     iterationLoss += batchLoss
 
-                    lossFunction.reset()
-
                 }
 
             }

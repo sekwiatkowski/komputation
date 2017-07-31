@@ -5,27 +5,62 @@
 // In the second step, the squared differences are summed up using a parallel reduction.
 // Finally, the sum is multiplied by 1/2.
 template <int blockSize>
-__global__ void squaredLossKernel (int numberEntries, float *predictions, float *targets, float *result)
+__global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result)
 {
 
-    int threadId = threadIdx.x;
+    int startIndexWithinColumn = threadIdx.x * numberIterations;
 
     extern __shared__ float sharedData[];
 
-    if(threadId < numberEntries) {
+    int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
 
-        sharedData[threadId] = powf(predictions[threadId] - targets[threadId], 2.0);
+    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
+    int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
+
+    int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
+
+    if(indexInstance < batchSize) {
+
+        if(startIndexWithinColumn < numberRows) {
+
+            float sum = 0.0f;
+
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                sum  += powf(predictions[indexEntry] - targets[indexEntry], 2.0);
+
+            }
+
+            sharedData[threadIdx.x] = sum;
+
+        }
+        else {
+
+            sharedData[threadIdx.x] = 0.0;
+
+        }
+
+        __syncthreads();
+
+        reduce<blockSize>(threadIdx.x, sharedData, 0);
+
+        if(threadIdx.x == 0) {
+
+            result[indexColumnInBatch] = sharedData[0];
+
+        }
+
+    }
+    else {
+
+        if(threadIdx.x == 0) {
+
+            result[indexColumnInBatch] = 0.0;
+
+        }
 
     }
 
-    __syncthreads();
-
-    reduce<blockSize>(threadId, sharedData, 0);
-
-    if(threadId == 0) {
-
-        result[0] = 0.5 * sharedData[0];
-
-    }
 
 }

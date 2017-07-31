@@ -1,21 +1,33 @@
+#include "zero/Zero.cuh"
+
 extern "C"
-__global__ void backwardSquaredLossKernel (int batchSize, int numberInstancePerEntry, float *predictions, float *targets, float *result)
+__global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
 {
 
-    int indexInstance = blockIdx.x;
-    int startInstance = indexInstance * numberInstancePerEntry;
+    // What's the first entry index within the instance that this thread should operate on?
+    int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    int indexEntryInInstance = threadIdx.x;
-    int indexEntryInBatch = startInstance + indexEntryInInstance;
+    // Continue if this index is smaller than the dimension of the instance.
+    if(startIndexWithinInstance < numberEntriesPerInstance) {
 
-    if(indexInstance < batchSize) {
+        // What's the first entry index within the batch that this thread should operate on?
+        int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
 
-        result[indexEntryInBatch] = predictions[indexEntryInBatch] - targets[indexEntryInBatch];
+        // Is the instance greater than the current batch size?
+        if(blockIdx.x >= batchSize) {
 
-    }
-    else {
+            setToZero(result, startIndexWithinBatch, numberIterations);
 
-        result[indexEntryInBatch] = 0.0;
+        }
+        else {
+
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                result[indexEntry] = predictions[indexEntry] - targets[indexEntry];
+
+            }
+
+        }
 
     }
 

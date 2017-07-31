@@ -15,6 +15,7 @@ fun main(args: Array<String>) {
 
     val inputDimension = 2
     val outputDimension = 2
+    val batchSize = 4
 
     val random = Random(1)
     val initialization = heInitialization(random)
@@ -26,6 +27,6 @@ fun main(args: Array<String>) {
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Softmax, optimization)
     )
 
-    network.train(OneHotAndData.input, OneHotAndData.targets, logisticLoss(2), 10_000, 1, printLoss)
+    network.train(OneHotAndData.input, OneHotAndData.targets, logisticLoss(outputDimension), 10_000, batchSize, printLoss)
 
 }

@@ -2,12 +2,17 @@ package shape.komputation.cuda
 
 import shape.komputation.matrix.IntMath
 
-fun computeKernelLaunchConfigurationForElementWiseFunctions(
+data class EntrywiseLaunchConfiguration(
+    val numberBlocks : Int,
+    val numberThreadsPerBlock : Int,
+    val numberIterations : Int)
+
+fun computeEntrywiseLaunchConfiguration(
     numberElements : Int,
     numberMultiProcessors : Int,
     numberResidentWarps : Int,
     warpSize : Int,
-    maximumNumberThreadsPerBlock : Int): Triple<Int, Int, Int> {
+    maximumNumberThreadsPerBlock : Int): EntrywiseLaunchConfiguration {
 
     val numberRequiredWarps = (numberElements + warpSize - 1) / warpSize
 
@@ -16,7 +21,7 @@ fun computeKernelLaunchConfigurationForElementWiseFunctions(
 
         val numberBlocks = (numberElements + warpSize - 1) / warpSize
 
-        return Triple(numberBlocks, warpSize, 1)
+        return EntrywiseLaunchConfiguration(numberBlocks, warpSize, 1)
 
     }
     // More than one block per multi-processor
@@ -38,7 +43,41 @@ fun computeKernelLaunchConfigurationForElementWiseFunctions(
 
         val numberIterations = (numberElements + numberOccupiedThreads - 1) / numberOccupiedThreads
 
-        return Triple(numberBlocks, numberThreadsPerBlock, numberIterations)
+        return EntrywiseLaunchConfiguration(numberBlocks, numberThreadsPerBlock, numberIterations)
+
+    }
+
+}
+
+data class ColumnwiseLaunchConfiguration(
+    val numberBlocks : Int,
+    val numberThreadsPerBlock : Int,
+    val numberIterations : Int,
+    val sharedMemoryBytes : Int)
+
+
+// One column per block
+fun computeColumnwiseLaunchConfiguration(
+    numberColumns : Int,
+    columnSize : Int,
+    maximumNumberThreadsPerBlock : Int) : ColumnwiseLaunchConfiguration {
+
+    val numberRequiredThreads = Math.pow(2.0, Math.ceil(Math.log(columnSize.toDouble()) / Math.log(2.0))).toInt()
+
+    if (numberRequiredThreads <= maximumNumberThreadsPerBlock) {
+
+        val sharedMemoryBytes = computeDeviceFloatArraySize(numberRequiredThreads).toInt()
+
+        return ColumnwiseLaunchConfiguration(numberColumns, numberRequiredThreads, 1, sharedMemoryBytes)
+
+    }
+    else {
+
+        val numberIterations = (columnSize + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+
+        val sharedMemoryBytes = computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt()
+
+        return ColumnwiseLaunchConfiguration(numberColumns, maximumNumberThreadsPerBlock, numberIterations, sharedMemoryBytes)
 
     }
 

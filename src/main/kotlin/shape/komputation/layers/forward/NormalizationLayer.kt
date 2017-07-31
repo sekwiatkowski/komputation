@@ -17,15 +17,13 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
         val kernelFactory = context.kernelFactory
 
-        val blockSize = Math.pow(2.0, Math.ceil(Math.log(this.numberRows.toDouble()) / Math.log(2.0))).toInt()
-
         val normalizationLayer = CudaNormalizationLayer(
             this.name,
-            { kernelFactory.normalization(blockSize) },
-            { kernelFactory.backwardNormalization(blockSize) },
-            blockSize,
             this.numberRows,
-            this.numberColumns)
+            this.numberColumns,
+            { blockSize -> kernelFactory.normalization(blockSize) },
+            { blockSize -> kernelFactory.backwardNormalization(blockSize) },
+            context.maximumNumberOfThreadsPerBlock)
 
         return normalizationLayer
 

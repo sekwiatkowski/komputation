@@ -43,13 +43,13 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
         "normalizationKernel",
         "normalizationKernel<$blockSize>",
         "normalization/NormalizationKernel.cu",
-        listOf("reduction/Reduction.cuh"))
+        listOf("reduction/Reduction.cuh", "zero/Zero.cuh"))
 
     fun backwardNormalization(blockSize: Int) = createKernel(
         "backwardNormalizationKernel",
         "backwardNormalizationKernel<$blockSize>",
         "normalization/BackwardNormalizationKernel.cu",
-        listOf("reduction/Reduction.cuh"))
+        listOf("reduction/Reduction.cuh", "zero/Zero.cuh"))
 
     fun sigmoid() = createKernel(
         "sigmoidKernel",
@@ -101,7 +101,8 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
     fun backwardSquaredLoss() = createKernel(
         "backwardSquaredLossKernel",
         "backwardSquaredLossKernel",
-        "squaredloss/BackwardSquaredLossKernel.cu")
+        "squaredloss/BackwardSquaredLossKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     fun logisticLoss(blockSize: Int) = createKernel(
         "logisticLossKernel",
@@ -112,7 +113,8 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
     fun backwardLogisticLoss() = createKernel(
         "backwardLogisticLossKernel",
         "backwardLogisticLossKernel",
-        "logisticloss/BackwardLogisticLossKernel.cu")
+        "logisticloss/BackwardLogisticLossKernel.cu",
+        listOf("zero/Zero.cuh"))
 
     private fun resolveRelativePath(relativePath: String) =
 

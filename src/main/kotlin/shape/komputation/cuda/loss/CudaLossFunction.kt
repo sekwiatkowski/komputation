@@ -9,8 +9,6 @@ interface CudaLossFunction : Resourceful {
 
     fun accessAccumulation() : Float
 
-    fun reset()
-
     fun backward(pointerToPredictions: Pointer, pointerToTargets : Pointer, batchSize : Int): Pointer
 
 }

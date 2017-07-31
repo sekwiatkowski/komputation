@@ -5,45 +5,65 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.*
 
 class CudaSquaredLoss(
+    private val numberRows : Int,
+    private val numberColumns : Int,
     private val createForwardKernel: (Int) -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    private val numberEntries: Int) : CudaLossFunction {
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps : Int,
+    private val warpSize : Int,
+    private val maximumNumberThreadsPerBlock : Int) : CudaLossFunction {
 
-    private fun computeBlockSize(numberEntries : Int, maximumBatchSize : Int) =
+    private val numberEntries = this.numberRows * this.numberColumns
+    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
 
-        maximumBatchSize * Math.pow(2.0, Math.ceil(Math.log(numberEntries.toDouble()) / Math.log(2.0))).toInt()
+    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberRows))
+
+    private var maximumBatchSize = -1
+
+    private var forwardKernel : Kernel? = null
 
     private val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
 
-    private var forwardKernel : Kernel? = null
-
-    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
-
-    private var numberBatchEntries = intArrayOf(this.numberEntries)
-    private val pointerToNumberBatchEntries = Pointer.to(numberBatchEntries)
-
-    private val accumulationSharedMemoryBytes = computeDeviceFloatArraySize(this.numberEntries).toInt()
+    private val forwardBatchSize = intArrayOf(-1)
+    private val pointerToForwardBatchSize = Pointer.to(this.forwardBatchSize)
+    private var forwardNumberBlocks = -1
+    private var forwardNumberThreadsPerBlock = -1
+    private var forwardNumberIterations = intArrayOf(-1)
+    private var pointerToForwardNumberIterations = Pointer.to(this.forwardNumberIterations)
+    private var forwardSharedMemoryBytes = -1
 
     private var backwardKernel : Kernel? = null
+
     private val deviceBackwardResults = Pointer()
     private val pointerToBackwardResults = Pointer.to(this.deviceBackwardResults)
 
-    private val currentBatchSize = intArrayOf(-1)
-    private val pointerToBatchSize = Pointer.to(this.currentBatchSize)
-
-    private var maximumBatchSize = -1
-    private var blockSize = -1
+    private val backwardBatchSize = intArrayOf(-1)
+    private val pointerToBackwardBatchSize = Pointer.to(this.backwardBatchSize)
+    private var backwardNumberBlocks = -1
+    private var backwardNumberIterations = intArrayOf(-1)
+    private var pointerToBackwardNumberIterations = Pointer.to(this.backwardNumberIterations)
+    private var backwardNumberThreadsPerBlock = -1
 
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize
-        this.blockSize = computeBlockSize(this.numberEntries, maximumBatchSize)
-        this.numberBatchEntries[0] = maximumBatchSize * this.numberEntries
 
-        this.forwardKernel = this.createForwardKernel(this.blockSize)
+        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberColumns, this.numberRows, this.maximumNumberThreadsPerBlock)
+        this.forwardNumberBlocks = forwardLaunchConfiguration.numberBlocks
+        this.forwardNumberThreadsPerBlock = forwardLaunchConfiguration.numberThreadsPerBlock
+        this.forwardNumberIterations[0] = forwardLaunchConfiguration.numberIterations
+        this.forwardSharedMemoryBytes = forwardLaunchConfiguration.sharedMemoryBytes
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, 1)
+        this.forwardKernel = this.createForwardKernel(this.forwardNumberThreadsPerBlock)
+
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize * this.numberColumns)
+
+        val backwardLaunchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.backwardNumberBlocks = backwardLaunchConfiguration.numberBlocks
+        this.backwardNumberThreadsPerBlock = backwardLaunchConfiguration.numberThreadsPerBlock
+        this.backwardNumberIterations[0] = backwardLaunchConfiguration.numberIterations
 
         this.backwardKernel = this.createBackwardKernel()
 
@@ -65,40 +85,54 @@ class CudaSquaredLoss(
 
     }
 
+    // int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations
     override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize : Int) {
 
+        this.forwardBatchSize[0] = batchSize
+
         val parameters = Pointer.to(
-            this.pointerToNumberBatchEntries,
+            this.pointerToForwardBatchSize,
+            this.pointerToNumberRows,
+            this.pointerToNumberEntries,
+            this.pointerToForwardNumberIterations,
             pointerToPredictions,
             pointerToTargets,
             this.pointerToForwardResult)
 
         this.forwardKernel!!.launch(
             parameters,
-            1,
-            1,
-            this.blockSize,
-            this.accumulationSharedMemoryBytes)
+            this.maximumBatchSize,
+            this.forwardNumberBlocks,
+            this.forwardNumberThreadsPerBlock,
+            this.forwardSharedMemoryBytes)
 
     }
 
-    override fun accessAccumulation() =
+    override fun accessAccumulation(): Float {
 
-        getFloatArray(this.deviceForwardResult, 1)[0]
+        val sums = getFloatArray(this.deviceForwardResult, this.maximumBatchSize * this.numberColumns)
 
-    override fun reset() {
+        var loss = 0.0f;
 
-        setVectorToZero(this.deviceForwardResult, 1)
+        for(sum in sums) {
+
+            loss += sum
+
+        }
+
+        return 0.5f * loss;
 
     }
+
 
     override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize: Int): Pointer {
 
-        this.currentBatchSize[0] = batchSize
+        this.backwardBatchSize[0] = batchSize
 
         val parameters = Pointer.to(
-            this.pointerToBatchSize,
+            this.pointerToBackwardBatchSize,
             this.pointerToNumberEntries,
+            this.pointerToBackwardNumberIterations,
             pointerToPredictions,
             pointerToTargets,
             this.pointerToBackwardResults)
@@ -106,8 +140,8 @@ class CudaSquaredLoss(
         this.backwardKernel!!.launch(
             parameters,
             this.maximumBatchSize,
-            1,
-            this.numberEntries,
+            this.backwardNumberBlocks,
+            this.backwardNumberThreadsPerBlock,
             0)
 
         return this.deviceBackwardResults

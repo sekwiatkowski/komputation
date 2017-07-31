@@ -21,7 +21,7 @@ class CudaSquaredLossTest {
         val predictions = floatArrayOf(4.0f, 0.0f)
         val targets = floatArrayOf(2.0f, 0.0f)
 
-        testForward(predictions, targets, 1, 2, expected)
+        testForward(predictions, targets, 1, 2, 1, expected)
 
     }
 
@@ -34,11 +34,11 @@ class CudaSquaredLossTest {
         val predictions = floatArrayOf(4.0f, 6.0f, 0.0f, 0.0f)
         val targets = floatArrayOf(2.0f, 3.0f, 0.0f, 0.0f)
 
-        testForward(predictions, targets, 1, 2, expected)
+        testForward(predictions, targets, 1, 2, 2, expected)
 
     }
 
-    private fun testForward(predictions: FloatArray, targets: FloatArray, batchSize : Int, maximumBatchSize : Int, expected: Float) {
+    private fun testForward(predictions: FloatArray, targets: FloatArray, batchSize : Int, maximumBatchSize : Int, dimension: Int, expected: Float) {
 
         val size = predictions.size
 
@@ -49,7 +49,7 @@ class CudaSquaredLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = squaredLoss(size).buildForCuda(cudaContext)
+        val loss = squaredLoss(dimension).buildForCuda(cudaContext)
 
         loss.acquire(maximumBatchSize)
 

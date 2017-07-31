@@ -37,42 +37,62 @@
 */
 
 template <int blockSize>
-__global__ void logisticLossKernel (float *predictions, float *targets, float *sums, float *result)
+__global__ void logisticLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
 {
 
-    int threadId = threadIdx.x;
-    int blockId = blockIdx.x;
-    int numberBlocks = blockDim.x;
-
-    int globalId = blockId * numberBlocks + threadId;
+    int startIndexWithinColumn = threadIdx.x * numberIterations;
 
     extern __shared__ float sharedData[];
 
-    sharedData[threadId] = targets[globalId] * predictions[globalId];
 
-    __syncthreads();
 
-    reduce<blockSize>(threadId, sharedData, 0);
+    int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
 
-    if(threadId == 0) {
+    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
+    int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
 
-        sums[blockId] = sharedData[0];
+    int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
-    }
+    if(indexInstance < batchSize) {
 
-    __syncthreads();
+        if(startIndexWithinColumn < numberRows) {
 
-    if(globalId == 0) {
+            float sum = 0.0;
 
-        double loss = 1.0;
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
 
-        for(int index = 0; index < gridDim.x; index++) {
+                sum  += targets[indexEntry] * predictions[indexEntry];
 
-            loss *= sums[index];
+            }
+
+            sharedData[threadIdx.x] = sum;
+
+        }
+        else {
+
+            sharedData[threadIdx.x] = 0.0;
 
         }
 
-        result[0] = -logf(loss);
+        __syncthreads();
+
+        reduce<blockSize>(threadIdx.x, sharedData, 0);
+
+        if(threadIdx.x == 0) {
+
+            result[indexColumnInBatch] = sharedData[0];
+
+        }
+
+    }
+    else {
+
+        if(threadIdx.x == 0) {
+
+            result[indexColumnInBatch] = 0.0;
+
+        }
 
     }
 

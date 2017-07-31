@@ -11,47 +11,117 @@ class KernelLaunchConfigurationTest {
     val numberResidentWarps = 64
 
     @Test
-    fun test1() {
+    fun testEntrywise1() {
 
         assertEquals(
-            Triple(1, 32, 1),
-            computeKernelLaunchConfigurationForElementWiseFunctions(1, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+            EntrywiseLaunchConfiguration(1, 32, 1),
+            computeEntrywiseLaunchConfiguration(1, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
 
     }
 
     @Test
-    fun test2() {
+    fun testEntrywise2() {
 
         assertEquals(
-            Triple(1, 32, 1),
-            computeKernelLaunchConfigurationForElementWiseFunctions(2, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+            EntrywiseLaunchConfiguration(1, 32, 1),
+            computeEntrywiseLaunchConfiguration(2, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
 
     }
 
     @Test
-    fun test3() {
+    fun testEntrywise3() {
 
         assertEquals(
-            Triple(2, 32, 1),
-            computeKernelLaunchConfigurationForElementWiseFunctions(33, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+            EntrywiseLaunchConfiguration(2, 32, 1),
+            computeEntrywiseLaunchConfiguration(33, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
 
     }
 
     @Test
-    fun test4() {
+    fun testEntrywise4() {
 
         assertEquals(
-            Triple(2, 512, 1),
-            computeKernelLaunchConfigurationForElementWiseFunctions(1024, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+            EntrywiseLaunchConfiguration(2, 512, 1),
+            computeEntrywiseLaunchConfiguration(1024, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
 
     }
 
     @Test
-    fun test5() {
+    fun testEntrywise5() {
 
         assertEquals(
-            Triple(4, maximumNumberThreadsPerBlock, 3),
-            computeKernelLaunchConfigurationForElementWiseFunctions(10_000, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+            EntrywiseLaunchConfiguration(4, maximumNumberThreadsPerBlock, 3),
+            computeEntrywiseLaunchConfiguration(10_000, numberMultiProcessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock))
+
+    }
+
+    @Test
+    fun testColumnwise1() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(1, 1, 1, computeDeviceFloatArraySize(1).toInt())  ,
+            computeColumnwiseLaunchConfiguration(1, 1, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise2() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(1, 2, 1, computeDeviceFloatArraySize(2).toInt())  ,
+            computeColumnwiseLaunchConfiguration(1, 2, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise3() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(1, 64, 1, computeDeviceFloatArraySize(64).toInt())  ,
+            computeColumnwiseLaunchConfiguration(1, 33, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise4() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(2, 1, 1, computeDeviceFloatArraySize(1).toInt())  ,
+            computeColumnwiseLaunchConfiguration(2, 1, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise5() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(2, 64, 1, computeDeviceFloatArraySize(64).toInt())  ,
+            computeColumnwiseLaunchConfiguration(2, 33, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise6() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt())  ,
+            computeColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock+1, maximumNumberThreadsPerBlock)
+        )
+
+    }
+
+    @Test
+    fun testColumnwise7() {
+
+        assertEquals(
+            ColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt())  ,
+            computeColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock+1, maximumNumberThreadsPerBlock)
+        )
 
     }
 
