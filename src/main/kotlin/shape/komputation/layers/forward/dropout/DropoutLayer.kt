@@ -3,6 +3,7 @@ package shape.komputation.layers.forward.dropout
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.dropout.CpuDropoutLayer
 import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.ForwardKernels
 import shape.komputation.cuda.layers.forward.dropout.CudaDropoutLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
@@ -20,16 +21,14 @@ class DropoutLayer(
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaDropoutLayer {
 
-        val kernelFactory = context.kernelFactory
-
         return CudaDropoutLayer(
             this.name,
             this.numberEntries,
             this.random,
             this.keepProbability,
-            { kernelFactory.dropoutTraining() },
-            { kernelFactory.dropoutRuntime() },
-            { kernelFactory.backwardDropout() },
+            { context.createKernel(ForwardKernels.dropoutTraining()) },
+            { context.createKernel(ForwardKernels.dropoutRuntime()) },
+            { context.createKernel(ForwardKernels.backwardDropout()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

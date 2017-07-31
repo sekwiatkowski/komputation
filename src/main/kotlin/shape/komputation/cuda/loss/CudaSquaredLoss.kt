@@ -2,7 +2,11 @@ package shape.komputation.cuda.loss
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.*
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.kernels.Kernel
+import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
 
 class CudaSquaredLoss(
     private val numberRows : Int,

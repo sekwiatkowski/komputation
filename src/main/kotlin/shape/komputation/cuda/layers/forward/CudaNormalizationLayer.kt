@@ -2,9 +2,9 @@ package shape.komputation.cuda.layers.forward
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
-import shape.komputation.cuda.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.Kernel
+import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.layers.Resourceful
 

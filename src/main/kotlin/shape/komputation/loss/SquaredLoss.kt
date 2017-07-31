@@ -2,6 +2,7 @@ package shape.komputation.loss
 
 import shape.komputation.cpu.loss.CpuSquaredLoss
 import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.LossKernels
 import shape.komputation.cuda.loss.CudaSquaredLoss
 
 class SquaredLoss(private val numberCategories: Int, private val numberSteps: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
@@ -12,13 +13,11 @@ class SquaredLoss(private val numberCategories: Int, private val numberSteps: In
 
     override fun buildForCuda(context: CudaContext): CudaSquaredLoss {
 
-        val kernelFactory = context.kernelFactory
-
         return CudaSquaredLoss(
             this.numberCategories,
             this.numberSteps,
-            { blockSize -> kernelFactory.squaredLoss(blockSize) },
-            { kernelFactory.backwardSquaredLoss() },
+            { blockSize -> context.createKernel(LossKernels.squaredLoss(blockSize)) },
+            { context.createKernel(LossKernels.backwardSquaredLoss()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

@@ -1,7 +1,7 @@
 package shape.komputation.cuda.optimization
 
 import jcuda.Pointer
-import shape.komputation.cuda.Kernel
+import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMath
 

@@ -3,9 +3,9 @@ package shape.komputation.cuda.layers.forward.dropout
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.seed
-import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
-import shape.komputation.cuda.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.Kernel
+import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful

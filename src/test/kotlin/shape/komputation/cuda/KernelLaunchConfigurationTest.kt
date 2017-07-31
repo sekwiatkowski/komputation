@@ -2,6 +2,10 @@ package shape.komputation.cuda
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.cuda.kernels.ColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.EntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
 
 class KernelLaunchConfigurationTest {
 
@@ -59,7 +63,7 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise1() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(1, 1, 1, computeDeviceFloatArraySize(1).toInt())  ,
+            ColumnwiseLaunchConfiguration(1, 1, 1, computeDeviceFloatArraySize(1).toInt()),
             computeColumnwiseLaunchConfiguration(1, 1, maximumNumberThreadsPerBlock)
         )
 
@@ -69,7 +73,7 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise2() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(1, 2, 1, computeDeviceFloatArraySize(2).toInt())  ,
+            ColumnwiseLaunchConfiguration(1, 2, 1, computeDeviceFloatArraySize(2).toInt()),
             computeColumnwiseLaunchConfiguration(1, 2, maximumNumberThreadsPerBlock)
         )
 
@@ -79,7 +83,7 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise3() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(1, 64, 1, computeDeviceFloatArraySize(64).toInt())  ,
+            ColumnwiseLaunchConfiguration(1, 64, 1, computeDeviceFloatArraySize(64).toInt()),
             computeColumnwiseLaunchConfiguration(1, 33, maximumNumberThreadsPerBlock)
         )
 
@@ -89,7 +93,7 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise4() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(2, 1, 1, computeDeviceFloatArraySize(1).toInt())  ,
+            ColumnwiseLaunchConfiguration(2, 1, 1, computeDeviceFloatArraySize(1).toInt()),
             computeColumnwiseLaunchConfiguration(2, 1, maximumNumberThreadsPerBlock)
         )
 
@@ -99,7 +103,7 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise5() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(2, 64, 1, computeDeviceFloatArraySize(64).toInt())  ,
+            ColumnwiseLaunchConfiguration(2, 64, 1, computeDeviceFloatArraySize(64).toInt()),
             computeColumnwiseLaunchConfiguration(2, 33, maximumNumberThreadsPerBlock)
         )
 
@@ -109,8 +113,8 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise6() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt())  ,
-            computeColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock+1, maximumNumberThreadsPerBlock)
+            ColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt()),
+            computeColumnwiseLaunchConfiguration(1, maximumNumberThreadsPerBlock + 1, maximumNumberThreadsPerBlock)
         )
 
     }
@@ -119,8 +123,8 @@ class KernelLaunchConfigurationTest {
     fun testColumnwise7() {
 
         assertEquals(
-            ColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt())  ,
-            computeColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock+1, maximumNumberThreadsPerBlock)
+            ColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock, 2, computeDeviceFloatArraySize(maximumNumberThreadsPerBlock).toInt()),
+            computeColumnwiseLaunchConfiguration(2, maximumNumberThreadsPerBlock + 1, maximumNumberThreadsPerBlock)
         )
 
     }

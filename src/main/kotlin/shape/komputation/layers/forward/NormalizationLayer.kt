@@ -3,6 +3,7 @@ package shape.komputation.layers.forward
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.CpuNormalizationLayer
 import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.ForwardKernels
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
@@ -15,14 +16,12 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaNormalizationLayer {
 
-        val kernelFactory = context.kernelFactory
-
         val normalizationLayer = CudaNormalizationLayer(
             this.name,
             this.numberRows,
             this.numberColumns,
-            { blockSize -> kernelFactory.normalization(blockSize) },
-            { blockSize -> kernelFactory.backwardNormalization(blockSize) },
+            { blockSize -> context.createKernel(ForwardKernels.normalization(blockSize)) },
+            { blockSize -> context.createKernel(ForwardKernels.backwardNormalization(blockSize)) },
             context.maximumNumberOfThreadsPerBlock)
 
         return normalizationLayer

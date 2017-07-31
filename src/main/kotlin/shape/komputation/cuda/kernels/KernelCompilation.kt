@@ -1,4 +1,4 @@
-package shape.komputation.cuda
+package shape.komputation.cuda.kernels
 
 import jcuda.driver.CUfunction
 import jcuda.driver.CUmodule

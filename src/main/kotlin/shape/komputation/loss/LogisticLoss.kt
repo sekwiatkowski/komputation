@@ -2,6 +2,7 @@ package shape.komputation.loss
 
 import shape.komputation.cpu.loss.CpuLogisticLoss
 import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.LossKernels
 import shape.komputation.cuda.loss.CudaLogisticLoss
 
 class LogisticLoss(private val numberCategories : Int, private val numberSteps : Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
@@ -12,16 +13,11 @@ class LogisticLoss(private val numberCategories : Int, private val numberSteps :
 
     override fun buildForCuda(context: CudaContext): CudaLogisticLoss {
 
-        val kernelFactory = context.kernelFactory
-
-        val forwardKernel = { blockSize : Int -> kernelFactory.logisticLoss(blockSize) }
-        val backwardKernel = { kernelFactory.backwardLogisticLoss() }
-
         return CudaLogisticLoss(
             this.numberCategories,
             this.numberSteps,
-            forwardKernel,
-            backwardKernel,
+            { blockSize : Int -> context.createKernel(LossKernels.logisticLoss(blockSize)) },
+            { context.createKernel(LossKernels.backwardLogisticLoss()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

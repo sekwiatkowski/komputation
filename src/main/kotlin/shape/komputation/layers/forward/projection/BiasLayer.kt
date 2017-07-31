@@ -4,6 +4,7 @@ import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.ForwardKernels
 import shape.komputation.cuda.layers.forward.projection.CublasBiasLayer
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
@@ -35,7 +36,13 @@ class BiasLayer(
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberInputRows, this.numberInputColumns)
 
-        val layer = CublasBiasLayer(this.name, cublasHandle, context.maximumNumberOfThreadsPerBlock, this.numberInputRows, this.numberInputColumns, { context.kernelFactory.bias() }, bias, updateRule)
+        val layer = CublasBiasLayer(
+            this.name,
+            cublasHandle,
+            context.maximumNumberOfThreadsPerBlock,
+            this.numberInputRows,
+            this.numberInputColumns,
+            { context.createKernel(ForwardKernels.bias()) }, bias, updateRule)
 
         return layer
 

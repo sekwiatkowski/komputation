@@ -2,7 +2,11 @@ package shape.komputation.cuda.loss
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.*
+import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.kernels.Kernel
+import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
 import shape.komputation.matrix.FloatMath
 
 // int length, float *predictions, float *targets, float *result

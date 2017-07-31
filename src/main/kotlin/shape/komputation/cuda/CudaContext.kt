@@ -3,6 +3,8 @@ package shape.komputation.cuda
 import jcuda.driver.CUcontext
 import jcuda.driver.CUdevice
 import jcuda.driver.JCudaDriver.*
+import shape.komputation.cuda.kernels.KernelFactory
+import shape.komputation.cuda.kernels.KernelInstruction
 
 data class CudaContext(
     val context: CUcontext,
@@ -13,7 +15,11 @@ data class CudaContext(
     val maximumNumberOfBlocks: Int,
     val maximumNumberOfThreadsPerBlock: Int) {
 
-    val kernelFactory = KernelFactory(this.computeCapabilities)
+    private val kernelFactory = KernelFactory(this.computeCapabilities)
+
+    fun createKernel(instruction: KernelInstruction) =
+
+        this.kernelFactory.create(instruction)
 
     fun destroy() {
 

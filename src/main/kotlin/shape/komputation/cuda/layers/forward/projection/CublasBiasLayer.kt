@@ -3,9 +3,9 @@ package shape.komputation.cuda.layers.forward.projection
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.Kernel
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
+import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setFloatArray

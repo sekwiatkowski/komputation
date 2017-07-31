@@ -1,5 +1,6 @@
-package shape.komputation.cuda
+package shape.komputation.cuda.kernels
 
+import shape.komputation.cuda.computeDeviceFloatArraySize
 import shape.komputation.matrix.IntMath
 
 data class EntrywiseLaunchConfiguration(

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.optimization.stochasticGradientDescent
 
 class CudaStochasticGradientDescentTest {
 
@@ -19,7 +20,7 @@ class CudaStochasticGradientDescentTest {
         val numberColumns = 1
         val size = numberRows * numberColumns
 
-        val stochasticGradientDescent = CudaStochasticGradientDescent({ cudaContext.kernelFactory.stochasticGradientDescent() }, cudaContext.maximumNumberOfThreadsPerBlock, numberRows * numberColumns, 0.1f)
+        val stochasticGradientDescent = stochasticGradientDescent(0.1f).buildForCuda(cudaContext).invoke(numberRows, numberColumns)
 
         stochasticGradientDescent.acquire(1)
 
