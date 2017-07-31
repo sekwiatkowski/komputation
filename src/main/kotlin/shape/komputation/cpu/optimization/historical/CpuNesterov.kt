@@ -18,7 +18,9 @@ class CpuNesterov(private val learningRate: Float, private val momentum: Float, 
 
             val historyIndex = start + localIndex
 
-            this.backup[historyIndex] = this.history[historyIndex]
+            val backup = this.history[historyIndex]
+
+            this.backup[historyIndex] = backup
 
             // Discount the previous history
             val updatedHistoryEntry = this.computeHistoryUpdate(historyIndex, gradient[localIndex])
@@ -27,13 +29,13 @@ class CpuNesterov(private val learningRate: Float, private val momentum: Float, 
             this.history[historyIndex] = updatedHistoryEntry
 
             // Remove the look-ahead component from the parameter
-            val removedPreviousLookAhead = parameters[localIndex] - this.momentum * this.backup[historyIndex]
+            val removedPreviousLookAhead = parameters[localIndex] - this.momentum * backup
 
             // Update the parameter and put it into the look-ahead position
             // updatedParameter = removedPreviousLookAhead + (1 + this.momentum) * updatedHistoryEntry
             //                  = removedPreviousLookAhead + updatedHistoryEntry + this.momentum * updatedHistory
             //                  = removedPreviousLookAhead + updatedHistoryEntry + newLookAhead
-            parameters[localIndex] = removedPreviousLookAhead + (1 + this.momentum) * updatedHistoryEntry
+            parameters[localIndex] = removedPreviousLookAhead + (1.0f + this.momentum) * updatedHistoryEntry
 
         }
 

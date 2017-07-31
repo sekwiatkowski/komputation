@@ -12,4 +12,9 @@ object OptimizationKernels {
         "momentumKernel",
         "optimization/momentum/MomentumKernel.cu")
 
+    fun nesterov () = KernelInstruction(
+        "nesterovKernel",
+        "nesterovKernel",
+        "optimization/nesterov/NesterovKernel.cu")
+
 }

@@ -1,7 +1,7 @@
-package shape.komputation.cpu.demos.xor
+package shape.komputation.cuda.demos.xor
 
-import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.cuda.CudaNetwork
 import shape.komputation.demos.xor.XorData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
     val hiddenLayer = denseLayer(inputDimension, hiddenDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
 
-    val network = Network(
+    val network = CudaNetwork(
         inputLayer,
         hiddenLayer,
         outputLayer
