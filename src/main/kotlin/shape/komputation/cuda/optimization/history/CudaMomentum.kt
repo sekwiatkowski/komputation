@@ -1,23 +1,31 @@
-package shape.komputation.cuda.optimization
+package shape.komputation.cuda.optimization.history
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
+import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
-class CudaStochasticGradientDescent(
-    private val size : Int,
+class CudaMomentum(
+    private val numberParameters : Int,
+    private val parameterSize : Int,
     private val learningRate: Float,
+    private val momentum : Float,
     private val createKernel: () -> Kernel,
     private val numberMultiprocessors : Int,
     private val numberResidentWarps : Int,
     private val warpSize : Int,
     private val maximumNumberThreads : Int) : CudaUpdateRule, Resourceful {
 
-    private val pointerToSize = Pointer.to(intArrayOf(this.size))
+    private val pointerToParameterSize = Pointer.to(intArrayOf(this.parameterSize))
     private val pointerToLearningRate = Pointer.to(floatArrayOf(this.learningRate))
+    private val pointerToMomentum = Pointer.to(floatArrayOf(this.momentum))
+
+    private val deviceHistory = Pointer()
+    private val pointerToHistory = Pointer.to(this.deviceHistory)
 
     private var kernel : Kernel? = null
     private var numberBlocks = -1
@@ -32,12 +40,13 @@ class CudaStochasticGradientDescent(
 
         this.kernel = this.createKernel()
 
-        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.size, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreads)
+        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.parameterSize, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreads)
         this.numberBlocks = launchConfiguration.numberBlocks
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
 
         setIntArray(intArrayOf(0), 1, this.deviceArrayOfZero)
+        allocateDeviceFloatMemory(this.deviceHistory, this.numberParameters * this.parameterSize)
 
     }
 
@@ -63,8 +72,10 @@ class CudaStochasticGradientDescent(
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
             this.pointerToLearningRate,
+            this.pointerToMomentum,
+            this.pointerToHistory,
             pointerToParameterIndices,
-            this.pointerToSize,
+            this.pointerToParameterSize,
             pointerToDeviceParameter,
             this.pointerToScalingFactor,
             pointerToDeviceGradient
@@ -84,6 +95,7 @@ class CudaStochasticGradientDescent(
 
         this.kernel!!.destroy()
 
+        cudaFree(this.deviceHistory)
         cudaFree(this.deviceArrayOfZero)
 
     }

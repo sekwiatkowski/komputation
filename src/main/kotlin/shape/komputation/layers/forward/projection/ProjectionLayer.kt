@@ -64,7 +64,7 @@ class ProjectionLayer(
     override fun buildForCuda(context: CudaContext, cublasHandle : cublasHandle): CublasProjectionLayer {
 
         val initialWeights = initializeWeights(this.weightInitializationStrategy, this.numberWeightRows, this.numberWeightColumns, this.numberInputEntries)
-        val weightUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberWeightRows, this.numberWeightColumns)
+        val weightUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberWeightRows, this.numberWeightColumns)
 
         val weightingName = concatenateNames(this.name, "weighting")
 
@@ -77,7 +77,7 @@ class ProjectionLayer(
             val biasName = concatenateNames(this.name, "bias")
 
             val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
-            val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(this.numberOutputRows, 1)
+            val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberOutputRows, 1)
 
             biasLayer = CublasBiasLayer(
                 biasName,

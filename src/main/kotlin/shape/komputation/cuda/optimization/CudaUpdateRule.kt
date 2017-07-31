@@ -5,6 +5,8 @@ import shape.komputation.layers.Resourceful
 
 interface CudaUpdateRule : Resourceful {
 
-    fun update(pointerToDeviceParameter: Pointer, scalingFactor : Float, pointerToDeviceGradient : Pointer)
+    fun denseUpdate(pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer)
+
+    fun sparseUpdate(numberParameters : Int, pointerToParameterIndices : Pointer, pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer)
 
 }

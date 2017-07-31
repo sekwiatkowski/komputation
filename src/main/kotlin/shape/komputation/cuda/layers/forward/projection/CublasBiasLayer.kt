@@ -106,7 +106,7 @@ class CublasBiasLayer internal constructor(
 
     override fun optimize(scalingFactor: Float) {
 
-        this.biasUpdateRule?.update(this.pointerToDeviceBias, scalingFactor, this.pointerToDeviceBackwardWrtBias)
+        this.biasUpdateRule?.denseUpdate(this.pointerToDeviceBias, scalingFactor, this.pointerToDeviceBackwardWrtBias)
 
     }
 

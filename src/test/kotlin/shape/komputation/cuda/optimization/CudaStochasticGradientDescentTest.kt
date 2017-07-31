@@ -20,7 +20,7 @@ class CudaStochasticGradientDescentTest {
         val numberColumns = 1
         val size = numberRows * numberColumns
 
-        val stochasticGradientDescent = stochasticGradientDescent(0.1f).buildForCuda(cudaContext).invoke(numberRows, numberColumns)
+        val stochasticGradientDescent = stochasticGradientDescent(0.1f).buildForCuda(cudaContext).invoke(1, numberRows, numberColumns)
 
         stochasticGradientDescent.acquire(1)
 
@@ -29,7 +29,7 @@ class CudaStochasticGradientDescentTest {
         val deviceGradient = Pointer()
         setFloatArray(floatArrayOf(0.1f), size, deviceGradient)
 
-        stochasticGradientDescent.update(Pointer.to(deviceParameter), 1.0f, Pointer.to(deviceGradient))
+        stochasticGradientDescent.denseUpdate(Pointer.to(deviceParameter), 1.0f, Pointer.to(deviceGradient))
 
         val hostParameter = getFloatArray(deviceParameter, size)
 

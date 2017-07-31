@@ -131,7 +131,7 @@ class CublasWeightingLayer internal constructor(
 
     override fun optimize(scalingFactor: Float) {
 
-        this.weightUpdateRule?.update(this.pointerToDeviceWeights, scalingFactor, this.pointerToDeviceBackwardWrtWeights)
+        this.weightUpdateRule?.denseUpdate(this.pointerToDeviceWeights, scalingFactor, this.pointerToDeviceBackwardWrtWeights)
 
     }
 

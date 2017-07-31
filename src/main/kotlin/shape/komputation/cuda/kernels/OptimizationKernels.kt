@@ -7,4 +7,9 @@ object OptimizationKernels {
         "stochasticGradientDescentKernel",
         "optimization/stochasticgradientdescent/StochasticGradientDescentKernel.cu")
 
+    fun momentum () = KernelInstruction(
+        "momentumKernel",
+        "momentumKernel",
+        "optimization/momentum/MomentumKernel.cu")
+
 }

@@ -5,7 +5,7 @@ import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
-import shape.komputation.cuda.setVectorToZero
+import shape.komputation.cuda.setArrayToZero
 
 private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
 private val pointerToZero = Pointer.to(floatArrayOf(0.0f))
@@ -19,7 +19,7 @@ fun cublasOuterProduct(
     deviceResult: Pointer,
     resultDimension : Int): Int {
 
-    setVectorToZero(deviceResult, resultDimension)
+    setArrayToZero(deviceResult, resultDimension)
 
     return cublasSger(
         cublasHandle,

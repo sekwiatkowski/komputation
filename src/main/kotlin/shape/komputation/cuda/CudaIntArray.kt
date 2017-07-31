@@ -2,9 +2,7 @@ package shape.komputation.cuda
 
 import jcuda.Pointer
 import jcuda.Sizeof
-import jcuda.runtime.JCuda.cudaMemcpy
-import jcuda.runtime.JCuda.cudaMalloc
-import jcuda.runtime.JCuda.cudaMemset
+import jcuda.runtime.JCuda.*
 import jcuda.runtime.cudaMemcpyKind
 
 fun computeDeviceIntArraySize(arraySize : Int) =
@@ -42,6 +40,6 @@ fun setIntArray(data: IntArray, size: Int, pointer : Pointer): Int {
 
 }
 
-fun setVectorToZero(devicePointer: Pointer, size: Int) =
+fun setArrayToZero(devicePointer: Pointer, size: Int) =
 
     cudaMemset(devicePointer, 0, computeDeviceFloatArraySize(size))

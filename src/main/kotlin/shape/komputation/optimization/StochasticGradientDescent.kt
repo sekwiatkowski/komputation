@@ -25,13 +25,16 @@ class StochasticGradientDescent(private val learningRate: Float) : OptimizationI
 
     override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
 
-        return { numberRows : Int, numberColumns : Int ->
+        return { _ : Int, numberRows : Int, numberColumns : Int ->
 
             CudaStochasticGradientDescent(
-                { context.createKernel(OptimizationKernels.stochasticGradientDescent()) },
-                context.maximumNumberOfThreadsPerBlock,
                 numberRows * numberColumns,
-                this.learningRate)
+                this.learningRate,
+                { context.createKernel(OptimizationKernels.stochasticGradientDescent()) },
+                context.numberMultiprocessors,
+                context.maximumNumberOfResidentWarpsPerMultiprocessor,
+                context.warpSize,
+                context.maximumNumberOfThreadsPerBlock)
 
         }
 

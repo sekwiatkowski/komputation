@@ -1,7 +1,9 @@
 extern "C"
-__global__ void stochasticGradientDescentKernel (
+__global__ void momentumKernel (
     int numberIterations,
     float learningRate,
+    float momentum,
+    float* history,
     int* parameterIndices,
     int parameterSize,
     float* parameters,
@@ -20,7 +22,10 @@ __global__ void stochasticGradientDescentKernel (
 
         for(int i = 0; i < numberIterations; i++) {
 
-            parameters[startParameter + i] -= scalingFactor * learningRate * gradient[startGradient + i];
+            float update = momentum * history[startParameter + i] - scalingFactor * learningRate * gradient[startGradient + i];
+            history[startParameter + i] = update;
+
+            parameters[startParameter + i] += update;
 
         }
 
