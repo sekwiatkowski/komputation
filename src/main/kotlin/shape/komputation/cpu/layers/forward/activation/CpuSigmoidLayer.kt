@@ -12,7 +12,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
     private val backwardEntries = FloatArray(this.numberEntries)
     private var hasCachedDifferentiation = false
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         this.hasCachedDifferentiation = false
 
@@ -30,7 +30,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         if (!this.hasCachedDifferentiation) {
 

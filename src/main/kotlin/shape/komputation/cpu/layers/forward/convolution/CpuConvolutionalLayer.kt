@@ -10,21 +10,21 @@ class CpuConvolutionalLayer internal constructor(
     private val expansionLayer: CpuExpansionLayer,
     private val projectionLayer: CpuProjectionLayer) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        val expansion = this.expansionLayer.forward(input, isTraining)
+        val expansion = this.expansionLayer.forward(withinBatch, input, isTraining)
 
-        val projection = this.projectionLayer.forward(expansion, isTraining)
+        val projection = this.projectionLayer.forward(withinBatch, expansion, isTraining)
 
         return projection
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
-        val backwardProjection = this.projectionLayer.backward(chain)
+        val backwardProjection = this.projectionLayer.backward(withinBatch, chain)
 
-        val backwardExpansion = this.expansionLayer.backward(backwardProjection)
+        val backwardExpansion = this.expansionLayer.backward(withinBatch, backwardProjection)
 
         return backwardExpansion
 

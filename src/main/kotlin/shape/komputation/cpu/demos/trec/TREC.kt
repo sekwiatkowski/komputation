@@ -126,6 +126,7 @@ class TrecTraining {
                 .test(
                     testRepresentations,
                     testTargets,
+                    batchSize,
                     { prediction, target ->
 
                         findMaxIndex(prediction.entries) == findMaxIndex(target.entries)

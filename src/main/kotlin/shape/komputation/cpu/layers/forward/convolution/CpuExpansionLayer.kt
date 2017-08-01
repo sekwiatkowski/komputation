@@ -29,7 +29,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
         i_22 i_23
         i_32 i_33
     */
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
@@ -44,7 +44,7 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
     }
 
     // d expansion / d input
-    override fun backward(chain : FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
         val summedDerivatives = backwardExpansionForConvolution(
             this.numberInputRows,

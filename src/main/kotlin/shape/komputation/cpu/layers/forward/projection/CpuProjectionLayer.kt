@@ -9,13 +9,13 @@ class CpuProjectionLayer internal constructor(
     private val weightingLayer: CpuWeightingLayer,
     private val biasLayer : CpuBiasLayer?) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input: FloatMatrix, isTraining: Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining: Boolean): FloatMatrix {
 
-        val weighted = this.weightingLayer.forward(input, isTraining)
+        val weighted = this.weightingLayer.forward(withinBatch, input, isTraining)
 
         if (this.biasLayer != null) {
 
-            return this.biasLayer.forward(weighted, isTraining)
+            return this.biasLayer.forward(withinBatch, weighted, isTraining)
 
         }
         else {
@@ -26,11 +26,11 @@ class CpuProjectionLayer internal constructor(
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
-        val backward = this.weightingLayer.backward(chain)
+        val backward = this.weightingLayer.backward(withinBatch, chain)
 
-        this.biasLayer?.backward(chain)
+        this.biasLayer?.backward(withinBatch, chain)
 
         return backward
 

@@ -32,15 +32,15 @@ class MinimalGatedUnit internal constructor(
     private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
     private val inputAccumulator = DenseAccumulator(inputDimension)
 
-    override fun forwardStep(step : Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forwardStep(withinBatch : Int, step : Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val forget = this.forgetUnit.forwardStep(step, state, input, isTraining)
+        val forget = this.forgetUnit.forwardStep(withinBatch, step, state, input, isTraining)
 
-        val oneMinusForget = this.counterProbabilities[step].forward(forget, isTraining)
+        val oneMinusForget = this.counterProbabilities[step].forward(withinBatch, forget, isTraining)
 
         val longTermComponent = this.longTermHadamards[step].forward(oneMinusForget, state)
 
-        val shortTermResponse = this.shortTermResponse.forward(step, state, input, forget, isTraining)
+        val shortTermResponse = this.shortTermResponse.forward(withinBatch, step, state, input, forget, isTraining)
 
         val shortTermComponent = this.shortTermHadamards[step].forward(forget, shortTermResponse)
 
@@ -50,14 +50,14 @@ class MinimalGatedUnit internal constructor(
     }
 
 
-    private fun backwardLongTermComponent(step: Int, diffChainWrtLongTermComponent: FloatMatrix) {
+    private fun backwardLongTermComponent(withinBatch : Int, step: Int, diffChainWrtLongTermComponent: FloatMatrix) {
 
         // (1 - forget) (.) previous state / d (1 - forget) = previous state
         val diffLongTermComponentWrtKeep = this.longTermHadamards[step].backwardFirst(diffChainWrtLongTermComponent)
 
         // d (1 - forget) / d forget = -1
-        val diffKeepWrtForget = this.counterProbabilities[step].backward(diffLongTermComponentWrtKeep)
-        val (diffForgetWrtPreviousState, diffForgetWrtInput) = this.forgetUnit.backwardStep(step, diffKeepWrtForget)
+        val diffKeepWrtForget = this.counterProbabilities[step].backward(withinBatch, diffLongTermComponentWrtKeep)
+        val (diffForgetWrtPreviousState, diffForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffKeepWrtForget)
 
         this.previousStateAccumulator.accumulate(diffForgetWrtPreviousState.entries)
         this.inputAccumulator.accumulate(diffForgetWrtInput.entries)
@@ -67,7 +67,7 @@ class MinimalGatedUnit internal constructor(
         this.previousStateAccumulator.accumulate(diffLongTermComponentWrtPreviousState.entries)
     }
 
-    private fun backwardShortTermComponent(step: Int, diffChainWrtShortTermComponent: FloatMatrix) {
+    private fun backwardShortTermComponent(withinBatch : Int, step: Int, diffChainWrtShortTermComponent: FloatMatrix) {
 
         // short-term component = forget (.) short-term response
 
@@ -75,18 +75,18 @@ class MinimalGatedUnit internal constructor(
         val diffShortTermComponentWrtForget = this.shortTermHadamards[step].backwardFirst(diffChainWrtShortTermComponent)
 
         // d forget / d previous state, d forget / input
-        val (diffShortTermComponentForgetWrtPreviousState, diffShortTermComponentForgetWrtInput) = this.forgetUnit.backwardStep(step, diffShortTermComponentWrtForget)
+        val (diffShortTermComponentForgetWrtPreviousState, diffShortTermComponentForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffShortTermComponentWrtForget)
         this.previousStateAccumulator.accumulate(diffShortTermComponentForgetWrtPreviousState.entries)
         this.inputAccumulator.accumulate(diffShortTermComponentForgetWrtInput.entries)
 
         // d short-term component / short-term response = forget
         val diffShortTermComponentWrtShortTermResponse = this.shortTermHadamards[step].backwardSecond(diffChainWrtShortTermComponent)
 
-        val (diffShortTermMemoryWrtForget, shortTermResponsePair) = this.shortTermResponse.backward(step, diffShortTermComponentWrtShortTermResponse)
+        val (diffShortTermMemoryWrtForget, shortTermResponsePair) = this.shortTermResponse.backward(withinBatch, step, diffShortTermComponentWrtShortTermResponse)
         val (diffShortTermMemoryWrtPreviousState, diffShortTermWeightedInputWrtInput) = shortTermResponsePair
 
         // d forget / d previous state, d forget / input
-        val (diffShortTermMemoryForgetWrtPreviousState, diffShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(step, diffShortTermMemoryWrtForget)
+        val (diffShortTermMemoryForgetWrtPreviousState, diffShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffShortTermMemoryWrtForget)
         this.previousStateAccumulator.accumulate(diffShortTermMemoryForgetWrtPreviousState.entries)
         this.inputAccumulator.accumulate(diffShortTermMemoryForgetWrtInput.entries)
 
@@ -95,15 +95,15 @@ class MinimalGatedUnit internal constructor(
 
     }
 
-    override fun backwardStep(step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
+    override fun backwardStep(withinBatch: Int, step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
 
         // d (long-term component + short-term component) / d long-term component
         val diffChainWrtLongTermComponent = this.stateAdditions[step].backwardFirst(chain)
-        this.backwardLongTermComponent(step, diffChainWrtLongTermComponent)
+        this.backwardLongTermComponent(withinBatch, step, diffChainWrtLongTermComponent)
 
         // d (long-term component + short-term component) / d short-term component
         val diffChainWrtShortTermComponent = this.stateAdditions[step].backwardSecond(chain)
-        this.backwardShortTermComponent(step, diffChainWrtShortTermComponent)
+        this.backwardShortTermComponent(withinBatch, step, diffChainWrtShortTermComponent)
 
         val previousStateAccumulation = floatColumnVector(*this.previousStateAccumulator.getAccumulation().copyOf())
         val inputAccumulation = floatColumnVector(*this.inputAccumulator.getAccumulation().copyOf())

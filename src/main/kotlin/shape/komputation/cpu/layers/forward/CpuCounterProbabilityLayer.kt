@@ -13,7 +13,7 @@ class CpuCounterProbabilityLayer internal constructor(
     private val forwardEntries = FloatArray(this.numberEntries)
     private val backwardEntries = FloatArray(this.numberEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         subtract(this.one, input.entries, this.forwardEntries, this.numberEntries)
 
@@ -21,7 +21,7 @@ class CpuCounterProbabilityLayer internal constructor(
 
     }
 
-    override fun backward(chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
 
         negate(chain.entries, this.backwardEntries, this.numberEntries)
 

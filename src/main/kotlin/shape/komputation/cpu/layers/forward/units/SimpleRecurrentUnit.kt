@@ -23,13 +23,13 @@ class SimpleRecurrentUnit internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Optimizable {
 
-    override fun forwardStep(step : Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forwardStep(withinBatch : Int, step : Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // weighted state = state weights * state
-        val weightedState = this.previousStateWeighting.forwardStep(step, state, isTraining)
+        val weightedState = this.previousStateWeighting.forwardStep(withinBatch, step, state, isTraining)
 
         // weighted input = input weights * input
-        val weightedInput = this.inputWeighting.forwardStep(step, input, isTraining)
+        val weightedInput = this.inputWeighting.forwardStep(withinBatch, step, input, isTraining)
 
         // addition = weighted input + weighted state
         val additionEntries = this.additions[step].forward(weightedState, weightedInput)
@@ -50,23 +50,23 @@ class SimpleRecurrentUnit internal constructor(
 
 
         // activation = activate(pre-activation)
-        val newState = this.activations[step].forward(preActivation, isTraining)
+        val newState = this.activations[step].forward(withinBatch, preActivation, isTraining)
 
         return newState
 
     }
 
-    override fun backwardStep(step : Int, chain: FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
+    override fun backwardStep(withinBatch : Int, step : Int, chain: FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
 
         // d new state / state pre-activation
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
-        val backwardStateWrtStatePreActivation = this.activations[step].backward(chain)
+        val backwardStateWrtStatePreActivation = this.activations[step].backward(withinBatch, chain)
 
         // d state weights * state(1) + input weights * input(2) + bias / d state(1) = state weights
-        val backwardStatePreActivationWrtPreviousState = this.previousStateWeighting.backwardStep(step, backwardStateWrtStatePreActivation)
+        val backwardStatePreActivationWrtPreviousState = this.previousStateWeighting.backwardStep(withinBatch, step, backwardStateWrtStatePreActivation)
 
         // d state weights * state(1) + input weights * input(2) + bias / d input(2) = input weights
-        val backwardStatePreActivationWrtInput = this.inputWeighting.backwardStep(step, backwardStateWrtStatePreActivation)
+        val backwardStatePreActivationWrtInput = this.inputWeighting.backwardStep(withinBatch, step, backwardStateWrtStatePreActivation)
 
         // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
         this.bias?.backwardStep(backwardStateWrtStatePreActivation)

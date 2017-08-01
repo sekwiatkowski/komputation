@@ -12,7 +12,7 @@ class CpuMaxPoolingLayer internal constructor(name : String? = null, private val
     private val maxRowIndices = IntArray(this.numberRows)
     private val forwardEntries = FloatArray(this.numberRows)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.numberColumns = input.numberColumns
 
@@ -24,7 +24,7 @@ class CpuMaxPoolingLayer internal constructor(name : String? = null, private val
 
     }
 
-    override fun backward(chain : FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 

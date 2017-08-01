@@ -80,6 +80,7 @@ fun main(args: Array<String>) {
             .test(
                 testInputs,
                 testTargets,
+                batchSize,
                 { prediction, target ->
 
                     findMaxIndex(prediction.entries) == findMaxIndex(target.entries)

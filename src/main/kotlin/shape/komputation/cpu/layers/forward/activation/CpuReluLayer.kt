@@ -9,7 +9,7 @@ class CpuReluLayer internal constructor(name : String? = null, private val numbe
     private val forwardEntries = FloatArray(this.numberEntries)
     private val backwardEntries = FloatArray(this.numberEntries)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         relu(input.entries, this.forwardEntries, input.numberRows * input.numberColumns)
 
@@ -19,7 +19,7 @@ class CpuReluLayer internal constructor(name : String? = null, private val numbe
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         backwardRelu(this.forwardEntries, chain.entries, this.backwardEntries, this.numberEntries)
 

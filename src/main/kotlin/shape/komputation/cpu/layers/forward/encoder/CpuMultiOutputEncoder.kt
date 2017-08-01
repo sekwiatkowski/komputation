@@ -5,7 +5,10 @@ import shape.komputation.cpu.functions.getStep
 import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.*
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
+import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuMultiOutputEncoder internal constructor(
@@ -26,7 +29,7 @@ class CpuMultiOutputEncoder internal constructor(
     private val inputStepEntries = FloatArray(this.inputDimension)
     private val inputStep = FloatMatrix(this.inputDimension, 1, inputStepEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         var state = floatZeroColumnVector(this.hiddenDimension)
 
@@ -36,7 +39,7 @@ class CpuMultiOutputEncoder internal constructor(
 
             getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
 
-            state = this.unit.forwardStep(indexStep, state, this.inputStep, isTraining)
+            state = this.unit.forwardStep(withinBatch, indexStep, state, this.inputStep, isTraining)
 
             setStep(this.forwardEntries, indexStep, state.entries, this.hiddenDimension)
 
@@ -46,7 +49,7 @@ class CpuMultiOutputEncoder internal constructor(
 
     }
 
-    override fun backward(incoming: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, incoming: FloatMatrix): FloatMatrix {
 
         val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
 
@@ -74,7 +77,7 @@ class CpuMultiOutputEncoder internal constructor(
 
                 }
 
-            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, floatColumnVector(*chainEntries))
+            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, floatColumnVector(*chainEntries))
 
             stateChain = backwardStatePreActivationWrtPreviousState
 

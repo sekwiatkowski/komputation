@@ -42,12 +42,14 @@ class CudaDropoutLayerTest {
         val input = FloatArray(numberEntries) { random.nextFloat() }
 
         val cpuLayer = dropoutLayer(numberEntries, Random(1), keepProbability).buildForCpu()
-        val cpuResult = cpuLayer.forward(floatColumnVector(*input), isTraining).entries
+
+        cpuLayer.acquire(1)
+
+        val cpuResult = cpuLayer.forward(0, floatColumnVector(*input), isTraining).entries
 
         val cudaContext = setUpCudaContext()
 
         val cudaLayer = dropoutLayer(numberEntries, Random(1), keepProbability).buildForCuda(cudaContext, cublasHandle())
-
         cudaLayer.acquire(1)
 
         val deviceInput = Pointer()

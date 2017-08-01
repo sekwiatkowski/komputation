@@ -3,9 +3,9 @@ package shape.komputation.cpu.functions
 import shape.komputation.matrix.xorShift
 import java.util.*
 
-fun seed(random : Random, result: IntArray, numberEntries: Int) {
+fun seed(random : Random, result: IntArray, size: Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0..size - 1) {
 
         result[index] = random.nextInt()
 
@@ -13,15 +13,27 @@ fun seed(random : Random, result: IntArray, numberEntries: Int) {
 
 }
 
-fun mask(seeds : IntArray, limit : Int, result : BooleanArray, numberEntries : Int) {
+fun nextInteger(seeds : IntArray, offset : Int, length: Int) {
 
-    for (index in 0..numberEntries-1) {
+    for(index in offset..offset + length - 1) {
 
-        val updatedSeed = xorShift(seeds[index])
+        seeds[index] = xorShift(seeds[index])
 
-        seeds[index] = updatedSeed
+    }
 
-        result[index] = updatedSeed > limit
+}
+
+fun mask(seeds : IntArray, limit : Int, result : BooleanArray, offset : Int, length: Int) {
+
+    var offsetIndex = offset
+    var index = 0
+
+    while(index < length) {
+
+        result[index] = seeds[index] > limit
+
+        offsetIndex++
+        index++
 
     }
 

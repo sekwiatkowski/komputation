@@ -1,15 +1,13 @@
-package shape.komputation.cpu.demos.mnist
+package shape.komputation.cuda.demos.mnist
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.findMaxIndex
+import shape.komputation.cpu.printLoss
+import shape.komputation.cuda.CudaNetwork
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
-import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
@@ -29,7 +27,6 @@ fun main(args: Array<String>) {
     val batchSize = 64
 
     val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()))
-    val (testInputs, testTargets) = MnistData.loadMnistTest(File(args.last()))
 
     val inputDimension = 784
     val hiddenDimension = 100
@@ -37,13 +34,14 @@ fun main(args: Array<String>) {
 
     val initialization = heInitialization(random)
     val optimizer = nesterov(0.01f, 0.9f)
-    val keepProbability = 0.8f
+    val keepProbability = 0.85f
 
-    val firstProjection = projectionLayer(
+    val hiddenLayer = denseLayer(
         inputDimension,
         hiddenDimension,
         initialization,
         initialization,
+        ActivationFunction.ReLU,
         optimizer
     )
 
@@ -56,35 +54,13 @@ fun main(args: Array<String>) {
         optimizer
     )
 
-    val network = Network(
+    val network = CudaNetwork(
         inputLayer(inputDimension),
-        firstProjection,
-        reluLayer(hiddenDimension),
+        hiddenLayer,
         dropoutLayer(hiddenDimension, random, keepProbability),
         outputLayer
     )
 
-    val afterEachIteration = { _ : Int, _ : Float ->
-
-        val accuracy = network
-            .test(
-                testInputs,
-                testTargets,
-                batchSize,
-                { prediction, target ->
-
-                    findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
-
-                }
-            )
-            .count { correct -> correct }
-            .toFloat()
-            .div(MnistData.numberTestExamples.toFloat())
-
-        println(accuracy)
-
-    }
-
-    network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
+    network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, printLoss)
 
 }

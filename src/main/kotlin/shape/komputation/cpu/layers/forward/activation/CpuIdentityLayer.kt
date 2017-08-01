@@ -4,11 +4,11 @@ import shape.komputation.matrix.FloatMatrix
 
 class CpuIdentityLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name) {
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) =
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) =
 
         input
 
-    override fun backward(chain : FloatMatrix) =
+    override fun backward(withinBatch : Int, chain : FloatMatrix) =
 
         chain
 

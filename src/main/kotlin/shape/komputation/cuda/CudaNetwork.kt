@@ -188,6 +188,27 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     }
 
+    fun test(
+        inputs: Array<Matrix>,
+        targets: Array<FloatMatrix>,
+        batchSize: Int,
+        isCorrect: (FloatMatrix, FloatMatrix) -> Boolean) {
+
+        val size = inputs.size
+
+        val batches = partitionIndices(size, batchSize)
+
+        val deviceCorrect = Pointer()
+        allocateDeviceIntMemory(deviceCorrect, size)
+
+        for ((indexBatch, batch) in batches.withIndex()) {
+
+            val result = this.forward(indexBatch, batch, batch.size, inputs, false)
+
+        }
+
+    }
+
     fun acquireLayerResources(maximumBatchSize: Int) {
 
         cublasCreate(this.cublasHandle)

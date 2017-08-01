@@ -3,7 +3,6 @@ package shape.komputation.cpu.layers.forward.activation
 import shape.komputation.cpu.functions.activation.differentiateTanh
 import shape.komputation.cpu.functions.activation.tanh
 import shape.komputation.cpu.functions.hadamard
-import shape.komputation.matrix.FloatMath
 import shape.komputation.matrix.FloatMatrix
 
 class CpuTanhLayer internal constructor(name: String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name) {
@@ -14,7 +13,7 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
     private var differentiation = FloatArray(this.numberEntries)
     private var hasCachedDifferentiation = false
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.hasCachedDifferentiation = false
 
@@ -25,7 +24,7 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
         return result
     }
 
-    override fun backward(chain : FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
         if (!this.hasCachedDifferentiation) {
 

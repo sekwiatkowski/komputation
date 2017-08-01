@@ -27,7 +27,7 @@ class CpuSingleInputDecoder internal constructor(
 
     private val decoding = FloatArray(this.outputDimension * this.numberSteps)
 
-    override fun forward(encoding: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, encoding: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // Use the encoder output as the first state
         var state = encoding
@@ -36,9 +36,9 @@ class CpuSingleInputDecoder internal constructor(
 
         for (indexStep in 0..this.numberSteps - 1) {
 
-            val newState = this.unit.forwardStep(indexStep, state, input, isTraining)
+            val newState = this.unit.forwardStep(withinBatch, indexStep, state, input, isTraining)
 
-            val output = this.forwardOutput(indexStep, newState, isTraining)
+            val output = this.forwardOutput(withinBatch, indexStep, newState, isTraining)
 
             setStep(this.decoding, indexStep, output.entries, this.outputDimension)
 
@@ -53,9 +53,9 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
-    private fun forwardOutput(indexStep: Int, newState: FloatMatrix, isTraining: Boolean): FloatMatrix {
+    private fun forwardOutput(withinBatch : Int, indexStep: Int, newState: FloatMatrix, isTraining: Boolean): FloatMatrix {
 
-        val weighting = this.weighting.forwardStep(indexStep, newState, isTraining)
+        val weighting = this.weighting.forwardStep(withinBatch, indexStep, newState, isTraining)
 
         val biased =
 
@@ -69,7 +69,7 @@ class CpuSingleInputDecoder internal constructor(
                 weighting
             }
 
-        val output = this.activations[indexStep].forward(biased, isTraining)
+        val output = this.activations[indexStep].forward(withinBatch, biased, isTraining)
 
         return output
 
@@ -78,7 +78,7 @@ class CpuSingleInputDecoder internal constructor(
     private val chainStepEntries = FloatArray(this.outputDimension)
 
     // Incoming gradient: d chain / d series prediction
-    override fun backward(chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch: Int, chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 
@@ -93,7 +93,7 @@ class CpuSingleInputDecoder internal constructor(
 
             getStep(chainEntries, indexStep, this.chainStepEntries, this.outputDimension)
 
-            val diffOutputPreActivationWrtState = backwardOutput(indexStep, this.chainStepEntries, diffStatePreActivationWrtInput?.entries)
+            val diffOutputPreActivationWrtState = backwardOutput(withinBatch, indexStep, this.chainStepEntries, diffStatePreActivationWrtInput?.entries)
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
@@ -108,7 +108,7 @@ class CpuSingleInputDecoder internal constructor(
 
             }
 
-            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
+            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, stateSum)
 
             diffStatePreActivationWrtInput = newDiffStatePreActivationWrtInput
             diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
@@ -126,7 +126,7 @@ class CpuSingleInputDecoder internal constructor(
 
     private val outputSum = FloatArray(this.outputDimension)
 
-    private fun backwardOutput(indexStep: Int, chainStep: FloatArray, diffStatePreActivationWrtInput: FloatArray?): FloatMatrix {
+    private fun backwardOutput(withinBatch: Int, indexStep: Int, chainStep: FloatArray, diffStatePreActivationWrtInput: FloatArray?): FloatMatrix {
 
         // The input gradient for step t+1 is added to the chain step t
         val addition = if (diffStatePreActivationWrtInput != null) {
@@ -144,11 +144,11 @@ class CpuSingleInputDecoder internal constructor(
 
         }
 
-        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(floatColumnVector(*addition))
+        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(withinBatch, floatColumnVector(*addition))
 
         this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
 
-        val diffOutputPreActivationWrtState = this.weighting.backwardStep(indexStep, diffOutputWrtOutputPreActivation)
+        val diffOutputPreActivationWrtState = this.weighting.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
 
         return diffOutputPreActivationWrtState
 

@@ -11,20 +11,20 @@ class CpuDenseLayer internal constructor(
     private val projection : CpuProjectionLayer,
     private val activation: CpuActivationLayer) : BaseCpuForwardLayer(name), Optimizable {
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val projected = this.projection.forward(input, isTraining)
+        val projected = this.projection.forward(withinBatch, input, isTraining)
 
-        val activated = this.activation.forward(projected, isTraining)
+        val activated = this.activation.forward(withinBatch, projected, isTraining)
 
         return activated
     }
 
-    override fun backward(chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
 
-        val diffChainWrtActivation = this.activation.backward(chain)
+        val diffChainWrtActivation = this.activation.backward(withinBatch, chain)
 
-        val diffActivationWrtProjection = this.projection.backward(diffChainWrtActivation)
+        val diffActivationWrtProjection = this.projection.backward(withinBatch, diffChainWrtActivation)
 
         return diffActivationWrtProjection
 

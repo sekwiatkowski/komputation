@@ -9,7 +9,7 @@ class CpuExponentiationLayer internal constructor(name : String? = null, private
     private val forwardEntries = FloatArray(this.numberEntries)
     private val backwardEntries = FloatArray(this.numberEntries)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         exponentiate(input.entries, this.forwardEntries, input.numberRows * input.numberColumns)
 
@@ -19,7 +19,7 @@ class CpuExponentiationLayer internal constructor(name : String? = null, private
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         hadamard(chain.entries, this.forwardEntries, this.backwardEntries, this.numberEntries)
 

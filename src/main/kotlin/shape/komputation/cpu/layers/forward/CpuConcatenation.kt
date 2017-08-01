@@ -19,13 +19,13 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
 
     private val heights = IntArray(this.numberNetworks)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         for (indexNetwork in (0..this.numberNetworks-1)) {
 
             val network = this.networks[indexNetwork]
 
-            val individualResult = network.forward(input, isTraining)
+            val individualResult = network.forward(withinBatch, input, isTraining)
 
             this.results[indexNetwork] = individualResult
 
@@ -40,14 +40,14 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
     }
 
     // Chain is the same for (1, 2) and (2, 1)
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         val chainSplit = splitRows(chain, this.heights)
 
         val firstNetwork = this.networks.first()
         val firstChainPart = chainSplit[0]
 
-        val resultWrtInput = firstNetwork.backward(firstChainPart)
+        val resultWrtInput = firstNetwork.backward(withinBatch, firstChainPart)
 
         val resultEntries = resultWrtInput.entries
 
@@ -55,7 +55,7 @@ class CpuConcatenation internal constructor(name : String? = null, inputDimensio
 
             val network = this.networks[indexNetwork]
 
-            val remainingResultWrtInput = network.backward(chainSplit[indexNetwork])
+            val remainingResultWrtInput = network.backward(withinBatch, chainSplit[indexNetwork])
 
             for (index in 0..resultEntries.size - 1) {
 

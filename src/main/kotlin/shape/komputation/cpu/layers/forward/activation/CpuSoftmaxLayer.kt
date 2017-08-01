@@ -8,21 +8,21 @@ class CpuSoftmaxLayer internal constructor(
     private val exponentiationLayer: CpuExponentiationLayer,
     private val normalizationLayer: CpuNormalizationLayer) : BaseCpuActivationLayer(name) {
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        val exponentiation = this.exponentiationLayer.forward(input, isTraining)
+        val exponentiation = this.exponentiationLayer.forward(withinBatch, input, isTraining)
 
-        val normalization = this.normalizationLayer.forward(exponentiation, isTraining)
+        val normalization = this.normalizationLayer.forward(withinBatch, exponentiation, isTraining)
 
         return normalization
 
     }
 
-    override fun backward(chain : FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
-        val backwardNormalization = this.normalizationLayer.backward(chain)
+        val backwardNormalization = this.normalizationLayer.backward(withinBatch, chain)
 
-        val backwardExponentiation = this.exponentiationLayer.backward(backwardNormalization)
+        val backwardExponentiation = this.exponentiationLayer.backward(withinBatch, backwardNormalization)
 
         return backwardExponentiation
 

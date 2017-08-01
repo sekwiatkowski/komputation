@@ -8,11 +8,9 @@ import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
-import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
 
 class CpuMultiInputDecoder internal constructor(
@@ -32,7 +30,7 @@ class CpuMultiInputDecoder internal constructor(
     private val inputStepEntries = FloatArray(this.inputDimension)
     private val inputStep = FloatMatrix(this.inputDimension, 1, this.inputStepEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // Start with a zero state
         var state = floatZeroColumnVector(this.hiddenDimension)
@@ -43,9 +41,9 @@ class CpuMultiInputDecoder internal constructor(
             getStep(input.entries, indexStep, this.inputStepEntries, this.inputDimension)
 
             // Compute the new state
-            state = this.unit.forwardStep(indexStep, state, inputStep, isTraining)
+            state = this.unit.forwardStep(withinBatch, indexStep, state, inputStep, isTraining)
 
-            val output = this.forwardOutput(indexStep, state, isTraining)
+            val output = this.forwardOutput(withinBatch, indexStep, state, isTraining)
 
             // Store the n-th output
             setStep(this.forwardEntries, indexStep, output.entries, this.outputDimension)
@@ -56,9 +54,9 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
-    private fun forwardOutput(indexStep: Int, state: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    private fun forwardOutput(withinBatch : Int, indexStep: Int, state: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val weighting = this.weighting.forwardStep(indexStep, state, isTraining)
+        val weighting = this.weighting.forwardStep(withinBatch, indexStep, state, isTraining)
 
         val biased =
 
@@ -72,7 +70,7 @@ class CpuMultiInputDecoder internal constructor(
                 weighting
             }
 
-        val output = this.activations[indexStep].forward(biased, isTraining)
+        val output = this.activations[indexStep].forward(withinBatch, biased, isTraining)
 
         return output
 
@@ -82,7 +80,7 @@ class CpuMultiInputDecoder internal constructor(
     private val stateSumEntries = FloatArray(this.hiddenDimension)
 
     // Incoming gradient: d chain / d series prediction
-    override fun backward(chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
 
@@ -93,7 +91,7 @@ class CpuMultiInputDecoder internal constructor(
             getStep(chainEntries, indexStep, this.chainStepEntries, this.outputDimension)
             val chainStep = floatColumnVector(*this.chainStepEntries)
 
-            val diffOutputPreActivationWrtState = this.backwardOutput(indexStep, chainStep)
+            val diffOutputPreActivationWrtState = this.backwardOutput(withinBatch, indexStep, chainStep)
 
             val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
 
@@ -108,7 +106,7 @@ class CpuMultiInputDecoder internal constructor(
 
             }
 
-            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(indexStep, stateSum)
+            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, stateSum)
 
             setStep(this.backwardEntries, indexStep, newDiffStatePreActivationWrtInput.entries, this.inputDimension)
             diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
@@ -124,11 +122,11 @@ class CpuMultiInputDecoder internal constructor(
 
     }
 
-    private fun backwardOutput(indexStep: Int, chainStep: FloatMatrix): FloatMatrix {
+    private fun backwardOutput(withinBatch : Int, indexStep: Int, chainStep: FloatMatrix): FloatMatrix {
 
-        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(chainStep)
+        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(withinBatch, chainStep)
 
-        val diffOutputPreActivationWrtState = this.weighting.backwardStep(indexStep, diffOutputWrtOutputPreActivation)
+        val diffOutputPreActivationWrtState = this.weighting.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
 
         this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
 

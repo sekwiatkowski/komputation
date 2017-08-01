@@ -2,6 +2,7 @@ package shape.komputation.cpu
 
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.Resourceful
 import shape.komputation.loss.CpuLossFunctionInstruction
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
@@ -19,13 +20,13 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(input : Matrix, isTraining : Boolean) : FloatMatrix {
+    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : FloatMatrix {
 
         var output = this.entryPoint.forward(input)
 
         for (layer in this.layers) {
 
-            output = layer.forward(output, isTraining)
+            output = layer.forward(withinBatch, output, isTraining)
 
         }
 
@@ -33,7 +34,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     }
 
-    fun backward(lossGradient : FloatMatrix): FloatMatrix {
+    fun backward(withinBatch: Int, lossGradient : FloatMatrix): FloatMatrix {
 
         var chain = lossGradient
 
@@ -41,7 +42,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
             val layer = this.layers[indexLayer]
 
-            chain = layer.backward(chain)
+            chain = layer.backward(withinBatch, chain)
 
         }
 
@@ -64,14 +65,22 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
         targets: Array<FloatMatrix>,
         loss: CpuLossFunctionInstruction,
         numberIterations : Int,
-        batchSize : Int,
+        maximumBatchSize: Int,
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): Long {
 
         val lossFunction = loss.buildForCpu()
 
         val numberExamples = inputs.size
 
-        val batches = partitionIndices(numberExamples, batchSize)
+        val batches = partitionIndices(numberExamples, maximumBatchSize)
+
+        this.acquireLayerResources(maximumBatchSize)
+
+        if (lossFunction is Resourceful) {
+
+            lossFunction.acquire(maximumBatchSize)
+
+        }
 
         val start = System.currentTimeMillis()
 
@@ -83,18 +92,18 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
                 var batchLoss = 0.0f
 
-                for (indexExample in batch) {
+                for ((withinBatch, indexExample) in batch.withIndex()) {
 
                     val input = inputs[indexExample]
                     val target = targets[indexExample]
 
-                    val prediction = this.forward(input, true)
+                    val prediction = this.forward(withinBatch, input, true)
 
                     val instanceLoss = lossFunction.forward(prediction, target)
 
                     val lossGradient = lossFunction.backward(prediction, target)
 
-                    this.backward(lossGradient)
+                    this.backward(withinBatch, lossGradient)
 
                     batchLoss += instanceLoss
 
@@ -120,6 +129,8 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         val time = stop - start
 
+        this.releaseLayerResources()
+
         return time
 
     }
@@ -127,24 +138,71 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
     fun test(
         inputs: Array<Matrix>,
         targets: Array<FloatMatrix>,
+        batchSize: Int,
         isCorrect: (FloatMatrix, FloatMatrix) -> Boolean) : BooleanArray {
 
-        val size = inputs.size
+        val numberInstances = inputs.size
 
-        val results = BooleanArray(size)
+        val batches = partitionIndices(batchSize, numberInstances)
 
-        for(index in 0..size -1) {
+        val results = BooleanArray(numberInstances)
 
-            val input = inputs[index]
-            val target = targets[index]
+        for((withinBatch, batch) in batches.withIndex()) {
 
-            val prediction = this.forward(input, false)
+            for (index in batch) {
 
-            results[index] = isCorrect(prediction, target)
+                val input = inputs[index]
+                val target = targets[index]
+
+                val prediction = this.forward(withinBatch, input, false)
+
+                results[index] = isCorrect(prediction, target)
+
+            }
 
         }
 
         return results
+
+    }
+
+    fun acquireLayerResources(maximumBatchSize: Int) {
+
+        if (this.entryPoint is Resourceful) {
+
+            this.entryPoint.acquire(maximumBatchSize)
+
+        }
+
+        for (layer in this.layers) {
+
+            if (layer is Resourceful) {
+
+                layer.acquire(maximumBatchSize)
+
+            }
+
+        }
+
+    }
+
+    fun releaseLayerResources() {
+
+        for (layer in this.layers) {
+
+            if (layer is Resourceful) {
+
+                layer.release()
+
+            }
+
+        }
+
+        if (this.entryPoint is Resourceful) {
+
+            this.entryPoint.release()
+
+        }
 
     }
 

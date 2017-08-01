@@ -9,7 +9,7 @@ class CpuTranspositionLayer internal constructor(name : String? = null, numberEn
     private val forwardEntries = FloatArray(numberEntries)
     private val backwardEntries = FloatArray(numberEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         transpose(input.numberRows, input.numberColumns, input.entries, this.forwardEntries)
 
@@ -17,7 +17,7 @@ class CpuTranspositionLayer internal constructor(name : String? = null, numberEn
 
     }
 
-    override fun backward(chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
 
         transpose(chain.numberRows, chain.numberColumns, chain.entries, this.backwardEntries)
 

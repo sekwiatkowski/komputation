@@ -141,8 +141,8 @@ class CudaSoftmaxLayerTest {
         val softmaxLayer = softmaxLayer(numberRows, numberColumns)
 
         val cpuSoftmaxLayer = softmaxLayer.buildForCpu()
-        cpuSoftmaxLayer.forward(FloatMatrix(numberRows, numberColumns, input), true)
-        val cpuBackward = cpuSoftmaxLayer.backward(FloatMatrix(numberRows, numberColumns, chain))
+        cpuSoftmaxLayer.forward(1, FloatMatrix(numberRows, numberColumns, input), true)
+        val cpuBackward = cpuSoftmaxLayer.backward(1, FloatMatrix(numberRows, numberColumns, chain))
         val expected = cpuBackward.entries
 
         val cudaSoftmaxLayer = softmaxLayer.buildForCuda(cudaContext, cublasHandle())

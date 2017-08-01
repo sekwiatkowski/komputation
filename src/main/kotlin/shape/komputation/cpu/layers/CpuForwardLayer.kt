@@ -4,8 +4,8 @@ import shape.komputation.matrix.FloatMatrix
 
 interface CpuForwardLayer {
 
-    fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix
+    fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix
 
-    fun backward(chain : FloatMatrix) : FloatMatrix
+    fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix
 
 }

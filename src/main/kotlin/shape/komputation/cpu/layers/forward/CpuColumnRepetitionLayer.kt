@@ -10,7 +10,7 @@ class CpuColumnRepetitionLayer internal constructor(name : String? = null, priva
     private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
     private val backwardEntries = FloatArray(this.numberRows)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         repeatColumn(input.entries, this.forwardEntries, this.numberColumns)
 
@@ -18,7 +18,7 @@ class CpuColumnRepetitionLayer internal constructor(name : String? = null, priva
 
     }
 
-    override fun backward(chain : FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
         val chainEntries = chain.entries
         val numberChainRows = chain.numberRows

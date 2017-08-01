@@ -21,15 +21,15 @@ class SeriesWeighting internal constructor(
 
     private val numberWeightEntries = this.weights.size
 
-    fun forwardStep(step : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    fun forwardStep(withinBatch : Int, step : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        return this.weightings[step].forward(input, isTraining)
+        return this.weightings[step].forward(withinBatch, input, isTraining)
 
     }
 
-    fun backwardStep(step: Int, chain: FloatMatrix) : FloatMatrix {
+    fun backwardStep(withinBatch : Int, step: Int, chain: FloatMatrix) : FloatMatrix {
 
-        val backward = this.weightings[step].backward(chain)
+        val backward = this.weightings[step].backward(withinBatch, chain)
 
         return backward
 

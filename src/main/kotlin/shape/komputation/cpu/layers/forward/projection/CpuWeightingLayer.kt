@@ -33,7 +33,7 @@ class CpuWeightingLayer internal constructor(
 
     }
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
         this.numberInputRows = input.numberRows
         this.numberInputColumns = input.numberColumns
@@ -52,7 +52,7 @@ class CpuWeightingLayer internal constructor(
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         val chainEntries = chain.entries
         val numberChainRows = chain.numberRows

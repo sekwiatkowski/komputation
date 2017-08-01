@@ -4,9 +4,9 @@ import shape.komputation.matrix.FloatMatrix
 
 abstract class RecurrentUnit (val name : String?) {
 
-    abstract fun forwardStep(step : Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean) : FloatMatrix
+    abstract fun forwardStep(withinBatch : Int, step : Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean) : FloatMatrix
 
-    abstract fun backwardStep(step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix>
+    abstract fun backwardStep(withinBatch : Int, step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix>
 
     abstract fun backwardSeries()
 

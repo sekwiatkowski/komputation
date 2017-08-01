@@ -17,7 +17,7 @@ class CpuNormalizationLayer internal constructor(name : String? = null, private 
     private val sumEntries = FloatArray(this.numberColumns)
     private val backwardEntries = FloatArray(this.numberRows * this.numberColumns)
 
-    override fun forward(input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         normalize(this.numberRows, this.numberColumns, input.entries, this.sumEntries, this.forwardEntries)
 
@@ -27,7 +27,7 @@ class CpuNormalizationLayer internal constructor(name : String? = null, private 
 
     }
 
-    override fun backward(chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         backwardNormalization(this.numberRows, this.numberColumns, chain.entries, this.forwardEntries, this.sumEntries, this.backwardEntries)
 

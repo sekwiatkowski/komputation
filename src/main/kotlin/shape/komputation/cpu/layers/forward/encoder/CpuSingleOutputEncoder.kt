@@ -24,7 +24,7 @@ class CpuSingleOutputEncoder internal constructor(
     private val inputStepEntries = FloatArray(this.inputDimension)
     private val inputStep = FloatMatrix(this.inputDimension, 1, this.inputStepEntries)
 
-    override fun forward(input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         var currentState = floatZeroColumnVector(this.hiddenDimension)
 
@@ -34,7 +34,7 @@ class CpuSingleOutputEncoder internal constructor(
 
             getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
 
-            currentState = this.unit.forwardStep(indexStep, currentState, this.inputStep, isTraining)
+            currentState = this.unit.forwardStep(withinBatch, indexStep, currentState, this.inputStep, isTraining)
 
         }
 
@@ -42,7 +42,7 @@ class CpuSingleOutputEncoder internal constructor(
 
     }
 
-    override fun backward(incoming: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch: Int, incoming: FloatMatrix): FloatMatrix {
 
         val seriesBackwardWrtInput = FloatArray(this.inputDimension * this.numberSteps)
 
@@ -50,7 +50,7 @@ class CpuSingleOutputEncoder internal constructor(
 
         for (indexStep in this.startAtTheEnd) {
 
-            val (diffWrtPreviousState, diffWrtInput) = this.unit.backwardStep(indexStep, stateChain)
+            val (diffWrtPreviousState, diffWrtInput) = this.unit.backwardStep(withinBatch, indexStep, stateChain)
 
             stateChain = diffWrtPreviousState
 
