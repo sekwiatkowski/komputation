@@ -5,18 +5,16 @@ template <int blockSize>
 __global__ void normalizationKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* input, float* sums, float* result)
 {
 
-    int startIndexWithinColumn = threadIdx.x * numberIterations;
-
     extern __shared__ float sharedData[];
 
-    int indexColumn = blockIdx.y;
-    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
-
     int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
+
+    int startIndexWithinColumn = threadIdx.x * numberIterations;
+    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
     int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
 
     int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
-
     if(indexInstance < batchSize) {
 
         if(startIndexWithinColumn < numberRows) {
@@ -25,7 +23,7 @@ __global__ void normalizationKernel (int batchSize, int numberRows, int numberEn
 
             for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
 
-                sum  += input[indexEntry];
+                sum += input[indexEntry];
 
             }
 
@@ -42,9 +40,13 @@ __global__ void normalizationKernel (int batchSize, int numberRows, int numberEn
 
         reduce<blockSize>(threadIdx.x, sharedData, 0);
 
-        for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+        if(startIndexWithinColumn < numberRows) {
 
-            result[indexEntry] = input[indexEntry] / sharedData[0];
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                result[indexEntry] = input[indexEntry] / sharedData[0];
+
+            }
 
         }
 

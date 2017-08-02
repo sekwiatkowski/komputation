@@ -44,8 +44,6 @@ __global__ void logisticLossKernel (int batchSize, int numberRows, int numberEnt
 
     extern __shared__ float sharedData[];
 
-
-
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -62,7 +60,7 @@ __global__ void logisticLossKernel (int batchSize, int numberRows, int numberEnt
 
             for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
 
-                sum  += targets[indexEntry] * predictions[indexEntry];
+                sum += targets[indexEntry] * predictions[indexEntry];
 
             }
 
@@ -81,7 +79,7 @@ __global__ void logisticLossKernel (int batchSize, int numberRows, int numberEnt
 
         if(threadIdx.x == 0) {
 
-            result[indexColumnInBatch] = sharedData[0];
+            result[indexColumnInBatch] = -logf(sharedData[0]);
 
         }
 

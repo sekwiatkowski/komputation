@@ -36,7 +36,7 @@ class CpuDropoutLayer internal constructor(
 
         this.entrySeeds = IntArray(maximumBatchSize * this.numberEntries)
 
-        seed(this.random, this.entrySeeds, this.numberEntries)
+        seed(this.random, this.entrySeeds, maximumBatchSize * this.numberEntries)
 
     }
 

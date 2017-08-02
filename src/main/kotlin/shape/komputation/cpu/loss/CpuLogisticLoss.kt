@@ -19,7 +19,7 @@ class CpuLogisticLoss : CpuLossFunction {
 
             if (target == 1.0f) {
 
-                loss -= FloatMath.log(predictionEntries[index])
+                loss += -FloatMath.log(predictionEntries[index])
 
             }
 

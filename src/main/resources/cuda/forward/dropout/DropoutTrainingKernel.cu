@@ -14,12 +14,11 @@ __device__  int xorShift(int seed) {
 
 /*
     dropout probability is 1 - keep probability and should be less than 1.
-    seed + 2147483648.0: [0, 2^32/2 + 2^32/2-1 = 4294967295]
-    (seed + 2147483648.0) / 4294967295.0: [0 to 1]
-    (seed + 2147483648.0) / 4294967295.0 - dropout probability): (0 to 1]
-    ceilf(seed + 2147483648.0) / 4294967295.0 - dropout probability): or or 1
+    Adding 2147483648 ensures that the result is non-negative (from 0 to 2 * upper integer bound).
+    Division by 4294967295.0 returns a percentage (from 0 to 1).
+    Subtraction by the probability dropout probability returns either a positive or a negative number.
+    Drop out if the number is negative.
 */
-
 __device__ float generateMask(float seed, float dropoutProbability) {
 
     return ceilf((seed + 2147483648.0) / 4294967295.0 - dropoutProbability);
@@ -27,10 +26,17 @@ __device__ float generateMask(float seed, float dropoutProbability) {
 }
 
 extern "C"
-__global__ void dropoutTrainingKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float dropoutProbability, float* input, int* seeds, float* masks, float* result)
+__global__ void dropoutTrainingKernel (
+    int batchSize,
+    int numberEntriesPerInstance,
+    int numberIterations,
+    float dropoutProbability,
+    float* input,
+    int* seeds,
+    float* masks,
+    float* result)
 {
 
-    // What's the first entry index within the instance that this thread should operate on?
     int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
     // Continue if this index is smaller than the dimension of the instance.

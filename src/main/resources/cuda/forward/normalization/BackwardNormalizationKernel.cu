@@ -49,9 +49,13 @@ __global__ void backwardNormalizationKernel (
 
         reduce<blockSize>(threadIdx.x, sharedData, 0);
 
-        for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+        if(startIndexWithinColumn < numberRows) {
 
-            result[indexEntry] = (sharedData[0] + chain[indexEntry]) / sums[indexColumnInBatch];
+            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                result[indexEntry] = (sharedData[0] + chain[indexEntry]) / sums[indexColumnInBatch];
+
+            }
 
         }
 

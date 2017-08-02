@@ -6,10 +6,8 @@ import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
-import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
@@ -37,13 +35,14 @@ fun main(args: Array<String>) {
 
     val initialization = heInitialization(random)
     val optimizer = nesterov(0.01f, 0.9f)
-    val keepProbability = 0.8f
+    val keepProbability = 0.85f
 
-    val firstProjection = projectionLayer(
+    val hiddenLayer = denseLayer(
         inputDimension,
         hiddenDimension,
         initialization,
         initialization,
+        ActivationFunction.ReLU,
         optimizer
     )
 
@@ -58,8 +57,7 @@ fun main(args: Array<String>) {
 
     val network = Network(
         inputLayer(inputDimension),
-        firstProjection,
-        reluLayer(hiddenDimension),
+        hiddenLayer,
         dropoutLayer(hiddenDimension, random, keepProbability),
         outputLayer
     )

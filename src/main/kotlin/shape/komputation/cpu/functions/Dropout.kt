@@ -30,7 +30,7 @@ fun mask(seeds : IntArray, limit : Int, result : BooleanArray, offset : Int, len
 
     while(index < length) {
 
-        result[index] = seeds[index] > limit
+        result[index] = seeds[offsetIndex] > limit
 
         offsetIndex++
         index++

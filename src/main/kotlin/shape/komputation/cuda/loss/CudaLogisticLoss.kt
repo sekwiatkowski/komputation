@@ -7,7 +7,6 @@ import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
-import shape.komputation.matrix.FloatMath
 
 // int length, float *predictions, float *targets, float *result
 class CudaLogisticLoss(
@@ -103,16 +102,9 @@ class CudaLogisticLoss(
     override fun accessAccumulation(): Float {
 
         val sums = getFloatArray(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
+        val loss = sums.sum()
 
-        var loss = 1.0f;
-
-        for(sum in sums) {
-
-            loss *= sum
-
-        }
-
-        return -FloatMath.log(loss)
+        return loss
 
     }
 
