@@ -11,38 +11,32 @@ import shape.komputation.optimization.Optimizable
 
 class CpuBiasLayer internal constructor(
     name : String? = null,
+    private val numberRows : Int,
+    private val numberColumns : Int,
     private val bias : FloatArray,
     private val biasAccumulator: DenseAccumulator,
     private val biasUpdateRule: UpdateRule? = null) : BaseCpuForwardLayer(name), Optimizable {
 
-    private val numberBiasEntries = bias.size
+    private val numberBiasEntries = this.bias.size
     private val backwardResult = FloatArray(this.numberBiasEntries)
 
-    private var numberInputRows = -1
-    private var numberInputColumns = -1
-    private var numberInputEntries = -1
+    private val numberEntries = this.numberRows * this.numberColumns
+
+    private val result = FloatArray(this.numberEntries)
 
     override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        this.numberInputRows = input.numberRows
-        this.numberInputColumns = input.numberColumns
-        this.numberInputEntries = numberInputRows * numberInputColumns
+        addBias(input.entries, this.numberRows, this.numberColumns, this.numberEntries, this.bias, this.result)
 
-        val result = FloatArray(this.numberInputEntries)
-
-        addBias(input.entries, this.numberInputRows, this.numberInputEntries, this.bias, result)
-
-        return FloatMatrix(this.numberInputRows, this.numberInputColumns, result)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.result)
 
     }
 
     override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         val chainEntries = chain.entries
-        val numberChainRows = chain.numberRows
-        val numberChainColumns = chain.numberColumns
 
-        backwardProjectionWrtBias(this.numberBiasEntries, chainEntries, numberChainRows, numberChainColumns, this.backwardResult)
+        backwardProjectionWrtBias(this.numberBiasEntries, chainEntries, this.numberRows, this.numberColumns, this.backwardResult)
 
         this.biasAccumulator.accumulate(this.backwardResult)
 

@@ -19,9 +19,9 @@ import java.util.*
 fun main(args: Array<String>) {
 
     val random = Random(1)
+    val numberExamples = 10_000
     val seriesLength = 6
     val numberCategories = 10
-    val numberExamples = 10_000
     val hiddenDimension = 30
     val numberIterations = 100
     val batchSize = 1
@@ -33,12 +33,12 @@ fun main(args: Array<String>) {
     val gaussianInitialization = gaussianInitialization(random, 0.0f, 0.001f)
     val zeroInitialization = zeroInitialization()
 
-    val optimizationStrategy = stochasticGradientDescent(0.001f)
+    val optimizationStrategy = stochasticGradientDescent(0.0005f)
 
     val forwardEncoderUnit = simpleRecurrentUnit(
         seriesLength,
-        hiddenDimension,
         numberCategories,
+        hiddenDimension,
         gaussianInitialization,
         identityInitialization,
         zeroInitialization,
@@ -48,8 +48,8 @@ fun main(args: Array<String>) {
 
     val backwardEncoderUnit = simpleRecurrentUnit(
         seriesLength,
-        hiddenDimension,
         numberCategories,
+        hiddenDimension,
         gaussianInitialization,
         identityInitialization,
         zeroInitialization,
@@ -59,8 +59,8 @@ fun main(args: Array<String>) {
 
     val decoderUnit = simpleRecurrentUnit(
         seriesLength,
-        2 * hiddenDimension,
         numberCategories,
+        2 * hiddenDimension,
         identityInitialization,
         gaussianInitialization,
         zeroInitialization,
@@ -71,6 +71,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(seriesLength),
         concatenation(
+            1,
             seriesLength,
             singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
             singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)

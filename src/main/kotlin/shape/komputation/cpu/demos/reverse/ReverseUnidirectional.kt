@@ -36,8 +36,8 @@ fun main(args: Array<String>) {
 
     val encoderUnit = simpleRecurrentUnit(
         seriesLength,
-        hiddenDimension,
         numberCategories,
+        hiddenDimension,
         gaussianInitialization,
         identityInitialization,
         zeroInitialization,
@@ -47,8 +47,8 @@ fun main(args: Array<String>) {
 
     val decoderUnit = simpleRecurrentUnit(
         seriesLength,
-        hiddenDimension,
         numberCategories,
+        hiddenDimension,
         identityInitialization,
         gaussianInitialization,
         zeroInitialization,

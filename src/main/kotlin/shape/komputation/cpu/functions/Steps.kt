@@ -6,7 +6,7 @@ fun getStep(entries : FloatArray, indexStep: Int, result : FloatArray, numberRow
 
 }
 
-fun setStep(entries: FloatArray, indexStep: Int, step : FloatArray, numberRows : Int) {
+fun setStep(step: FloatArray, indexStep: Int, entries: FloatArray, numberRows: Int) {
 
     System.arraycopy(step, 0, entries, indexStep * numberRows, numberRows)
 

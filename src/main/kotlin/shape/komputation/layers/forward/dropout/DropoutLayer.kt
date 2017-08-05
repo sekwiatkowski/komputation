@@ -11,19 +11,20 @@ import java.util.*
 
 class DropoutLayer(
     private val name : String?,
-    private val numberEntries : Int,
+    private val numberRows : Int,
+    private val numberColumns : Int,
     private val random : Random,
     private val keepProbability : Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuDropoutLayer(this.name, this.numberEntries, this.random, this.keepProbability)
+        CpuDropoutLayer(this.name, this.numberRows, this.numberColumns, this.random, this.keepProbability)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaDropoutLayer {
 
         return CudaDropoutLayer(
             this.name,
-            this.numberEntries,
+            this.numberRows * this.numberColumns,
             this.random,
             this.keepProbability,
             { context.createKernel(ForwardKernels.dropoutTraining()) },
@@ -38,10 +39,10 @@ class DropoutLayer(
 
 }
 
-fun dropoutLayer(numberEntries: Int, random: Random, keepProbability: Float) =
+fun dropoutLayer(random: Random, keepProbability: Float, numberRows: Int, numberColumns: Int = 1) =
 
-    dropoutLayer(null, numberEntries, random, keepProbability)
+    dropoutLayer(null, numberColumns, keepProbability, random, numberRows)
 
-fun dropoutLayer(name: String?, numberEntries: Int, random: Random, keepProbability: Float) =
+fun dropoutLayer(name: String?, numberColumns: Int, keepProbability: Float, random: Random, numberRows: Int) =
 
-    DropoutLayer(name, numberEntries, random, keepProbability)
+    DropoutLayer(name, numberRows, numberColumns, random, keepProbability)

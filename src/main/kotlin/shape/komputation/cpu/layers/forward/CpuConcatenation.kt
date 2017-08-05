@@ -10,32 +10,46 @@ import shape.komputation.matrix.EMPTY_FLOAT_MATRIX
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
 
-class CpuConcatenation internal constructor(name : String? = null, inputDimension : Int, continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseCpuForwardLayer(name), Optimizable {
+class CpuConcatenation internal constructor(
+    name : String? = null,
+    private val numberInputRows : Int,
+    private val numberInputColumns : Int,
+    continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseCpuForwardLayer(name), Optimizable {
 
-    private val networks = continuations.map { layers -> Network(inputLayer(inputDimension), *layers) }
+    private val networks = continuations.map { layers -> Network(inputLayer(this.numberInputRows, this.numberInputColumns), *layers) }
     private val numberNetworks = this.networks.size
 
-    private val results = Array(this.numberNetworks) { EMPTY_FLOAT_MATRIX }
-
-    private val heights = IntArray(this.numberNetworks)
+    private val results = Array(this.numberNetworks) { FloatArray(0) }
+    private val heights = IntArray(this.numberNetworks) { -1 }
 
     override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+
+        var numberColumns = -1
 
         for (indexNetwork in (0..this.numberNetworks-1)) {
 
             val network = this.networks[indexNetwork]
 
             val individualResult = network.forward(withinBatch, input, isTraining)
+            val individualResultEntries = individualResult.entries
 
-            this.results[indexNetwork] = individualResult
-
+            this.results[indexNetwork] = individualResultEntries
             this.heights[indexNetwork] = individualResult.numberRows
+
+            numberColumns = individualResult.numberColumns
 
         }
 
-        val stackedResults = stackRows(this.results.first().numberColumns, *this.results)
+        var totalNumberRows = 0
+        for (height in heights) {
+            totalNumberRows += height
+        }
 
-        return stackedResults
+        val stacked = FloatArray(numberColumns * totalNumberRows)
+
+        stackRows(this.heights, totalNumberRows, numberColumns, stacked, *this.results)
+
+        return FloatMatrix(totalNumberRows, numberColumns, stacked)
 
     }
 

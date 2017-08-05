@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
 
     val numberSteps = 4
     val exclusiveUpperLimit = 10
+    val inputDimension = 1
     val hiddenDimension = 4
     val outputDimension = 1
     val numberExamples = IntMath.pow(exclusiveUpperLimit, numberSteps)
@@ -28,9 +29,9 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val previousStateWeightInitializationStrategy = identityInitialization()
-    val inputWeightInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)
-    val biasInitializationStrategy = zeroInitialization()
+    val identityInitialization = identityInitialization()
+    val guassianInitialization = gaussianInitialization(random, 0.0f, 0.001f)
+    val zeroInitialization = zeroInitialization()
 
     val optimizationStrategy = stochasticGradientDescent(0.001f)
 
@@ -40,21 +41,19 @@ fun main(args: Array<String>) {
 
     val encoderUnit = simpleRecurrentUnit(
         numberSteps,
+        inputDimension,
         hiddenDimension,
-        1,
-        inputWeightInitializationStrategy,
-        previousStateWeightInitializationStrategy,
-        biasInitializationStrategy,
+        guassianInitialization,
+        identityInitialization,
+        zeroInitialization,
         ActivationFunction.Identity,
         optimizationStrategy
     )
 
-    val encoder = multiOutputEncoder(encoderUnit, numberSteps, 1, hiddenDimension)
-
     val network = Network(
         inputLayer(numberSteps),
-        encoder,
-        projectionLayer(hiddenDimension, outputDimension, inputWeightInitializationStrategy, inputWeightInitializationStrategy, optimizationStrategy)
+        multiOutputEncoder(encoderUnit, numberSteps, inputDimension, hiddenDimension),
+        projectionLayer(hiddenDimension, numberSteps, outputDimension, guassianInitialization, guassianInitialization, optimizationStrategy)
     )
 
     network.train(

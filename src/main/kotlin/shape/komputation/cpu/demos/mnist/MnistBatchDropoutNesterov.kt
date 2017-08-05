@@ -9,6 +9,7 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.loss.logisticLoss
+import shape.komputation.optimization.historical.momentum
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
@@ -34,7 +35,7 @@ fun main(args: Array<String>) {
     val numberCategories = MnistData.numberCategories
 
     val initialization = heInitialization(random)
-    val optimizer = nesterov(0.01f, 0.9f)
+    val optimizer = momentum(0.01f, 0.9f)
     val keepProbability = 0.85f
 
     val hiddenLayer = denseLayer(
@@ -58,7 +59,7 @@ fun main(args: Array<String>) {
     val network = Network(
         inputLayer(inputDimension),
         hiddenLayer,
-        dropoutLayer(hiddenDimension, random, keepProbability),
+        dropoutLayer(random, keepProbability, hiddenDimension),
         outputLayer
     )
 

@@ -16,7 +16,8 @@ import java.util.*
 
 fun main(args: Array<String>) {
 
-    val inputDimension = 9
+    val numberRows = 3
+    val numberColumns = 3
 
     val filterWidth = 3
     val filterHeight = 1
@@ -29,13 +30,16 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.01f)
 
+    val maximumBatchSize = 1
+
     val network = Network(
-        inputLayer(inputDimension),
-        convolutionalLayer(numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
-        maxPoolingLayer(numberFilters),
+        inputLayer(numberRows),
+        convolutionalLayer(numberRows, numberColumns, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
+        maxPoolingLayer(numberFilters, 3),
         reluLayer(numberFilters),
         denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
     )
 
-    network.train(LinesData.inputs, LinesData.targets, logisticLoss(outputDimension), 30_000, 1, printLoss)
+    network.train(LinesData.inputs, LinesData.targets, logisticLoss(outputDimension), 30_000, maximumBatchSize, printLoss)
+
 }

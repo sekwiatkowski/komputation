@@ -37,8 +37,8 @@ fun main(args: Array<String>) {
 
     val encoderUnit = minimalGatedUnit(
         length,
-        hiddenDimension,
         inputDimension,
+        hiddenDimension,
         identityInitializationStrategy,
         gaussianInitializationStrategy,
         zeroInitializationStrategy,

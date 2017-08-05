@@ -12,6 +12,7 @@ import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.momentum
+import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
 
@@ -37,13 +38,14 @@ fun main(args: Array<String>) {
 
     val initialization = gaussianInitialization(random, 0.0f, 0.1f)
     val optimizer = momentum(0.005f, 0.1f)
-    val keepProbability = 0.85f
+    val keepProbability = 0.8f
 
-    val firstProjection = projectionLayer(
+    val hiddenLayer = denseLayer(
         inputDimension,
         hiddenDimension,
         initialization,
         initialization,
+        ActivationFunction.ReLU,
         optimizer
     )
 
@@ -58,9 +60,8 @@ fun main(args: Array<String>) {
 
     val network = Network(
         inputLayer(inputDimension),
-        firstProjection,
-        dropoutLayer(hiddenDimension, random, keepProbability),
-        reluLayer(hiddenDimension),
+        hiddenLayer,
+        dropoutLayer(random, keepProbability, hiddenDimension),
         outputLayer
     )
 

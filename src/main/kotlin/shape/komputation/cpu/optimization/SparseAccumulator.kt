@@ -13,13 +13,11 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
     private var lastNewId = -1
 
-    fun accumulate(ids: IntArray, gradient: FloatArray) {
-
-        val numberIds = ids.size
+    fun accumulate(ids: IntArray, lastIndex : Int, gradient: FloatArray) {
 
         var start = 0
 
-        for (indexId in 0..numberIds-1) {
+        for (indexId in 0..lastIndex) {
 
             val id = ids[indexId]
 

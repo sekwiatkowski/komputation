@@ -8,9 +8,9 @@ import shape.komputation.matrix.FloatMath
 
 class CudaExponentiationLayerTest : BaseCudaEntrywiseActivationLayerTest() {
 
-    override fun createLayer(context: CudaContext, numberEntries: Int) =
+    override fun createLayer(context: CudaContext, numberRows: Int) =
 
-        exponentiationLayer(numberEntries).buildForCuda(context, cublasHandle())
+        exponentiationLayer(numberRows).buildForCuda(context, cublasHandle())
 
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {

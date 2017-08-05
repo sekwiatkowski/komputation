@@ -107,11 +107,11 @@ class CpuAttentiveDecoder internal constructor(
                 if(this.bias == null)
                     decodingAddition
                 else
-                    this.bias.forwardStep(decodingAddition)
+                    this.bias.forwardStep(withinBatch, indexStep, decodingAddition, isTraining)
 
             val newDecoderState = this.activations[indexStep].forward(withinBatch, newDecoderStatePreActivation, isTraining)
 
-            setStep(this.outputEntries, indexStep, newDecoderState.entries, this.decodingDimension)
+            setStep(newDecoderState.entries, indexStep, this.outputEntries, this.decodingDimension)
 
             previousDecoderState = newDecoderState
 
@@ -160,7 +160,7 @@ class CpuAttentiveDecoder internal constructor(
             // d (U_a * Ea^T + U_d * d_t-1 + bias) / d d_t-1
             val diffPreActivationWrtWeightedPreviousStateForDecoding = this.decodingPreviousDecoderWeighting.backwardStep(withinBatch, indexStep, diffDecodingWrtDecodingPreActivation)
 
-            this.bias?.backwardStep(diffDecodingWrtDecodingPreActivation)
+            this.bias?.backwardStep(withinBatch, indexStep, diffDecodingWrtDecodingPreActivation)
 
             /* Ea^T
                                         a_1
@@ -178,21 +178,24 @@ class CpuAttentiveDecoder internal constructor(
             val diffPreActivationWrtAttendedEncodingNumberRows = diffPreActivationWrtAttendedEncoding.numberRows
             val diffPreActivationWrtAttendedEncodingNumberColumns = diffPreActivationWrtAttendedEncoding.numberColumns
 
-            val diffAttendedEncodingWrtTransposedAttentionDistributionEntries = backwardProjectionWrtInput(
+            val diffAttendedEncodingWrtTransposedAttentionDistributionEntries = FloatArray(this.numberSteps)
+
+            backwardProjectionWrtInput(
                 this.numberSteps,
                 1,
-                this.numberSteps,
                 this.encodingEntries,
                 this.encodingDimension,
                 diffPreActivationWrtAttendedEncodingEntries,
-                diffPreActivationWrtAttendedEncodingNumberRows)
+                diffPreActivationWrtAttendedEncodingNumberRows,
+                diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
+
             val diffAttendedEncodingWrtTransposedAttentionDistribution = FloatMatrix(numberSteps, 1, diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
 
             /* d Ea^t / d E
                d Ea^t / d e(1)_1 = a_1
                d Ea^t / d e(1)_2 = a_1 */
 
-            val diffAttendedEncodingWrtEncoding = backwardProjectionWrtWeights(
+            backwardProjectionWrtWeights(
                 this.encodingDimension,
                 this.numberSteps,
                 this.attentionDistributionEntries,
@@ -202,7 +205,7 @@ class CpuAttentiveDecoder internal constructor(
                 diffPreActivationWrtAttendedEncodingNumberColumns,
                 this.diffAttendedEncodingWrtEncoding)
 
-            this.encodingAccumulator.accumulate(diffAttendedEncodingWrtEncoding)
+            this.encodingAccumulator.accumulate(this.diffAttendedEncodingWrtEncoding)
 
             // d a^T / d a = d a^T / d softmax(pre-activation)
             val diffWrtTransposedAttentionDistributionWrtAttentionDistribution = this.transposition[indexStep].backward(withinBatch, diffAttendedEncodingWrtTransposedAttentionDistribution)

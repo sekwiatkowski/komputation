@@ -10,7 +10,7 @@ import shape.komputation.cuda.setUpCudaContext
 
 abstract class BaseCudaEntrywiseActivationLayerTest {
 
-    protected abstract fun createLayer(context: CudaContext, numberEntries: Int) : BaseCudaEntrywiseActivationLayer
+    protected abstract fun createLayer(context: CudaContext, numberRows: Int) : BaseCudaEntrywiseActivationLayer
 
     protected fun testForward(input: FloatArray, batchSize : Int, maximumBatchSize : Int, expected: FloatArray) {
 

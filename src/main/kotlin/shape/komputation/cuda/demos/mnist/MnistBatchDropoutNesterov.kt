@@ -57,7 +57,7 @@ fun main(args: Array<String>) {
     val network = CudaNetwork(
         inputLayer(inputDimension),
         hiddenLayer,
-        dropoutLayer(hiddenDimension, random, keepProbability),
+        dropoutLayer(random, keepProbability, hiddenDimension),
         outputLayer
     )
 

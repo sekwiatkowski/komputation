@@ -38,8 +38,8 @@ fun main(args: Array<String>) {
 
     val encoderUnit = simpleRecurrentUnit(
         length,
-        hiddenDimension,
         inputDimension,
+        hiddenDimension,
         identityInitializationStrategy,
         gaussianInitializationStrategy,
         zeroInitializationStrategy,
@@ -47,14 +47,10 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val encoder = singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension)
-
-    val outputProjection = projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
-
     val network = Network(
         inputLayer(inputDimension),
-        encoder,
-        outputProjection
+        singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension),
+        projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
     )
 
     network.train(

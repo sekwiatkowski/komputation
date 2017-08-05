@@ -5,19 +5,20 @@ import shape.komputation.layers.CpuForwardLayerInstruction
 
 class CounterProbabilityLayer(
     private val name : String?,
-    private val dimension: Int) : CpuForwardLayerInstruction {
+    private val numberRows: Int,
+    private val numberColumns: Int) : CpuForwardLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuCounterProbabilityLayer(this.name, this.dimension)
+        CpuCounterProbabilityLayer(this.name, this.numberRows, this.numberColumns)
 
 }
 
 
-fun counterProbabilityLayer(dimension: Int) =
+fun counterProbabilityLayer(numberRows: Int, numberColumns: Int) =
 
-    counterProbabilityLayer(null, dimension)
+    counterProbabilityLayer(null, numberRows, numberColumns)
 
-fun counterProbabilityLayer(name : String?, dimension: Int) =
+fun counterProbabilityLayer(name : String?, numberRows: Int, numberColumns: Int) =
 
-    CounterProbabilityLayer(name, dimension)
+    CounterProbabilityLayer(name, numberRows, numberColumns)

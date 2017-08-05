@@ -9,79 +9,74 @@ import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.Optimizable
+import java.util.*
 
 class CpuWeightingLayer internal constructor(
     name : String? = null,
     private val weights : FloatArray,
+    private val numberInputRows : Int,
+    private val numberInputColumns : Int,
     private val numberWeightRows: Int,
-    private val numberWeightColumns: Int,
     private val weightAccumulator : DenseAccumulator,
     private val weightUpdateRule: UpdateRule? = null) : BaseCpuForwardLayer(name), Optimizable {
 
-    private var inputEntries = FloatArray(0)
-    private var numberInputRows = -1
-    private var numberInputColumns = -1
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
 
+    private val numberWeightColumns = this.numberInputRows
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
+
+    private val numberChainRows = this.numberWeightRows
+    private val numberChainColumns = this.numberInputColumns
+
+    private val backwardWrtInput = FloatArray(this.numberInputEntries)
     private val backwardWrtWeights = FloatArray(this.numberWeightEntries)
 
     private val blasWeightMatrix = org.jblas.FloatMatrix(this.numberWeightRows, this.numberWeightColumns)
+    private val blasInputMatrix = org.jblas.FloatMatrix(this.numberInputRows, this.numberInputColumns)
+    private val blasResultMatrix = org.jblas.FloatMatrix(this.numberWeightRows, this.numberInputColumns)
 
     init {
 
-        blasWeightMatrix.data = weights
+        this.blasWeightMatrix.data = weights
 
     }
 
     override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        this.numberInputRows = input.numberRows
-        this.numberInputColumns = input.numberColumns
-        val numberInputEntries = this.numberInputRows * this.numberInputColumns
+        this.blasInputMatrix.data = input.entries
 
-        this.inputEntries = FloatArray(numberInputEntries)
-        System.arraycopy(input.entries, 0, this.inputEntries, 0, numberInputEntries)
+        multiply(this.blasWeightMatrix, this.blasInputMatrix, this.blasResultMatrix)
 
-        val blasInputMatrix = org.jblas.FloatMatrix(this.numberInputRows, this.numberInputColumns)
-        blasInputMatrix.data = this.inputEntries
-
-        val blasResultMatrix = org.jblas.FloatMatrix(this.numberWeightRows, this.numberInputColumns)
-        multiply(this.blasWeightMatrix, blasInputMatrix, blasResultMatrix)
-
-        return FloatMatrix(this.numberWeightRows, this.numberInputColumns, blasResultMatrix.data)
+        return FloatMatrix(this.numberWeightRows, this.numberInputColumns, this.blasResultMatrix.data)
 
     }
 
     override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
 
         val chainEntries = chain.entries
-        val numberChainRows = chain.numberRows
-        val numberChainColumns = chain.numberColumns
 
-        val numberInputEntries = this.numberInputRows * this.numberInputColumns
-
-        val backwardWrtInput = backwardProjectionWrtInput(
+        backwardProjectionWrtInput(
             this.numberInputRows,
             this.numberInputColumns,
-            numberInputEntries,
             this.weights,
             this.numberWeightRows,
             chainEntries,
-            numberChainRows)
+            this.numberChainRows,
+            this.backwardWrtInput)
 
         backwardProjectionWrtWeights(
             this.numberWeightRows,
             this.numberWeightColumns,
-            this.inputEntries,
+            this.blasInputMatrix.data,
             this.numberInputRows,
             chainEntries,
-            numberChainRows,
-            numberChainColumns,
+            this.numberChainRows,
+            this.numberChainColumns,
             this.backwardWrtWeights)
 
         this.weightAccumulator.accumulate(this.backwardWrtWeights)
 
-        return FloatMatrix(this.numberInputRows, this.numberInputColumns, backwardWrtInput)
+        return FloatMatrix(this.numberInputRows, this.numberInputColumns, this.backwardWrtInput)
 
     }
 

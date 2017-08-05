@@ -22,11 +22,11 @@ class CpuDenseLayer internal constructor(
 
     override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
 
-        val diffChainWrtActivation = this.activation.backward(withinBatch, chain)
+        val backwardActivation = this.activation.backward(withinBatch, chain)
 
-        val diffActivationWrtProjection = this.projection.backward(withinBatch, diffChainWrtActivation)
+        val backwardProjection = this.projection.backward(withinBatch, backwardActivation)
 
-        return diffActivationWrtProjection
+        return backwardProjection
 
     }
 

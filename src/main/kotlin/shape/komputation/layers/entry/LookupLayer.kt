@@ -8,9 +8,9 @@ import shape.komputation.optimization.OptimizationInstruction
 class LookupLayer(
     private val name : String? = null,
     private val vectors: Array<FloatArray>,
+    private val maximumLength: Int,
     private val dimension : Int,
     private val maximumBatchSize : Int,
-    private val maximumLength: Int,
     private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction {
 
     override fun buildForCpu(): CpuLookupLayer {
@@ -27,7 +27,7 @@ class LookupLayer(
 
         val sparseAccumulator = SparseAccumulator(this.vectors.size, this.maximumBatchSize, this.maximumLength, this.dimension)
 
-        return CpuLookupLayer(this.name, this.vectors, this.dimension, sparseAccumulator, updateRule)
+        return CpuLookupLayer(this.name, this.vectors, this.maximumLength, this.dimension, sparseAccumulator, updateRule)
 
     }
 
@@ -36,26 +36,26 @@ class LookupLayer(
 
 fun lookupLayer(
     vectors: Array<FloatArray>,
-    dimension : Int,
-    maximumBatchSize : Int,
-    maximumLength : Int,
+    maximumLength: Int,
+    dimension: Int,
+    maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
 
-    lookupLayer(null, vectors, dimension, maximumBatchSize, maximumLength, optimization)
+    lookupLayer(null, vectors, maximumLength, dimension, maximumBatchSize, optimization)
 
 fun lookupLayer(
-    name : String? = null,
+    name: String? = null,
     vectors: Array<FloatArray>,
-    dimension : Int,
-    maximumBatchSize : Int,
     maximumLength: Int,
+    dimension: Int,
+    maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
 
     LookupLayer(
         name,
         vectors,
+        maximumLength,
         dimension,
         maximumBatchSize,
-        maximumLength,
         optimization
     )

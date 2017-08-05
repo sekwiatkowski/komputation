@@ -2,7 +2,6 @@ package shape.komputation.cpu.functions
 
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.cpu.functions.getStep
 
 class StepTest {
 
@@ -64,7 +63,7 @@ class StepTest {
     fun testSetOneDimensionOneStep() {
 
         val actual = FloatArray(1)
-        setStep(actual, 0, floatArrayOf(1.0f), 1)
+        setStep(floatArrayOf(1.0f), 0, actual, 1)
 
         val expected = floatArrayOf(1.0f)
 
@@ -76,8 +75,8 @@ class StepTest {
     fun testOneDimensionTwoSteps() {
 
         val actual = FloatArray(2)
-        setStep(actual, 0, floatArrayOf(1.0f), 1)
-        setStep(actual, 1, floatArrayOf(2.0f), 1)
+        setStep(floatArrayOf(1.0f), 0, actual, 1)
+        setStep(floatArrayOf(2.0f), 1, actual, 1)
 
         val expected = floatArrayOf(1.0f, 2.0f)
 
@@ -89,8 +88,8 @@ class StepTest {
     fun testTwoDimensionsTwoSteps() {
 
         val actual = FloatArray(4)
-        setStep(actual, 0, floatArrayOf(1.0f, 2.0f), 2)
-        setStep(actual, 1, floatArrayOf(3.0f, 4.0f), 2)
+        setStep(floatArrayOf(1.0f, 2.0f), 0, actual, 2)
+        setStep(floatArrayOf(3.0f, 4.0f), 1, actual, 2)
 
         val expected = floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f)
 

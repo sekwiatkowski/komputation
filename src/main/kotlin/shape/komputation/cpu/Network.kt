@@ -143,7 +143,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         val numberInstances = inputs.size
 
-        val batches = partitionIndices(batchSize, numberInstances)
+        val batches = partitionIndices(numberInstances, batchSize)
 
         val results = BooleanArray(numberInstances)
 

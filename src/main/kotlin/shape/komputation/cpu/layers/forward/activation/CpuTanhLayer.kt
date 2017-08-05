@@ -5,7 +5,9 @@ import shape.komputation.cpu.functions.activation.tanh
 import shape.komputation.cpu.functions.hadamard
 import shape.komputation.matrix.FloatMatrix
 
-class CpuTanhLayer internal constructor(name: String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name) {
+class CpuTanhLayer internal constructor(name: String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
+
+    private val numberEntries = this.numberRows * this.numberColumns
 
     private val forwardEntries = FloatArray(this.numberEntries)
     private val backwardEntries = FloatArray(this.numberEntries)
@@ -19,7 +21,7 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
 
         tanh(input.entries, this.forwardEntries, this.numberEntries)
 
-        val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
+        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
         return result
     }
@@ -36,7 +38,7 @@ class CpuTanhLayer internal constructor(name: String? = null, private val number
 
         hadamard(chain.entries, this.differentiation, this.backwardEntries, this.numberEntries)
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 
     }
 

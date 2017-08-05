@@ -13,15 +13,19 @@ import shape.komputation.matrix.FloatMatrix
    chain * d g(x)+h(x) / d g(x) = chain
    chain * d g(x)+h(x) / d h(x) = chain
 */
-class AdditionCombination internal constructor(name : String? = null, private val numberEntries : Int) : CombinationLayer(name) {
+class AdditionCombination internal constructor(
+    name : String? = null,
+    private val numberRows : Int,
+    private val numberColumns : Int) : CombinationLayer(name) {
 
+    private val numberEntries = this.numberRows * this.numberColumns
     private val forwardEntries = FloatArray(this.numberEntries)
 
     override fun forward(first: FloatMatrix, second: FloatMatrix): FloatMatrix {
 
         add(first.entries, second.entries, this.forwardEntries, this.numberEntries)
 
-        return FloatMatrix(first.numberRows, first.numberColumns, this.forwardEntries)
+        return FloatMatrix(this.numberRows, first.numberColumns, this.forwardEntries)
 
     }
 
@@ -37,6 +41,6 @@ class AdditionCombination internal constructor(name : String? = null, private va
 
 }
 
-fun additionCombination(numberEntries : Int) = AdditionCombination(null, numberEntries)
+fun additionCombination(numberRows : Int, numberColumns : Int) = AdditionCombination(null, numberRows, numberColumns)
 
-fun additionCombination(name : String? = null, numberEntries : Int) = AdditionCombination(name, numberEntries)
+fun additionCombination(name : String? = null, numberRows : Int, numberColumns : Int) = AdditionCombination(name, numberRows, numberColumns)

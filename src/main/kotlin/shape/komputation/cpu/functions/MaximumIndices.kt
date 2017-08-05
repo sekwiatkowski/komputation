@@ -14,6 +14,12 @@ fun findMaxIndicesInRows(input: FloatArray, numberRows : Int, numberColumns : In
 
             val entry = input[index]
 
+            if (entry.isNaN()) {
+
+                break
+
+            }
+
             if (entry > maxValue) {
 
                 maxValue = entry

@@ -14,6 +14,7 @@ import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
+import shape.komputation.optimization.historical.momentum
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
@@ -42,11 +43,8 @@ class TrecTraining {
 
         val optimization = nesterov(0.001f, 0.85f)
 
-        val keepProbability = 0.85f
-
         val batchSize = 1
-
-        val embeddingFile = File(embeddingFilePath)
+        val numberIterations = 20
 
         val numberFilters = 100
         val filterWidths = intArrayOf(2, 3)
@@ -55,7 +53,7 @@ class TrecTraining {
         val filterHeight = embeddingDimension
         val numberFilterWidths = filterWidths.size
 
-        val numberIterations = 20
+        val keepProbability = 0.8f
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -66,12 +64,16 @@ class TrecTraining {
 
         val vocabulary = NLP.generateVocabulary(trainingDocuments)
 
+        val embeddingFile = File(embeddingFilePath)
+
         val embeddingMap = NLP.embedVocabulary(vocabulary, embeddingFile)
         val embeddableVocabulary = embeddingMap.keys.sorted()
         val missing = vocabulary.minus(embeddingMap.keys)
 
         val trainingDocumentsWithFilteredTokens = NLP.filterTokens(trainingDocuments, embeddableVocabulary)
-        val testDocumentsWithFilteredTokens = NLP.filterTokens(testDocuments, embeddableVocabulary)
+        val maximumDocumentLength = trainingDocumentsWithFilteredTokens.maxBy { document -> document.size }!!.size
+
+        val testDocumentsWithFilteredTokens = NLP.filterTokens(testDocuments, embeddableVocabulary) // NLP.cutOff(NLP.filterTokens(testDocuments, embeddableVocabulary), maximumDocumentLength)
 
         val embeddableTrainingIndices = NLP.filterDocuments(trainingDocumentsWithFilteredTokens, maximumFilterWidth)
         val embeddableTestIndices = NLP.filterDocuments(testDocumentsWithFilteredTokens, maximumFilterWidth)
@@ -93,29 +95,26 @@ class TrecTraining {
 
         val numberTestExamples = testTargets.size
 
-        val maximumLength = trainingRepresentations.plus(testRepresentations)
-            .map { it.numberRows }
-            .max()!!
-
         val embeddings = embeddableVocabulary
             .map { token -> embeddingMap[token]!! }
             .toTypedArray()
 
         val network = Network(
-            lookupLayer(embeddings, embeddingDimension, batchSize, maximumLength, optimization),
+            lookupLayer(embeddings, maximumDocumentLength, embeddingDimension, batchSize, optimization),
             concatenation(
-                maximumLength * embeddingDimension,
+                maximumDocumentLength,
+                embeddingDimension,
                 *filterWidths
                     .map { filterWidth ->
                         arrayOf(
-                            convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-                            maxPoolingLayer(numberFilters),
-                            reluLayer(numberFilters),
-                            dropoutLayer(numberFilters, random, keepProbability)
+                            convolutionalLayer(embeddingDimension, maximumDocumentLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
+                            maxPoolingLayer(numberFilters, maximumDocumentLength-filterWidth+1)
                         )
                     }
                     .toTypedArray()
             ),
+            reluLayer(numberFilters),
+            dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
             projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )

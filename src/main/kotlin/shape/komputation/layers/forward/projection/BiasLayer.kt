@@ -25,7 +25,7 @@ class BiasLayer(
         val accumulator = DenseAccumulator(bias.size)
         val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberInputRows, this.numberInputColumns)
 
-        val layer = CpuBiasLayer(this.name, bias, accumulator, updateRule)
+        val layer = CpuBiasLayer(this.name, this.numberInputRows, this.numberInputColumns, bias, accumulator, updateRule)
 
         return layer
 

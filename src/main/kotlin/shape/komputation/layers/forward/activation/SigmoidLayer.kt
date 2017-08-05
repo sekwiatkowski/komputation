@@ -8,17 +8,17 @@ import shape.komputation.cuda.layers.forward.activation.CudaSigmoidLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class SigmoidLayer(private val name : String?, private val numberEntries: Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class SigmoidLayer(private val name : String?, private val numberRows: Int, private val numberColumns: Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuSigmoidLayer(this.name, this.numberEntries)
+        CpuSigmoidLayer(this.name, this.numberRows, this.numberColumns)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
 
         return CudaSigmoidLayer(
             this.name,
-            this.numberEntries,
+            this.numberRows * this.numberColumns,
             { context.createKernel(ForwardKernels.sigmoid()) },
             { context.createKernel(ForwardKernels.backwardSigmoid()) },
             context.maximumNumberOfThreadsPerBlock,
@@ -30,10 +30,10 @@ class SigmoidLayer(private val name : String?, private val numberEntries: Int) :
 
 }
 
-fun sigmoidLayer(inputDimension: Int) =
+fun sigmoidLayer(numberRows : Int, numberColumns: Int = 1) =
 
-    SigmoidLayer(null, inputDimension)
+    SigmoidLayer(null, numberRows, numberColumns)
 
-fun sigmoidLayer(name : String? = null, inputDimension: Int) =
+fun sigmoidLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1) =
 
-    SigmoidLayer(name, inputDimension)
+    SigmoidLayer(name, numberRows, numberColumns)

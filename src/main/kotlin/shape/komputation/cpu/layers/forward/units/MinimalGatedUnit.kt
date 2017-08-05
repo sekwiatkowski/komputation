@@ -20,8 +20,8 @@ import shape.komputation.optimization.OptimizationInstruction
 
 class MinimalGatedUnit internal constructor(
     name: String?,
-    hiddenDimension: Int,
-    inputDimension: Int,
+    private val inputDimension: Int,
+    private val hiddenDimension: Int,
     private val forgetUnit: RecurrentUnit,
     private val shortTermResponse: ShortTermResponse,
     private val counterProbabilities: Array<CpuCounterProbabilityLayer>,
@@ -29,24 +29,25 @@ class MinimalGatedUnit internal constructor(
     private val shortTermHadamards: Array<HadamardCombination>,
     private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
 
-    private val previousStateAccumulator = DenseAccumulator(hiddenDimension)
-    private val inputAccumulator = DenseAccumulator(inputDimension)
+    private val previousStateAccumulator = DenseAccumulator(this.hiddenDimension)
+    private val inputAccumulator = DenseAccumulator(this.inputDimension)
 
-    override fun forwardStep(withinBatch : Int, step : Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forwardStep(withinBatch : Int, indexStep: Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
 
-        val forget = this.forgetUnit.forwardStep(withinBatch, step, state, input, isTraining)
+        val forget = this.forgetUnit.forwardStep(withinBatch, indexStep, state, input, isTraining)
 
-        val oneMinusForget = this.counterProbabilities[step].forward(withinBatch, forget, isTraining)
+        val oneMinusForget = this.counterProbabilities[indexStep].forward(withinBatch, forget, isTraining)
 
-        val longTermComponent = this.longTermHadamards[step].forward(oneMinusForget, state)
+        val longTermComponent = this.longTermHadamards[indexStep].forward(oneMinusForget, state)
 
-        val shortTermResponse = this.shortTermResponse.forward(withinBatch, step, state, input, forget, isTraining)
+        val shortTermResponse = this.shortTermResponse.forward(withinBatch, indexStep, state, input, forget, isTraining)
 
-        val shortTermComponent = this.shortTermHadamards[step].forward(forget, shortTermResponse)
+        val shortTermComponent = this.shortTermHadamards[indexStep].forward(forget, shortTermResponse)
 
-        val newState = this.stateAdditions[step].forward(longTermComponent, shortTermComponent)
+        val newState = this.stateAdditions[indexStep].forward(longTermComponent, shortTermComponent)
 
         return newState
+
     }
 
 
@@ -138,8 +139,8 @@ class MinimalGatedUnit internal constructor(
 
 fun minimalGatedUnit(
     numberSteps: Int,
-    hiddenDimension: Int,
     inputDimension: Int,
+    hiddenDimension: Int,
     forgetPreviousStateWeightInitializationStrategy: InitializationStrategy,
     forgetInputWeightInitializationStrategy: InitializationStrategy,
     forgetBiasInitializationStrategy: InitializationStrategy?,
@@ -151,8 +152,8 @@ fun minimalGatedUnit(
     minimalGatedUnit(
         null,
         numberSteps,
-        hiddenDimension,
         inputDimension,
+        hiddenDimension,
         forgetPreviousStateWeightInitializationStrategy,
         forgetInputWeightInitializationStrategy,
         forgetBiasInitializationStrategy,
@@ -164,8 +165,8 @@ fun minimalGatedUnit(
 fun minimalGatedUnit(
     name: String?,
     numberSteps: Int,
-    hiddenDimension: Int,
     inputDimension: Int,
+    hiddenDimension: Int,
     forgetPreviousStateWeightInitializationStrategy: InitializationStrategy,
     forgetInputWeightInitializationStrategy: InitializationStrategy,
     forgetBiasInitializationStrategy: InitializationStrategy?,
@@ -176,16 +177,16 @@ fun minimalGatedUnit(
 
     val forgetPreviousStateWeightingSeriesName = concatenateNames(name, "forget-previous-state-weighting")
     val forgetPreviousStateWeightingStepName = concatenateNames(name, "forget-previous-state-weighting-step")
-    val forgetPreviousStateWeighting = seriesWeighting(forgetPreviousStateWeightingSeriesName, forgetPreviousStateWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, forgetPreviousStateWeightInitializationStrategy, optimization)
+    val forgetPreviousStateWeighting = seriesWeighting(forgetPreviousStateWeightingSeriesName, forgetPreviousStateWeightingStepName, numberSteps, true, hiddenDimension, 1, hiddenDimension, forgetPreviousStateWeightInitializationStrategy, optimization)
 
     val forgetInputWeightingSeriesName = concatenateNames(name, "forget-input-weighting")
     val forgetInputWeightingStepName = concatenateNames(name, "forget-input-weighting-step")
-    val forgetInputWeighting = seriesWeighting(forgetInputWeightingSeriesName, forgetInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, forgetInputWeightInitializationStrategy, optimization)
+    val forgetInputWeighting = seriesWeighting(forgetInputWeightingSeriesName, forgetInputWeightingStepName, numberSteps, false, inputDimension, 1, hiddenDimension, forgetInputWeightInitializationStrategy, optimization)
 
     val forgetAdditions = Array(numberSteps) { indexStep ->
 
         val forgetAdditionName = concatenateNames(name, "forget-addition-step-$indexStep")
-        additionCombination(forgetAdditionName, hiddenDimension)
+        additionCombination(forgetAdditionName, hiddenDimension, 1)
 
     }
 
@@ -193,8 +194,9 @@ fun minimalGatedUnit(
 
         if (forgetBiasInitializationStrategy != null) {
 
-            val forgetBiasName = concatenateNames(name, "forget-bias")
-            seriesBias(forgetBiasName, hiddenDimension, forgetBiasInitializationStrategy, optimization)
+            val forgetBiasSeriesName = concatenateNames(name, "forget-bias")
+            val forgetBiasStepName = concatenateNames(forgetBiasSeriesName, "step")
+            seriesBias(forgetBiasSeriesName, forgetBiasStepName, numberSteps, hiddenDimension, forgetBiasInitializationStrategy, optimization)
 
         }
         else {
@@ -206,46 +208,46 @@ fun minimalGatedUnit(
     val forgetActivations = Array<CpuActivationLayer>(numberSteps) { indexStep ->
 
         val forgetActivationName = concatenateNames(name, "forget-activation-step-$indexStep")
-        sigmoidLayer(forgetActivationName, hiddenDimension).buildForCpu()
+        sigmoidLayer(forgetActivationName, hiddenDimension, 1).buildForCpu()
 
     }
 
-    val forgetUnit = SimpleRecurrentUnit(name, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
+    val forgetUnit = SimpleRecurrentUnit(name, numberSteps, inputDimension, hiddenDimension, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
 
     val shortTermResponse = shortTermResponse("short-term-response", numberSteps, hiddenDimension, inputDimension, shortTermMemoryWeightInitializationStrategy, shortTermInputWeightInitializationStrategy, shortTermBiasInitializationStrategy, optimization)
 
     val keepSubtractions = Array(numberSteps) { indexStep ->
 
         val keepSubtractionName = concatenateNames(name, "keep-subtraction-$indexStep")
-        counterProbabilityLayer(keepSubtractionName, hiddenDimension).buildForCpu()
+        counterProbabilityLayer(keepSubtractionName, hiddenDimension, 1).buildForCpu()
 
     }
 
     val shortTermHadamards = Array(numberSteps) { indexStep ->
 
         val shortTermHadamardName = concatenateNames(name, "short-term-hadamard-step-$indexStep")
-        hadamardCombination(shortTermHadamardName, hiddenDimension)
+        hadamardCombination(shortTermHadamardName, hiddenDimension, 1)
 
     }
 
     val longTermHadamards = Array(numberSteps) { indexStep ->
 
         val shortTermHadamardName = concatenateNames(name, "long-term-hadamard-step-$indexStep")
-        hadamardCombination(shortTermHadamardName, hiddenDimension)
+        hadamardCombination(shortTermHadamardName, hiddenDimension, 1)
 
     }
 
     val stateAdditions = Array(numberSteps) { indexStep ->
 
         val shortTermAdditionName = concatenateNames(name, "state-addition-step-$indexStep")
-        additionCombination(shortTermAdditionName, hiddenDimension)
+        additionCombination(shortTermAdditionName, hiddenDimension, 1)
 
     }
 
     val minimalGatedUnit = MinimalGatedUnit(
         name,
-        hiddenDimension,
         inputDimension,
+        hiddenDimension,
         forgetUnit,
         shortTermResponse,
         keepSubtractions,

@@ -1,10 +1,30 @@
 package shape.komputation.cpu.functions
 
-fun addBias(input: FloatArray, numberInputRows: Int, numberInputEntries: Int, bias: FloatArray, result: FloatArray) {
+import java.util.*
 
-    for(index in 0..numberInputEntries-1) {
+fun addBias(input: FloatArray, numberInputRows: Int, numberInputColumns: Int, numberInputEntries : Int, bias: FloatArray, result: FloatArray) {
 
-        result[index] = input[index] + bias[index % numberInputRows]
+    for(indexColumn in 0..numberInputColumns - 1) {
+
+        val firstColumnIndex = indexColumn * numberInputRows
+
+        if (input[firstColumnIndex].isNaN()) {
+
+            Arrays.fill(result, firstColumnIndex, numberInputEntries, Float.NaN)
+
+            return
+
+        }
+        else {
+
+            for (indexRow in 0..numberInputRows-1) {
+
+                val indexEntry = firstColumnIndex + indexRow
+                result[indexEntry] = input[indexEntry] + bias[indexRow]
+
+            }
+
+        }
 
     }
 
@@ -13,13 +33,11 @@ fun addBias(input: FloatArray, numberInputRows: Int, numberInputEntries: Int, bi
 fun backwardProjectionWrtInput(
     numberInputRows: Int,
     numberInputColumns : Int,
-    numberInputEntries : Int,
     weightEntries : FloatArray,
     numberWeightRows : Int,
     chainEntries: FloatArray,
-    numberChainRows : Int): FloatArray {
-
-    val derivatives = FloatArray(numberInputEntries)
+    numberChainRows : Int,
+    derivatives : FloatArray) {
 
     var index = 0
 
@@ -44,8 +62,6 @@ fun backwardProjectionWrtInput(
 
     }
 
-    return derivatives
-
 }
 
 fun backwardProjectionWrtWeights(
@@ -56,7 +72,7 @@ fun backwardProjectionWrtWeights(
     chainEntries: FloatArray,
     numberChainRows: Int,
     numberChainColumns : Int,
-    result : FloatArray): FloatArray {
+    result : FloatArray) {
 
     var index = 0
 
@@ -68,23 +84,28 @@ fun backwardProjectionWrtWeights(
 
             for (indexChainColumn in 0..numberChainColumns - 1) {
 
+                // d pre ij / d wk
+                val inputEntry = inputEntries[indexWeightColumn + indexChainColumn * numberInputRows]
+
+                if (inputEntry.isNaN()) {
+
+                    break
+
+                }
+
                 // d loss / d pre1, d loss / d pre2
                 // All multiplications on other rows equal to zero
                 val chainEntry = chainEntries[indexWeightRow + indexChainColumn * numberChainRows]
 
-                // d pre ij / d wk
-                val inputEntry = inputEntries[indexWeightColumn + indexChainColumn * numberInputRows]
-
-                derivative += chainEntry * inputEntry
+                derivative += inputEntry * chainEntry
 
             }
 
             result[index++] = derivative
 
         }
-    }
 
-    return result
+    }
 
 }
 
@@ -96,13 +117,13 @@ fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberCha
 
         for (indexChainColumn in 0..numberChainColumns - 1) {
 
-            derivative += chain[indexRow + numberChainRows * indexChainColumn]
+            val chainEntry = chain[indexChainColumn * numberChainRows + indexRow]
+            derivative += chainEntry
 
         }
 
         result[indexRow] = derivative
 
     }
-
 
 }

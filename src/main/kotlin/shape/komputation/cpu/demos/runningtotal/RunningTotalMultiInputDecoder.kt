@@ -21,15 +21,16 @@ fun main(args: Array<String>) {
     val exclusiveUpperLimit = 10
     val numberSteps = 4
     val numberExamples = IntMath.pow(exclusiveUpperLimit, numberSteps)
+    val inputDimension = 1
     val hiddenDimension = 4
     val numberIterations = 30
     val batchSize = 4
 
     val random = Random(1)
 
-    val identityInitializationStrategy = identityInitialization()
-    val gaussianInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)
-    val zeroInitializationStrategy = zeroInitialization()
+    val identityInitialization = identityInitialization()
+    val gaussianInitialization = gaussianInitialization(random, 0.0f, 0.001f)
+    val zeroInitialization = zeroInitialization()
 
     val optimizationStrategy = stochasticGradientDescent(0.001f)
 
@@ -39,27 +40,27 @@ fun main(args: Array<String>) {
 
     val encoderUnit = simpleRecurrentUnit(
         numberSteps,
+        inputDimension,
         hiddenDimension,
-        1,
-        gaussianInitializationStrategy,
-        identityInitializationStrategy,
-        zeroInitializationStrategy,
+        gaussianInitialization,
+        identityInitialization,
+        zeroInitialization,
         ActivationFunction.Identity,
         optimizationStrategy)
 
     val encoder = multiOutputEncoder(
         encoderUnit,
         numberSteps,
-        1,
+        inputDimension,
         hiddenDimension)
 
     val decoderUnit = simpleRecurrentUnit(
         numberSteps,
         hiddenDimension,
         hiddenDimension,
-        identityInitializationStrategy,
-        gaussianInitializationStrategy,
-        zeroInitializationStrategy,
+        identityInitialization,
+        gaussianInitialization,
+        zeroInitialization,
         ActivationFunction.Identity,
         optimizationStrategy
     )
@@ -70,8 +71,8 @@ fun main(args: Array<String>) {
         hiddenDimension,
         1,
         decoderUnit,
-        gaussianInitializationStrategy,
-        zeroInitializationStrategy,
+        gaussianInitialization,
+        zeroInitialization,
         ActivationFunction.Identity,
         optimizationStrategy
     )

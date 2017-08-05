@@ -40,9 +40,9 @@ fun main(args: Array<String>) {
     val numberClasses = EmbeddingData.numberClasses
 
     val network = Network(
-        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
-        convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-        maxPoolingLayer(numberFilters),
+        lookupLayer(embeddings, 2, embeddingDimension, maximumBatchSize, optimizationStrategy),
+        convolutionalLayer(embeddingDimension, 2, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
+        maxPoolingLayer(numberFilters, 1),
         reluLayer(numberFilters),
         denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
     )

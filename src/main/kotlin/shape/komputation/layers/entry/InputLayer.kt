@@ -5,7 +5,7 @@ import shape.komputation.cuda.layers.entry.CudaInputLayer
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CudaEntryPointInstruction
 
-class InputLayer(private val name : String? = null, private val dimension: Int) : CpuEntryPointInstruction, CudaEntryPointInstruction {
+class InputLayer(private val name : String? = null, private val numberRows: Int, private val numberColumns: Int) : CpuEntryPointInstruction, CudaEntryPointInstruction {
 
     override fun buildForCpu() =
 
@@ -13,11 +13,10 @@ class InputLayer(private val name : String? = null, private val dimension: Int) 
 
     override fun buildForCuda() =
 
-        CudaInputLayer(this.dimension)
+        CudaInputLayer(this.numberRows, this.numberColumns)
 
 }
 
-fun inputLayer(dimension : Int) = inputLayer(null, dimension)
+fun inputLayer(numberRows : Int, numberColumns : Int = 1) = inputLayer(null, numberRows, numberColumns)
 
-fun inputLayer(name : String? = null, dimension : Int) = InputLayer(name, dimension)
-
+fun inputLayer(name : String? = null, numberRows: Int, numberColumns: Int = 1) = InputLayer(name, numberRows, numberColumns)

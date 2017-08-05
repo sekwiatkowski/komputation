@@ -41,7 +41,7 @@ class ShortTermResponse(
             }
             else {
 
-                this.bias.forwardStep(addition)
+                this.bias.forwardStep(withinBatch, step, addition, isTraining)
             }
 
         val shortTermResponse = this.activations[step].forward(withinBatch, preActivation, isTraining)
@@ -78,7 +78,7 @@ class ShortTermResponse(
 
         if (this.bias != null) {
 
-            bias.backwardStep(diffShortTermResponseWrtPreActivation)
+            bias.backwardStep(withinBatch, step, diffShortTermResponseWrtPreActivation)
 
         }
 
@@ -117,22 +117,22 @@ fun shortTermResponse(
     val shortTermForgetting = Array(numberSteps) { indexStep ->
 
         val shortTermForgettingName = concatenateNames(name, "forgetting-step-$indexStep")
-        hadamardCombination(shortTermForgettingName, hiddenDimension)
+        hadamardCombination(shortTermForgettingName, hiddenDimension, 1)
 
     }
 
     val shortTermMemoryWeightingSeriesName = concatenateNames(name, "memory-weighting")
     val shortTermMemoryWeightingStepName = concatenateNames(name, "memory-weighting-step")
-    val shortTermMemoryWeighting = seriesWeighting(shortTermMemoryWeightingSeriesName, shortTermMemoryWeightingStepName, numberSteps, true, hiddenDimension, hiddenDimension, memoryWeightInitializationStrategy, optimizationStrategy)
+    val shortTermMemoryWeighting = seriesWeighting(shortTermMemoryWeightingSeriesName, shortTermMemoryWeightingStepName, numberSteps, true, hiddenDimension, 1, hiddenDimension, memoryWeightInitializationStrategy, optimizationStrategy)
 
     val shortTermInputWeightingSeriesName = concatenateNames(name, "input-weighting")
     val shortTermInputWeightingStepName = concatenateNames(name, "input-weighting-step")
-    val shortTermInputWeighting = seriesWeighting(shortTermInputWeightingSeriesName, shortTermInputWeightingStepName, numberSteps, false, inputDimension, hiddenDimension, inputWeightInitializationStrategy, optimizationStrategy)
+    val shortTermInputWeighting = seriesWeighting(shortTermInputWeightingSeriesName, shortTermInputWeightingStepName, numberSteps, false, inputDimension, 1, hiddenDimension, inputWeightInitializationStrategy, optimizationStrategy)
 
     val shortTermAdditions = Array(numberSteps) { indexStep ->
 
         val shortTermAdditionName = concatenateNames(name, "addition-step-$indexStep")
-        AdditionCombination(shortTermAdditionName, hiddenDimension)
+        AdditionCombination(shortTermAdditionName, hiddenDimension, 1)
 
     }
 
@@ -140,8 +140,9 @@ fun shortTermResponse(
 
         if (biasInitializationStrategy != null) {
 
-            val shortTermBiasName = concatenateNames(name, "bias")
-            seriesBias(shortTermBiasName, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
+            val shortTermBiasSeriesName = concatenateNames(name, "bias")
+            val shortTermBiasStepName = concatenateNames(shortTermBiasSeriesName, "step")
+            seriesBias(shortTermBiasSeriesName, shortTermBiasStepName, numberSteps, hiddenDimension, biasInitializationStrategy, optimizationStrategy)
 
         }
         else {
@@ -152,7 +153,7 @@ fun shortTermResponse(
     val shortTermActivations = Array(numberSteps) { indexStep ->
 
         val shortTermActivationName = concatenateNames(name, "activation-step-$indexStep")
-        tanhLayer(shortTermActivationName, hiddenDimension).buildForCpu()
+        tanhLayer(shortTermActivationName, hiddenDimension, 1).buildForCpu()
 
     }
 

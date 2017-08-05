@@ -7,7 +7,10 @@ import shape.komputation.matrix.FloatMatrix
 
 class CpuCounterProbabilityLayer internal constructor(
     name : String?,
-    private val numberEntries: Int) : BaseCpuForwardLayer(name) {
+    private val numberRows: Int,
+    private val numberColumns : Int) : BaseCpuForwardLayer(name) {
+
+    private val numberEntries = this.numberRows * this.numberColumns
 
     private val one = FloatArray(this.numberEntries) { 1.0f }
     private val forwardEntries = FloatArray(this.numberEntries)
@@ -17,7 +20,7 @@ class CpuCounterProbabilityLayer internal constructor(
 
         subtract(this.one, input.entries, this.forwardEntries, this.numberEntries)
 
-        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
     }
 
@@ -25,7 +28,7 @@ class CpuCounterProbabilityLayer internal constructor(
 
         negate(chain.entries, this.backwardEntries, this.numberEntries)
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 
     }
 

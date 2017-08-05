@@ -5,6 +5,7 @@ import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
 import shape.komputation.optimization.Optimizable
 
@@ -19,26 +20,25 @@ class CpuSingleOutputEncoder internal constructor(
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
 
-    private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
+    private val states = Array(this.numberSteps+1) { floatZeroColumnVector(this.hiddenDimension) }
 
-    private val inputStepEntries = FloatArray(this.inputDimension)
-    private val inputStep = FloatMatrix(this.inputDimension, 1, this.inputStepEntries)
+    private val inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
+    private val steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
 
     override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
-
-        var currentState = floatZeroColumnVector(this.hiddenDimension)
 
         val inputEntries = input.entries
 
         for (indexStep in this.startAtTheBeginning) {
 
-            getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
+            val stepEntries = this.steps[indexStep]
+            getStep(inputEntries, this.inputIndices[indexStep], stepEntries, this.inputDimension)
 
-            currentState = this.unit.forwardStep(withinBatch, indexStep, currentState, this.inputStep, isTraining)
+            this.states[indexStep+1] = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], floatColumnVector(*stepEntries), isTraining)
 
         }
 
-        return currentState
+        return this.states[this.numberSteps]
 
     }
 
@@ -54,7 +54,7 @@ class CpuSingleOutputEncoder internal constructor(
 
             stateChain = diffWrtPreviousState
 
-            setStep(seriesBackwardWrtInput, this.stepIndices[indexStep], diffWrtInput.entries, this.inputDimension)
+            setStep(diffWrtInput.entries, this.inputIndices[indexStep], seriesBackwardWrtInput, this.inputDimension)
 
         }
 

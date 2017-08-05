@@ -1,5 +1,6 @@
 package shape.komputation.cpu.functions
 
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.assertMatrixEquality
@@ -9,14 +10,24 @@ class ConvolutionExpansionTest {
 
     @Test
     fun testForward() {
+        /*
+            1 4 7
+            2 5 8
+            3 6 9
+         */
 
-        val actual = expandForConvolution(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f), 3, 2, 1, 2, 3)
-        val expected = floatMatrixFromColumns(
-            floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f),
-            floatArrayOf(4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f)
+        val input = floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f)
+
+        val size = 2 * 3 * 2
+        val actual = FloatArray(size)
+        expandForConvolution(input, 3, actual, size, 1, 2, 2, 3)
+
+        val expected = floatArrayOf(
+            1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f,
+            4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f
         )
 
-        assertMatrixEquality(expected, actual, 0.01f)
+        assertArrayEquals(expected, actual, 0.01f)
 
     }
 
@@ -33,13 +44,13 @@ class ConvolutionExpansionTest {
             1 *2*
             3  4
          */
-        assertEquals(1, firstColumnOfConvolution(1, 2))
+        assertEquals(0, firstColumnOfConvolution(1, 2))
 
         /*
             1  2
            *3* 4
         */
-        assertEquals(0, firstColumnOfConvolution(2, 2))
+        assertEquals(1, firstColumnOfConvolution(2, 2))
 
         /*
            1  2
@@ -62,13 +73,13 @@ class ConvolutionExpansionTest {
             1 *2*
             3  4
          */
-        assertEquals(0, firstRowOfConvolution(1, 2))
+        assertEquals(1, firstRowOfConvolution(1, 2))
 
         /*
             1  2
            *3* 4
         */
-        assertEquals(1, firstRowOfConvolution(2, 2))
+        assertEquals(0, firstRowOfConvolution(2, 2))
 
         /*
            1  2

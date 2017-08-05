@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers.forward.projection
 
-import shape.komputation.cpu.layers.BaseCpuForwardLayer
+import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
@@ -13,7 +13,7 @@ import shape.komputation.optimization.OptimizationInstruction
 
 class SeriesWeighting internal constructor(
     private val name : String?,
-    private val weightings: Array<BaseCpuForwardLayer>,
+    private val weightingLayers: Array<CpuForwardLayer>,
     private val weights: FloatArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
@@ -21,19 +21,13 @@ class SeriesWeighting internal constructor(
 
     private val numberWeightEntries = this.weights.size
 
-    fun forwardStep(withinBatch : Int, step : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    fun forwardStep(withinBatch : Int, step : Int, input: FloatMatrix, isTraining : Boolean) =
 
-        return this.weightings[step].forward(withinBatch, input, isTraining)
+        this.weightingLayers[step].forward(withinBatch, input, isTraining)
 
-    }
+    fun backwardStep(withinBatch : Int, step: Int, chain: FloatMatrix) =
 
-    fun backwardStep(withinBatch : Int, step: Int, chain: FloatMatrix) : FloatMatrix {
-
-        val backward = this.weightings[step].backward(withinBatch, chain)
-
-        return backward
-
-    }
+        this.weightingLayers[step].backward(withinBatch, chain)
 
     fun backwardSeries() {
 
@@ -59,8 +53,9 @@ class SeriesWeighting internal constructor(
 fun seriesWeighting(
     numberSteps : Int,
     useIdentityAtFirstStep : Boolean,
-    inputDimension: Int,
-    outputDimension: Int,
+    numberInputRows: Int,
+    numberInputColumns: Int,
+    numberOutputRows: Int,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy: OptimizationInstruction?) =
 
@@ -69,56 +64,56 @@ fun seriesWeighting(
         null,
         numberSteps,
         useIdentityAtFirstStep,
-        inputDimension,
-        outputDimension,
+        numberInputRows,
+        numberInputColumns,
+        numberOutputRows,
         initializationStrategy,
         optimizationStrategy
     )
 
 fun seriesWeighting(
     seriesName: String?,
-    stepName: String?,
+    stepNamePrefix: String?,
     numberSteps : Int,
     useIdentityAtFirstStep : Boolean,
-    inputDimension: Int,
-    outputDimension: Int,
-    initializationStrategy: InitializationStrategy,
+    numberInputRows: Int,
+    numberInputColumns: Int,
+    numberOutputRows: Int,
+    initialization: InitializationStrategy,
     optimization: OptimizationInstruction?) : SeriesWeighting {
 
-    val weights = initializeWeights(initializationStrategy, outputDimension, inputDimension, inputDimension)
+    val numberWeightRows = numberOutputRows
+    val numberWeightColumns = numberInputRows
+    val weights = initializeWeights(initialization, numberWeightRows, numberWeightColumns, numberInputRows * numberInputColumns)
 
-    val numberWeightRows = outputDimension
-    val numberWeightColumns = inputDimension
+    val numberWeightEntries = numberWeightRows * numberWeightColumns
+    val seriesAccumulator = DenseAccumulator(numberWeightEntries)
 
-    val optimizationStrategy = optimization?.buildForCpu()
+    val weightingLayers = Array<CpuForwardLayer>(numberSteps) { indexStep ->
 
-    val weightUpdateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
-
-    val numberEntries = inputDimension * outputDimension
-    val seriesAccumulator = DenseAccumulator(numberEntries)
-    val batchAccumulator = DenseAccumulator(numberEntries)
-
-    val stepWeightings = Array(numberSteps) { indexStep ->
-
-        val stepProjectionName = concatenateNames(stepName, indexStep.toString())
+        val stepName = concatenateNames(stepNamePrefix, indexStep.toString())
 
         if (useIdentityAtFirstStep && indexStep == 0) {
 
-            identityLayer(stepProjectionName).buildForCpu()
+            identityLayer(stepName).buildForCpu()
 
         }
         else {
 
-            stepWeighting(stepProjectionName, numberWeightRows, numberWeightColumns, weights, seriesAccumulator, weightUpdateRule)
+            CpuWeightingLayer(stepName, weights, numberInputRows, numberInputColumns, numberWeightRows, seriesAccumulator)
+
         }
 
     }
 
-    val updateRule = optimizationStrategy?.invoke(inputDimension, outputDimension)
+    val batchAccumulator = DenseAccumulator(numberWeightEntries)
+
+    val optimizationStrategy = optimization?.buildForCpu()
+    val updateRule = optimizationStrategy?.invoke(numberWeightRows, numberWeightColumns)
 
     val seriesWeighting = SeriesWeighting(
         seriesName,
-        stepWeightings,
+        weightingLayers,
         weights,
         seriesAccumulator,
         batchAccumulator,
@@ -127,13 +122,3 @@ fun seriesWeighting(
     return seriesWeighting
 
 }
-
-private fun stepWeighting(
-    name : String?,
-    numberWeightRows: Int,
-    numberWeightColumns: Int,
-    weights : FloatArray,
-    weightAccumulator: DenseAccumulator,
-    weightUpdateRule : UpdateRule? = null) =
-
-    CpuWeightingLayer(name, weights, numberWeightRows, numberWeightColumns, weightAccumulator, weightUpdateRule)

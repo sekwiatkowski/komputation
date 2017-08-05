@@ -19,7 +19,7 @@ object ReverseData {
 
             for (indexStep in 0..seriesLength - 1) {
 
-                setStep(inputEntries, indexStep, oneHotArray(numberCategories, random.nextInt(10), 1.0f), numberCategories)
+                setStep(oneHotArray(numberCategories, random.nextInt(10), 1.0f), indexStep, inputEntries, numberCategories)
 
             }
 
@@ -43,7 +43,7 @@ object ReverseData {
                 val originalStep = FloatArray(numberCategories)
                 getStep(matrix.entries, reverseStep, originalStep, numberCategories)
 
-                setStep(reversedSequenceMatrixEntries, indexStep, originalStep, numberCategories)
+                setStep(originalStep, indexStep, reversedSequenceMatrixEntries, numberCategories)
             }
 
             reversedSequenceMatrix

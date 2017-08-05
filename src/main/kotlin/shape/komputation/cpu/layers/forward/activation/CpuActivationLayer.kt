@@ -11,13 +11,13 @@ fun cpuActivationLayer(name: String?, function: ActivationFunction, numberRows :
         ActivationFunction.Identity ->
             identityLayer(name)
         ActivationFunction.ReLU ->
-            reluLayer(name, numberRows * numberColumns)
+            reluLayer(name, numberRows, numberColumns)
         ActivationFunction.Sigmoid ->
-            sigmoidLayer(name, numberRows * numberColumns)
+            sigmoidLayer(name, numberRows, numberColumns)
         ActivationFunction.Softmax ->
             softmaxLayer(name, numberRows, numberColumns)
         ActivationFunction.Tanh ->
-            tanhLayer(name, numberRows * numberColumns)
+            tanhLayer(name, numberRows, numberColumns)
 
     }
 

@@ -6,7 +6,7 @@ class CpuIdentityLayer internal constructor(name : String? = null) : BaseCpuActi
 
     override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) =
 
-        input
+        FloatMatrix(input.numberRows, input.numberColumns, input.entries)
 
     override fun backward(withinBatch : Int, chain : FloatMatrix) =
 

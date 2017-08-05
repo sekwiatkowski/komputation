@@ -1,49 +1,39 @@
 package shape.komputation.cpu.layers.forward.projection
 
-import shape.komputation.cpu.functions.add
-import shape.komputation.cpu.functions.backwardProjectionWrtBias
+import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
+import shape.komputation.layers.concatenateNames
+import shape.komputation.layers.forward.activation.identityLayer
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.OptimizationInstruction
 
 class SeriesBias internal constructor(
     private val name : String?,
+    private val biases: Array<CpuBiasLayer>,
     private val bias: FloatArray,
-    private val numberEntries: Int,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule? = null) {
 
-    private val forwardEntries = FloatArray(this.numberEntries)
-    private val backwardEntries = FloatArray(this.numberEntries)
+    private val numberBiasEntries = this.bias.size
 
-    fun forwardStep(input : FloatMatrix): FloatMatrix {
+    fun forwardStep(withinBatch : Int, step : Int, input : FloatMatrix, isTraining : Boolean) =
 
-        add(input.entries, this.bias, this.forwardEntries, this.numberEntries)
+        this.biases[step].forward(withinBatch, input, isTraining)
 
-        return FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
 
-    }
+    fun backwardStep(withinBatch: Int, step : Int, chain: FloatMatrix)  =
 
-    fun backwardStep(chain: FloatMatrix) {
-
-        backwardProjectionWrtBias(this.bias.size, chain.entries, chain.numberRows, chain.numberColumns, backwardEntries)
-
-        this.seriesAccumulator.accumulate(this.backwardEntries)
-
-    }
+        this.biases[step].backward(withinBatch, chain)
 
     fun backwardSeries() {
 
-        val seriesAccumulator = this.seriesAccumulator
-
-        this.batchAccumulator.accumulate(seriesAccumulator.getAccumulation())
-
-        seriesAccumulator.reset()
+        this.batchAccumulator.accumulate(this.seriesAccumulator.getAccumulation())
+        this.seriesAccumulator.reset()
 
     }
 
@@ -51,7 +41,7 @@ class SeriesBias internal constructor(
 
         if (this.updateRule != null) {
 
-            updateDensely(this.bias, this.batchAccumulator.getAccumulation(), this.numberEntries, scalingFactor, this.updateRule)
+            updateDensely(this.bias, this.batchAccumulator.getAccumulation(), this.numberBiasEntries, scalingFactor, this.updateRule)
 
         }
 
@@ -62,25 +52,44 @@ class SeriesBias internal constructor(
 }
 
 fun seriesBias(
-    dimension: Int,
-    initializationStrategy: InitializationStrategy,
-    optimizationStrategy: OptimizationInstruction?) =
+    numberSteps: Int,
+    numberInputRows: Int,
+    initialization: InitializationStrategy,
+    optimization: OptimizationInstruction?) =
 
-    seriesBias(null, dimension, initializationStrategy, optimizationStrategy)
+    seriesBias(null, null, numberSteps, numberInputRows, initialization, optimization)
 
 fun seriesBias(
-    name : String?,
-    dimension: Int,
-    initializationStrategy: InitializationStrategy,
-    optimizationStrategy: OptimizationInstruction?) : SeriesBias {
+    seriesName: String?,
+    stepNamePrefix: String?,
+    numberSteps: Int,
+    numberInputRows: Int,
+    initialization: InitializationStrategy,
+    optimization: OptimizationInstruction?) : SeriesBias {
 
-    val bias = initializeColumnVector(initializationStrategy, dimension)
+    val bias = initializeColumnVector(initialization, numberInputRows)
 
-    val seriesAccumulator = DenseAccumulator(dimension)
-    val batchAccumulator = DenseAccumulator(dimension)
+    val seriesAccumulator = DenseAccumulator(numberInputRows)
 
-    val updateRule = optimizationStrategy?.buildForCpu()?.invoke(dimension, 1)
+    val biasLayers = Array(numberSteps) { indexStep ->
 
-    return SeriesBias(name, bias, dimension, seriesAccumulator, batchAccumulator, updateRule)
+        val stepName = concatenateNames(stepNamePrefix, indexStep.toString())
+
+        CpuBiasLayer(stepName, numberInputRows, 1, bias, seriesAccumulator)
+
+    }
+
+    val batchAccumulator = DenseAccumulator(numberInputRows)
+
+    val optimizationStrategy = optimization?.buildForCpu()
+    val updateRule = optimizationStrategy?.invoke(numberInputRows, 1)
+
+    return SeriesBias(
+        seriesName,
+        biasLayers,
+        bias,
+        seriesAccumulator,
+        batchAccumulator,
+        updateRule)
 
 }

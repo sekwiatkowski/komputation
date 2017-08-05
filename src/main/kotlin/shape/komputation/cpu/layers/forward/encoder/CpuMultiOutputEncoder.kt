@@ -10,6 +10,7 @@ import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
 import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.optimization.Optimizable
+import java.util.*
 
 class CpuMultiOutputEncoder internal constructor(
     name : String?,
@@ -22,26 +23,25 @@ class CpuMultiOutputEncoder internal constructor(
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
 
-    private val stepIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
-
+    private val inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
+    private val steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
+    private val states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }
     private val forwardEntries = FloatArray(this.numberSteps * this.hiddenDimension)
 
-    private val inputStepEntries = FloatArray(this.inputDimension)
-    private val inputStep = FloatMatrix(this.inputDimension, 1, inputStepEntries)
-
     override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
-
-        var state = floatZeroColumnVector(this.hiddenDimension)
 
         val inputEntries = input.entries
 
         for (indexStep in this.startAtTheBeginning) {
 
-            getStep(inputEntries, this.stepIndices[indexStep], this.inputStepEntries, this.inputDimension)
+            val stepEntries = this.steps[indexStep]
+            getStep(inputEntries, this.inputIndices[indexStep], stepEntries, this.inputDimension)
 
-            state = this.unit.forwardStep(withinBatch, indexStep, state, this.inputStep, isTraining)
+            val newState = this.unit.forwardStep(withinBatch, indexStep, floatColumnVector(*this.states[indexStep]), floatColumnVector(*stepEntries), isTraining).entries
 
-            setStep(this.forwardEntries, indexStep, state.entries, this.hiddenDimension)
+            this.states[indexStep+1] = newState
+
+            System.arraycopy(newState, 0, this.forwardEntries, indexStep * this.hiddenDimension, this.hiddenDimension)
 
         }
 
@@ -81,7 +81,7 @@ class CpuMultiOutputEncoder internal constructor(
 
             stateChain = backwardStatePreActivationWrtPreviousState
 
-            setStep(seriesBackwardWrtInput.entries, indexStep, backwardStatePreActivationWrtInput.entries, this.inputDimension)
+            setStep(backwardStatePreActivationWrtInput.entries, indexStep, seriesBackwardWrtInput.entries, this.inputDimension)
 
         }
 

@@ -26,15 +26,16 @@ class SingleInputDecoder(
     override fun buildForCpu(): CpuSingleInputDecoder {
 
         val weightingSeriesName = concatenateNames(this.name, "weighting")
-        val weightingStepName = concatenateNames(this.name, "weighting-step")
-        val weighting = seriesWeighting(weightingSeriesName, weightingStepName, this.numberSteps, false, this.hiddenDimension, this.outputDimension, this.weightInitialization, optimization)
+        val weightingStepName = concatenateNames(weightingSeriesName, "weighting-step")
+        val weighting = seriesWeighting(weightingSeriesName, weightingStepName, this.numberSteps, false, this.hiddenDimension, 1, this.outputDimension, this.weightInitialization, optimization)
 
         val bias =
 
             if (this.biasInitialization != null) {
 
                 val biasSeriesName = concatenateNames(this.name, "bias")
-                seriesBias(biasSeriesName, this.outputDimension, biasInitialization, this.optimization)
+                val biasStepName = concatenateNames(biasSeriesName, "step")
+                seriesBias(biasSeriesName, biasStepName, this.numberSteps, this.outputDimension, this.biasInitialization, this.optimization)
 
             }
             else {

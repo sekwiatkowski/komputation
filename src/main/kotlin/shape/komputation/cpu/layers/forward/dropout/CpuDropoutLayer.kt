@@ -8,11 +8,14 @@ import java.util.*
 
 class CpuDropoutLayer internal constructor(
     name: String?,
-    private val numberEntries: Int,
+    private val numberRows: Int,
+    private val numberColumns: Int,
     private val random: Random,
     private val keepProbability: Float) : BaseCpuForwardLayer(name), Resourceful {
 
-    private var entrySeeds = IntArray(0)
+    private val numberEntries = this.numberRows * this.numberColumns
+
+    private var entrySeeds = IntArray(this.numberEntries)
 
     private var mask = BooleanArray(this.numberEntries)
     private var dropoutEntries = FloatArray(this.numberEntries)
@@ -65,7 +68,7 @@ class CpuDropoutLayer internal constructor(
 
             scale(input.entries, this.keepProbability, this.expectationEntries, this.numberEntries)
 
-            FloatMatrix(input.numberRows, input.numberColumns, this.expectationEntries)
+            FloatMatrix(this.numberRows, this.numberColumns, this.expectationEntries)
 
         }
 
@@ -73,7 +76,7 @@ class CpuDropoutLayer internal constructor(
 
         backwardDropout(chain.entries, this.mask, this.backwardEntries, this.numberEntries)
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 
     }
 

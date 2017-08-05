@@ -8,17 +8,17 @@ import shape.komputation.cuda.layers.forward.activation.CudaTanhLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class TanhLayer(private val name : String?, private val numberEntries : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class TanhLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuTanhLayer(this.name, this.numberEntries)
+        CpuTanhLayer(this.name, this.numberRows, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaTanhLayer {
 
         return CudaTanhLayer(
             this.name,
-            this.numberEntries,
+            this.numberRows * this.numberColumns,
             { context.createKernel(ForwardKernels.tanh()) },
             { context.createKernel(ForwardKernels.backwardTanh()) },
             context.maximumNumberOfThreadsPerBlock,
@@ -31,6 +31,6 @@ class TanhLayer(private val name : String?, private val numberEntries : Int) : C
 
 }
 
-fun tanhLayer(numberEntries : Int) = tanhLayer(null, numberEntries)
+fun tanhLayer(numberRows : Int, numberColumns: Int = 1) = tanhLayer(null, numberRows, numberColumns)
 
-fun tanhLayer(name : String? = null, numberEntries : Int) = TanhLayer(name, numberEntries)
+fun tanhLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1) = TanhLayer(name, numberRows, numberColumns)

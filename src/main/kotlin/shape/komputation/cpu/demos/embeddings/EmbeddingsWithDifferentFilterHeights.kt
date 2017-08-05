@@ -39,9 +39,9 @@ fun main(args: Array<String>) {
     val createConvolutionSubnetwork = { filterWidth : Int ->
 
         arrayOf(
-            convolutionalLayer(numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
+            convolutionalLayer(embeddingDimension, 2, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
             reluLayer(numberFilters * (2 - filterWidth + 1)),
-            maxPoolingLayer(numberFilters)
+            maxPoolingLayer(numberFilters, embeddingDimension - filterWidth + 1)
         )
 
     }
@@ -51,9 +51,10 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
 
     val network = Network(
-        lookupLayer(embeddings, embeddingDimension, maximumBatchSize, 2, optimizationStrategy),
+        lookupLayer(embeddings, 2, embeddingDimension, maximumBatchSize, optimizationStrategy),
         concatenation(
-            2 * embeddingDimension,
+            embeddingDimension,
+            2,
             *filterWidths.map { filterWidth -> createConvolutionSubnetwork(filterWidth) }.toTypedArray()
         ),
         denseLayer(numberFilters * filterHeight, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)

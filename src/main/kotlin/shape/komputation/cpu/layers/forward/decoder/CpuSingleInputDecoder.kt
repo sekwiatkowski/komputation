@@ -12,6 +12,8 @@ import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.floatColumnVector
 import shape.komputation.matrix.floatZeroColumnVector
 import shape.komputation.optimization.Optimizable
+import java.util.*
+
 
 // The first input is empty.
 // Starting with the second input, the input at step t is the output of step t-1.
@@ -25,31 +27,30 @@ class CpuSingleInputDecoder internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
 
-    private val decoding = FloatArray(this.outputDimension * this.numberSteps)
+    private val decodingEntries = FloatArray(this.numberSteps * this.outputDimension)
+    private val decoding = FloatMatrix(this.outputDimension, this.numberSteps, this.decodingEntries)
+
+    private val inputs = Array(this.numberSteps+1) { floatZeroColumnVector(this.outputDimension) }
+    private val states = Array(this.numberSteps+1) { floatZeroColumnVector(this.hiddenDimension) }
 
     override fun forward(withinBatch : Int, encoding: FloatMatrix, isTraining : Boolean): FloatMatrix {
 
         // Use the encoder output as the first state
-        var state = encoding
-        // The first input is empty since there is no previous output
-        var input = floatZeroColumnVector(this.outputDimension)
+        this.states[0] = encoding
 
         for (indexStep in 0..this.numberSteps - 1) {
 
-            val newState = this.unit.forwardStep(withinBatch, indexStep, state, input, isTraining)
+            val newState = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], this.inputs[indexStep], isTraining)
+            this.states[indexStep+1] = newState
 
             val output = this.forwardOutput(withinBatch, indexStep, newState, isTraining)
+            this.inputs[indexStep+1] = output
 
-            setStep(this.decoding, indexStep, output.entries, this.outputDimension)
-
-            state = newState
-
-            // The output of step t-1 is the input for step t.
-            input = output
+            System.arraycopy(output.entries, 0, this.decodingEntries, indexStep * this.outputDimension, this.outputDimension)
 
         }
 
-        return FloatMatrix(this.outputDimension, this.numberSteps, this.decoding)
+        return this.decoding
 
     }
 
@@ -61,7 +62,7 @@ class CpuSingleInputDecoder internal constructor(
 
             if (this.bias != null) {
 
-                this.bias.forwardStep(weighting)
+                this.bias.forwardStep(withinBatch, indexStep, weighting, isTraining)
 
             }
             else {
@@ -146,7 +147,7 @@ class CpuSingleInputDecoder internal constructor(
 
         val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(withinBatch, floatColumnVector(*addition))
 
-        this.bias?.backwardStep(diffOutputWrtOutputPreActivation)
+        this.bias?.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
 
         val diffOutputPreActivationWrtState = this.weighting.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
 

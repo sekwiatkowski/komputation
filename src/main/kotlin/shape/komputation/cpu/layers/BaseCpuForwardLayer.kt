@@ -1,3 +1,3 @@
 package shape.komputation.cpu.layers
 
-abstract class BaseCpuForwardLayer(private val name: String?) : CpuForwardLayer
+abstract class BaseCpuForwardLayer(protected val name: String?) : CpuForwardLayer

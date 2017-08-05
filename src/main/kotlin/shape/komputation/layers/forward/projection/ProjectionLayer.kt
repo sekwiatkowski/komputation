@@ -38,7 +38,7 @@ class ProjectionLayer(
         val weightAccumulator = DenseAccumulator(this.numberWeightRows * this.numberWeightColumns)
         val weightingUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberWeightRows, this.numberWeightColumns)
 
-        val weightingLayer = CpuWeightingLayer(weightingName, weights, this.numberWeightRows, this.numberWeightColumns, weightAccumulator, weightingUpdateRule)
+        val weightingLayer = CpuWeightingLayer(weightingName, weights, this.numberInputRows, this.numberInputColumns, this.numberWeightRows, weightAccumulator, weightingUpdateRule)
 
         val biasLayer = if (this.biasInitializationStrategy != null) {
 
@@ -48,7 +48,7 @@ class ProjectionLayer(
             val biasAccumulator = DenseAccumulator(bias.size)
             val biasUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(bias.size, 1)
 
-            CpuBiasLayer(biasName, bias, biasAccumulator, biasUpdateRule)
+            CpuBiasLayer(biasName, this.numberWeightRows, this.numberInputColumns, bias, biasAccumulator, biasUpdateRule)
 
         }
         else {
@@ -129,10 +129,27 @@ fun projectionLayer(
         optimizationStrategy)
 
 fun projectionLayer(
+    numberInputRows: Int,
+    numberInputColumns: Int,
+    outputRows: Int,
+    weightInitializationStrategy: InitializationStrategy,
+    biasInitializationStrategy: InitializationStrategy? = null,
+    optimizationStrategy : OptimizationInstruction? = null) =
+
+    projectionLayer(
+        null,
+        numberInputRows,
+        numberInputColumns,
+        outputRows,
+        weightInitializationStrategy,
+        biasInitializationStrategy,
+        optimizationStrategy)
+
+fun projectionLayer(
     name : String?,
     numberInputRows: Int,
     numberInputColumns: Int,
-    outputDimension: Int,
+    outputRows: Int,
     weightInitializationStrategy: InitializationStrategy,
     biasInitializationStrategy: InitializationStrategy? = null,
     optimizationStrategy : OptimizationInstruction? = null) =
@@ -141,7 +158,7 @@ fun projectionLayer(
         name,
         numberInputRows,
         numberInputColumns,
-        outputDimension,
+        outputRows,
         weightInitializationStrategy,
         biasInitializationStrategy,
         optimizationStrategy)

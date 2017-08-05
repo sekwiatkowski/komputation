@@ -27,16 +27,16 @@ class HighwayLayer(
         val transformationFraction = denseLayer(transformationFractionName, this.dimension, this.dimension, this.weightInitialization, this.transformationFractionBiasInitialization, ActivationFunction.Sigmoid, this.optimization).buildForCpu()
 
         val transformationHadamardName = concatenateNames(this.name, "transformation-hadamard")
-        val transformationHadamard = hadamardCombination(transformationHadamardName, this.dimension)
+        val transformationHadamard = hadamardCombination(transformationHadamardName, this.dimension, 1)
 
         val counterProbabilityName = concatenateNames(this.name, "counter-probability")
-        val counterProbability = counterProbabilityLayer(counterProbabilityName, this.dimension).buildForCpu()
+        val counterProbability = counterProbabilityLayer(counterProbabilityName, this.dimension, 1).buildForCpu()
 
         val carryHadamardName = concatenateNames(this.name, "carry-hadamard")
-        val carryHadamard = hadamardCombination(carryHadamardName, this.dimension)
+        val carryHadamard = hadamardCombination(carryHadamardName, this.dimension, 1)
 
         val additionName = concatenateNames(this.name, "addition")
-        val addition = additionCombination(additionName, this.dimension)
+        val addition = additionCombination(additionName, this.dimension, 1)
 
         val highwayLayer = CpuHighwayLayer(this.name, this.dimension, transformation, transformationFraction, transformationHadamard, counterProbability, carryHadamard, addition)
 

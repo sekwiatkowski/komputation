@@ -8,8 +8,9 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CudaInputLayer(private val numberEntries: Int) : CudaEntryPoint, Resourceful {
+class CudaInputLayer(private val numberRows: Int, private val numberColumns: Int) : CudaEntryPoint, Resourceful {
 
+    private val numberEntries = numberRows * numberColumns
     private val memory = hashMapOf<Int, Pointer>()
 
     override fun acquire(maximumBatchSize : Int) {

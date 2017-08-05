@@ -20,11 +20,9 @@ fun backwardRelu(forwardEntries : FloatArray, chainEntries : FloatArray, result 
 
     for(index in 0..numberEntries-1) {
 
-        val forwardEntry = forwardEntries[index]
-
         result[index] =
 
-            if (forwardEntry > 0.0)
+            if (forwardEntries[index] > 0.0)
                 chainEntries[index]
             else
                 0.0f

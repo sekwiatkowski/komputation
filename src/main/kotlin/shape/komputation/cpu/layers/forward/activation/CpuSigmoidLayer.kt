@@ -5,7 +5,9 @@ import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.cpu.functions.hadamard
 import shape.komputation.matrix.FloatMatrix
 
-class CpuSigmoidLayer internal constructor(name : String? = null, private val numberEntries : Int) : BaseCpuActivationLayer(name) {
+class CpuSigmoidLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
+
+    private val numberEntries = this.numberRows * this.numberColumns
 
     private val forwardEntries = FloatArray(this.numberEntries)
     private val differentiation = FloatArray(this.numberEntries)
@@ -18,7 +20,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         sigmoid(input.entries, this.forwardEntries, this.numberEntries)
 
-        val result = FloatMatrix(input.numberRows, input.numberColumns, this.forwardEntries)
+        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
 
         return result
 
@@ -42,7 +44,7 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         hadamard(chain.entries, this.differentiation, this.backwardEntries, this.numberEntries)
 
-        return FloatMatrix(chain.numberRows, chain.numberColumns, this.backwardEntries)
+        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
 
     }
 

@@ -15,7 +15,9 @@ class CpuProjectionLayer internal constructor(
 
         if (this.biasLayer != null) {
 
-            return this.biasLayer.forward(withinBatch, weighted, isTraining)
+            val result = this.biasLayer.forward(withinBatch, weighted, isTraining)
+
+            return result
 
         }
         else {

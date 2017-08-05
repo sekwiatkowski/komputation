@@ -1,18 +1,20 @@
 package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.functions.backwardExpansionForConvolution
-import shape.komputation.cpu.functions.convolutionsPerColumn
-import shape.komputation.cpu.functions.convolutionsPerRow
+import shape.komputation.cpu.functions.computeNumberFilterColumnPositions
 import shape.komputation.cpu.functions.expandForConvolution
+import shape.komputation.cpu.functions.findFirstPaddedColumn
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.matrix.FloatMatrix
 
-class CpuExpansionLayer internal constructor(name : String? = null, private val filterWidth: Int, private val filterHeight: Int) : BaseCpuForwardLayer(name) {
-
-    private var numberInputRows = -1
-    private var numberInputColumns = -1
-
-    private var convolutionsPerRow = -1
+class CpuExpansionLayer internal constructor(
+    name : String? = null,
+    private val numberInputRows : Int,
+    private val numberInputColumns : Int,
+    private val numberConvolutions : Int,
+    private val numberFilterRowPositions: Int,
+    private val filterWidth: Int,
+    private val filterHeight: Int) : BaseCpuForwardLayer(name) {
 
     /*
         Ex.:
@@ -29,33 +31,59 @@ class CpuExpansionLayer internal constructor(name : String? = null, private val 
         i_22 i_23
         i_32 i_33
     */
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+
+    private val filterLength = this.filterWidth * this.filterHeight
+
+    private val numberForwardEntries = this.filterLength * this.numberConvolutions
+    private val forwardEntries = FloatArray(this.numberForwardEntries)
+
+    private val backwardEntries = FloatArray(this.numberInputEntries)
+
+    private var numberActualColumns = -1
+    private var numberFilterColumnPositions = -1
+
     override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
 
-        this.numberInputRows = input.numberRows
-        this.numberInputColumns = input.numberColumns
+        val inputEntries = input.entries
 
-        this.convolutionsPerRow = convolutionsPerRow(this.numberInputColumns, this.filterWidth)
-        val convolutionsPerColumn = convolutionsPerColumn(this.numberInputRows, this.filterHeight)
+        val firstPaddedColumn = findFirstPaddedColumn(inputEntries, this.numberInputRows, this.numberInputColumns)
 
-        val expanded = expandForConvolution(input.entries, this.numberInputRows, this.convolutionsPerRow, convolutionsPerColumn, filterWidth, filterHeight)
+        this.numberActualColumns = if(firstPaddedColumn == -1) this.numberInputColumns else firstPaddedColumn
 
-        return expanded
+        this.numberFilterColumnPositions = computeNumberFilterColumnPositions(this.numberActualColumns, this.filterWidth)
+
+        expandForConvolution(
+            input.entries,
+            this.numberInputRows,
+            this.forwardEntries,
+            this.numberForwardEntries,
+            this.numberFilterRowPositions,
+            this.numberFilterColumnPositions,
+            this.filterWidth,
+            this.filterHeight)
+
+        return FloatMatrix(this.filterLength, this.numberConvolutions, this.forwardEntries)
 
     }
 
     // d expansion / d input
     override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
 
-        val summedDerivatives = backwardExpansionForConvolution(
-            this.numberInputRows,
-            this.numberInputColumns,
-            this.filterHeight,
-            this.convolutionsPerRow,
-            chain.entries,
-            chain.numberRows,
-            chain.numberColumns)
+        val numberActualEntries = this.numberActualColumns * this.numberInputRows
 
-        return FloatMatrix(this.numberInputRows, this.numberInputColumns, summedDerivatives)
+        backwardExpansionForConvolution(
+            this.numberInputRows,
+            numberActualEntries,
+            this.numberInputEntries,
+            this.backwardEntries,
+            this.filterHeight,
+            this.numberFilterRowPositions,
+            this.numberFilterColumnPositions,
+            chain.entries,
+            chain.numberRows)
+
+        return FloatMatrix(this.numberInputRows, this.numberInputColumns, this.backwardEntries)
 
     }
 
