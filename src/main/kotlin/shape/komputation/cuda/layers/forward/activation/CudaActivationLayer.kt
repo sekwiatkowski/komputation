@@ -9,7 +9,7 @@ fun cudaActivationLayer(name: String?, function: ActivationFunction, dimension :
     when (function) {
 
         ActivationFunction.Identity ->
-            identityLayer(name)
+            identityLayer(name, dimension)
         ActivationFunction.ReLU ->
             reluLayer(name, dimension)
         ActivationFunction.Sigmoid ->

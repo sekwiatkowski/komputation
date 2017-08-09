@@ -8,11 +8,11 @@ import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class NormalizationLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+class NormalizationLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int, private val isFixedLength: Boolean) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuNormalizationLayer(this.name, this.numberRows, this.numberColumns)
+        CpuNormalizationLayer(this.name, this.numberRows, if(this.isFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaNormalizationLayer {
 
@@ -32,20 +32,15 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
 fun normalizationLayer(
     numberRows : Int,
-    numberColumns : Int) =
+    numberColumns: Int = 1,
+    isFixedLength : Boolean = true) =
 
-    normalizationLayer(
-        null,
-        numberRows,
-        numberColumns
-    )
+    normalizationLayer(null, numberRows, numberColumns, isFixedLength)
 
 fun normalizationLayer(
     name : String?,
     numberRows : Int,
-    numberColumns : Int) =
+    numberColumns: Int = 1,
+    isFixedLength : Boolean = true) =
 
-    NormalizationLayer(
-        name,
-        numberRows,
-        numberColumns)
+    NormalizationLayer(name, numberRows, numberColumns, isFixedLength)

@@ -5,17 +5,17 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.kernels.LossKernels
 import shape.komputation.cuda.loss.CudaLogisticLoss
 
-class LogisticLoss(private val numberCategories : Int, private val numberSteps : Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
+class LogisticLoss(private val numberRows: Int, private val numberColumns: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
 
     override fun buildForCpu() =
 
-        CpuLogisticLoss()
+        CpuLogisticLoss(this.numberRows, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext): CudaLogisticLoss {
 
         return CudaLogisticLoss(
-            this.numberCategories,
-            this.numberSteps,
+            this.numberRows,
+            this.numberColumns,
             { blockSize : Int -> context.createKernel(LossKernels.logisticLoss(blockSize)) },
             { context.createKernel(LossKernels.backwardLogisticLoss()) },
             context.numberMultiprocessors,
@@ -27,6 +27,6 @@ class LogisticLoss(private val numberCategories : Int, private val numberSteps :
 
 }
 
-fun logisticLoss(numberCategories: Int, numberSteps: Int = 1) =
+fun logisticLoss(numberCategories: Int, length: Int = 1) =
 
-    LogisticLoss(numberCategories, numberSteps)
+    LogisticLoss(numberCategories, length)

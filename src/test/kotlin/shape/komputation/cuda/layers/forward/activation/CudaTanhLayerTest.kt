@@ -8,9 +8,9 @@ import shape.komputation.matrix.FloatMath
 
 class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
 
-    override fun createLayer(context: CudaContext, numberEntries: Int) =
+    override fun createLayer(context: CudaContext, numberRows: Int) =
 
-        tanhLayer(numberEntries).buildForCuda(context, cublasHandle())
+        tanhLayer(numberRows).buildForCuda(context, cublasHandle())
 
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {

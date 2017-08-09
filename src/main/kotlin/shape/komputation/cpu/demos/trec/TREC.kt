@@ -10,11 +10,9 @@ import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
-import shape.komputation.optimization.historical.momentum
 import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
@@ -44,6 +42,7 @@ class TrecTraining {
         val optimization = nesterov(0.001f, 0.85f)
 
         val batchSize = 1
+        val hasFixedLength = false
         val numberIterations = 20
 
         val numberFilters = 100
@@ -100,20 +99,20 @@ class TrecTraining {
             .toTypedArray()
 
         val network = Network(
-            lookupLayer(embeddings, maximumDocumentLength, embeddingDimension, batchSize, optimization),
+            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, batchSize, optimization),
             concatenation(
-                maximumDocumentLength,
                 embeddingDimension,
-                *filterWidths
+                maximumDocumentLength,
+                false,
+                IntArray(numberFilterWidths) { numberFilters },
+                1,
+                filterWidths
                     .map { filterWidth ->
-                        arrayOf(
-                            convolutionalLayer(embeddingDimension, maximumDocumentLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-                            maxPoolingLayer(numberFilters, maximumDocumentLength-filterWidth+1)
-                        )
+                        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
                     }
                     .toTypedArray()
             ),
-            reluLayer(numberFilters),
+            reluLayer(numberFilterWidths * numberFilters),
             dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
             projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
@@ -128,7 +127,7 @@ class TrecTraining {
                     batchSize,
                     { prediction, target ->
 
-                        findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
+                        findMaxIndex(prediction) == findMaxIndex(target)
 
                     }
                 )

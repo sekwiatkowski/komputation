@@ -9,7 +9,6 @@ import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.layers.forward.activation.softmaxLayer
-import shape.komputation.matrix.FloatMatrix
 
 class CudaSoftmaxLayerTest {
 
@@ -141,9 +140,10 @@ class CudaSoftmaxLayerTest {
         val softmaxLayer = softmaxLayer(numberRows, numberColumns)
 
         val cpuSoftmaxLayer = softmaxLayer.buildForCpu()
-        cpuSoftmaxLayer.forward(1, FloatMatrix(numberRows, numberColumns, input), true)
-        val cpuBackward = cpuSoftmaxLayer.backward(1, FloatMatrix(numberRows, numberColumns, chain))
-        val expected = cpuBackward.entries
+        cpuSoftmaxLayer.acquire(1)
+        cpuSoftmaxLayer.forward(0, numberColumns, input, true)
+        cpuSoftmaxLayer.backward(0, chain)
+        val expected = cpuSoftmaxLayer.backwardResult
 
         val cudaSoftmaxLayer = softmaxLayer.buildForCuda(cudaContext, cublasHandle())
 

@@ -10,7 +10,7 @@ fun add(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) 
 
 }
 
-fun subtract(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
+fun subtract(a: FloatArray, b: FloatArray, numberEntries: Int, result: FloatArray) {
 
     for (index in 0..numberEntries - 1) {
 

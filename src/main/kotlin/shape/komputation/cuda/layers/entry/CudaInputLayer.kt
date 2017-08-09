@@ -8,7 +8,7 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CudaInputLayer(private val numberRows: Int, private val numberColumns: Int) : CudaEntryPoint, Resourceful {
+class CudaInputLayer(numberRows: Int, numberColumns: Int) : CudaEntryPoint, Resourceful {
 
     private val numberEntries = numberRows * numberColumns
     private val memory = hashMapOf<Int, Pointer>()

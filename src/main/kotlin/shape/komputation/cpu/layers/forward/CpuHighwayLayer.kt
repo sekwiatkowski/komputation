@@ -4,8 +4,7 @@ import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.HadamardCombination
 import shape.komputation.cpu.optimization.DenseAccumulator
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
+import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CpuHighwayLayer internal constructor(
@@ -16,91 +15,126 @@ class CpuHighwayLayer internal constructor(
     private val transformationHadamard : HadamardCombination,
     private val counterProbability: CpuCounterProbabilityLayer,
     private val carryHadamard : HadamardCombination,
-    private val addition : AdditionCombination) : BaseCpuForwardLayer(name), Optimizable {
+    private val addition : AdditionCombination) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
+
+    override val numberOutputRows = inputDimension
+    override val numberOutputColumns = 1
+    private val numberOutputEntries = this.numberOutputRows * this.numberOutputColumns
+    override var forwardResult = FloatArray(0)
+
+    override val numberInputRows = inputDimension
+    override val numberInputColumns = 1
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+    override var backwardResult = FloatArray(0)
+
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.forwardResult = FloatArray(this.numberOutputEntries)
+        this.backwardResult = FloatArray(this.numberInputEntries)
+
+        this.transformation.acquire(maximumBatchSize)
+        this.transformationFraction.acquire(maximumBatchSize)
+        this.transformationHadamard.acquire(maximumBatchSize)
+        this.counterProbability.acquire(maximumBatchSize)
+        this.carryHadamard.acquire(maximumBatchSize)
+        this.addition.acquire(maximumBatchSize)
+
+    }
+
+    override fun release() {
+
+        this.transformation.release()
+        this.transformationFraction.release()
+        this.transformationHadamard.release()
+        this.counterProbability.release()
+        this.carryHadamard.release()
+        this.addition.release()
+
+    }
 
     private val gradientAccumulator = DenseAccumulator(inputDimension)
 
-    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
         // H(x)
-        val transformed = this.transformation.forward(withinBatch, input, isTraining)
+        val transformed = this.transformation.forward(withinBatch, 1, input, isTraining)
 
         // T(x)
-        val transformationFraction = this.transformationFraction.forward(withinBatch, input, isTraining)
+        val transformationFraction = this.transformationFraction.forward(withinBatch, 1, input, isTraining)
 
         // H(x) (.) T(x)
         val transformationComponent = this.transformationHadamard.forward(transformed, transformationFraction)
 
         // 1 - T(x)
-        val carryFraction = this.counterProbability.forward(withinBatch, transformationFraction, isTraining)
+        val carryFraction = this.counterProbability.forward(withinBatch, 1, transformationFraction, isTraining)
 
         // x (.) (1 - T(x))
         val carryComponent = this.carryHadamard.forward(input, carryFraction)
 
         // H(x) (.) T(x) + x (.) (1 - T(x))
-        val result = addition.forward(transformationComponent, carryComponent)
+        this.forwardResult = this.addition.forward(transformationComponent, carryComponent)
 
-        return result
+        return this.forwardResult
 
     }
 
-    private fun backwardTransformation(withinBatch : Int, chain: FloatMatrix) {
+    private fun backwardTransformation(withinBatch : Int, chain: FloatArray) {
 
         // d chain / d H(x) (.) T(x)
-        val diffChainWrtTransformationComponent = this.addition.backwardFirst(chain)
+        val backwardChainWrtTransformationComponent = this.addition.backwardFirst(chain)
 
         // d H(x) (.) T(x) / d H(x)
-        val diffTransformationComponentWrtTransformation = this.transformationHadamard.backwardFirst(diffChainWrtTransformationComponent)
+        val backwardTransformationComponentWrtTransformation = this.transformationHadamard.backwardFirst(backwardChainWrtTransformationComponent)
 
         // d H(x) / d x
-        val diffTransformationWrtInput = this.transformation.backward(withinBatch, diffTransformationComponentWrtTransformation)
+        val backwardTransformation = this.transformation.backward(withinBatch, backwardTransformationComponentWrtTransformation)
 
-        this.gradientAccumulator.accumulate(diffTransformationWrtInput.entries)
+        this.gradientAccumulator.accumulate(backwardTransformation)
 
         // d H(x) (.) T(x) / d T(x)
-        val diffTransformationComponentWrtTransformationFraction = this.transformationHadamard.backwardSecond(diffChainWrtTransformationComponent)
+        val backwardTransformationComponentWrtTransformationFraction = this.transformationHadamard.backwardSecond(backwardChainWrtTransformationComponent)
 
         // d T(x) / d x
-        val diffTransformationFractionWrtInput = this.transformationFraction.backward(withinBatch, diffTransformationComponentWrtTransformationFraction)
+        this.backwardResult = this.transformationFraction.backward(withinBatch, backwardTransformationComponentWrtTransformationFraction)
 
-        this.gradientAccumulator.accumulate(diffTransformationFractionWrtInput.entries)
+        this.gradientAccumulator.accumulate(this.backwardResult)
 
     }
 
-    private fun backwardCarry(withinBatch : Int, chain: FloatMatrix) {
+    private fun backwardCarry(withinBatch : Int, chain: FloatArray) {
 
         // d chain / d x (.) (1 - T(x))
-        val diffChainWrtCarryComponent = this.addition.backwardSecond(chain)
+        val backwardChainWrtCarryComponent = this.addition.backwardSecond(chain)
 
         // d x (.) (1 - T(x)) / d x
-        val diffCarryComponentWrtInput = this.carryHadamard.backwardFirst(diffChainWrtCarryComponent)
+        val backwardCarryComponentWrtInput = this.carryHadamard.backwardFirst(backwardChainWrtCarryComponent)
 
-        this.gradientAccumulator.accumulate(diffCarryComponentWrtInput.entries)
+        this.gradientAccumulator.accumulate(backwardCarryComponentWrtInput)
 
         // d x (.) (1 - T(x)) / d (1 - T(x))
-        val diffCarryComponentWrtCarryFraction = this.carryHadamard.backwardSecond(diffChainWrtCarryComponent)
+        val backwardCarryComponentWrtCarryFraction = this.carryHadamard.backwardSecond(backwardChainWrtCarryComponent)
 
         // d (1 - T(x)) / d T(x)
-        val diffCarryFractionWrtTransformationFraction = this.counterProbability.backward(withinBatch, diffCarryComponentWrtCarryFraction)
+        val backwardCounterProbability = this.counterProbability.backward(withinBatch, backwardCarryComponentWrtCarryFraction)
 
         // d T(x) / d x
-        val diffTransformationFractionWrtInput = this.transformationFraction.backward(withinBatch, diffCarryFractionWrtTransformationFraction)
+        val backwardTransformationFraction = this.transformationFraction.backward(withinBatch, backwardCounterProbability)
 
-        this.gradientAccumulator.accumulate(diffTransformationFractionWrtInput.entries)
+        this.gradientAccumulator.accumulate(backwardTransformationFraction)
 
     }
 
-    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
 
         this.backwardTransformation(withinBatch, chain)
 
         this.backwardCarry(withinBatch, chain)
 
-        val result = floatColumnVector(*this.gradientAccumulator.getAccumulation().copyOf())
+        System.arraycopy(this.gradientAccumulator.getAccumulation(), 0, this.backwardResult, 0, this.numberInputEntries)
 
         this.gradientAccumulator.reset()
 
-        return result
+        return this.backwardResult
 
     }
 

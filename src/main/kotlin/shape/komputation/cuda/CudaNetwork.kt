@@ -57,7 +57,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     fun train(
         inputs: Array<Matrix>,
-        targets: Array<FloatMatrix>,
+        targets: Array<FloatArray>,
         loss: CudaLossFunctionInstruction,
         numberIterations : Int,
         maximumBatchSize: Int,
@@ -78,7 +78,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         }
 
         val firstTarget = targets.first()
-        val targetSize = firstTarget.numberRows * firstTarget.numberColumns
+        val targetSize = firstTarget.size
 
         val targetMemory = hashMapOf<Int, Pointer>()
 
@@ -110,7 +110,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                             val target = targets[globalIndex]
 
-                            System.arraycopy(target.entries, 0, batchTargets, batchIndex * targetSize, targetSize)
+                            System.arraycopy(target, 0, batchTargets, batchIndex * targetSize, targetSize)
 
                         }
 

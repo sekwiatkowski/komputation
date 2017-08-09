@@ -1,25 +1,27 @@
 package shape.komputation.cpu.loss
 
 import shape.komputation.matrix.FloatMath
-import shape.komputation.matrix.FloatMatrix
 
-class CpuLogisticLoss : CpuLossFunction {
+class CpuLogisticLoss(
+    override val numberInputRows: Int,
+    override val numberInputColumns: Int) : CpuLossFunction {
+
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+
+    override val backwardResult = FloatArray(this.numberInputEntries)
 
     // -log(probability of the correct target)
-    override fun forward(predictions: FloatMatrix, targets : FloatMatrix): Float {
-
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
+    override fun forward(predictions: FloatArray, targets : FloatArray): Float {
 
         var loss = 0.0f
 
-        for (index in 0..predictionEntries.size-1) {
+        for (index in 0..this.numberInputEntries-1) {
 
-            val target = targetEntries[index]
+            val target = targets[index]
 
             if (target == 1.0f) {
 
-                loss += -FloatMath.log(predictionEntries[index])
+                loss += -FloatMath.log(predictions[index])
 
             }
 
@@ -30,29 +32,22 @@ class CpuLogisticLoss : CpuLossFunction {
     }
 
     // -1/target probability if target = 1.0, 0.0 otherwise
-    override fun backward(predictions: FloatMatrix, targets : FloatMatrix) : FloatMatrix {
+    override fun backward(predictions: FloatArray, targets : FloatArray) {
 
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
+        for(indexEntry in 0..this.numberInputEntries - 1) {
 
-        val derivatives = FloatArray(predictionEntries.size) { index ->
+            if (targets[indexEntry] == 1.0f) {
 
-            val target = targetEntries[index]
-
-            if (target == 1.0f) {
-
-                -1.0f.div(predictionEntries[index])
+                this.backwardResult[indexEntry] = -1.0f.div(predictions[indexEntry])
 
             }
             else {
 
-                0.0f
+                this.backwardResult[indexEntry] = 0f
 
             }
 
         }
-
-        return FloatMatrix(predictions.numberRows, predictions.numberColumns, derivatives)
 
     }
 

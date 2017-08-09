@@ -1,10 +1,10 @@
 package shape.komputation.cpu
 
+import shape.komputation.cpu.layers.ForwardLayerState
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.loss.CpuLossFunctionInstruction
-import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
 import shape.komputation.optimization.Optimizable
@@ -20,21 +20,25 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : FloatMatrix {
+    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : FloatArray {
 
-        var output = this.entryPoint.forward(input)
+        this.entryPoint.forward(input)
+
+        var previousLayerState : ForwardLayerState = this.entryPoint
 
         for (layer in this.layers) {
 
-            output = layer.forward(withinBatch, output, isTraining)
+            layer.forward(withinBatch, previousLayerState.numberOutputColumns, previousLayerState.forwardResult, isTraining)
+
+            previousLayerState = layer
 
         }
 
-        return output
+        return previousLayerState.forwardResult
 
     }
 
-    fun backward(withinBatch: Int, lossGradient : FloatMatrix): FloatMatrix {
+    fun backward(withinBatch: Int, lossGradient: FloatArray) {
 
         var chain = lossGradient
 
@@ -46,7 +50,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         }
 
-        return this.entryPoint.backward(chain)
+        this.entryPoint.backward(chain)
 
     }
 
@@ -62,7 +66,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     fun train(
         inputs: Array<Matrix>,
-        targets: Array<FloatMatrix>,
+        targets: Array<FloatArray>,
         loss: CpuLossFunctionInstruction,
         numberIterations : Int,
         maximumBatchSize: Int,
@@ -101,9 +105,9 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
                     val instanceLoss = lossFunction.forward(prediction, target)
 
-                    val lossGradient = lossFunction.backward(prediction, target)
+                    lossFunction.backward(prediction, target)
 
-                    this.backward(withinBatch, lossGradient)
+                    this.backward(withinBatch, lossFunction.backwardResult)
 
                     batchLoss += instanceLoss
 
@@ -137,9 +141,9 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     fun test(
         inputs: Array<Matrix>,
-        targets: Array<FloatMatrix>,
+        targets: Array<FloatArray>,
         batchSize: Int,
-        isCorrect: (FloatMatrix, FloatMatrix) -> Boolean) : BooleanArray {
+        isCorrect: (FloatArray, FloatArray) -> Boolean) : BooleanArray {
 
         val numberInstances = inputs.size
 

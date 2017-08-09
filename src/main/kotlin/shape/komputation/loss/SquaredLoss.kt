@@ -5,17 +5,17 @@ import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.kernels.LossKernels
 import shape.komputation.cuda.loss.CudaSquaredLoss
 
-class SquaredLoss(private val numberCategories: Int, private val numberSteps: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
+class SquaredLoss(private val numberRows: Int, private val numberColumns: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
 
     override fun buildForCpu() =
 
-        CpuSquaredLoss()
+        CpuSquaredLoss(this.numberRows, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext): CudaSquaredLoss {
 
         return CudaSquaredLoss(
-            this.numberCategories,
-            this.numberSteps,
+            this.numberRows,
+            this.numberColumns,
             { blockSize -> context.createKernel(LossKernels.squaredLoss(blockSize)) },
             { context.createKernel(LossKernels.backwardSquaredLoss()) },
             context.numberMultiprocessors,
@@ -27,6 +27,6 @@ class SquaredLoss(private val numberCategories: Int, private val numberSteps: In
 
 }
 
-fun squaredLoss(numberCategories: Int, numberSteps : Int = 1) =
+fun squaredLoss(numberCategories: Int, length: Int = 1) =
 
-    SquaredLoss(numberCategories, numberSteps)
+    SquaredLoss(numberCategories, length)

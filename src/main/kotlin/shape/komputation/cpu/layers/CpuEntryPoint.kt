@@ -1,12 +1,11 @@
 package shape.komputation.cpu.layers
 
-import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-interface CpuEntryPoint {
+interface CpuEntryPoint : ForwardLayerState {
 
-    fun forward(input: Matrix) : FloatMatrix
+    fun forward(input: Matrix) : FloatArray
 
-    fun backward(chain : FloatMatrix) : FloatMatrix
+    fun backward(chain : FloatArray)
 
 }

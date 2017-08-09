@@ -8,11 +8,15 @@ import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class ExponentiationLayer(private val name : String?, private val numberRows: Int, private val numberColumns: Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+class ExponentiationLayer(
+    private val name : String?,
+    private val numberRows: Int,
+    private val numberColumns: Int,
+    private val hasFixedLength: Boolean) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuExponentiationLayer(this.name, this.numberRows, this.numberColumns)
+        CpuExponentiationLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaExponentiationLayer {
 
@@ -34,20 +38,24 @@ class ExponentiationLayer(private val name : String?, private val numberRows: In
 
 fun exponentiationLayer(
     numberRows : Int,
-    numberColumns: Int = 1) =
+    numberColumns: Int = 1,
+    hasFixedLength: Boolean = true) =
 
     exponentiationLayer(
         null,
         numberRows,
-        numberColumns
+        numberColumns,
+        hasFixedLength
     )
 
 fun exponentiationLayer(
     name : String?,
     numberRows : Int,
-    numberColumns: Int = 1) =
+    numberColumns: Int = 1,
+    hasFixedLength: Boolean = true) =
 
     ExponentiationLayer(
         name,
         numberRows,
-        numberColumns)
+        numberColumns,
+        hasFixedLength)

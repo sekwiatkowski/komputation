@@ -16,16 +16,20 @@ class BiasLayer(
     private val name : String?,
     private val numberInputRows: Int,
     private val numberInputColumns: Int,
+    private val hasFixedLength: Boolean,
     private val initializationStrategy: InitializationStrategy,
     private val optimizationStrategy : OptimizationInstruction? = null) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+
+    private val minimumInputColumns = if (this.hasFixedLength) this.numberInputColumns else 1
+    private val maximumInputColumns = this.numberInputColumns
 
     override fun buildForCpu(): CpuBiasLayer {
 
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val accumulator = DenseAccumulator(bias.size)
-        val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberInputRows, this.numberInputColumns)
+        val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberInputRows, 1)
 
-        val layer = CpuBiasLayer(this.name, this.numberInputRows, this.numberInputColumns, bias, accumulator, updateRule)
+        val layer = CpuBiasLayer(this.name, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, bias, accumulator, updateRule)
 
         return layer
 
@@ -34,14 +38,14 @@ class BiasLayer(
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CublasBiasLayer {
 
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
-        val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberInputRows, this.numberInputColumns)
+        val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberInputRows, 1)
 
         val layer = CublasBiasLayer(
             this.name,
             cublasHandle,
             context.maximumNumberOfThreadsPerBlock,
             this.numberInputRows,
-            this.numberInputColumns,
+            this.maximumInputColumns,
             { context.createKernel(ForwardKernels.bias()) }, bias, updateRule)
 
         return layer
@@ -51,18 +55,20 @@ class BiasLayer(
 }
 
 fun biasLayer(
-    numberRows : Int,
-    numberColumns : Int,
+    numberInputRows: Int,
+    numberInputColumns : Int,
+    hasFixedLength : Boolean,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
-    biasLayer(null, numberRows, numberColumns, initializationStrategy, optimizationStrategy)
+    biasLayer(null, numberInputRows, numberInputColumns, hasFixedLength, initializationStrategy, optimizationStrategy)
 
 fun biasLayer(
     name : String?,
-    numberRows : Int,
-    numberColumns : Int,
+    numberInputRows: Int,
+    numberInputColumns : Int,
+    hasFixedLength : Boolean,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
-    BiasLayer(name, numberRows, numberColumns, initializationStrategy, optimizationStrategy)
+    BiasLayer(name, numberInputRows, numberInputColumns, hasFixedLength, initializationStrategy, optimizationStrategy)

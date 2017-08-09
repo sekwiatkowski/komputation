@@ -9,7 +9,7 @@ class InputLayer(private val name : String? = null, private val numberRows: Int,
 
     override fun buildForCpu() =
 
-        CpuInputLayer(this.name)
+        CpuInputLayer(this.name, this.numberRows, this.numberColumns)
 
     override fun buildForCuda() =
 
@@ -17,6 +17,10 @@ class InputLayer(private val name : String? = null, private val numberRows: Int,
 
 }
 
-fun inputLayer(numberRows : Int, numberColumns : Int = 1) = inputLayer(null, numberRows, numberColumns)
+fun inputLayer(numberRows : Int, numberColumns : Int = 1) =
 
-fun inputLayer(name : String? = null, numberRows: Int, numberColumns: Int = 1) = InputLayer(name, numberRows, numberColumns)
+    inputLayer(null, numberRows, numberColumns)
+
+fun inputLayer(name : String? = null, numberRows: Int, numberColumns: Int = 1) =
+
+    InputLayer(name, numberRows, numberColumns)

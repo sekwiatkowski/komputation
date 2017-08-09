@@ -28,11 +28,19 @@ class DenseLayer(
     private val projectionName = concatenateNames(this.name, "projection")
     private val activationName = concatenateNames(this.name, "activation")
 
-    private val projection = projectionLayer(this.projectionName, this.numberInputRows, this.numberInputColumns, this.numberOutputRows, this.weightInitialization, this.biasInitialization, this.optimization)
+    private val projection = projectionLayer(
+        this.projectionName,
+        this.numberInputRows,
+        this.numberInputColumns,
+        true,
+        this.numberOutputRows,
+        this.weightInitialization,
+        this.biasInitialization,
+        this.optimization)
 
     override fun buildForCpu(): CpuDenseLayer {
 
-        val projectionLayer = projection.buildForCpu()
+        val projectionLayer = this.projection.buildForCpu()
 
         val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1).buildForCpu()
 

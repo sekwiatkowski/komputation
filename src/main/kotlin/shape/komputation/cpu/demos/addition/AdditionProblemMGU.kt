@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
 
     val inputs = AdditionProblemData.generateInputs(numberExamples, random, length)
 
-    val targets = AdditionProblemData.generateTarget(inputs)
+    val targets = AdditionProblemData.generateTarget(inputs, length)
 
     val identityInitializationStrategy = identityInitialization()
     val gaussianInitializationStrategy = gaussianInitialization(random, 0.0f, 0.001f)

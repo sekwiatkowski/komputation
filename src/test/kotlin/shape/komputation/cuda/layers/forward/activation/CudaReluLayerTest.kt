@@ -8,9 +8,9 @@ import shape.komputation.layers.forward.activation.reluLayer
 
 class CudaReluLayerTest : BaseCudaEntrywiseActivationLayerTest() {
 
-    override fun createLayer(context: CudaContext, numberEntries: Int) =
+    override fun createLayer(context: CudaContext, numberRows: Int) =
 
-        reluLayer(numberEntries).buildForCuda(context, cublasHandle())
+        reluLayer(numberRows).buildForCuda(context, cublasHandle())
 
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {

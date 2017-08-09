@@ -1,16 +1,18 @@
 package shape.komputation.demos.mnist
 
-import shape.komputation.matrix.*
+import shape.komputation.matrix.FloatMatrix
+import shape.komputation.matrix.Matrix
+import shape.komputation.matrix.oneHotArray
 import java.io.File
 
 object MnistData {
 
     val numberCategories = 10
 
-    private fun loadMnist(csvFile: File, size: Int): Pair<Array<Matrix>, Array<FloatMatrix>> {
+    private fun loadMnist(csvFile: File, size: Int): Pair<Array<Matrix>, Array<FloatArray>> {
 
-        val inputs = Array<Matrix>(size) { EMPTY_FLOAT_MATRIX }
-        val targets = Array(size) { EMPTY_FLOAT_MATRIX }
+        val inputs = Array<Matrix>(size) { FloatMatrix(FloatArray(0)) }
+        val targets = Array(size) { FloatArray(0) }
 
         csvFile
             .bufferedReader()
@@ -22,8 +24,9 @@ object MnistData {
 
                 val category = split.first().toInt()
 
-                val target = oneHotVector(numberCategories, category)
-                val input = floatColumnVector(*split.drop(1).map { it.toFloat().div(255.0f) }.toFloatArray())
+                val target = oneHotArray(this.numberCategories, category)
+
+                val input = FloatMatrix(split.drop(1).map { it.toFloat().div(255.0f) }.toFloatArray())
 
                 targets[index] = target
                 inputs[index] = input

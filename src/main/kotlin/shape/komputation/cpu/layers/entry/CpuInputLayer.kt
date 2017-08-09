@@ -4,14 +4,25 @@ import shape.komputation.cpu.layers.BaseCpuEntryPoint
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CpuInputLayer internal constructor(name : String? = null) : BaseCpuEntryPoint(name) {
+class CpuInputLayer internal constructor(
+    name : String? = null,
+    numberInputRows: Int,
+    numberInputColumns: Int) : BaseCpuEntryPoint(name) {
 
-    override fun forward(input: Matrix) =
+    override val numberOutputRows = numberInputRows
+    override val numberOutputColumns = numberInputColumns
+    override var forwardResult = FloatArray(0)
 
-        input as FloatMatrix
+    override fun forward(input: Matrix): FloatArray {
 
-    override fun backward(chain : FloatMatrix) =
+        this.forwardResult = (input as FloatMatrix).entries
 
-        chain
+        return this.forwardResult
+
+    }
+
+    override fun backward(chain : FloatArray) {
+
+    }
 
 }

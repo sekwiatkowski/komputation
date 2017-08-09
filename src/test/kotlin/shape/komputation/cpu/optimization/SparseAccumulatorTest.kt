@@ -11,11 +11,11 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 1, 1)
 
-        accumulator.accumulate(intArrayOf(0), 0, floatArrayOf(1.0f))
+        accumulator.accumulate(intArrayOf(0), 1, floatArrayOf(1.0f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(1.0f)))
 
-        accumulator.accumulate(intArrayOf(0), 0, floatArrayOf(2.0f))
+        accumulator.accumulate(intArrayOf(0), 1, floatArrayOf(2.0f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(3.0f)))
 
@@ -26,11 +26,11 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 1, 2)
 
-        accumulator.accumulate(intArrayOf(0), 0, floatArrayOf(1.1f, 1.2f))
+        accumulator.accumulate(intArrayOf(0), 1, floatArrayOf(1.1f, 1.2f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(1.1f, 1.2f)))
 
-        accumulator.accumulate(intArrayOf(0), 0, floatArrayOf(1.0f, 2.0f))
+        accumulator.accumulate(intArrayOf(0), 1, floatArrayOf(1.0f, 2.0f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(2.1f, 3.2f)))
 
@@ -41,8 +41,8 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 2, 1, 2)
 
-        accumulator.accumulate(intArrayOf(0), 0, floatArrayOf(1.1f, 1.2f))
-        accumulator.accumulate(intArrayOf(1), 0, floatArrayOf(2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(0), 1, floatArrayOf(1.1f, 1.2f))
+        accumulator.accumulate(intArrayOf(1), 1, floatArrayOf(2.1f, 2.2f))
 
         check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(1.0f, 1.0f), arrayOf(floatArrayOf(1.1f, 1.2f), floatArrayOf(2.1f, 2.2f)))
 
@@ -53,7 +53,7 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), 1, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(0, 1), 2, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
 
         check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(1.0f, 1.0f), arrayOf(floatArrayOf(1.1f, 1.2f), floatArrayOf(2.1f, 2.2f)))
 
@@ -64,8 +64,8 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), 1, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
-        accumulator.accumulate(intArrayOf(0, 1), 1, floatArrayOf(1.3f, 1.4f, 2.3f, 2.4f))
+        accumulator.accumulate(intArrayOf(0, 1), 2, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(0, 1), 2, floatArrayOf(1.3f, 1.4f, 2.3f, 2.4f))
 
         check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(2.0f, 2.0f), arrayOf(floatArrayOf(2.4f, 2.6f), floatArrayOf(4.4f, 4.6f)))
 
@@ -76,8 +76,8 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(2, 1, 2, 2)
 
-        accumulator.accumulate(intArrayOf(0, 1), 1, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
-        accumulator.accumulate(intArrayOf(1, 0), 1, floatArrayOf(2.3f, 2.4f, 1.3f, 1.4f))
+        accumulator.accumulate(intArrayOf(0, 1), 2, floatArrayOf(1.1f, 1.2f, 2.1f, 2.2f))
+        accumulator.accumulate(intArrayOf(1, 0), 2, floatArrayOf(2.3f, 2.4f, 1.3f, 1.4f))
 
         check(accumulator, 2, intArrayOf(0, 1), floatArrayOf(2.0f, 2.0f), arrayOf(floatArrayOf(2.4f, 2.6f), floatArrayOf(4.4f, 4.6f)))
 
@@ -88,7 +88,7 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 1, 2, 1)
 
-        accumulator.accumulate(intArrayOf(0, 0), 1, floatArrayOf(1.0f, 2.0f))
+        accumulator.accumulate(intArrayOf(0, 0), 2, floatArrayOf(1.0f, 2.0f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(1.0f), arrayOf(floatArrayOf(3.0f)))
 
@@ -99,8 +99,8 @@ class SparseAccumulatorTest {
 
         val accumulator = SparseAccumulator(1, 2, 2, 1)
 
-        accumulator.accumulate(intArrayOf(0, 0), 1, floatArrayOf(1.0f, 2.0f))
-        accumulator.accumulate(intArrayOf(0, 0), 1, floatArrayOf(3.0f, 4.0f))
+        accumulator.accumulate(intArrayOf(0, 0), 2, floatArrayOf(1.0f, 2.0f))
+        accumulator.accumulate(intArrayOf(0, 0), 2, floatArrayOf(3.0f, 4.0f))
 
         check(accumulator, 1, intArrayOf(0), floatArrayOf(2.0f), arrayOf(floatArrayOf(10.0f)))
 

@@ -8,9 +8,7 @@ import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
-import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CpuMultiInputDecoder internal constructor(
@@ -22,92 +20,142 @@ class CpuMultiInputDecoder internal constructor(
     private val unit : RecurrentUnit,
     private val weighting: SeriesWeighting,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
+    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
-    private val states = Array(this.numberSteps+1) { floatZeroColumnVector(hiddenDimension) }
-    private val steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
-    private val forwardEntries = FloatArray(this.outputDimension * this.numberSteps)
+    private var states = emptyArray<FloatArray>()
+    private var steps = emptyArray<FloatArray>()
 
-    private val backwardEntries = FloatArray(this.inputDimension * this.numberSteps)
+    override val numberOutputRows = this.outputDimension
+    override val numberOutputColumns = this.numberSteps
+    override var forwardResult = FloatArray(0)
 
-    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override val numberInputRows = this.inputDimension
+    override val numberInputColumns = this.numberSteps
+    override var backwardResult = FloatArray(0)
+
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }
+        this.steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
+
+        this.forwardResult = FloatArray(this.numberSteps * this.outputDimension)
+        this.backwardResult = FloatArray(this.numberSteps * this.inputDimension)
+
+        if (this.unit is Resourceful) {
+
+            this.unit.acquire(maximumBatchSize)
+
+        }
+
+        this.weighting.acquire(maximumBatchSize)
+        this.bias?.acquire(maximumBatchSize)
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.acquire(maximumBatchSize)
+
+            }
+
+        }
+
+    }
+
+    override fun release() {
+
+        if (this.unit is Resourceful) {
+
+            this.unit.release()
+
+        }
+
+        this.weighting.release()
+        this.bias?.release()
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.release()
+
+            }
+
+        }
+
+    }
+
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
         for (indexStep in 0..this.numberSteps - 1) {
 
             val step = this.steps[indexStep]
-            getStep(input.entries, indexStep, step, this.inputDimension)
+            getStep(input, indexStep, step, this.inputDimension)
 
             // Compute the new state
-            val newState = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], floatColumnVector(*step), isTraining)
+            val newState = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], step, isTraining)
             this.states[indexStep+1] = newState
 
             val output = this.forwardOutput(withinBatch, indexStep, newState, isTraining)
 
             // Store the n-th output
-            setStep(output.entries, indexStep, this.forwardEntries, this.outputDimension)
+            setStep(output, indexStep, this.forwardResult, this.outputDimension)
 
         }
 
-        return FloatMatrix(this.outputDimension, this.numberSteps, this.forwardEntries)
+        return this.forwardResult
 
     }
 
-    private fun forwardOutput(withinBatch : Int, indexStep: Int, state: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    private fun forwardOutput(withinBatch : Int, indexStep: Int, state: FloatArray, isTraining : Boolean): FloatArray {
 
-        val weighting = this.weighting.forwardStep(withinBatch, indexStep, state, isTraining)
+        val weighted = this.weighting.forwardStep(withinBatch, indexStep, state, isTraining)
 
         val biased =
 
             if (this.bias != null) {
 
-                this.bias.forwardStep(withinBatch, indexStep, weighting, isTraining)
+                this.bias.forwardStep(withinBatch, indexStep, weighted, isTraining)
 
             }
             else {
 
-                weighting
+                weighting.forwardResult
             }
 
-        val output = this.activations[indexStep].forward(withinBatch, biased, isTraining)
-
-        return output
+        return this.activations[indexStep].forward(withinBatch, 1, biased, isTraining)
 
     }
 
-    private val chainStepEntries = FloatArray(this.hiddenDimension)
-    private val stateSumEntries = FloatArray(this.hiddenDimension)
+    private val chainStep = FloatArray(this.outputDimension)
+    private val backwardPreActivationSum = FloatArray(this.hiddenDimension)
 
     // Incoming gradient: d chain / d series prediction
-    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
 
-        val chainEntries = chain.entries
-
-        var diffStatePreActivationWrtPreviousState : FloatMatrix? = null
+        var backwardPreActivationWrtPreviousState : FloatArray? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
-            getStep(chainEntries, indexStep, this.chainStepEntries, this.outputDimension)
-            val chainStep = floatColumnVector(*this.chainStepEntries)
+            getStep(chain, indexStep, this.chainStep, this.outputDimension)
 
-            val diffOutputPreActivationWrtState = this.backwardOutput(withinBatch, indexStep, chainStep)
+            val backwardPreActivationWrtState = this.backwardOutput(withinBatch, indexStep, this.chainStep)
 
-            val stateSum = if (diffStatePreActivationWrtPreviousState != null) {
+            if (backwardPreActivationWrtPreviousState != null) {
 
-                add(diffStatePreActivationWrtPreviousState.entries, diffOutputPreActivationWrtState.entries, this.stateSumEntries, this.hiddenDimension)
-
-                floatColumnVector(*stateSumEntries)
+                add(backwardPreActivationWrtPreviousState, backwardPreActivationWrtState, this.backwardPreActivationSum, this.hiddenDimension)
 
             }
             else {
 
-                diffOutputPreActivationWrtState
+                System.arraycopy(backwardPreActivationWrtState, 0, this.backwardPreActivationSum, 0, this.hiddenDimension)
 
             }
 
-            val (newDiffStatePreActivationWrtPreviousState, newDiffStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, stateSum)
+            val (newBackwardPreActivationWrtPreviousState, newBackwardPreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, this.backwardPreActivationSum)
 
-            setStep(newDiffStatePreActivationWrtInput.entries, indexStep, this.backwardEntries, this.inputDimension)
-            diffStatePreActivationWrtPreviousState = newDiffStatePreActivationWrtPreviousState
+            setStep(newBackwardPreActivationWrtInput, indexStep, this.backwardResult, this.inputDimension)
+            backwardPreActivationWrtPreviousState = newBackwardPreActivationWrtPreviousState
 
         }
 
@@ -116,19 +164,22 @@ class CpuMultiInputDecoder internal constructor(
         this.weighting.backwardSeries()
         this.bias?.backwardSeries()
 
-        return FloatMatrix(this.inputDimension, this.numberSteps, this.backwardEntries)
+        return this.backwardResult
 
     }
 
-    private fun backwardOutput(withinBatch : Int, indexStep: Int, chainStep: FloatMatrix): FloatMatrix {
+    private fun backwardOutput(withinBatch : Int, indexStep: Int, chainStep: FloatArray): FloatArray {
 
-        val diffOutputWrtOutputPreActivation = this.activations[indexStep].backward(withinBatch, chainStep)
+        val activation = this.activations[indexStep]
+        activation.backward(withinBatch, chainStep)
+        val backwardOutputWrtOutputPreActivation = activation.backwardResult
 
-        val diffOutputPreActivationWrtState = this.weighting.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
+        this.weighting.backwardStep(withinBatch, indexStep, backwardOutputWrtOutputPreActivation)
+        val backwardOutputPreActivationWrtState = this.weighting.backwardResult
 
-        this.bias?.backwardStep(withinBatch, indexStep, diffOutputWrtOutputPreActivation)
+        this.bias?.backwardStep(withinBatch, indexStep, backwardOutputWrtOutputPreActivation)
 
-        return diffOutputPreActivationWrtState
+        return backwardOutputPreActivationWrtState
 
     }
 

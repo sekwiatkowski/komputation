@@ -3,26 +3,45 @@ package shape.komputation.cpu.layers.forward.activation
 import shape.komputation.cpu.functions.activation.differentiateSigmoid
 import shape.komputation.cpu.functions.activation.sigmoid
 import shape.komputation.cpu.functions.hadamard
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 
-class CpuSigmoidLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
+class CpuSigmoidLayer internal constructor(
+    name : String? = null,
+    numberRows: Int,
+    minimumColumns : Int,
+    maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private val numberEntries = this.numberRows * this.numberColumns
-
-    private val forwardEntries = FloatArray(this.numberEntries)
-    private val differentiation = FloatArray(this.numberEntries)
-    private val backwardEntries = FloatArray(this.numberEntries)
     private var hasCachedDifferentiation = false
+    private var differentiationsOverPossibleLengths = emptyArray<FloatArray>()
+    private var differentiation = FloatArray(0)
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    private var numberInputEntries = -1
+
+    override fun acquire(maximumBatchSize: Int) {
+
+        super.acquire(maximumBatchSize)
+
+        this.differentiationsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray(this.numberInputRows * this.lengths[index]) }
+
+    }
+
+    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
+
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
+
+        super.forward(withinBatch, numberInputColumns, input, isTraining)
 
         this.hasCachedDifferentiation = false
 
-        sigmoid(input.entries, this.forwardEntries, this.numberEntries)
+        return this.forwardResult
 
-        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
+    }
 
-        return result
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+
+        this.numberInputEntries = input.size
+
+        sigmoid(input, result, this.numberInputEntries)
 
     }
 
@@ -32,20 +51,29 @@ class CpuSigmoidLayer internal constructor(name : String? = null, private val nu
 
         d activation / d pre-activation = activation * (1 - activation)
      */
-    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
+    override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
+
+        this.differentiation = this.differentiationsOverPossibleLengths[this.lengthIndex]
 
         if (!this.hasCachedDifferentiation) {
 
-            differentiateSigmoid(this.forwardEntries, this.differentiation, this.numberEntries)
+            differentiateSigmoid(this.forwardResult, this.differentiation, this.numberInputEntries)
 
             this.hasCachedDifferentiation = true
 
         }
 
-        hadamard(chain.entries, this.differentiation, this.backwardEntries, this.numberEntries)
+        super.backward(withinBatch, chain)
 
-        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
+        return this.backwardResult
 
     }
+
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+
+        hadamard(chain, this.differentiation, result, this.numberInputEntries)
+
+    }
+
 
 }

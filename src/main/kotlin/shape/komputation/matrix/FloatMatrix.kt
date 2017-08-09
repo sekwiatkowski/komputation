@@ -1,63 +1,35 @@
 package shape.komputation.matrix
 
-val EMPTY_FLOAT_MATRIX = FloatMatrix(0, 0, floatArrayOf())
+fun floatMatrix(vararg entries : Float) =
 
-fun floatZeroMatrix(numberRows: Int, numberColumns : Int) = FloatMatrix(numberRows, numberColumns, FloatArray(numberRows * numberColumns))
+    FloatMatrix(entries)
 
-fun floatRowVector(vararg entries : Float) = FloatMatrix(1, entries.size, entries)
-
-fun floatColumnVector(vararg entries : Float) = FloatMatrix(entries.size, 1, entries)
-
-fun floatConstantColumnVector(numberRows : Int, constant : Float) = FloatMatrix(numberRows, 1, FloatArray(numberRows) { constant })
-
-fun floatZeroColumnVector(numberRows : Int) = floatConstantColumnVector(numberRows, 0.0f)
-
-fun floatScalar(value: Float) = FloatMatrix(1, 1, floatArrayOf(value))
-
-fun floatMatrixFromRows(vararg rows: FloatArray): FloatMatrix {
+fun floatArrayFromRows(vararg rows: FloatArray): FloatArray {
 
     val numberRows = rows.size
     val numberColumns = rows[0].size
 
-    val matrixEntries = FloatArray(numberRows * numberColumns)
+    val entries = FloatArray(numberRows * numberColumns)
 
     for (indexRow in 0..numberRows - 1) {
 
-        val entries = rows[indexRow]
+        val row = rows[indexRow]
 
         for (indexColumn in 0..numberColumns - 1) {
 
-            matrixEntries[indexRow + indexColumn * numberRows] = entries[indexColumn]
+            entries[indexRow + indexColumn * numberRows] = row[indexColumn]
 
         }
 
     }
 
-    return FloatMatrix(numberRows, numberColumns, matrixEntries)
+    return entries
 
 }
 
-fun floatMatrixFromColumns(vararg columns: FloatArray): FloatMatrix {
+fun floatMatrixFromRows(vararg rows: FloatArray) =
 
-    val numberRows = columns[0].size
-    val numberColumns = columns.size
-    val entries = FloatArray(numberRows * numberColumns)
-
-    var count = 0
-
-    for (column in columns) {
-
-        for (entry in column) {
-
-            entries[count++] = entry
-
-        }
-
-    }
-
-    return FloatMatrix(numberRows, numberColumns, entries)
-
-}
+    FloatMatrix(floatArrayFromRows(*rows))
 
 fun oneHotArray(size: Int, index: Int, value : Float = 1.0f): FloatArray {
 
@@ -67,7 +39,3 @@ fun oneHotArray(size: Int, index: Int, value : Float = 1.0f): FloatArray {
     return array
 
 }
-
-fun oneHotVector(size: Int, index: Int, value : Float = 1.0f) =
-
-    floatColumnVector(*oneHotArray(size, index, value))

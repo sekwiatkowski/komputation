@@ -8,11 +8,15 @@ import shape.komputation.cuda.layers.forward.activation.CudaTanhLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class TanhLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class TanhLayer(
+    private val name : String?,
+    private val numberRows : Int,
+    private val numberColumns : Int,
+    private val hasFixedLength: Boolean) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuTanhLayer(this.name, this.numberRows, this.numberColumns)
+        CpuTanhLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaTanhLayer {
 
@@ -26,11 +30,14 @@ class TanhLayer(private val name : String?, private val numberRows : Int, privat
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 
-
     }
 
 }
 
-fun tanhLayer(numberRows : Int, numberColumns: Int = 1) = tanhLayer(null, numberRows, numberColumns)
+fun tanhLayer(numberRows : Int, numberColumns: Int = 1, isFixedLength: Boolean = true) =
 
-fun tanhLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1) = TanhLayer(name, numberRows, numberColumns)
+    tanhLayer(null, numberRows, numberColumns, isFixedLength)
+
+fun tanhLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1, isFixedLength: Boolean = true) =
+
+    TanhLayer(name, numberRows, numberColumns, isFixedLength)

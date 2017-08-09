@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers.combination
 
 import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.layers.CombinationLayer
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.layers.Resourceful
 
 /*
    Ex:
@@ -16,31 +16,46 @@ import shape.komputation.matrix.FloatMatrix
 class AdditionCombination internal constructor(
     name : String? = null,
     private val numberRows : Int,
-    private val numberColumns : Int) : CombinationLayer(name) {
+    private val numberColumns : Int) : CombinationLayer(name), Resourceful {
 
     private val numberEntries = this.numberRows * this.numberColumns
-    private val forwardEntries = FloatArray(this.numberEntries)
+    private var forwardResult = FloatArray(0)
 
-    override fun forward(first: FloatMatrix, second: FloatMatrix): FloatMatrix {
+    override fun acquire(maximumBatchSize: Int) {
 
-        add(first.entries, second.entries, this.forwardEntries, this.numberEntries)
+        this.forwardResult = FloatArray(this.numberEntries)
 
-        return FloatMatrix(this.numberRows, first.numberColumns, this.forwardEntries)
+    }
+
+    override fun release() {
+
+
+    }
+
+    override fun forward(first: FloatArray, second: FloatArray): FloatArray {
+
+        add(first, second, this.forwardResult, this.numberEntries)
+
+        return this.forwardResult
 
     }
 
     // d (x + y) / d x = 1
-    override fun backwardFirst(chain: FloatMatrix) =
+    override fun backwardFirst(chain: FloatArray) =
 
         chain
 
     // d (x + y) / d y = 1
-    override fun backwardSecond(chain: FloatMatrix) =
+    override fun backwardSecond(chain: FloatArray) =
 
         chain
 
 }
 
-fun additionCombination(numberRows : Int, numberColumns : Int) = AdditionCombination(null, numberRows, numberColumns)
+fun additionCombination(numberRows : Int, numberColumns : Int) =
 
-fun additionCombination(name : String? = null, numberRows : Int, numberColumns : Int) = AdditionCombination(name, numberRows, numberColumns)
+    AdditionCombination(null, numberRows, numberColumns)
+
+fun additionCombination(name : String? = null, numberRows : Int, numberColumns : Int) =
+
+    AdditionCombination(name, numberRows, numberColumns)

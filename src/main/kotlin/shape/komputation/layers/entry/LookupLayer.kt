@@ -9,6 +9,7 @@ class LookupLayer(
     private val name : String? = null,
     private val vectors: Array<FloatArray>,
     private val maximumLength: Int,
+    private val hasFixedLength: Boolean,
     private val dimension : Int,
     private val maximumBatchSize : Int,
     private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction {
@@ -27,26 +28,39 @@ class LookupLayer(
 
         val sparseAccumulator = SparseAccumulator(this.vectors.size, this.maximumBatchSize, this.maximumLength, this.dimension)
 
-        return CpuLookupLayer(this.name, this.vectors, this.maximumLength, this.dimension, sparseAccumulator, updateRule)
+        val minimumLength = if(this.hasFixedLength) this.maximumLength else 1
+
+        return CpuLookupLayer(this.name, this.vectors, minimumLength, this.maximumLength, this.dimension, sparseAccumulator, updateRule)
 
     }
 
 
 }
 
+
 fun lookupLayer(
     vectors: Array<FloatArray>,
     maximumLength: Int,
+    hasFixedLength: Boolean,
     dimension: Int,
     maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
 
-    lookupLayer(null, vectors, maximumLength, dimension, maximumBatchSize, optimization)
+    lookupLayer(
+        null,
+        vectors,
+        maximumLength,
+        hasFixedLength,
+        dimension,
+        maximumBatchSize,
+        optimization
+    )
 
 fun lookupLayer(
     name: String? = null,
     vectors: Array<FloatArray>,
     maximumLength: Int,
+    hasFixedLength: Boolean,
     dimension: Int,
     maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
@@ -55,6 +69,7 @@ fun lookupLayer(
         name,
         vectors,
         maximumLength,
+        hasFixedLength,
         dimension,
         maximumBatchSize,
         optimization

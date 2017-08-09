@@ -2,8 +2,8 @@ package shape.komputation.cpu.layers.forward
 
 import shape.komputation.cpu.functions.activation.backwardNormalization
 import shape.komputation.cpu.functions.activation.normalize
-import shape.komputation.cpu.layers.forward.activation.BaseCpuActivationLayer
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 
 /*
     a/(a+b+c)
@@ -11,27 +11,36 @@ import shape.komputation.matrix.FloatMatrix
     input entry = a
     forward entry = a/(a+b+c)
  */
-class CpuNormalizationLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
+class CpuNormalizationLayer internal constructor(
+    name : String? = null,
+    numberRows : Int,
+    minimumColumns : Int,
+    maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
-    private val sumEntries = FloatArray(this.numberColumns)
-    private val backwardEntries = FloatArray(this.numberRows * this.numberColumns)
+    private var sumsOverPossibleLengths = emptyArray<FloatArray>()
+    private var sum = FloatArray(0)
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun acquire(maximumBatchSize: Int) {
 
-        normalize(this.numberRows, this.numberColumns, input.entries, this.sumEntries, this.forwardEntries)
+        super.acquire(maximumBatchSize)
 
-        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
-
-        return result
+        this.sumsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray(this.numberInputRows * this.lengths[index]) }
 
     }
 
-    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
+    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
-        backwardNormalization(this.numberRows, this.numberColumns, chain.entries, this.forwardEntries, this.sumEntries, this.backwardEntries)
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
 
-        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
+        this.sum = this.sumsOverPossibleLengths[this.lengthIndex]
+
+        normalize(this.numberInputRows, numberInputColumns, input, this.sum, this.forwardResult)
+
+    }
+
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+
+        backwardNormalization(this.numberInputRows, this.numberInputColumns, chain, this.forwardResult, this.sum, this.backwardResult)
 
     }
 

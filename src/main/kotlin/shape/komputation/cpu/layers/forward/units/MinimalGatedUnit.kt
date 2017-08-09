@@ -10,11 +10,10 @@ import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.counterProbabilityLayer
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -22,92 +21,166 @@ class MinimalGatedUnit internal constructor(
     name: String?,
     private val inputDimension: Int,
     private val hiddenDimension: Int,
-    private val forgetUnit: RecurrentUnit,
+    private val forgetUnit: SimpleRecurrentUnit,
     private val shortTermResponse: ShortTermResponse,
     private val counterProbabilities: Array<CpuCounterProbabilityLayer>,
     private val longTermHadamards: Array<HadamardCombination>,
     private val shortTermHadamards: Array<HadamardCombination>,
-    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
+    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Resourceful, Optimizable {
 
     private val previousStateAccumulator = DenseAccumulator(this.hiddenDimension)
     private val inputAccumulator = DenseAccumulator(this.inputDimension)
 
-    override fun forwardStep(withinBatch : Int, indexStep: Int, state : FloatMatrix, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.forgetUnit.acquire(maximumBatchSize)
+
+        this.shortTermResponse.acquire(maximumBatchSize)
+
+        this.counterProbabilities.forEach { counterProbability ->
+
+            counterProbability.acquire(maximumBatchSize)
+
+        }
+
+        this.longTermHadamards.forEach { longTermHadamard ->
+
+            longTermHadamard.acquire(maximumBatchSize)
+
+        }
+
+        this.shortTermHadamards.forEach { shortTermHadamard ->
+
+            shortTermHadamard.acquire(maximumBatchSize)
+
+        }
+
+        this.stateAdditions.forEach { stateAddition ->
+
+            stateAddition.acquire(maximumBatchSize)
+
+        }
+
+    }
+
+    override fun release() {
+
+        this.forgetUnit.release()
+
+        this.shortTermResponse.release()
+
+        this.counterProbabilities.forEach { counterProbability ->
+
+            counterProbability.release()
+
+        }
+
+        this.longTermHadamards.forEach { longTermHadamard ->
+
+            longTermHadamard.release()
+
+        }
+
+        this.shortTermHadamards.forEach { shortTermHadamard ->
+
+            shortTermHadamard.release()
+
+        }
+
+        this.stateAdditions.forEach { stateAddition ->
+
+            stateAddition.release()
+
+        }
+
+    }
+
+    override fun forwardStep(withinBatch : Int, indexStep: Int, state : FloatArray, input : FloatArray, isTraining : Boolean): FloatArray {
 
         val forget = this.forgetUnit.forwardStep(withinBatch, indexStep, state, input, isTraining)
 
-        val oneMinusForget = this.counterProbabilities[indexStep].forward(withinBatch, forget, isTraining)
+        // 1 - forget
+        val counterProbabilityLayer = this.counterProbabilities[indexStep]
+        val oneMinusForget = counterProbabilityLayer.forward(withinBatch, 1, forget, isTraining)
 
-        val longTermComponent = this.longTermHadamards[indexStep].forward(oneMinusForget, state)
+        val longTermHadamard = this.longTermHadamards[indexStep]
+
+        // The long-term component is the state multiplied by the counter-probability.
+        val longTermComponent = longTermHadamard.forward(oneMinusForget, state)
 
         val shortTermResponse = this.shortTermResponse.forward(withinBatch, indexStep, state, input, forget, isTraining)
 
+        // The short-term component is the short-term response multiplied by forget
         val shortTermComponent = this.shortTermHadamards[indexStep].forward(forget, shortTermResponse)
 
-        val newState = this.stateAdditions[indexStep].forward(longTermComponent, shortTermComponent)
-
-        return newState
+        // The new state is the sum of the long-term component and the short-term component.
+        return this.stateAdditions[indexStep].forward(longTermComponent, shortTermComponent)
 
     }
 
 
-    private fun backwardLongTermComponent(withinBatch : Int, step: Int, diffChainWrtLongTermComponent: FloatMatrix) {
+    private fun backwardLongTermComponent(withinBatch : Int, step: Int, backwardChainWrtLongTermComponent: FloatArray) {
 
         // (1 - forget) (.) previous state / d (1 - forget) = previous state
-        val diffLongTermComponentWrtKeep = this.longTermHadamards[step].backwardFirst(diffChainWrtLongTermComponent)
+        val backwardLongTermComponentWrtKeep = this.longTermHadamards[step].backwardFirst(backwardChainWrtLongTermComponent)
 
         // d (1 - forget) / d forget = -1
-        val diffKeepWrtForget = this.counterProbabilities[step].backward(withinBatch, diffLongTermComponentWrtKeep)
-        val (diffForgetWrtPreviousState, diffForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffKeepWrtForget)
+        val counterProbability = this.counterProbabilities[step]
+        counterProbability.backward(withinBatch, backwardLongTermComponentWrtKeep)
+        val backwardKeepWrtForget = counterProbability.backwardResult
+        val (backwardForgetWrtPreviousState, backwardForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, backwardKeepWrtForget)
 
-        this.previousStateAccumulator.accumulate(diffForgetWrtPreviousState.entries)
-        this.inputAccumulator.accumulate(diffForgetWrtInput.entries)
+        this.previousStateAccumulator.accumulate(backwardForgetWrtPreviousState)
+        this.inputAccumulator.accumulate(backwardForgetWrtInput)
 
         // (1 - forget) (.) previous state / d previous state = (1 - forget)
-        val diffLongTermComponentWrtPreviousState = this.longTermHadamards[step].backwardSecond(diffChainWrtLongTermComponent)
-        this.previousStateAccumulator.accumulate(diffLongTermComponentWrtPreviousState.entries)
+        val backwardLongTermComponentWrtPreviousState = this.longTermHadamards[step].backwardSecond(backwardChainWrtLongTermComponent)
+        this.previousStateAccumulator.accumulate(backwardLongTermComponentWrtPreviousState)
     }
 
-    private fun backwardShortTermComponent(withinBatch : Int, step: Int, diffChainWrtShortTermComponent: FloatMatrix) {
+    private fun backwardShortTermComponent(withinBatch : Int, step: Int, backChainWrtShortTermComponent: FloatArray) {
 
         // short-term component = forget (.) short-term response
 
         // d short-term component / forget = short-term response
-        val diffShortTermComponentWrtForget = this.shortTermHadamards[step].backwardFirst(diffChainWrtShortTermComponent)
+        val backwardShortTermComponentWrtForget = this.shortTermHadamards[step].backwardFirst(backChainWrtShortTermComponent)
 
         // d forget / d previous state, d forget / input
-        val (diffShortTermComponentForgetWrtPreviousState, diffShortTermComponentForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffShortTermComponentWrtForget)
-        this.previousStateAccumulator.accumulate(diffShortTermComponentForgetWrtPreviousState.entries)
-        this.inputAccumulator.accumulate(diffShortTermComponentForgetWrtInput.entries)
+        val (backwardShortTermComponentForgetWrtPreviousState, backwardShortTermComponentForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, backwardShortTermComponentWrtForget)
+        this.previousStateAccumulator.accumulate(backwardShortTermComponentForgetWrtPreviousState)
+        this.inputAccumulator.accumulate(backwardShortTermComponentForgetWrtInput)
 
         // d short-term component / short-term response = forget
-        val diffShortTermComponentWrtShortTermResponse = this.shortTermHadamards[step].backwardSecond(diffChainWrtShortTermComponent)
+        val backwardShortTermComponentWrtShortTermResponse = this.shortTermHadamards[step].backwardSecond(backChainWrtShortTermComponent)
 
-        val (diffShortTermMemoryWrtForget, shortTermResponsePair) = this.shortTermResponse.backward(withinBatch, step, diffShortTermComponentWrtShortTermResponse)
-        val (diffShortTermMemoryWrtPreviousState, diffShortTermWeightedInputWrtInput) = shortTermResponsePair
+        val (backwardShortTermMemoryWrtForget, shortTermResponsePair) = this.shortTermResponse.backward(withinBatch, step, backwardShortTermComponentWrtShortTermResponse)
+        val (backwardShortTermMemoryWrtPreviousState, backwardShortTermWeightedInputWrtInput) = shortTermResponsePair
 
         // d forget / d previous state, d forget / input
-        val (diffShortTermMemoryForgetWrtPreviousState, diffShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, diffShortTermMemoryWrtForget)
-        this.previousStateAccumulator.accumulate(diffShortTermMemoryForgetWrtPreviousState.entries)
-        this.inputAccumulator.accumulate(diffShortTermMemoryForgetWrtInput.entries)
+        val (backwardShortTermMemoryForgetWrtPreviousState, backwardShortTermMemoryForgetWrtInput) = this.forgetUnit.backwardStep(withinBatch, step, backwardShortTermMemoryWrtForget)
+        this.previousStateAccumulator.accumulate(backwardShortTermMemoryForgetWrtPreviousState)
+        this.inputAccumulator.accumulate(backwardShortTermMemoryForgetWrtInput)
 
-        this.previousStateAccumulator.accumulate(diffShortTermMemoryWrtPreviousState.entries)
-        this.inputAccumulator.accumulate(diffShortTermWeightedInputWrtInput.entries)
+        this.previousStateAccumulator.accumulate(backwardShortTermMemoryWrtPreviousState)
+        this.inputAccumulator.accumulate(backwardShortTermWeightedInputWrtInput)
 
     }
 
-    override fun backwardStep(withinBatch: Int, step : Int, chain : FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
+    private val previousStateAccumulation = FloatArray(this.hiddenDimension)
+    private val inputAccumulation = FloatArray(this.inputDimension)
+
+    override fun backwardStep(withinBatch: Int, step : Int, chain : FloatArray): Pair<FloatArray, FloatArray> {
 
         // d (long-term component + short-term component) / d long-term component
-        val diffChainWrtLongTermComponent = this.stateAdditions[step].backwardFirst(chain)
-        this.backwardLongTermComponent(withinBatch, step, diffChainWrtLongTermComponent)
+        val backChainWrtLongTermComponent = this.stateAdditions[step].backwardFirst(chain)
+        this.backwardLongTermComponent(withinBatch, step, backChainWrtLongTermComponent)
 
         // d (long-term component + short-term component) / d short-term component
-        val diffChainWrtShortTermComponent = this.stateAdditions[step].backwardSecond(chain)
-        this.backwardShortTermComponent(withinBatch, step, diffChainWrtShortTermComponent)
+        val backChainWrtShortTermComponent = this.stateAdditions[step].backwardSecond(chain)
+        this.backwardShortTermComponent(withinBatch, step, backChainWrtShortTermComponent)
 
-        val previousStateAccumulation = floatColumnVector(*this.previousStateAccumulator.getAccumulation().copyOf())
-        val inputAccumulation = floatColumnVector(*this.inputAccumulator.getAccumulation().copyOf())
+        System.arraycopy(this.previousStateAccumulator.getAccumulation(), 0, this.previousStateAccumulation, 0, this.hiddenDimension)
+        System.arraycopy(this.inputAccumulator.getAccumulation(), 0, this.inputAccumulation, 0, this.inputDimension)
 
         this.inputAccumulator.reset()
         this.previousStateAccumulator.reset()
@@ -208,11 +281,12 @@ fun minimalGatedUnit(
     val forgetActivations = Array<CpuActivationLayer>(numberSteps) { indexStep ->
 
         val forgetActivationName = concatenateNames(name, "forget-activation-step-$indexStep")
-        sigmoidLayer(forgetActivationName, hiddenDimension, 1).buildForCpu()
+
+        sigmoidLayer(forgetActivationName, hiddenDimension).buildForCpu()
 
     }
 
-    val forgetUnit = SimpleRecurrentUnit(name, numberSteps, inputDimension, hiddenDimension, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
+    val forgetUnit = SimpleRecurrentUnit(name, forgetPreviousStateWeighting, forgetInputWeighting, forgetAdditions, forgetBias, forgetActivations)
 
     val shortTermResponse = shortTermResponse("short-term-response", numberSteps, hiddenDimension, inputDimension, shortTermMemoryWeightInitializationStrategy, shortTermInputWeightInitializationStrategy, shortTermBiasInitializationStrategy, optimization)
 

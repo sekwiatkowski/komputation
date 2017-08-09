@@ -8,7 +8,6 @@ import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.stochasticGradientDescent
@@ -33,9 +32,8 @@ fun main(args: Array<String>) {
     val maximumBatchSize = 1
 
     val network = Network(
-        inputLayer(numberRows),
-        convolutionalLayer(numberRows, numberColumns, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
-        maxPoolingLayer(numberFilters, 3),
+        inputLayer(numberRows, numberColumns),
+        convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
         reluLayer(numberFilters),
         denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
     )

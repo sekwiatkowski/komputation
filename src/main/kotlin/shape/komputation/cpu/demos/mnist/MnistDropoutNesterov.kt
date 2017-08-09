@@ -6,13 +6,10 @@ import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
-import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.momentum
-import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
 
@@ -74,7 +71,7 @@ fun main(args: Array<String>) {
                 batchSize,
                 { prediction, target ->
 
-                    findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
+                    findMaxIndex(prediction) == findMaxIndex(target)
 
                 }
             )

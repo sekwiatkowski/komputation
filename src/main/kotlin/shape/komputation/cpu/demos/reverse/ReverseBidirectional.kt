@@ -69,12 +69,17 @@ fun main(args: Array<String>) {
     )
 
     val network = Network(
-        inputLayer(seriesLength),
+        inputLayer(numberCategories, seriesLength),
         concatenation(
-            1,
+            numberCategories,
             seriesLength,
-            singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
-            singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
+            true,
+            intArrayOf(hiddenDimension, hiddenDimension),
+            1,
+            arrayOf(
+                singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
+                singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
+            )
         ),
         singleInputDecoder(seriesLength, 2 * hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
     )
@@ -82,7 +87,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        logisticLoss(numberCategories),
+        logisticLoss(numberCategories, seriesLength),
         numberIterations,
         batchSize,
         printLoss

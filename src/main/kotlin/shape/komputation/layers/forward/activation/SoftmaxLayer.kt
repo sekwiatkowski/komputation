@@ -9,10 +9,14 @@ import shape.komputation.layers.CudaActivationLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.normalizationLayer
 
-class SoftmaxLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class SoftmaxLayer(
+    private val name : String?,
+    private val numberRows : Int,
+    private val numberColumns : Int,
+    private val hasFixedLength: Boolean) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
-    private val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows, this.numberColumns)
-    private val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns)
+    private val exponentiationLayer = exponentiationLayer(concatenateNames(this.name, "exponentiation"), this.numberRows, this.numberColumns, this.hasFixedLength)
+    private val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns, this.hasFixedLength)
 
     override fun buildForCpu() =
 
@@ -24,11 +28,10 @@ class SoftmaxLayer(private val name : String?, private val numberRows : Int, pri
 
 }
 
+fun softmaxLayer(numberCategories: Int, numberSteps: Int = 1, hasFixedLength: Boolean = true) =
 
-fun softmaxLayer(numberCategories: Int, numberSteps: Int = 1) =
+    softmaxLayer(null, numberCategories, numberSteps, hasFixedLength)
 
-    SoftmaxLayer(null, numberCategories, numberSteps)
+fun softmaxLayer(name : String? = null, numberCategories: Int, numberSteps: Int = 1, hasFixedLength: Boolean = true) =
 
-fun softmaxLayer(name : String? = null, numberCategories: Int, numberSteps: Int = 1) =
-
-    SoftmaxLayer(name, numberCategories, numberSteps)
+    SoftmaxLayer(name, numberCategories, numberSteps, hasFixedLength)

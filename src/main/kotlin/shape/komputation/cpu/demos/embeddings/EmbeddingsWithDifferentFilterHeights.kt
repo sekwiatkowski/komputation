@@ -10,7 +10,6 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.historical.momentum
@@ -32,34 +31,33 @@ fun main(args: Array<String>) {
     val optimizationStrategy = momentum(0.01f, 0.9f)
 
     val numberFilters = 2
-
     val filterWidths = arrayOf(1, 2)
+    val numberFilterWidths = filterWidths.size
     val filterHeight = embeddingDimension
-
-    val createConvolutionSubnetwork = { filterWidth : Int ->
-
-        arrayOf(
-            convolutionalLayer(embeddingDimension, 2, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-            reluLayer(numberFilters * (2 - filterWidth + 1)),
-            maxPoolingLayer(numberFilters, embeddingDimension - filterWidth + 1)
-        )
-
-    }
+    val totalNumberFilters = numberFilterWidths * numberFilters
 
     val numberClasses = EmbeddingData.numberClasses
     val input = EmbeddingData.inputs
     val targets = EmbeddingData.targets
 
+    val hasFixedLength = true
+
     val network = Network(
-        lookupLayer(embeddings, 2, embeddingDimension, maximumBatchSize, optimizationStrategy),
+        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
         concatenation(
             embeddingDimension,
             2,
-            *filterWidths.map { filterWidth -> createConvolutionSubnetwork(filterWidth) }.toTypedArray()
+            hasFixedLength,
+            intArrayOf(numberFilters, numberFilters),
+            1,
+            filterWidths
+                .map { filterWidth -> convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy) }
+                .toTypedArray()
         ),
-        denseLayer(numberFilters * filterHeight, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+        reluLayer(totalNumberFilters),
+        denseLayer(totalNumberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
     )
 
-    network.train(input, targets, squaredLoss(1), 10_000, maximumBatchSize, printLoss)
+    network.train(input, targets, squaredLoss(numberClasses), 10_000, maximumBatchSize, printLoss)
 
 }

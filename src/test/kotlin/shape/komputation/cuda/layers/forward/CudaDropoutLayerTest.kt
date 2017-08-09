@@ -10,7 +10,6 @@ import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.layers.forward.dropout.dropoutLayer
-import shape.komputation.matrix.floatColumnVector
 import java.util.*
 
 class CudaDropoutLayerTest {
@@ -45,7 +44,7 @@ class CudaDropoutLayerTest {
 
         cpuLayer.acquire(1)
 
-        val cpuResult = cpuLayer.forward(0, floatColumnVector(*input), isTraining).entries
+        val cpuResult = cpuLayer.forward(0, 1, input, isTraining)
 
         val cudaContext = setUpCudaContext()
 

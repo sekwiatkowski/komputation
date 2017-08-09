@@ -1,20 +1,20 @@
 package shape.komputation.cpu.loss
 
-import shape.komputation.matrix.FloatMatrix
+class CpuSquaredLoss(
+    override val numberInputRows: Int,
+    override val numberInputColumns: Int) : CpuLossFunction {
 
-class CpuSquaredLoss : CpuLossFunction {
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+    override val backwardResult = FloatArray(this.numberInputEntries)
 
-    override fun forward(predictions: FloatMatrix, targets : FloatMatrix): Float {
+    override fun forward(predictions: FloatArray, targets : FloatArray): Float {
 
         var loss = 0.0f
 
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
+        for (indexRow in 0..this.numberInputEntries-1) {
 
-        for (indexRow in 0..predictionEntries.size-1) {
-
-            val prediction = predictionEntries[indexRow]
-            val target = targetEntries[indexRow]
+            val prediction = predictions[indexRow]
+            val target = targets[indexRow]
 
             val difference = prediction - target
 
@@ -30,18 +30,13 @@ class CpuSquaredLoss : CpuLossFunction {
     // loss = 0.5 (prediction - target)^2 = 0.5 prediction^2 - prediction * target + 0.5 target ^2
     // d loss / d prediction = prediction - target
 
-    override fun backward(predictions: FloatMatrix, targets : FloatMatrix): FloatMatrix {
+    override fun backward(predictions: FloatArray, targets : FloatArray) {
 
-        val predictionEntries = predictions.entries
-        val targetEntries = targets.entries
+        for(indexEntry in 0..this.numberInputEntries - 1) {
 
-        val backwardEntries = FloatArray(predictionEntries.size) { index ->
-
-            predictionEntries[index] - targetEntries[index]
+            this.backwardResult[indexEntry] = predictions[indexEntry] - targets[indexEntry]
 
         }
-
-        return FloatMatrix(predictions.numberRows, predictions.numberColumns, backwardEntries)
 
     }
 

@@ -9,9 +9,9 @@ import shape.komputation.layers.forward.activation.sigmoidLayer
 
 class CudaSigmoidLayerTest : BaseCudaEntrywiseActivationLayerTest() {
 
-    override fun createLayer(context: CudaContext, numberEntries: Int)  =
+    override fun createLayer(context: CudaContext, numberRows: Int)  =
 
-        sigmoidLayer(numberEntries).buildForCuda(context, cublasHandle())
+        sigmoidLayer(numberRows).buildForCuda(context, cublasHandle())
 
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {

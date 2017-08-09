@@ -1,15 +1,31 @@
 package shape.komputation.cpu.layers.forward.activation
 
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BaseCpuForwardLayer
 
-class CpuIdentityLayer internal constructor(name : String? = null) : BaseCpuActivationLayer(name) {
+class CpuIdentityLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuForwardLayer(name), CpuActivationLayer {
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) =
+    override val numberOutputRows = this.numberRows
+    override val numberOutputColumns = this.numberColumns
+    override var forwardResult = FloatArray(0)
 
-        FloatMatrix(input.numberRows, input.numberColumns, input.entries)
+    override val numberInputRows = this.numberRows
+    override val numberInputColumns = this.numberColumns
+    override var backwardResult = FloatArray(0)
 
-    override fun backward(withinBatch : Int, chain : FloatMatrix) =
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
 
-        chain
+        this.forwardResult = input
+
+        return this.forwardResult
+
+    }
+
+    override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
+
+        this.backwardResult = chain
+
+        return this.backwardResult
+
+    }
 
 }

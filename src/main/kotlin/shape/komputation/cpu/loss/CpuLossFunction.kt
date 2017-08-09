@@ -1,11 +1,11 @@
 package shape.komputation.cpu.loss
 
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BackwardLayerState
 
-interface CpuLossFunction {
+interface CpuLossFunction : BackwardLayerState {
 
-    fun forward(predictions: FloatMatrix, targets : FloatMatrix): Float
+    fun forward(predictions: FloatArray, targets : FloatArray): Float
 
-    fun backward(predictions: FloatMatrix, targets : FloatMatrix): FloatMatrix
+    fun backward(predictions: FloatArray, targets : FloatArray)
 
 }

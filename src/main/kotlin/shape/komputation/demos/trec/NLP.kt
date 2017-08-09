@@ -1,8 +1,8 @@
 package shape.komputation.demos.trec
 
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.intColumnVector
-import shape.komputation.matrix.oneHotVector
+import shape.komputation.matrix.intMatrix
+import shape.komputation.matrix.oneHotArray
 import java.io.File
 
 object NLP {
@@ -61,7 +61,7 @@ object NLP {
 
         documents
             .map { tokens -> tokens.map { vocabulary.indexOf(it) }.toIntArray() }
-            .map { indices -> intColumnVector(*indices) as Matrix }
+            .map { indices -> intMatrix(*indices) as Matrix }
             .toTypedArray()
 
     fun indexCategories(categories: Set<String>) =
@@ -75,7 +75,7 @@ object NLP {
     fun createTargets(categories: Iterable<String>, indexedCategories: Map<String, Int>) =
 
         categories
-            .map { category -> oneHotVector(indexedCategories.size, indexedCategories[category]!!) }
+            .map { category -> oneHotArray(indexedCategories.size, indexedCategories[category]!!) }
             .toTypedArray()
 
 }

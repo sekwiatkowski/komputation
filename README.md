@@ -87,24 +87,25 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 The following code instantiates a convolutional neural network for sentence classification:
 
  ```kotlin
-val network = Network(
-    lookupLayer(embeddings, embeddingDimension, batchSize, maximumLength, optimization),
-    concatenation(
-        maximumLength * embeddingDimension,
-        *filterWidths
-            .map { filterWidth ->
-                arrayOf(
-                    convolutionalLayer(numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-                    maxPoolingLayer(numberFilters),
-                    reluLayer(numberFilters),
-                    dropoutLayer(numberFilters, random, keepProbability)
-                )
-            }
-            .toTypedArray()
-    ),
-    projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
-    softmaxLayer(numberCategories)
-)
+    val network = Network(
+        lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, batchSize, optimization),
+        concatenation(
+            embeddingDimension,
+            maximumDocumentLength,
+            false,
+            IntArray(numberFilterWidths) { numberFilters },
+            1,
+            filterWidths
+                .map { filterWidth ->
+                    convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
+                }
+                .toTypedArray()
+        ),
+        reluLayer(numberFilterWidths * numberFilters),
+        dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
+        projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
+        softmaxLayer(numberCategories)
+    )
 ```
 
 See the [TREC demo](./src/main/kotlin/shape/komputation/cpus/demos/trec/TREC.kt) for more details.

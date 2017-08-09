@@ -3,7 +3,6 @@ package shape.komputation.cpu.layers.forward.dropout
 import shape.komputation.cpu.functions.*
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.layers.Resourceful
-import shape.komputation.matrix.FloatMatrix
 import java.util.*
 
 class CpuDropoutLayer internal constructor(
@@ -18,9 +17,14 @@ class CpuDropoutLayer internal constructor(
     private var entrySeeds = IntArray(this.numberEntries)
 
     private var mask = BooleanArray(this.numberEntries)
-    private var dropoutEntries = FloatArray(this.numberEntries)
-    private var expectationEntries = FloatArray(this.numberEntries)
-    private var backwardEntries = FloatArray(this.numberEntries)
+
+    override val numberOutputRows = this.numberRows
+    override val numberOutputColumns = this.numberColumns
+    override val forwardResult = FloatArray(this.numberEntries)
+
+    override val numberInputRows = this.numberRows
+    override val numberInputColumns = this.numberColumns
+    override val backwardResult = FloatArray(this.numberEntries)
 
     private val dropoutProbability = 1.0 - keepProbability
 
@@ -49,7 +53,7 @@ class CpuDropoutLayer internal constructor(
 
     }
 
-    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining: Boolean) =
+    override fun forward(withinBatch : Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
 
         if (isTraining) {
 
@@ -57,26 +61,26 @@ class CpuDropoutLayer internal constructor(
 
             nextInteger(this.entrySeeds, offset, this.numberEntries)
 
-            mask(this.entrySeeds, this.threshold, this.mask, offset, this.numberEntries)
+            mask(this.numberEntries, this.threshold, offset, this.entrySeeds, this.mask)
 
-            dropout(input.entries, this.mask, this.dropoutEntries, this.numberEntries)
-
-            FloatMatrix(input.numberRows, input.numberColumns, this.dropoutEntries)
+            dropout(this.numberEntries, input, this.mask, this.forwardResult)
 
         }
         else {
 
-            scale(input.entries, this.keepProbability, this.expectationEntries, this.numberEntries)
-
-            FloatMatrix(this.numberRows, this.numberColumns, this.expectationEntries)
+            scale(input, this.keepProbability, this.forwardResult, this.numberEntries)
 
         }
 
-    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
+        return this.forwardResult
 
-        backwardDropout(chain.entries, this.mask, this.backwardEntries, this.numberEntries)
+    }
 
-        return FloatMatrix(this.numberRows, this.numberColumns, this.backwardEntries)
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
+
+        backwardDropout(chain, this.mask, this.backwardResult, this.numberEntries)
+
+        return this.backwardResult
 
     }
 

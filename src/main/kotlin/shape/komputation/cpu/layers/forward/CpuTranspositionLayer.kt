@@ -2,30 +2,48 @@ package shape.komputation.cpu.layers.forward
 
 import shape.komputation.cpu.functions.transpose
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.layers.Resourceful
 
 class CpuTranspositionLayer internal constructor(
     name : String? = null,
     private val numberRows : Int,
-    private val numberColumns : Int) : BaseCpuForwardLayer(name)  {
+    private val numberColumns : Int) : BaseCpuForwardLayer(name), Resourceful {
 
     private val numberEntries = this.numberRows * this.numberColumns
-    private val forwardEntries = FloatArray(this.numberEntries)
-    private val backwardEntries = FloatArray(this.numberEntries)
 
-    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override val numberOutputRows = this.numberRows
+    override val numberOutputColumns = this.numberColumns
+    override var forwardResult = FloatArray(0)
 
-        transpose(this.numberRows, this.numberColumns, input.entries, this.forwardEntries)
+    override val numberInputRows = this.numberColumns
+    override val numberInputColumns = this.numberRows
+    override var backwardResult = FloatArray(0)
 
-        return FloatMatrix(this.numberColumns, this.numberRows, this.forwardEntries)
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.forwardResult = FloatArray(this.numberEntries)
+        this.backwardResult = FloatArray(this.numberEntries)
 
     }
 
-    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
+    override fun release() {
 
-        transpose(this.numberRows, this.numberColumns, chain.entries, this.backwardEntries)
 
-        return FloatMatrix(this.numberColumns, this.numberRows, this.backwardEntries)
+    }
+
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
+
+        transpose(this.numberRows, this.numberColumns, input, this.forwardResult)
+
+        return this.forwardResult
+
+    }
+
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
+
+        transpose(this.numberRows, this.numberColumns, chain, this.backwardResult)
+
+        return this.backwardResult
 
     }
 

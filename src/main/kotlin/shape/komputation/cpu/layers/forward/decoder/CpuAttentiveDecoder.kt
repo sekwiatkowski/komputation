@@ -12,10 +12,9 @@ import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
-import shape.komputation.matrix.floatZeroColumnVector
+import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
+import java.util.*
 
 class CpuAttentiveDecoder internal constructor(
     name : String?,
@@ -34,54 +33,207 @@ class CpuAttentiveDecoder internal constructor(
     private val decodingPreviousDecoderWeighting: SeriesWeighting,
     private val decodingAdditions: Array<AdditionCombination>,
     private val bias : SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Optimizable {
+    private val activations: Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
-    private var attentionDistributionEntries = FloatArray(this.numberSteps)
+    private var attentionDistribution = FloatArray(0)
 
-    private val encodingSize = this.numberSteps * this.encodingDimension
-    private var encodingEntries = FloatArray(this.encodingSize)
-    private val encodingAccumulator = DenseAccumulator(this.encodingSize)
+    private val inputSize = this.numberSteps * this.encodingDimension
+    private var input = FloatArray(0)
+    private val inputAccumulator = DenseAccumulator(this.inputSize)
 
-    private val outputEntries = FloatArray(this.decodingDimension * this.numberSteps)
+    override val numberOutputRows = this.decodingDimension
+    override val numberOutputColumns = this.numberSteps
+    override var forwardResult = FloatArray(0)
 
-    override fun forward(withinBatch : Int, encodings : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override val numberInputRows = this.encodingDimension
+    override val numberInputColumns = this.numberSteps
+    private val numberBackwardEntries = this.numberInputRows * numberInputColumns
+    override var backwardResult = FloatArray(0)
 
-        var previousDecoderState = floatZeroColumnVector(this.decodingDimension)
+    private var previousDecoderState = FloatArray(this.decodingDimension)
 
-        this.encodingEntries = encodings.entries
+    private var backwardSumWrtDecoderState = FloatArray(0)
+    private var backwardOutputWrtDecoderState = FloatArray(0)
+
+    private var backwardAttendedEncodingWrtEncoding = FloatArray(0)
+    private var backwardWeightedAttendedEncodingWrtTransposedAttentionDistribution = FloatArray(0)
+
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.attentionDistribution = FloatArray(this.numberSteps)
+
+        this.input = FloatArray(this.inputSize)
+
+        this.forwardResult = FloatArray(this.numberSteps * this.decodingDimension)
+
+        this.backwardResult = FloatArray(this.numberBackwardEntries)
+
+        this.previousDecoderState = FloatArray(this.decodingDimension)
+
+        this.backwardSumWrtDecoderState = FloatArray(this.decodingDimension)
+        this.backwardOutputWrtDecoderState = FloatArray(this.decodingDimension)
+
+        this.backwardAttendedEncodingWrtEncoding = FloatArray(this.inputSize)
+        this.backwardWeightedAttendedEncodingWrtTransposedAttentionDistribution = FloatArray(this.numberSteps)
+
+        this.encodingProjection.acquire(maximumBatchSize)
+
+        this.attentionPreviousStateWeighting.acquire(maximumBatchSize)
+
+        this.columnRepetitions.forEach { columnRepetition ->
+
+            columnRepetition.acquire(maximumBatchSize)
+
+        }
+
+        this.attentionAdditions.forEach { addition ->
+
+            addition.acquire(maximumBatchSize)
+
+        }
+
+        this.tanh.forEach { tanh ->
+
+            tanh.acquire(maximumBatchSize)
+
+        }
+
+        this.scoringWeighting.acquire(maximumBatchSize)
+
+        this.softmax.forEach { softmax ->
+
+            softmax.acquire(maximumBatchSize)
+
+        }
+
+        this.transposition.forEach { transposition ->
+
+            transposition.acquire(maximumBatchSize)
+
+        }
+
+        this.attendedEncodingWeighting.acquire(maximumBatchSize)
+
+        this.decodingPreviousDecoderWeighting.acquire(maximumBatchSize)
+
+        this.decodingAdditions.forEach { addition ->
+
+            addition.acquire(maximumBatchSize)
+
+        }
+
+        this.bias?.acquire(maximumBatchSize)
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.acquire(maximumBatchSize)
+
+            }
+
+        }
+
+    }
+
+    override fun release() {
+
+        this.encodingProjection.release()
+
+        this.attentionPreviousStateWeighting.release()
+
+        this.columnRepetitions.forEach { columnRepetition ->
+
+            columnRepetition.release()
+
+        }
+
+        this.attentionAdditions.forEach { addition ->
+
+            addition.release()
+
+        }
+
+        this.tanh.forEach { tanh ->
+
+            tanh.release()
+
+        }
+
+        this.scoringWeighting.release()
+
+        this.softmax.forEach { softmax ->
+
+            softmax.release()
+
+        }
+
+        this.transposition.forEach { transposition ->
+
+            transposition.release()
+
+        }
+
+        this.attendedEncodingWeighting.release()
+
+        this.decodingPreviousDecoderWeighting.release()
+
+        this.decodingAdditions.forEach { addition ->
+
+            addition.release()
+
+        }
+
+        this.bias?.release()
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.release()
+
+            }
+
+        }
+
+    }
+
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
+
+        this.input = input
 
         // encoding weights * encodings
-        val projectedEncoding = this.encodingProjection.forward(withinBatch, encodings, isTraining)
+        val projectedEncoding = this.encodingProjection.forward(withinBatch, numberInputColumns, input, isTraining)
 
-        val blasEncodingMatrix = org.jblas.FloatMatrix(this.encodingDimension, this.numberSteps, *this.encodingEntries)
+        val blasEncodingMatrix = org.jblas.FloatMatrix(this.encodingDimension, this.numberSteps, *this.input)
+
+        Arrays.fill(this.previousDecoderState, 0f)
 
         for (indexStep in 0..this.numberSteps - 1) {
 
             // previous decoder state weights (for attention) * previous decoder state
-            val attentionWeightedPreviousState = this.attentionPreviousStateWeighting.forwardStep(withinBatch, indexStep, previousDecoderState, isTraining)
+            val attentionWeightedPreviousState = this.attentionPreviousStateWeighting.forwardStep(withinBatch, indexStep, this.previousDecoderState, isTraining)
 
             // expanded weighted previous decoder state (for attention)
-            val expandedWeightedPreviousState = this.columnRepetitions[indexStep].forward(withinBatch, attentionWeightedPreviousState, isTraining)
+            val expandedAttentionWeightedPreviousState = this.columnRepetitions[indexStep].forward(withinBatch, 1, attentionWeightedPreviousState, isTraining)
 
             // pre-activation = projected encodings + expanded weighted previous decoder state (for attention)
-            val attentionAddition = this.attentionAdditions[indexStep].forward(projectedEncoding, expandedWeightedPreviousState)
+            val attentionPreActivation = this.attentionAdditions[indexStep].forward(projectedEncoding, expandedAttentionWeightedPreviousState)
 
             // attention activation = tanh(pre-activation)
-            val attentionActivation = this.tanh[indexStep].forward(withinBatch, attentionAddition, isTraining)
+            val attentionActivation = this.tanh[indexStep].forward(withinBatch, numberInputColumns, attentionPreActivation, isTraining)
 
             // unnormalized scores = scoring weights * attention activation << row vector
-            val attentionScores = this.scoringWeighting.forwardStep(withinBatch, indexStep, attentionActivation, isTraining)
+            this.scoringWeighting.forwardStep(withinBatch, indexStep, attentionActivation, isTraining)
 
             // normalized scores = row-wise softmax (unnormalized attention scores) << row vector
-            val attentionDistribution = this.softmax[indexStep].forward(withinBatch, attentionScores, isTraining)
-
-            this.attentionDistributionEntries = attentionDistribution.entries
+            this.attentionDistribution = this.softmax[indexStep].forward(withinBatch, numberInputColumns, this.scoringWeighting.forwardResult, isTraining)
 
             // normalized scores as a column vector = transposed(normalized scores as a row vector)
-            val transposedAttentionDistribution = this.transposition[indexStep].forward(withinBatch, attentionDistribution, isTraining)
+            val transposedAttentionDistribution = this.transposition[indexStep].forward(withinBatch, numberInputColumns, attentionDistribution, isTraining)
 
             // attended encoding = encodings * normalized scores as column vector
-            val blasTransposedAttentionDistribution = org.jblas.FloatMatrix(this.numberSteps, 1, *transposedAttentionDistribution.entries)
+            val blasTransposedAttentionDistribution = org.jblas.FloatMatrix(this.numberSteps, 1, *transposedAttentionDistribution)
 
             val blasAttendedEncoding = org.jblas.FloatMatrix(this.encodingDimension, 1)
 
@@ -91,76 +243,77 @@ class CpuAttentiveDecoder internal constructor(
                 blasAttendedEncoding
             )
 
-            val attendedEncoding = FloatMatrix(this.encodingDimension, 1, blasAttendedEncoding.data)
+            val attendedEncoding = blasAttendedEncoding.data
 
             // weighted attended encoding = attended encoding weights * attended encoding
             val weightedAttendedEncoding = this.attendedEncodingWeighting.forwardStep(withinBatch, indexStep, attendedEncoding, isTraining)
 
             // previous decoder state weights (for decoding) * previous decoder state weights
-            val decodingWeightedPreviousState = this.decodingPreviousDecoderWeighting.forwardStep(withinBatch, indexStep, previousDecoderState, isTraining)
+            val decodingWeightedPreviousState = this.decodingPreviousDecoderWeighting.forwardStep(withinBatch, indexStep, this.previousDecoderState, isTraining)
 
             // weighted attended encoding + decoding weighted previous state
             val decodingAddition = this.decodingAdditions[indexStep].forward(weightedAttendedEncoding, decodingWeightedPreviousState)
 
             val newDecoderStatePreActivation =
 
-                if(this.bias == null)
+                if(this.bias == null) {
+
                     decodingAddition
-                else
+
+                }
+                else {
+
                     this.bias.forwardStep(withinBatch, indexStep, decodingAddition, isTraining)
 
-            val newDecoderState = this.activations[indexStep].forward(withinBatch, newDecoderStatePreActivation, isTraining)
+                }
 
-            setStep(newDecoderState.entries, indexStep, this.outputEntries, this.decodingDimension)
+            val newDecoderState = this.activations[indexStep].forward(withinBatch, 1, newDecoderStatePreActivation, isTraining)
 
-            previousDecoderState = newDecoderState
+            setStep(newDecoderState, indexStep, this.forwardResult, this.decodingDimension)
+
+            this.previousDecoderState = newDecoderState
 
         }
 
-        return FloatMatrix(this.decodingDimension, this.numberSteps, this.outputEntries)
+        return this.forwardResult
 
     }
 
-    private val sumWrtDecoderStateEntries = FloatArray(this.decodingDimension)
-    private val diffOutputWrtDecoderState = FloatArray(this.decodingDimension)
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
 
-    private val diffAttendedEncodingWrtEncoding = FloatArray(this.encodingSize)
-
-    override fun backward(withinBatch : Int, chain: FloatMatrix): FloatMatrix {
-
-        val chainEntries = chain.entries
-
-        var diffNextDecoderStateWrtDecoderState : FloatArray? = null
+        var backwardNextDecoderStateWrtDecoderState : FloatArray? = null
 
         for (indexStep in this.numberSteps - 1 downTo 0) {
 
             val isLastStep = indexStep + 1 == this.numberSteps
 
-            getStep(chainEntries, indexStep, diffOutputWrtDecoderState, this.decodingDimension)
+            getStep(chain, indexStep, this.backwardOutputWrtDecoderState, this.decodingDimension)
 
-            val sumWrtDecoderState = floatColumnVector(*(
-                if (isLastStep) {
+            if (isLastStep) {
 
-                    diffOutputWrtDecoderState
+                this.backwardSumWrtDecoderState = this.backwardOutputWrtDecoderState
 
-                } else {
+            }
+            else {
 
-                    add(diffOutputWrtDecoderState, diffNextDecoderStateWrtDecoderState!!, this.sumWrtDecoderStateEntries, this.decodingDimension)
+                add(this.backwardOutputWrtDecoderState, backwardNextDecoderStateWrtDecoderState!!, this.backwardSumWrtDecoderState, this.decodingDimension)
 
-                    this.sumWrtDecoderStateEntries
-
-                }))
+            }
 
             // f'(U_a * Ea^T + U_d * d_t-1 + bias) = d f(U_a * Ea^T + U_d * d_t-1 + bias) / d (U_a * Ea^T + U_d * d_t-1 + bias)
-            val diffDecodingWrtDecodingPreActivation = this.activations[indexStep].backward(withinBatch, sumWrtDecoderState)
+            val activation = this.activations[indexStep]
+            activation.backward(withinBatch, this.backwardSumWrtDecoderState)
+            val backwardDecodingWrtDecodingPreActivation = activation.backwardResult
 
             // d (U_a * Ea^T + U_d * d_t-1 + bias) / d Ea^T
-            val diffPreActivationWrtAttendedEncoding = this.attendedEncodingWeighting.backwardStep(withinBatch, indexStep, diffDecodingWrtDecodingPreActivation)
+            this.attendedEncodingWeighting.backwardStep(withinBatch, indexStep, backwardDecodingWrtDecodingPreActivation)
+            val backwardPreActivationWrtWeightedAttendedEncoding = this.attendedEncodingWeighting.backwardResult
 
             // d (U_a * Ea^T + U_d * d_t-1 + bias) / d d_t-1
-            val diffPreActivationWrtWeightedPreviousStateForDecoding = this.decodingPreviousDecoderWeighting.backwardStep(withinBatch, indexStep, diffDecodingWrtDecodingPreActivation)
+            this.decodingPreviousDecoderWeighting.backwardStep(withinBatch, indexStep, backwardDecodingWrtDecodingPreActivation)
+            val backwardPreActivationWrtWeightedPreviousStateForDecoding = this.decodingPreviousDecoderWeighting.backwardResult
 
-            this.bias?.backwardStep(withinBatch, indexStep, diffDecodingWrtDecodingPreActivation)
+            this.bias?.backwardStep(withinBatch, indexStep, backwardDecodingWrtDecodingPreActivation)
 
             /* Ea^T
                                         a_1
@@ -174,22 +327,17 @@ class CpuAttentiveDecoder internal constructor(
                d Ea^t / d a_(2) = e(2)_1 + e(2)_2
                d Ea^t / d a_(3) = e(3)_1 + e(3)_2*/
 
-            val diffPreActivationWrtAttendedEncodingEntries = diffPreActivationWrtAttendedEncoding.entries
-            val diffPreActivationWrtAttendedEncodingNumberRows = diffPreActivationWrtAttendedEncoding.numberRows
-            val diffPreActivationWrtAttendedEncodingNumberColumns = diffPreActivationWrtAttendedEncoding.numberColumns
-
-            val diffAttendedEncodingWrtTransposedAttentionDistributionEntries = FloatArray(this.numberSteps)
+            val backwardPreActivationWrtWeightedAttendedEncodingNumberRows = this.attendedEncodingWeighting.numberInputRows
+            val backwardPreActivationWrtWeightedAttendedEncodingNumberColumns = this.attendedEncodingWeighting.numberInputColumns
 
             backwardProjectionWrtInput(
                 this.numberSteps,
                 1,
-                this.encodingEntries,
+                this.input,
                 this.encodingDimension,
-                diffPreActivationWrtAttendedEncodingEntries,
-                diffPreActivationWrtAttendedEncodingNumberRows,
-                diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
-
-            val diffAttendedEncodingWrtTransposedAttentionDistribution = FloatMatrix(numberSteps, 1, diffAttendedEncodingWrtTransposedAttentionDistributionEntries)
+                backwardPreActivationWrtWeightedAttendedEncoding,
+                backwardPreActivationWrtWeightedAttendedEncodingNumberRows,
+                this.backwardWeightedAttendedEncodingWrtTransposedAttentionDistribution)
 
             /* d Ea^t / d E
                d Ea^t / d e(1)_1 = a_1
@@ -198,38 +346,49 @@ class CpuAttentiveDecoder internal constructor(
             backwardProjectionWrtWeights(
                 this.encodingDimension,
                 this.numberSteps,
-                this.attentionDistributionEntries,
+                this.attentionDistribution,
                 this.numberSteps,
-                diffPreActivationWrtAttendedEncodingEntries,
-                diffPreActivationWrtAttendedEncodingNumberRows,
-                diffPreActivationWrtAttendedEncodingNumberColumns,
-                this.diffAttendedEncodingWrtEncoding)
+                backwardPreActivationWrtWeightedAttendedEncoding,
+                backwardPreActivationWrtWeightedAttendedEncodingNumberRows,
+                backwardPreActivationWrtWeightedAttendedEncodingNumberColumns,
+                this.backwardAttendedEncodingWrtEncoding)
 
-            this.encodingAccumulator.accumulate(this.diffAttendedEncodingWrtEncoding)
+            this.inputAccumulator.accumulate(this.backwardAttendedEncodingWrtEncoding)
 
             // d a^T / d a = d a^T / d softmax(pre-activation)
-            val diffWrtTransposedAttentionDistributionWrtAttentionDistribution = this.transposition[indexStep].backward(withinBatch, diffAttendedEncodingWrtTransposedAttentionDistribution)
+            val transposition = this.transposition[indexStep]
+            transposition.backward(withinBatch, this.backwardWeightedAttendedEncodingWrtTransposedAttentionDistribution)
+            val backwardTransposedAttentionDistributionWrtAttentionDistribution = transposition.backwardResult
 
             // d softmax(pre-activation) / d pre-activation
-            val diffAttentionDistributionWrtAttentionScores = this.softmax[indexStep].backward(withinBatch, diffWrtTransposedAttentionDistributionWrtAttentionDistribution)
+            val softmax = this.softmax[indexStep]
+            softmax.backward(withinBatch, backwardTransposedAttentionDistributionWrtAttentionDistribution)
+            val backwardAttentionDistributionWrtAttentionScores = softmax.backwardResult
 
             // d s * tanh(...) / d tanh (...)
-            val diffAttentionScoresWrtAttentionActivation = this.scoringWeighting.backwardStep(withinBatch, indexStep, diffAttentionDistributionWrtAttentionScores)
+            this.scoringWeighting.backwardStep(withinBatch, indexStep, backwardAttentionDistributionWrtAttentionScores)
+            val backwardAttentionScoresWrtAttentionActivation = this.scoringWeighting.backwardResult
 
             // d tanh(...) / d W^e * E + expand(...)
-            val diffAttentionActivationWrtAttentionPreactivation = this.tanh[indexStep].backward(withinBatch, diffAttentionScoresWrtAttentionActivation)
+            val tanh = this.tanh[indexStep]
+            tanh.backward(withinBatch, backwardAttentionScoresWrtAttentionActivation)
+            val backwardAttentionActivationWrtAttentionPreactivation = tanh.backwardResult
 
             // d W^e * E + expand(...) / d E
-            val diffAttentionPreactivationWrtEncodings = this.encodingProjection.backward(withinBatch, diffAttentionActivationWrtAttentionPreactivation)
-            this.encodingAccumulator.accumulate(diffAttentionPreactivationWrtEncodings.entries)
+            this.encodingProjection.backward(withinBatch, backwardAttentionActivationWrtAttentionPreactivation)
+            val backwardAttentionPreactivationWrtEncodings = this.encodingProjection.backwardResult
+            this.inputAccumulator.accumulate(backwardAttentionPreactivationWrtEncodings)
 
             // d W^e * E + expand(W^d * d_t-1) / d W^d * d_t-1
-            val diffAttentionPreactivationWrtExpansion = this.columnRepetitions[indexStep].backward(withinBatch, diffAttentionActivationWrtAttentionPreactivation)
+            val columnRepetition = this.columnRepetitions[indexStep]
+            columnRepetition.backward(withinBatch, backwardAttentionActivationWrtAttentionPreactivation)
+            val backwardAttentionPreactivationWrtExpansion = columnRepetition.backwardResult
 
             //  d W^d * d_t-1 / d d_t-1
-            val diffExpansionWrtWeightedPreviousState = this.attentionPreviousStateWeighting.backwardStep(withinBatch, indexStep, diffAttentionPreactivationWrtExpansion)
+            this.attentionPreviousStateWeighting.backwardStep(withinBatch, indexStep, backwardAttentionPreactivationWrtExpansion)
+            val backwardExpansionWrtWeightedPreviousState = this.attentionPreviousStateWeighting.backwardResult
 
-            diffNextDecoderStateWrtDecoderState = diffPreActivationWrtWeightedPreviousStateForDecoding.entries + diffExpansionWrtWeightedPreviousState.entries
+            backwardNextDecoderStateWrtDecoderState = backwardPreActivationWrtWeightedPreviousStateForDecoding + backwardExpansionWrtWeightedPreviousState
 
         }
 
@@ -246,12 +405,12 @@ class CpuAttentiveDecoder internal constructor(
         // b
         this.bias?.backwardSeries()
 
-        val encodingAccumulation = encodingAccumulator.getAccumulation().copyOf()
-        val result = FloatMatrix(this.encodingDimension, this.numberSteps, encodingAccumulation)
+        val encodingAccumulation = this.inputAccumulator.getAccumulation()
+        System.arraycopy(encodingAccumulation, 0, this.backwardResult, 0, this.numberBackwardEntries)
 
-        this.encodingAccumulator.reset()
+        this.inputAccumulator.reset()
 
-        return result
+        return this.backwardResult
 
     }
 

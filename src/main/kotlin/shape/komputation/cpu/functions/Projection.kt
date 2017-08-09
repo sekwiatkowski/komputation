@@ -1,28 +1,15 @@
 package shape.komputation.cpu.functions
 
-import java.util.*
-
-fun addBias(input: FloatArray, numberInputRows: Int, numberInputColumns: Int, numberInputEntries : Int, bias: FloatArray, result: FloatArray) {
+fun addBias(input: FloatArray, numberInputRows: Int, numberInputColumns: Int, bias: FloatArray, result: FloatArray) {
 
     for(indexColumn in 0..numberInputColumns - 1) {
 
         val firstColumnIndex = indexColumn * numberInputRows
 
-        if (input[firstColumnIndex].isNaN()) {
+        for (indexRow in 0..numberInputRows-1) {
 
-            Arrays.fill(result, firstColumnIndex, numberInputEntries, Float.NaN)
-
-            return
-
-        }
-        else {
-
-            for (indexRow in 0..numberInputRows-1) {
-
-                val indexEntry = firstColumnIndex + indexRow
-                result[indexEntry] = input[indexEntry] + bias[indexRow]
-
-            }
+            val indexEntry = firstColumnIndex + indexRow
+            result[indexEntry] = input[indexEntry] + bias[indexRow]
 
         }
 

@@ -2,43 +2,45 @@ package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.functions.findMaxIndicesInRows
 import shape.komputation.cpu.functions.selectEntries
-import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
+import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 import java.util.*
 
-class CpuMaxPoolingLayer internal constructor(name : String? = null, private val numberInputRows : Int, private val numberInputColumns : Int) : BaseCpuForwardLayer(name) {
+class CpuMaxPoolingLayer internal constructor(
+    name : String? = null,
+    numberInputRows : Int,
+    minimumInputColumns : Int,
+    maximumInputColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, numberInputRows, minimumInputColumns, maximumInputColumns) {
 
-    private val maxRowIndices = IntArray(this.numberInputRows)
-    private val forwardEntries = FloatArray(this.numberInputRows)
+    private var maxRowIndices = IntArray(0)
 
-    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+    override fun acquire(maximumBatchSize: Int) {
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+        super.acquire(maximumBatchSize)
 
-        findMaxIndicesInRows(input.entries, this.numberInputRows, this.numberInputColumns, this.maxRowIndices)
-
-        selectEntries(input.entries, this.maxRowIndices, this.forwardEntries, this.numberInputRows)
-
-        return floatColumnVector(*this.forwardEntries)
+        this.maxRowIndices = IntArray(this.numberInputRows)
 
     }
 
-    private val backwardEntries = FloatArray(this.numberInputEntries)
+    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = 1
 
-    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
 
-        val chainEntries = chain.entries
+        findMaxIndicesInRows(input, this.numberInputRows, numberInputColumns, this.maxRowIndices)
 
-        Arrays.fill(this.backwardEntries, 0f)
+        selectEntries(input, this.maxRowIndices, result, this.numberInputRows)
+
+
+    }
+
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+
+        Arrays.fill(result, 0f)
 
         for (indexRow in 0..this.numberInputRows - 1) {
 
-            this.backwardEntries[this.maxRowIndices[indexRow]] = chainEntries[indexRow]
+            result[this.maxRowIndices[indexRow]] = chain[indexRow]
 
         }
-
-        return FloatMatrix(this.numberInputRows, this.numberInputColumns, this.backwardEntries)
 
     }
 

@@ -3,30 +3,43 @@ package shape.komputation.cpu.layers.forward
 import shape.komputation.cpu.functions.repeatColumn
 import shape.komputation.cpu.functions.sumRows
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.layers.Resourceful
 
-class CpuColumnRepetitionLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuForwardLayer(name) {
+class CpuColumnRepetitionLayer internal constructor(
+    name : String? = null,
+    override val numberInputRows: Int,
+    override val numberOutputColumns: Int) : BaseCpuForwardLayer(name), Resourceful {
 
-    private val forwardEntries = FloatArray(this.numberRows * this.numberColumns)
-    private val backwardEntries = FloatArray(this.numberRows)
+    override val numberOutputRows = this.numberInputRows
+    override val numberInputColumns = 1
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override var forwardResult = FloatArray(0)
+    override var backwardResult = FloatArray(0)
 
-        repeatColumn(input.entries, this.forwardEntries, this.numberColumns)
+    override fun acquire(maximumBatchSize: Int) {
 
-        return FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
+        this.forwardResult = FloatArray(this.numberInputRows * this.numberOutputColumns)
+        this.backwardResult = FloatArray(this.numberInputRows)
 
     }
 
-    override fun backward(withinBatch : Int, chain : FloatMatrix): FloatMatrix {
+    override fun release() {
 
-        val chainEntries = chain.entries
-        val numberChainRows = chain.numberRows
-        val numberChainColumns = chain.numberColumns
+    }
 
-        sumRows(numberChainRows, numberChainColumns, chainEntries, this.backwardEntries)
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
 
-        return FloatMatrix(numberChainRows, 1, this.backwardEntries)
+        repeatColumn(input, this.numberOutputColumns, this.forwardResult)
+
+        return this.forwardResult
+
+    }
+
+    override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
+
+        sumRows(this.numberInputRows, this.numberOutputColumns, chain, this.backwardResult)
+
+        return this.backwardResult
 
     }
 

@@ -31,7 +31,7 @@ class AttentiveDecoder(
     override fun buildForCpu(): CpuAttentiveDecoder {
 
         val encodingProjectionName = concatenateNames(this.name, "encoding-projection")
-        val encodingProjection = projectionLayer(encodingProjectionName, this.encodingDimension, this.numberSteps, this.encodingDimension, this.weightInitialization, null, this.optimization).buildForCpu()
+        val encodingProjection = projectionLayer(encodingProjectionName, this.encodingDimension, this.numberSteps, true, this.encodingDimension, this.weightInitialization, null, this.optimization).buildForCpu()
 
         val columnRepetitionLayers = Array(this.numberSteps) { indexStep ->
 

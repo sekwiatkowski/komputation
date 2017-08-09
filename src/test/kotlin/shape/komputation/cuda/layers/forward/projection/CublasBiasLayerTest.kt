@@ -29,7 +29,7 @@ class CublasBiasLayerTest {
         val numberEntries = numberInputRows * numberInputColumns
         val bias = floatArrayOf(1.0f, 2.0f)
 
-        val biasLayer = biasLayer(numberInputRows, numberInputColumns, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
+        val biasLayer = biasLayer(numberInputRows, numberInputColumns, true, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
 
         val maximumBatchSize = 2
         biasLayer.acquire(maximumBatchSize)
@@ -67,7 +67,7 @@ class CublasBiasLayerTest {
         val numberInputColumns = 2
         val bias = floatArrayOf(1.0f, 2.0f)
 
-        val biasLayer = biasLayer(numberInputRows, numberInputColumns, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
+        val biasLayer = biasLayer(numberInputRows, numberInputColumns, true, providedInitialization(bias, numberInputRows), null).buildForCuda(cudaContext, cublasHandle)
 
         val maximumBatchSize = 2
         biasLayer.acquire(maximumBatchSize)

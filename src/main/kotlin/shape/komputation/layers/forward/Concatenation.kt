@@ -3,26 +3,28 @@ package shape.komputation.layers.forward
 import shape.komputation.cpu.layers.forward.CpuConcatenation
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class Concatenation(private val name : String?, private val numberRows : Int, private val numberColumns : Int, private val continuations: Array<Array<CpuForwardLayerInstruction>>) : CpuForwardLayerInstruction {
+class Concatenation(
+    private val name : String?,
+    private val numberInputRows : Int,
+    private val numberInputColumns : Int,
+    private val hasFixedLength : Boolean,
+    private val heights: IntArray,
+    private val width: Int,
+    private val layerInstructions: Array<CpuForwardLayerInstruction>) : CpuForwardLayerInstruction {
+
+    private val minimumColumns = if(this.hasFixedLength) this.numberInputColumns else 1
+    private val maximumColumns = this.numberInputColumns
 
     override fun buildForCpu() =
 
-        CpuConcatenation(this.name, this.numberRows, this.numberColumns, this.continuations)
+        CpuConcatenation(this.name, this.numberInputRows, this.minimumColumns, this.maximumColumns, this.heights, this.width, this.layerInstructions.map { instruction -> instruction.buildForCpu() }.toTypedArray())
 
 }
 
-fun concatenation(numberRows: Int, numberColumns: Int, vararg continuations: CpuForwardLayerInstruction) =
+fun concatenation(numberInputRows : Int, numberInputColumns : Int, hasFixedLength: Boolean, numbersOutputRows: IntArray, numberOutputColumns: Int, layers: Array<CpuForwardLayerInstruction>) =
 
-    concatenation(null, numberRows, numberColumns, *continuations)
+    concatenation(null, numberInputRows, numberInputColumns, hasFixedLength, numbersOutputRows, numberOutputColumns, layers)
 
-fun concatenation(name : String?, numberRows: Int, numberColumns: Int, vararg continuations: CpuForwardLayerInstruction) =
+fun concatenation(name : String?, numberInputRows : Int, numberInputColumns : Int, hasFixedLength: Boolean, numbersOutputRows: IntArray, numberOutputColumns: Int, layers: Array<CpuForwardLayerInstruction>) =
 
-    concatenation(name, numberRows, numberColumns, *continuations.map { layer -> arrayOf(layer) }.toTypedArray())
-
-fun concatenation(numberRows: Int, numberColumns: Int, vararg continuations: Array<CpuForwardLayerInstruction>) =
-
-    concatenation(null, numberRows, numberColumns, *continuations)
-
-fun concatenation(name : String?, numberRows: Int, numberColumns: Int, vararg continuations: Array<CpuForwardLayerInstruction>) =
-
-    Concatenation(name, numberRows, numberColumns, arrayOf(*continuations))
+    Concatenation(name, numberInputRows, numberInputColumns, hasFixedLength, numbersOutputRows, numberOutputColumns, layers)

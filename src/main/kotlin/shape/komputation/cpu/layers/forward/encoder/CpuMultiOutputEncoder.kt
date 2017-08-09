@@ -5,12 +5,8 @@ import shape.komputation.cpu.functions.getStep
 import shape.komputation.cpu.functions.setStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
-import shape.komputation.matrix.floatZeroColumnVector
-import shape.komputation.matrix.floatZeroMatrix
+import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
-import java.util.*
 
 class CpuMultiOutputEncoder internal constructor(
     name : String?,
@@ -18,76 +14,101 @@ class CpuMultiOutputEncoder internal constructor(
     private val unit: RecurrentUnit,
     private val numberSteps: Int,
     private val inputDimension: Int,
-    private val hiddenDimension : Int) : BaseCpuForwardLayer(name), Optimizable {
+    private val hiddenDimension : Int) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
     private val startAtTheBeginning = 0..numberSteps - 1
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
 
-    private val inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
-    private val steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
-    private val states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }
-    private val forwardEntries = FloatArray(this.numberSteps * this.hiddenDimension)
+    private var inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
+    private var steps = emptyArray<FloatArray>()
+    private var states = emptyArray<FloatArray>()
+    private var previousBackwardStatePreActivationWrtPreviousState = FloatArray(0)
 
-    override fun forward(withinBatch : Int, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override val numberOutputRows = this.hiddenDimension
+    override val numberOutputColumns = this.numberSteps
+    override var forwardResult = FloatArray(0)
 
-        val inputEntries = input.entries
+    override val numberInputRows = this.inputDimension
+    override val numberInputColumns = this.numberSteps
+    override var backwardResult = FloatArray(0)
 
-        for (indexStep in this.startAtTheBeginning) {
+    override fun acquire(maximumBatchSize: Int) {
 
-            val stepEntries = this.steps[indexStep]
-            getStep(inputEntries, this.inputIndices[indexStep], stepEntries, this.inputDimension)
+        this.steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
+        this.states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }
 
-            val newState = this.unit.forwardStep(withinBatch, indexStep, floatColumnVector(*this.states[indexStep]), floatColumnVector(*stepEntries), isTraining).entries
+        this.forwardResult = FloatArray(this.numberOutputColumns * this.numberOutputRows)
 
-            this.states[indexStep+1] = newState
+        this.backwardResult = FloatArray(this.numberInputColumns * numberInputRows)
 
-            System.arraycopy(newState, 0, this.forwardEntries, indexStep * this.hiddenDimension, this.hiddenDimension)
+        if (this.unit is Resourceful) {
+
+            this.unit.acquire(maximumBatchSize)
 
         }
 
-        return FloatMatrix(this.hiddenDimension, this.numberSteps, this.forwardEntries)
+    }
+
+    override fun release() {
+
+        if (this.unit is Resourceful) {
+
+            this.unit.release()
+
+        }
 
     }
 
-    override fun backward(withinBatch : Int, incoming: FloatMatrix): FloatMatrix {
+    override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
-        val seriesBackwardWrtInput = floatZeroMatrix(this.inputDimension, this.numberSteps)
+        for (indexStep in this.startAtTheBeginning) {
 
-        var stateChain = floatZeroColumnVector(this.hiddenDimension)
+            val step = this.steps[indexStep]
+            getStep(input, this.inputIndices[indexStep], step, this.inputDimension)
 
-        val incomingEntries = incoming.entries
+            val newState = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], step, isTraining)
 
-        val incomingStepEntries = FloatArray(this.hiddenDimension)
+            this.states[indexStep+1] = newState
+
+            System.arraycopy(newState, 0, this.forwardResult, indexStep * this.hiddenDimension, this.hiddenDimension)
+
+        }
+
+        return this.forwardResult
+
+    }
+
+    private val chainStep = FloatArray(this.hiddenDimension)
+    private var backwardSumWrtState = FloatArray(this.hiddenDimension)
+
+    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
 
         for (indexStep in this.startAtTheEnd) {
 
-            getStep(incomingEntries, indexStep, incomingStepEntries, this.hiddenDimension)
+            getStep(chain, indexStep, this.chainStep, this.hiddenDimension)
 
-            val chainEntries =
+            if (indexStep + 1 == this.numberSteps) {
 
-                if (indexStep + 1 == this.numberSteps) {
+                this.backwardSumWrtState = this.chainStep
 
-                    incomingStepEntries
-                }
-                else {
+            }
+            else {
 
-                    add(stateChain.entries, incomingStepEntries, incomingStepEntries, this.hiddenDimension)
+                add(this.previousBackwardStatePreActivationWrtPreviousState, this.chainStep, this.backwardSumWrtState, this.hiddenDimension)
 
-                    incomingStepEntries
+            }
 
-                }
+            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, this.backwardSumWrtState)
 
-            val (backwardStatePreActivationWrtPreviousState, backwardStatePreActivationWrtInput) = this.unit.backwardStep(withinBatch, indexStep, floatColumnVector(*chainEntries))
+            this.previousBackwardStatePreActivationWrtPreviousState = backwardStatePreActivationWrtPreviousState
 
-            stateChain = backwardStatePreActivationWrtPreviousState
-
-            setStep(backwardStatePreActivationWrtInput.entries, indexStep, seriesBackwardWrtInput.entries, this.inputDimension)
+            setStep(backwardStatePreActivationWrtInput, indexStep, this.backwardResult, this.inputDimension)
 
         }
 
         this.unit.backwardSeries()
 
-        return stateChain
+        return this.backwardResult
 
     }
 

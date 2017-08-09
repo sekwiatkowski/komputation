@@ -3,7 +3,6 @@ package shape.komputation.demos.addition
 import shape.komputation.cpu.functions.getStep
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.floatScalar
 import java.util.*
 
 object AdditionProblemData {
@@ -47,11 +46,11 @@ object AdditionProblemData {
             input[firstStep * 2 + 1] = 1.0f
             input[secondStep * 2 + 1] = 1.0f
 
-            FloatMatrix(2, length, input)
+            FloatMatrix(input)
 
         }
 
-    fun generateTarget(inputs: Array<Matrix>) =
+    fun generateTarget(inputs: Array<Matrix>, numberSteps : Int) =
 
         Array(inputs.size) { indexInput ->
 
@@ -61,7 +60,7 @@ object AdditionProblemData {
 
             val inputEntries = input.entries
 
-            for (indexStep in 0..input.numberColumns - 1) {
+            for (indexStep in 0..numberSteps - 1) {
 
                 val step = FloatArray(2)
                 getStep(inputEntries, indexStep, step, 2)
@@ -70,7 +69,7 @@ object AdditionProblemData {
 
             }
 
-            floatScalar(solution)
+            floatArrayOf(solution)
 
         }
 }

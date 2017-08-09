@@ -36,7 +36,7 @@ fun main(args: Array<String>) {
 
     val inputs = RunningTotalData.generateInputs(random, numberExamples, numberSteps, exclusiveUpperLimit)
 
-    val targets = RunningTotalData.generateTargets(inputs, numberSteps)
+    val targets = RunningTotalData.generateTargets(inputs)
 
     val encoderUnit = simpleRecurrentUnit(
         numberSteps,
@@ -86,7 +86,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        squaredLoss(1),
+        squaredLoss(numberSteps),
         numberIterations,
         batchSize,
         printLoss

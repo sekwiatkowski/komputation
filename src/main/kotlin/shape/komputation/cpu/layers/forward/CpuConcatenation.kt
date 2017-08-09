@@ -1,92 +1,110 @@
 package shape.komputation.cpu.layers.forward
 
-import shape.komputation.cpu.Network
 import shape.komputation.cpu.functions.splitRows
 import shape.komputation.cpu.functions.stackRows
-import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.layers.entry.inputLayer
-import shape.komputation.matrix.EMPTY_FLOAT_MATRIX
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import shape.komputation.cpu.layers.CpuForwardLayer
+import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CpuConcatenation internal constructor(
     name : String? = null,
-    private val numberInputRows : Int,
-    private val numberInputColumns : Int,
-    continuations: Array<Array<CpuForwardLayerInstruction>>) : BaseCpuForwardLayer(name), Optimizable {
+    numberInputRows: Int,
+    minimumColumns : Int,
+    maximumColumns : Int,
+    private val heights: IntArray,
+    private val width : Int,
+    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns), Resourceful, Optimizable {
 
-    private val networks = continuations.map { layers -> Network(inputLayer(this.numberInputRows, this.numberInputColumns), *layers) }
-    private val numberNetworks = this.networks.size
+    private val numberLayers = layers.size
+    private val individualResults = Array(this.numberLayers) { FloatArray(0) }
 
-    private val results = Array(this.numberNetworks) { FloatArray(0) }
-    private val heights = IntArray(this.numberNetworks) { -1 }
+    private var chainSplit = emptyArray<FloatArray>()
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean) : FloatMatrix {
+    override fun acquire(maximumBatchSize: Int) {
 
-        var numberColumns = -1
+        super.acquire(maximumBatchSize)
 
-        for (indexNetwork in (0..this.numberNetworks-1)) {
+        this.chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
 
-            val network = this.networks[indexNetwork]
+        this.layers.forEach { layer ->
 
-            val individualResult = network.forward(withinBatch, input, isTraining)
-            val individualResultEntries = individualResult.entries
+            if (layer is Resourceful) {
 
-            this.results[indexNetwork] = individualResultEntries
-            this.heights[indexNetwork] = individualResult.numberRows
+                layer.acquire(maximumBatchSize)
 
-            numberColumns = individualResult.numberColumns
-
-        }
-
-        var totalNumberRows = 0
-        for (height in heights) {
-            totalNumberRows += height
-        }
-
-        val stacked = FloatArray(numberColumns * totalNumberRows)
-
-        stackRows(this.heights, totalNumberRows, numberColumns, stacked, *this.results)
-
-        return FloatMatrix(totalNumberRows, numberColumns, stacked)
-
-    }
-
-    // Chain is the same for (1, 2) and (2, 1)
-    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
-
-        val chainSplit = splitRows(chain, this.heights)
-
-        val firstNetwork = this.networks.first()
-        val firstChainPart = chainSplit[0]
-
-        val resultWrtInput = firstNetwork.backward(withinBatch, firstChainPart)
-
-        val resultEntries = resultWrtInput.entries
-
-        for (indexNetwork in (1..this.numberNetworks-1)) {
-
-            val network = this.networks[indexNetwork]
-
-            val remainingResultWrtInput = network.backward(withinBatch, chainSplit[indexNetwork])
-
-            for (index in 0..resultEntries.size - 1) {
-
-                resultEntries[index] += remainingResultWrtInput.entries[index]
             }
 
         }
 
-        return resultWrtInput
+    }
+
+    override fun release() {
+
+        this.layers.forEach { layer ->
+
+            if (layer is Resourceful) {
+
+                layer.release()
+
+            }
+
+        }
+
+    }
+
+    override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) = this.width
+
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+
+        for (indexLayer in (0..this.numberLayers-1)) {
+
+            this.individualResults[indexLayer] = this.layers[indexLayer].forward(withinBatch, numberInputColumns, input, isTraining)
+
+        }
+
+        stackRows(this.heights, this.numberOutputRows, this.width, result, *this.individualResults)
+
+    }
+
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+
+        splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
+
+        val firstLayer = this.layers[0]
+        firstLayer.backward(withinBatch, this.chainSplit[0])
+
+        val firstIndividualBackwardResult = firstLayer.backwardResult
+
+        System.arraycopy(firstIndividualBackwardResult, 0, result, 0, firstIndividualBackwardResult.size)
+
+        for (indexNetwork in (1..this.numberLayers-1)) {
+
+            val layer = this.layers[indexNetwork]
+
+            layer.backward(withinBatch, this.chainSplit[indexNetwork])
+
+            val individualBackwardResult = layer.backwardResult
+
+            for (index in 0..individualBackwardResult.size - 1) {
+
+                result[index] += individualBackwardResult[index]
+
+            }
+
+        }
 
     }
 
     override fun optimize(scalingFactor : Float) {
 
-        for (network in this.networks) {
+        for (layer in this.layers) {
 
-            network.optimize(scalingFactor)
+            if (layer is Optimizable) {
+
+                layer.optimize(scalingFactor)
+
+            }
 
         }
 

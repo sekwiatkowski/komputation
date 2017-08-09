@@ -10,7 +10,6 @@ import shape.komputation.layers.forward.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.momentum
-import shape.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
 
@@ -72,7 +71,7 @@ fun main(args: Array<String>) {
                 batchSize,
                 { prediction, target ->
 
-                    findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
+                    findMaxIndex(prediction) == findMaxIndex(target)
 
                 }
             )

@@ -23,7 +23,7 @@ fun nextInteger(seeds : IntArray, offset : Int, length: Int) {
 
 }
 
-fun mask(seeds : IntArray, limit : Int, result : BooleanArray, offset : Int, length: Int) {
+fun mask(length: Int, limit: Int, offset: Int, seeds: IntArray, result: BooleanArray) {
 
     var offsetIndex = offset
     var index = 0
@@ -39,7 +39,7 @@ fun mask(seeds : IntArray, limit : Int, result : BooleanArray, offset : Int, len
 
 }
 
-fun dropout(input : FloatArray, mask : BooleanArray, result : FloatArray, numberEntries: Int) {
+fun dropout(numberEntries: Int, input: FloatArray, mask: BooleanArray, result: FloatArray) {
 
     for (index in 0..numberEntries - 1) {
 

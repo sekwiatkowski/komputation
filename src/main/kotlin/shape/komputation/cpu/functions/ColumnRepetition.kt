@@ -1,6 +1,6 @@
 package shape.komputation.cpu.functions
 
-fun repeatColumn(column: FloatArray, repetition : FloatArray, numberRepetitions: Int) {
+fun repeatColumn(column: FloatArray, numberRepetitions: Int, repetition: FloatArray) {
 
     val numberRows = column.size
 

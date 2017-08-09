@@ -8,15 +8,15 @@ object RunningTotalData {
 
     fun generateInputs(random : Random, numberExamples : Int, numberSteps : Int, exclusiveUpperLimit : Int) = Array<Matrix>(numberExamples) {
 
-        FloatMatrix(1, numberSteps, FloatArray(numberSteps) { random.nextInt(exclusiveUpperLimit).toFloat() })
+        FloatMatrix(FloatArray(numberSteps) { random.nextInt(exclusiveUpperLimit).toFloat() })
 
     }
 
-    fun generateTargets(inputs : Array<Matrix>, numberSteps : Int) = Array<FloatMatrix>(inputs.size) { indexExample ->
+    fun generateTargets(inputs : Array<Matrix>) = Array<FloatArray>(inputs.size) { indexExample ->
 
         val input = inputs[indexExample] as FloatMatrix
 
-        val targetEntries = input
+        input
             .entries
             .foldIndexed(arrayListOf<Float>()) { index, list, current ->
 
@@ -26,8 +26,6 @@ object RunningTotalData {
 
             }
             .toFloatArray()
-
-        FloatMatrix(1, numberSteps, targetEntries)
 
     }
 

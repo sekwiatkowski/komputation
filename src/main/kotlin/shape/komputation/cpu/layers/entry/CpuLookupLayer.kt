@@ -5,44 +5,46 @@ import shape.komputation.cpu.layers.BaseCpuEntryPoint
 import shape.komputation.cpu.optimization.SparseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateSparsely
-import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
-import java.util.*
 
 class CpuLookupLayer internal constructor(
     name : String?,
     private val vectors: Array<FloatArray>,
-    private val length : Int,
+    private val minimumLength: Int,
+    private val maximumLength: Int,
     private val dimension : Int,
     private val gradientAccumulator: SparseAccumulator,
     private val update: UpdateRule? = null) : BaseCpuEntryPoint(name), Optimizable {
 
-    private var inputEntries = IntArray(this.length)
-    private var inputLength = -1
-    private val forwardEntries = FloatArray(this.length * this.dimension)
+    override var forwardResult = FloatArray(0)
+    override val numberOutputRows = this.dimension
+    override var numberOutputColumns = -1
 
-    private val padding = Float.NaN
+    private var inputEntries = IntArray(0)
 
-    override fun forward(input: Matrix) : FloatMatrix {
+    private val numberLengths = this.maximumLength - this.minimumLength + 1
+    private val forwardResultsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray((index+this.minimumLength)*this.dimension) }
+
+    override fun forward(input: Matrix): FloatArray {
 
         input as IntMatrix
+
         this.inputEntries = input.entries
-        this.inputLength = input.numberRows
+        this.numberOutputColumns = this.inputEntries.size
 
-        lookup(this.vectors, this.length, this.dimension, this.padding, this.inputEntries, this.forwardEntries)
+        this.forwardResult = this.forwardResultsOverPossibleLengths[this.numberOutputColumns - this.minimumLength]
 
-        return FloatMatrix(this.dimension, this.length, this.forwardEntries)
+        lookup(this.vectors, this.dimension, this.numberOutputColumns, this.inputEntries, this.forwardResult)
+
+        return this.forwardResult
 
     }
 
+    override fun backward(chain : FloatArray) {
 
-    override fun backward(chain : FloatMatrix): FloatMatrix {
-
-        this.gradientAccumulator.accumulate(this.inputEntries, this.inputLength-1, chain.entries)
-
-        return chain
+        this.gradientAccumulator.accumulate(this.inputEntries, this.numberOutputColumns, chain)
 
     }
 

@@ -11,14 +11,13 @@ fun computeNumberFilterColumnPositions(numberColumns : Int, filterWidth: Int) =
     numberColumns - filterWidth + 1
 
 fun expandForConvolution(
-    inputEntries : FloatArray,
     numberInputRows: Int,
-    resultEntries : FloatArray,
-    numberResultEntries : Int,
+    inputEntries: FloatArray,
+    filterWidth: Int,
+    filterHeight: Int,
     numberFilterRowPositions: Int,
     numberFilterColumnPositions: Int,
-    filterWidth : Int,
-    filterHeight: Int) {
+    resultEntries: FloatArray) {
 
     var count = 0
 
@@ -40,15 +39,11 @@ fun expandForConvolution(
 
     }
 
-    Arrays.fill(resultEntries, count, numberResultEntries, Float.NaN)
-
 }
 
 fun backwardExpansionForConvolution(
     numberInputRows: Int,
-    numberActualEntries: Int,
-    numberResultEntries: Int,
-    resultEntries: FloatArray,
+    result: FloatArray,
     filterHeight: Int,
     numberFilterRowPositions: Int,
     numberFilterColumnPositions: Int,
@@ -57,7 +52,7 @@ fun backwardExpansionForConvolution(
 
     var count = 0
 
-    Arrays.fill(resultEntries, 0, numberActualEntries, 0f)
+    Arrays.fill(result, 0f)
 
     for (indexConvolution in 0..numberFilterColumnPositions - 1) {
 
@@ -73,13 +68,11 @@ fun backwardExpansionForConvolution(
             val row = firstRowOfConvolution + rowInConvolution
 
             val derivative = chain[count++]
-            resultEntries[row + column * numberInputRows] += derivative
+            result[row + column * numberInputRows] += derivative
 
         }
 
     }
-
-    Arrays.fill(resultEntries, numberActualEntries, numberResultEntries, Float.NaN)
 
 }
 

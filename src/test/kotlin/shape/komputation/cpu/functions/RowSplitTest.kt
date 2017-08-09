@@ -1,59 +1,46 @@
 package shape.komputation.cpu.functions
 
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.floatMatrixFromRows
 
 class RowSplitTest {
-
-    val firstRow = floatArrayOf(1.0f, 2.0f)
-    val secondRow = floatArrayOf(3.0f, 4.0f)
-    val thirdRow = floatArrayOf(5.0f, 6.0f)
-
-    val matrix = floatMatrixFromRows(
-        firstRow,
-        secondRow,
-        thirdRow
-    )
 
     @Test
     fun test1() {
 
-        val (firstActual, secondActual) = splitRows(
-            matrix,
-            intArrayOf(1, 2))
+        val expected = arrayOf(floatArrayOf(1.0f))
+        val actual = arrayOf(FloatArray(1))
 
-        val firstExpected = floatMatrixFromRows(
-            firstRow
-        )
+        splitRows(1, 1, floatArrayOf(1.0f), intArrayOf(1), 1, actual)
 
-        val secondExpected = floatMatrixFromRows(
-            secondRow,
-            thirdRow
-        )
-
-        assertMatrixEquality(firstExpected, firstActual, 0.01f)
-        assertMatrixEquality(secondExpected, secondActual, 0.01f)
+        check(actual, expected)
 
     }
 
     @Test
     fun test2() {
 
-        val (firstActual, secondActual) = splitRows(matrix, intArrayOf(2, 1))
+        val expected = arrayOf(floatArrayOf(1.0f), floatArrayOf(2.0f))
+        val actual = arrayOf(FloatArray(1), FloatArray(1))
 
-        val firstExpected = floatMatrixFromRows(
-            firstRow,
-            secondRow
-        )
+        splitRows(1, 1, floatArrayOf(1.0f, 2.0f), intArrayOf(1, 1), 2, actual)
 
-        val secondExpected = floatMatrixFromRows(
-            thirdRow
-        )
-
-        assertMatrixEquality(firstExpected, firstActual, 0.01f)
-        assertMatrixEquality(secondExpected, secondActual, 0.01f)
+        check(actual, expected)
 
     }
+
+    private fun check(actual: Array<FloatArray>, expected: Array<FloatArray>) {
+
+        assertEquals(actual.size, expected.size)
+
+        expected.zip(actual).forEach { (expectedArray, actualArray) ->
+
+            assertArrayEquals(expectedArray, actualArray, 0.001f)
+
+        }
+
+    }
+
 
 }

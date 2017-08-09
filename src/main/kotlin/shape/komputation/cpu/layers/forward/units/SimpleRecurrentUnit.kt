@@ -1,6 +1,5 @@
 package shape.komputation.cpu.layers.forward.units
 
-import shape.komputation.cpu.functions.getStep
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.additionCombination
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
@@ -10,27 +9,71 @@ import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
 import shape.komputation.optimization.Optimizable
 import shape.komputation.optimization.OptimizationInstruction
 
 class SimpleRecurrentUnit internal constructor(
     name: String?,
-    private val numberSteps: Int,
-    private val inputDimension: Int,
-    private val hiddenDimension: Int,
     private val previousStateWeighting: SeriesWeighting,
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Optimizable {
+    private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Resourceful, Optimizable {
 
-    private val steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }
+    override fun acquire(maximumBatchSize: Int) {
 
-    override fun forwardStep(withinBatch : Int, indexStep: Int, state: FloatMatrix, input: FloatMatrix, isTraining : Boolean): FloatMatrix {
+        this.previousStateWeighting.acquire(maximumBatchSize)
+        this.inputWeighting.acquire(maximumBatchSize)
+
+        this.additions.forEach { addition ->
+
+            addition.acquire(maximumBatchSize)
+
+        }
+
+        this.bias?.acquire(maximumBatchSize)
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.acquire(maximumBatchSize)
+
+            }
+
+        }
+
+    }
+
+    override fun release() {
+
+        this.previousStateWeighting.release()
+        this.inputWeighting.release()
+
+        this.additions.forEach { addition ->
+
+            addition.release()
+
+        }
+
+        this.bias?.release()
+
+        this.activations.forEach { activation ->
+
+            if (activation is Resourceful) {
+
+                activation.release()
+
+            }
+
+        }
+
+    }
+
+    override fun forwardStep(withinBatch : Int, indexStep: Int, state: FloatArray, input: FloatArray, isTraining : Boolean): FloatArray {
 
         // weighted state = state weights * state
         val weightedState = this.previousStateWeighting.forwardStep(withinBatch, indexStep, state, isTraining)
@@ -39,44 +82,46 @@ class SimpleRecurrentUnit internal constructor(
         val weightedInput = this.inputWeighting.forwardStep(withinBatch, indexStep, input, isTraining)
 
         // addition = weighted input + weighted state
-        val additionEntries = this.additions[indexStep].forward(weightedState, weightedInput)
+        val addition = this.additions[indexStep].forward(weightedState, weightedInput)
 
         // pre-activation = addition + bias
         val preActivation =
 
             if(this.bias == null) {
 
-                additionEntries
+                addition
 
             }
             else {
 
-                this.bias.forwardStep(withinBatch, indexStep, additionEntries, isTraining)
+                this.bias.forwardStep(withinBatch, indexStep, addition, isTraining)
 
             }
 
-        val newState = this.activations[indexStep].forward(withinBatch, preActivation, isTraining)
+        val activation = this.activations[indexStep]
 
-        return newState
+        return activation.forward(withinBatch, 1, preActivation, isTraining)
 
     }
 
-    override fun backwardStep(withinBatch : Int, step : Int, chain: FloatMatrix): Pair<FloatMatrix, FloatMatrix> {
+    override fun backwardStep(withinBatch : Int, step : Int, chain: FloatArray): Pair<FloatArray, FloatArray> {
 
         // d new state / state pre-activation
         // d activate(state weights * state(1) + input weights * input(2) + bias)) / d state weights * state(1) + input weights * input(2) + bias
-        val backwardStateWrtStatePreActivation = this.activations[step].backward(withinBatch, chain)
+        val activation = this.activations[step]
+        activation.backward(withinBatch, chain)
+        val backwardPreActivation = activation.backwardResult
 
         // d state weights * state(1) + input weights * input(2) + bias / d state(1) = state weights
-        val backwardStatePreActivationWrtPreviousState = this.previousStateWeighting.backwardStep(withinBatch, step, backwardStateWrtStatePreActivation)
+        this.previousStateWeighting.backwardStep(withinBatch, step, backwardPreActivation)
 
         // d state weights * state(1) + input weights * input(2) + bias / d input(2) = input weights
-        val backwardStatePreActivationWrtInput = this.inputWeighting.backwardStep(withinBatch, step, backwardStateWrtStatePreActivation)
+        this.inputWeighting.backwardStep(withinBatch, step, backwardPreActivation)
 
         // d state weights * state(1) + input weights * input(2) + bias / d bias = 1
-        this.bias?.backwardStep(withinBatch, step, backwardStateWrtStatePreActivation)
+        this.bias?.backwardStep(withinBatch, step, backwardPreActivation)
 
-        return backwardStatePreActivationWrtPreviousState to backwardStatePreActivationWrtInput
+        return this.previousStateWeighting.backwardResult to this.inputWeighting.backwardResult
 
     }
 
@@ -188,7 +233,7 @@ fun simpleRecurrentUnit(
     }
 
     val unitName = concatenateNames(name, "unit")
-    val unit = SimpleRecurrentUnit(unitName, numberSteps, inputDimension, hiddenDimension, previousStateWeighting, inputWeighting, additions, bias, activationLayers)
+    val unit = SimpleRecurrentUnit(unitName, previousStateWeighting, inputWeighting, additions, bias, activationLayers)
 
     return unit
 

@@ -3,13 +3,12 @@ package shape.komputation.cpu.functions
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import shape.komputation.assertMatrixEquality
-import shape.komputation.matrix.floatMatrixFromColumns
 
 class ConvolutionExpansionTest {
 
     @Test
     fun testForward() {
+
         /*
             1 4 7
             2 5 8
@@ -17,14 +16,26 @@ class ConvolutionExpansionTest {
          */
 
         val input = floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f)
+        val numberRows = 3
+        val numberColumns = 3
 
-        val size = 2 * 3 * 2
-        val actual = FloatArray(size)
-        expandForConvolution(input, 3, actual, size, 1, 2, 2, 3)
+        val filterWidth = 2
+        val filterHeight = 2
+        val filterLength = filterWidth * filterHeight
+
+        val numberFilterRowPositions = computeNumberFilterRowPositions(numberRows, filterHeight)
+        val numberFilterColumnsPositions = computeNumberFilterColumnPositions(numberColumns, filterWidth)
+
+        val numberConvolutions = numberFilterRowPositions * numberFilterColumnsPositions
+
+        val actual = FloatArray(numberConvolutions * filterLength)
+        expandForConvolution(numberRows, input, filterWidth, filterHeight, numberFilterRowPositions, numberFilterColumnsPositions, actual)
 
         val expected = floatArrayOf(
-            1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f,
-            4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f
+            1.0f, 2.0f, 4.0f, 5.0f,
+            2.0f, 3.0f, 5.0f, 6.0f,
+            4.0f, 5.0f, 7.0f, 8.0f,
+            5.0f, 6.0f, 8.0f, 9.0f
         )
 
         assertArrayEquals(expected, actual, 0.01f)

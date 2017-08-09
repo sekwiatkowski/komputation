@@ -9,7 +9,6 @@ import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.convolution.maxPoolingLayer
 import shape.komputation.layers.forward.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.historical.momentum
@@ -39,14 +38,15 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
     val numberClasses = EmbeddingData.numberClasses
 
+    val hasFixedLength = true
+
     val network = Network(
-        lookupLayer(embeddings, 2, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        convolutionalLayer(embeddingDimension, 2, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-        maxPoolingLayer(numberFilters, 1),
+        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
+        convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
         reluLayer(numberFilters),
         denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
     )
 
-    network.train(inputs, targets, squaredLoss(1), 5_000, maximumBatchSize, printLoss)
+    network.train(inputs, targets, squaredLoss(numberClasses), 5_000, maximumBatchSize, printLoss)
 
 }

@@ -12,8 +12,7 @@ import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.matrix.FloatMatrix
-import shape.komputation.matrix.floatColumnVector
-import shape.komputation.matrix.floatScalar
+import shape.komputation.matrix.floatMatrix
 
 class CublasBackwardProjectionTest {
 
@@ -116,11 +115,11 @@ class CublasBackwardProjectionTest {
     @Test
     fun testBackwardProjectionWrtWeights1() {
 
-        val input = floatScalar(2.0f)
-        val chain = floatScalar(3.0f)
+        val input = floatMatrix(2.0f)
+        val chain = floatMatrix(3.0f)
         val expected = floatArrayOf(6.0f)
 
-        checkBackwardProjectionWrtWeights(input, chain, expected)
+        checkBackwardProjectionWrtWeights(1, 1, input, 1, 1, chain, expected)
 
     }
 
@@ -133,25 +132,27 @@ class CublasBackwardProjectionTest {
     @Test
     fun testBackwardProjectionWrtWeights2() {
 
-        val input = floatColumnVector(2.0f, 3.0f)
-        val chain = floatColumnVector(4.0f, 5.0f)
+        val input = floatMatrix(2.0f, 3.0f)
+        val chain = floatMatrix(4.0f, 5.0f)
         val expected = floatArrayOf(8.0f, 10.0f, 12.0f, 15.0f)
 
-        checkBackwardProjectionWrtWeights(input, chain, expected)
+        checkBackwardProjectionWrtWeights(2, 1, input, 2, 1, chain, expected)
 
     }
 
-    private fun checkBackwardProjectionWrtWeights(input: FloatMatrix, chain : FloatMatrix, expected: FloatArray) {
+    private fun checkBackwardProjectionWrtWeights(
+        numberInputRows : Int,
+        numberInputColumns : Int,
+        input: FloatMatrix,
+        numberChainRows : Int,
+        numberChainColumns : Int,
+        chain : FloatMatrix,
+        expected: FloatArray) {
 
         val context = setUpCudaContext()
-
-        val numberInputRows = input.numberRows
-        val numberInputColumns = input.numberColumns
         val inputEntries = input.entries
         val numberInputEntries = inputEntries.size
 
-        val numberChainColumns = chain.numberColumns
-        val numberChainRows = chain.numberRows
         val chainEntries = chain.entries
         val numberChainEntries = chainEntries.size
 

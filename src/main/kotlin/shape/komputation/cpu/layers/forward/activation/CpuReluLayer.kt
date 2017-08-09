@@ -2,31 +2,27 @@ package shape.komputation.cpu.layers.forward.activation
 
 import shape.komputation.cpu.functions.activation.backwardRelu
 import shape.komputation.cpu.functions.activation.relu
-import shape.komputation.matrix.FloatMatrix
+import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 
-class CpuReluLayer internal constructor(name : String? = null, private val numberRows : Int, private val numberColumns : Int) : BaseCpuActivationLayer(name) {
+class CpuReluLayer internal constructor(name : String? = null, numberRows : Int, minimumColumns : Int, maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private val numberEntries = this.numberRows * this.numberColumns
+    private var numberEntries = -1
 
-    private val forwardEntries = FloatArray(this.numberEntries)
-    private val backwardEntries = FloatArray(this.numberEntries)
+    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
-    override fun forward(withinBatch : Int, input : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
 
-        relu(input.entries, this.forwardEntries, this.numberEntries)
+        this.numberEntries = input.size
 
-        val result = FloatMatrix(this.numberRows, this.numberColumns, this.forwardEntries)
-
-        return result
+        relu(input, result, this.numberEntries)
 
     }
 
-    override fun backward(withinBatch : Int, chain : FloatMatrix) : FloatMatrix {
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
 
-        backwardRelu(this.forwardEntries, chain.entries, this.backwardEntries, this.numberEntries)
-
-        return FloatMatrix(numberRows, numberColumns, this.backwardEntries)
+        backwardRelu(this.forwardResult, chain, result, this.numberEntries)
 
     }
+
 
 }

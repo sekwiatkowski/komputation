@@ -9,9 +9,9 @@ import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
+import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.tanhLayer
-import shape.komputation.matrix.FloatMatrix
 import shape.komputation.optimization.OptimizationInstruction
 
 class ShortTermResponse(
@@ -20,9 +20,63 @@ class ShortTermResponse(
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuTanhLayer>) {
+    private val activations: Array<CpuTanhLayer>) : Resourceful {
 
-    fun forward(withinBatch : Int, step : Int, state : FloatMatrix, input : FloatMatrix, forget : FloatMatrix, isTraining : Boolean): FloatMatrix {
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.forgetting.forEach { forgetting ->
+
+            forgetting.acquire(maximumBatchSize)
+
+        }
+
+        this.memoryWeighting.acquire(maximumBatchSize)
+        this.inputWeighting.acquire(maximumBatchSize)
+
+        this.additions.forEach { addition ->
+
+            addition.acquire(maximumBatchSize)
+
+        }
+
+        this.bias?.acquire(maximumBatchSize)
+
+        this.activations.forEach { activation ->
+
+            activation.acquire(maximumBatchSize)
+
+        }
+
+    }
+
+    override fun release() {
+
+        this.forgetting.forEach { forgetting ->
+
+            forgetting.release()
+
+        }
+
+        this.memoryWeighting.release()
+        this.inputWeighting.release()
+
+        this.additions.forEach { addition ->
+
+            addition.release()
+
+        }
+
+        this.bias?.release()
+
+        this.activations.forEach { activation ->
+
+            activation.release()
+
+        }
+
+    }
+
+    fun forward(withinBatch : Int, step : Int, state : FloatArray, input : FloatArray, forget : FloatArray, isTraining : Boolean): FloatArray {
 
         val shortTermMemory = this.forgetting[step].forward(state, forget)
 
@@ -42,47 +96,50 @@ class ShortTermResponse(
             else {
 
                 this.bias.forwardStep(withinBatch, step, addition, isTraining)
+
             }
 
-        val shortTermResponse = this.activations[step].forward(withinBatch, preActivation, isTraining)
-
-        return shortTermResponse
+        return this.activations[step].forward(withinBatch, 1, preActivation, isTraining)
 
     }
 
-    fun backward(withinBatch : Int, step: Int, chain: FloatMatrix): Pair<FloatMatrix, Pair<FloatMatrix, FloatMatrix>> {
+    fun backward(withinBatch : Int, step: Int, chain: FloatArray): Pair<FloatArray, Pair<FloatArray, FloatArray>> {
 
         // short-term response = tanh(short-term response pre-activation)
         // d short-term response / d short-term response pre-activation
-        val diffShortTermResponseWrtPreActivation = this.activations[step].backward(withinBatch, chain)
+        val activation = this.activations[step]
+        activation.backward(withinBatch, chain)
+        val backwardShortTermResponseWrtPreActivation = activation.backwardResult
 
         // short-term response pre-activation = weighted short-term memory + weighted input (+ short-term bias)
 
         // d short-term response pre-activation / d weighted short-term memory
-        val diffPreActivationWrtWeightedShortTermMemory = this.additions[step].backwardFirst(diffShortTermResponseWrtPreActivation)
+        val backwardPreActivationWrtWeightedShortTermMemory = this.additions[step].backwardFirst(backwardShortTermResponseWrtPreActivation)
 
         // d weighted short-term memory / d short-term memory
-        val diffWeightedShortTermMemoryWrtShortTermMemory = this.memoryWeighting.backwardStep(withinBatch, step, diffPreActivationWrtWeightedShortTermMemory)
+        this.memoryWeighting.backwardStep(withinBatch, step, backwardPreActivationWrtWeightedShortTermMemory)
+        val backwardWeightedShortTermMemoryWrtShortTermMemory = this.memoryWeighting.backwardResult
 
         // d short-term memory / d forget
-        val diffShortTermMemoryWrtForget = this.forgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
+        val backwardShortTermMemoryWrtForget = this.forgetting[step].backwardFirst(backwardWeightedShortTermMemoryWrtShortTermMemory)
 
         // d short-term memory / d previous state
-        val diffShortTermMemoryWrtPreviousState = this.forgetting[step].backwardFirst(diffWeightedShortTermMemoryWrtShortTermMemory)
+        val backwardShortTermMemoryWrtPreviousState = this.forgetting[step].backwardFirst(backwardWeightedShortTermMemoryWrtShortTermMemory)
 
         // d short-term response pre-activation / d short-term weighted input
-        val diffPreActivationWrtWeightedInput = this.additions[step].backwardSecond(diffShortTermResponseWrtPreActivation)
+        val backwardPreActivationWrtWeightedInput = this.additions[step].backwardSecond(backwardShortTermResponseWrtPreActivation)
 
         // d short-term weighted input / d weighted input
-        val diffWeightedInputWrtInput = this.inputWeighting.backwardStep(withinBatch, step, diffPreActivationWrtWeightedInput)
+        this.inputWeighting.backwardStep(withinBatch, step, backwardPreActivationWrtWeightedInput)
+        val backwardWeightedInputWrtInput = this.inputWeighting.backwardResult
 
         if (this.bias != null) {
 
-            bias.backwardStep(withinBatch, step, diffShortTermResponseWrtPreActivation)
+            this.bias.backwardStep(withinBatch, step, backwardShortTermResponseWrtPreActivation)
 
         }
 
-        return diffShortTermMemoryWrtForget to (diffShortTermMemoryWrtPreviousState to diffWeightedInputWrtInput)
+        return backwardShortTermMemoryWrtForget to (backwardShortTermMemoryWrtPreviousState to backwardWeightedInputWrtInput)
 
     }
 

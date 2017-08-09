@@ -68,7 +68,7 @@ fun main(args: Array<String>) {
     network.train(
         inputs,
         targets,
-        logisticLoss(numberCategories),
+        logisticLoss(numberCategories, seriesLength),
         numberIterations,
         batchSize,
         printLoss

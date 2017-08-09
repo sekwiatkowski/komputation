@@ -83,7 +83,7 @@ fun main(args: Array<String>) {
                 batchSize,
                 { prediction, target ->
 
-                    findMaxIndex(prediction.entries) == findMaxIndex(target.entries)
+                    findMaxIndex(prediction) == findMaxIndex(target)
 
                 }
             )

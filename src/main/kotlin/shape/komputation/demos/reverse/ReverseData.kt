@@ -4,7 +4,6 @@ import shape.komputation.cpu.functions.getStep
 import shape.komputation.cpu.functions.setStep
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.floatZeroMatrix
 import shape.komputation.matrix.oneHotArray
 import java.util.*
 
@@ -14,8 +13,7 @@ object ReverseData {
 
         Array<Matrix>(numberExamples) {
 
-            val input = floatZeroMatrix(numberCategories, seriesLength)
-            val inputEntries = input.entries
+            val inputEntries = FloatArray(seriesLength * numberCategories)
 
             for (indexStep in 0..seriesLength - 1) {
 
@@ -23,7 +21,7 @@ object ReverseData {
 
             }
 
-            input
+            FloatMatrix(inputEntries)
 
         }
 
@@ -33,8 +31,7 @@ object ReverseData {
 
             val matrix = inputs[index] as FloatMatrix
 
-            val reversedSequenceMatrix = floatZeroMatrix(numberCategories, seriesLength)
-            val reversedSequenceMatrixEntries = reversedSequenceMatrix.entries
+            val reversedSequenceMatrix = FloatArray(numberCategories * seriesLength)
 
             for (indexStep in 0..seriesLength - 1) {
 
@@ -43,7 +40,7 @@ object ReverseData {
                 val originalStep = FloatArray(numberCategories)
                 getStep(matrix.entries, reverseStep, originalStep, numberCategories)
 
-                setStep(originalStep, indexStep, reversedSequenceMatrixEntries, numberCategories)
+                setStep(originalStep, indexStep, reversedSequenceMatrix, numberCategories)
             }
 
             reversedSequenceMatrix

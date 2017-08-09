@@ -8,11 +8,15 @@ import shape.komputation.cuda.layers.forward.activation.CudaSigmoidLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class SigmoidLayer(private val name : String?, private val numberRows: Int, private val numberColumns: Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+class SigmoidLayer(
+    private val name : String?,
+    private val numberRows: Int,
+    private val numberColumns: Int,
+    private val hasFixedLength: Boolean) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
 
     override fun buildForCpu() =
 
-        CpuSigmoidLayer(this.name, this.numberRows, this.numberColumns)
+        CpuSigmoidLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
 
@@ -30,10 +34,10 @@ class SigmoidLayer(private val name : String?, private val numberRows: Int, priv
 
 }
 
-fun sigmoidLayer(numberRows : Int, numberColumns: Int = 1) =
+fun sigmoidLayer(numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
 
-    SigmoidLayer(null, numberRows, numberColumns)
+    sigmoidLayer(null, numberRows, numberColumns, hasFixedLength)
 
-fun sigmoidLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1) =
+fun sigmoidLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
 
-    SigmoidLayer(name, numberRows, numberColumns)
+    SigmoidLayer(name, numberRows, numberColumns, hasFixedLength)
