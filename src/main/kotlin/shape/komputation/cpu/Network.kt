@@ -1,5 +1,7 @@
 package shape.komputation.cpu
 
+import shape.komputation.cpu.evaluation.computeAccuracy
+import shape.komputation.cpu.functions.findMaxIndices
 import shape.komputation.cpu.layers.ForwardLayerState
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
@@ -38,7 +40,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     }
 
-    fun backward(withinBatch: Int, lossGradient: FloatArray) {
+    fun backward(withinBatch: Int, lossGradient: FloatArray) : FloatArray {
 
         var chain = lossGradient
 
@@ -50,7 +52,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
         }
 
-        this.entryPoint.backward(chain)
+        return this.entryPoint.backward(chain)
 
     }
 
@@ -105,9 +107,9 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
                     val instanceLoss = lossFunction.forward(prediction, target)
 
-                    lossFunction.backward(prediction, target)
+                    val backwardInstanceLoss = lossFunction.backward(prediction, target)
 
-                    this.backward(withinBatch, lossFunction.backwardResult)
+                    this.backward(withinBatch, backwardInstanceLoss)
 
                     batchLoss += instanceLoss
 
@@ -143,30 +145,35 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
         inputs: Array<Matrix>,
         targets: Array<FloatArray>,
         batchSize: Int,
-        isCorrect: (FloatArray, FloatArray) -> Boolean) : BooleanArray {
+        numberCategories : Int,
+        length : Int = 1): Float {
 
         val numberInstances = inputs.size
 
         val batches = partitionIndices(numberInstances, batchSize)
 
-        val results = BooleanArray(numberInstances)
+        val actualCategories = Array(numberInstances) { IntArray(length) }
+        val predictedCategories = Array(numberInstances) { IntArray(length) }
 
         for((withinBatch, batch) in batches.withIndex()) {
 
             for (index in batch) {
 
                 val input = inputs[index]
-                val target = targets[index]
 
-                val prediction = this.forward(withinBatch, input, false)
+                val batchTargets = targets[index]
+                findMaxIndices(batchTargets, numberCategories, length, actualCategories[index])
 
-                results[index] = isCorrect(prediction, target)
+                val batchPredictions = this.forward(withinBatch, input, false)
+                findMaxIndices(batchPredictions, numberCategories, length, predictedCategories[index])
 
             }
 
         }
 
-        return results
+        val accuracy = computeAccuracy(actualCategories, predictedCategories, numberInstances)
+
+        return accuracy
 
     }
 

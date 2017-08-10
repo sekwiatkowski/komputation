@@ -6,6 +6,6 @@ interface CpuEntryPoint : ForwardLayerState {
 
     fun forward(input: Matrix) : FloatArray
 
-    fun backward(chain : FloatArray)
+    fun backward(chain : FloatArray) : FloatArray
 
 }

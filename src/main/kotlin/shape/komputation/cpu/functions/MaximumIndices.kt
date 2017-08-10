@@ -29,12 +29,12 @@ fun findMaxIndicesInRows(input: FloatArray, numberRows : Int, numberColumns : In
 
 }
 
-fun findMaxIndex(input: FloatArray): Int {
+fun findMaxIndex(input: FloatArray, offset : Int, limit : Int): Int {
 
     var maxIndex = -1
     var maxValue = Float.NEGATIVE_INFINITY
 
-    for(index in 0..input.size - 1) {
+    for(index in offset..offset + limit - 1) {
 
         val value = input[index]
 
@@ -47,6 +47,19 @@ fun findMaxIndex(input: FloatArray): Int {
 
     }
 
-    return maxIndex
+    return maxIndex - offset
+
+}
+
+fun findMaxIndices(input: FloatArray, numberIndices: Int, length: Int, result: IntArray) {
+
+    for (step in 0..length - 1) {
+
+        val offset = step * numberIndices
+
+        result[step] = findMaxIndex(input, offset, numberIndices)
+
+    }
+
 
 }

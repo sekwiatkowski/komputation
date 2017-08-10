@@ -47,9 +47,9 @@ class CpuSoftmaxLayer internal constructor(
 
     override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
 
-        this.normalizationLayer.backward(withinBatch, chain)
+        val backwardNormalization = this.normalizationLayer.backward(withinBatch, chain)
 
-        this.backwardResult = this.exponentiationLayer.backward(withinBatch, this.normalizationLayer.backwardResult)
+        this.backwardResult = this.exponentiationLayer.backward(withinBatch, backwardNormalization)
 
         return this.backwardResult
 

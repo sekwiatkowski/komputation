@@ -1,9 +1,8 @@
 package shape.komputation.cpu.demos.mnist
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.mnist.MnistData
-import shape.komputation.initialization.heInitialization
+import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.denseLayer
@@ -23,8 +22,8 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val numberIterations = 50
-    val batchSize = 64
+    val numberIterations = 30
+    val batchSize = 1
 
     val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()))
     val (testInputs, testTargets) = MnistData.loadMnistTest(File(args.last()))
@@ -33,9 +32,9 @@ fun main(args: Array<String>) {
     val hiddenDimension = 100
     val numberCategories = MnistData.numberCategories
 
-    val initialization = heInitialization(random)
-    val optimizer = momentum(0.01f, 0.9f)
-    val keepProbability = 0.85f
+    val initialization = gaussianInitialization(random, 0.0f, 0.1f)
+    val optimizer = momentum(0.005f, 0.1f)
+    val keepProbability = 0.8f
 
     val hiddenLayer = denseLayer(
         inputDimension,
@@ -69,15 +68,7 @@ fun main(args: Array<String>) {
                 testInputs,
                 testTargets,
                 batchSize,
-                { prediction, target ->
-
-                    findMaxIndex(prediction) == findMaxIndex(target)
-
-                }
-            )
-            .count { correct -> correct }
-            .toFloat()
-            .div(MnistData.numberTestExamples.toFloat())
+                numberCategories)
 
         println(accuracy)
 

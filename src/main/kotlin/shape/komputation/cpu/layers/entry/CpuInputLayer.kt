@@ -21,8 +21,8 @@ class CpuInputLayer internal constructor(
 
     }
 
-    override fun backward(chain : FloatArray) {
+    override fun backward(chain : FloatArray) =
 
-    }
+        chain
 
 }

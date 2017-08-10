@@ -65,7 +65,7 @@ class CudaMomentum(
 
     }
 
-    private fun launchKernel(numberParameters: Int, pointerToParameterIndices : Pointer, pointerToDeviceParameter: Pointer, scalingFactor: Float, pointerToDeviceGradient: Pointer) {
+    private fun launchKernel(numberParameters: Int, pointerToParameterIndices : Pointer, pointerToDeviceParameter: Pointer, scalingFactor: Float, pointerToDeviceGradient: Pointer): Int {
 
         this.scalingFactorArray[0] = scalingFactor
 
@@ -81,13 +81,15 @@ class CudaMomentum(
             pointerToDeviceGradient
         )
 
-        this.kernel!!.launch(
+        val resultCode = this.kernel!!.launch(
             parameters,
             numberParameters,
             this.numberBlocks,
             this.numberThreads,
             0
         )
+
+        return resultCode
 
     }
 

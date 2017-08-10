@@ -32,7 +32,7 @@ class CpuLogisticLoss(
     }
 
     // -1/target probability if target = 1.0, 0.0 otherwise
-    override fun backward(predictions: FloatArray, targets : FloatArray) {
+    override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
 
         for(indexEntry in 0..this.numberInputEntries - 1) {
 
@@ -48,6 +48,8 @@ class CpuLogisticLoss(
             }
 
         }
+
+        return this.backwardResult
 
     }
 

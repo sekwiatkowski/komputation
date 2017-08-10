@@ -1,7 +1,6 @@
 package shape.komputation.cpu.demos.trec
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.trec.NLP
 import shape.komputation.demos.trec.TRECData
 import shape.komputation.initialization.uniformInitialization
@@ -92,8 +91,6 @@ class TrecTraining {
         val trainingTargets = NLP.createTargets(embeddableTrainingCategories, indexedCategories)
         val testTargets = NLP.createTargets(embeddableTestCategories, indexedCategories)
 
-        val numberTestExamples = testTargets.size
-
         val embeddings = embeddableVocabulary
             .map { token -> embeddingMap[token]!! }
             .toTypedArray()
@@ -120,22 +117,15 @@ class TrecTraining {
 
         val afterEachIteration = { _ : Int, _ : Float ->
 
-            val accuracyRate = network
+            val accuracy = network
                 .test(
                     testRepresentations,
                     testTargets,
-                    batchSize,
-                    { prediction, target ->
+                    numberCategories,
+                    1,
+                    batchSize)
 
-                        findMaxIndex(prediction) == findMaxIndex(target)
-
-                    }
-                )
-                .count { correct -> correct }
-                .toFloat()
-                .div(numberTestExamples.toFloat())
-
-            println(accuracyRate)
+            println(accuracy)
 
         }
 

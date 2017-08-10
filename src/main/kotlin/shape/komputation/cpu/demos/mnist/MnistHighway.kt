@@ -1,7 +1,6 @@
 package shape.komputation.cpu.demos.mnist
 
 import shape.komputation.cpu.Network
-import shape.komputation.cpu.functions.findMaxIndex
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.constantInitialization
 import shape.komputation.initialization.gaussianInitialization
@@ -81,15 +80,7 @@ fun main(args: Array<String>) {
                 testInputs,
                 testTargets,
                 batchSize,
-                { prediction, target ->
-
-                    findMaxIndex(prediction) == findMaxIndex(target)
-
-                }
-            )
-            .count { correct -> correct }
-            .toFloat()
-            .div(MnistData.numberTestExamples.toFloat())
+                numberCategories)
 
         println(accuracy)
 

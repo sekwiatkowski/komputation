@@ -1,27 +1,20 @@
 package shape.komputation.cuda.layers.entry
 
 import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.layers.CudaEntryPoint
+import shape.komputation.cuda.layers.BaseCudaEntryPoint
 import shape.komputation.cuda.setFloatArray
-import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CudaInputLayer(numberRows: Int, numberColumns: Int) : CudaEntryPoint, Resourceful {
+class CudaInputLayer(name : String?, numberRows: Int, numberColumns: Int) : BaseCudaEntryPoint(name) {
 
     private val numberEntries = numberRows * numberColumns
-    private val memory = hashMapOf<Int, Pointer>()
 
-    override fun acquire(maximumBatchSize : Int) {
+    override fun forward(batchId : Int, batchSize : Int, inputIndices: IntArray, inputs: Array<Matrix>, memory : HashMap<Int, Pointer>) =
 
-    }
+        if (memory.containsKey(batchId)) {
 
-    override fun forward(batchId : Int, inputIndices: IntArray, batchSize : Int, inputs: Array<Matrix>) =
-
-        if (this.memory.containsKey(batchId)) {
-
-            this.memory[batchId]!!
+            memory[batchId]!!
 
         }
         else {
@@ -42,21 +35,11 @@ class CudaInputLayer(numberRows: Int, numberColumns: Int) : CudaEntryPoint, Reso
             val deviceInput = Pointer()
             setFloatArray(batchEntries, numberBatchEntries, deviceInput)
 
-            this.memory[batchId] = deviceInput
+            memory[batchId] = deviceInput
 
             deviceInput
 
         }
-
-    override fun release() {
-
-        for (deviceInput in this.memory.values) {
-
-            cudaFree(deviceInput)
-
-        }
-
-    }
 
     override fun backward(chain: Pointer) =
 

@@ -30,13 +30,15 @@ class CpuSquaredLoss(
     // loss = 0.5 (prediction - target)^2 = 0.5 prediction^2 - prediction * target + 0.5 target ^2
     // d loss / d prediction = prediction - target
 
-    override fun backward(predictions: FloatArray, targets : FloatArray) {
+    override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
 
         for(indexEntry in 0..this.numberInputEntries - 1) {
 
             this.backwardResult[indexEntry] = predictions[indexEntry] - targets[indexEntry]
 
         }
+
+        return this.backwardResult
 
     }
 

@@ -6,6 +6,6 @@ interface CpuLossFunction : BackwardLayerState {
 
     fun forward(predictions: FloatArray, targets : FloatArray): Float
 
-    fun backward(predictions: FloatArray, targets : FloatArray)
+    fun backward(predictions: FloatArray, targets : FloatArray) : FloatArray
 
 }

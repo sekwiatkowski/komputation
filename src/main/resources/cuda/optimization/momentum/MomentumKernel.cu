@@ -11,20 +11,21 @@ __global__ void momentumKernel (
     float* gradient)
 {
 
-    int startEntry = threadIdx.x * numberIterations;
+    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
     if(startEntry < parameterSize) {
 
-        int indexParameter = parameterIndices[blockIdx.x];
+        int indexGradient = blockIdx.x;
+        int indexParameter = parameterIndices[indexGradient];
 
-        int startGradient = blockIdx.x * parameterSize + startEntry;
         int startParameter = indexParameter * parameterSize + startEntry;
+        int startGradient = indexGradient * parameterSize + startEntry;
 
         for(int i = 0; i < numberIterations; i++) {
 
             float update = momentum * history[startParameter + i] - scalingFactor * learningRate * gradient[startGradient + i];
-            history[startParameter + i] = update;
 
+            history[startParameter + i] = update;
             parameters[startParameter + i] += update;
 
         }

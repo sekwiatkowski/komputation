@@ -5,11 +5,11 @@ import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
+import shape.komputation.cuda.kernels.EvaluationKernels
 import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.loss.CudaLossFunctionInstruction
-import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
 import shape.komputation.optimization.Optimizable
@@ -25,9 +25,9 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(batchId: Int, indices: IntArray, batchSize: Int, inputs: Array<Matrix>, isTraining: Boolean) : Pointer {
+    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, inputMemory : HashMap<Int, Pointer>, isTraining: Boolean) : Pointer {
 
-        var output = this.entryPoint.forward(batchId, indices, batchSize, inputs)
+        var output = this.entryPoint.forward(batchId, batchSize, indices, inputs, inputMemory)
 
         for (layer in this.layers) {
 
@@ -61,13 +61,32 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         loss: CudaLossFunctionInstruction,
         numberIterations : Int,
         maximumBatchSize: Int,
-        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): Long {
+        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null,
+        memory: HashMap<Int, Pointer>? = null): Long {
 
         val lossFunction = loss.buildForCuda(this.cudaContext)
 
         val numberExamples = inputs.size
 
         val batches = partitionIndices(numberExamples, maximumBatchSize)
+
+        val firstTarget = targets.first()
+        val targetSize = firstTarget.size
+
+        val hasSpecifiedInputMemory = memory != null
+
+        val inputMemory = if (hasSpecifiedInputMemory) {
+
+            memory!!
+
+        }
+        else {
+
+            hashMapOf<Int, Pointer>()
+
+        }
+
+        val targetMemory = TargetMemory(targetSize, targets, maximumBatchSize)
 
         this.acquireLayerResources(maximumBatchSize)
 
@@ -76,11 +95,6 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
             lossFunction.acquire(maximumBatchSize)
 
         }
-
-        val firstTarget = targets.first()
-        val targetSize = firstTarget.size
-
-        val targetMemory = hashMapOf<Int, Pointer>()
 
         val trackLoss = afterEachIteration != null
 
@@ -94,39 +108,10 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                 val currentBatchSize = batch.size
 
-                val pointerToTargets =
-
-                    if (targetMemory.containsKey(batchId)) {
-
-                        targetMemory[batchId]!!
-
-                    }
-                    else {
-
-                        val batchTargetSize = maximumBatchSize * targetSize
-                        val batchTargets = FloatArray(batchTargetSize)
-
-                        for ((batchIndex, globalIndex) in batch.withIndex()) {
-
-                            val target = targets[globalIndex]
-
-                            System.arraycopy(target, 0, batchTargets, batchIndex * targetSize, targetSize)
-
-                        }
-
-                        val deviceTargets = Pointer()
-                        setFloatArray(batchTargets, batchTargetSize, deviceTargets)
-
-                        val pointerToDeviceTargets = Pointer.to(deviceTargets)
-
-                        targetMemory[batchId] = pointerToDeviceTargets
-
-                        pointerToDeviceTargets
-
-                    }
-
-                val devicePredictions = this.forward(batchId, batch, currentBatchSize, inputs, true)
+                val devicePredictions = this.forward(batchId, currentBatchSize, batch, inputs, inputMemory,true)
                 val pointerToDevicePredictions = Pointer.to(devicePredictions)
+
+                val pointerToTargets = targetMemory.get(batchId, batch)
 
                 if (trackLoss) {
 
@@ -134,9 +119,9 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                 }
 
-                val lossGradient = lossFunction.backward(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
+                val backwardLoss = lossFunction.backward(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
 
-                this.backward(lossGradient, currentBatchSize)
+                this.backward(backwardLoss, currentBatchSize)
 
                 val scalingFactor = 1.0f.div(batch.size.toFloat())
                 this.optimize(scalingFactor)
@@ -159,11 +144,21 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         }
 
+        if (!hasSpecifiedInputMemory) {
+
+            inputMemory.values.forEach { pointer ->
+
+                cudaFree(pointer)
+
+            }
+
+        }
+
+        targetMemory.release()
+
         val stop = System.currentTimeMillis()
 
         val time = stop - start
-
-        targetMemory.values.forEach { pointer -> cudaFree(pointer) }
 
         if (lossFunction is Resourceful) {
 
@@ -190,22 +185,68 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
     fun test(
         inputs: Array<Matrix>,
-        targets: Array<FloatMatrix>,
+        targets: Array<FloatArray>,
         batchSize: Int,
-        isCorrect: (FloatMatrix, FloatMatrix) -> Boolean) {
+        numberCategories : Int,
+        length : Int = 1,
+        memory : HashMap<Int, Pointer>? = null): Float {
 
-        val size = inputs.size
+        val numberInstances = inputs.size
 
-        val batches = partitionIndices(size, batchSize)
+        val batches = partitionIndices(numberInstances, batchSize)
 
-        val deviceCorrect = Pointer()
-        allocateDeviceIntMemory(deviceCorrect, size)
+        val firstTarget = targets.first()
+        val targetSize = firstTarget.size
 
-        for ((indexBatch, batch) in batches.withIndex()) {
+        val hasSpecifiedInputMemory = memory != null
 
-            val result = this.forward(indexBatch, batch, batch.size, inputs, false)
+        val inputMemory =
+
+            if (hasSpecifiedInputMemory) {
+
+                memory!!
+
+            }
+            else {
+
+                hashMapOf<Int, Pointer>()
+
+            }
+
+        val targetMemory = TargetMemory(targetSize, targets, batchSize)
+
+        val cudaEvaluation = CudaEvaluation(numberInstances, numberCategories, length, { this.cudaContext.createKernel(EvaluationKernels.evaluation()) })
+        cudaEvaluation.acquire(batchSize)
+
+        for ((batchId, batch) in batches.withIndex()) {
+
+            val predictions = this.forward(batchId, batch.size, batch, inputs, inputMemory,false)
+
+            val pointerToPredictions = Pointer.to(predictions)
+
+            val pointerToTargets = targetMemory.get(batchId, batch)
+
+            cudaEvaluation.evaluateBatch(batch.size, pointerToPredictions, pointerToTargets)
 
         }
+
+        val accuracy = cudaEvaluation.computeAccuracy()
+
+        cudaEvaluation.release()
+
+        if (!hasSpecifiedInputMemory) {
+
+            inputMemory.values.forEach { pointer ->
+
+                cudaFree(pointer)
+
+            }
+
+        }
+
+        targetMemory.release()
+
+        return accuracy
 
     }
 

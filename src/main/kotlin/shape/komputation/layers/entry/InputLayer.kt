@@ -13,7 +13,7 @@ class InputLayer(private val name : String? = null, private val numberRows: Int,
 
     override fun buildForCuda() =
 
-        CudaInputLayer(this.numberRows, this.numberColumns)
+        CudaInputLayer(this.name, this.numberRows, this.numberColumns)
 
 }
 

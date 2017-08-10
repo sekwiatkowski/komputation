@@ -64,8 +64,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 - [Computer vision toy problem](./src/main/kotlin/shape/komputation/cpu/demos/lines/Lines.kt)
 
 - Word embedding toy problem:
-  - [CNN with one filter height](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/Embeddings.kt)
-  - [CNN with two filter heights](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
+  - [CNN with one filter width](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/Embeddings.kt)
+  - [CNN with two filter widths](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
 
 - Addition problem:
   - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
@@ -77,8 +77,8 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [RNN with attention](./src/main/kotlin/shape/komputation/cpu/demos/reverse/ReverseAttention.kt)
 
 - MNIST:
-  - [Dropout and Nesterov's Accelerated Gradient](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistDropoutNesterov.kt)
-  - [Highway layers](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistHighway.kt)
+  - [CPU demo](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistBatchDropout.kt)
+  - [GPU/CUDA demo](./src/main/kotlin/shape/komputation/cuda/demos/mnist/MnistBatchDropout.kt)
 
 - [TREC question classification](./src/main/kotlin/shape/komputation/cpu/demos/trec/TREC.kt)
 

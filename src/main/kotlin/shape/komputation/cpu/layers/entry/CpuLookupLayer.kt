@@ -42,9 +42,11 @@ class CpuLookupLayer internal constructor(
 
     }
 
-    override fun backward(chain : FloatArray) {
+    override fun backward(chain : FloatArray): FloatArray {
 
         this.gradientAccumulator.accumulate(this.inputEntries, this.numberOutputColumns, chain)
+
+        return chain
 
     }
 

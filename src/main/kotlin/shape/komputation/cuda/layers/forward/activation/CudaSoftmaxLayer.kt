@@ -1,7 +1,6 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
-import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
 import shape.komputation.layers.Resourceful
 
@@ -18,18 +17,11 @@ class CudaSoftmaxLayer internal constructor(
 
     }
 
-    var count = 0
-
     override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
 
         val exponentiated = this.exponentiationLayer.forward(input, batchSize, isTraining)
 
         val normalized = this.normalizationLayer.forward(exponentiated, batchSize, isTraining)
-        count++
-        if(count==2) {
-            val res = getFloatArray(normalized, batchSize * 10)
-            res.forEach { println(it) }
-        }
 
         return normalized
 

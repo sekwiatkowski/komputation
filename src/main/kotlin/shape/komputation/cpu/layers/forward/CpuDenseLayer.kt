@@ -48,9 +48,9 @@ class CpuDenseLayer internal constructor(
         this.numberInputColumns = numberInputColumns
         this.numberOutputColumns = numberInputColumns
 
-        this.projection.forward(withinBatch, numberInputColumns, input, isTraining)
+        val projected = this.projection.forward(withinBatch, numberInputColumns, input, isTraining)
 
-        this.forwardResult = this.activation.forward(withinBatch, numberInputColumns, this.projection.forwardResult, isTraining)
+        this.forwardResult = this.activation.forward(withinBatch, numberInputColumns, projected, isTraining)
 
         return this.forwardResult
 
