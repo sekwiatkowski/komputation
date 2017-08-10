@@ -34,6 +34,6 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    network.train(XorData.input, XorData.targets, squaredLoss(outputDimension), 30_000, batchSize, printLoss)
+    network.train(XorData.input, XorData.targets, squaredLoss(outputDimension), 10_000, batchSize, printLoss)
 
 }

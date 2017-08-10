@@ -1,8 +1,8 @@
 package shape.komputation.cuda.demos.mnist
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.CudaNetwork
+import shape.komputation.cuda.InputMemory
+import shape.komputation.cuda.TargetMemory
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -14,6 +14,7 @@ import shape.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
 
+// The data set for this demo can be found here: https://pjreddie.com/projects/mnist-in-csv/
 fun main(args: Array<String>) {
 
     if (args.size != 2) {
@@ -63,7 +64,8 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    val testMemory = hashMapOf<Int, Pointer>()
+    val testInputMemory = InputMemory()
+    val testTargetMemory = TargetMemory(numberCategories)
 
     val afterEachIteration = { _ : Int, _ : Float ->
 
@@ -73,18 +75,17 @@ fun main(args: Array<String>) {
                 testTargets,
                 batchSize,
                 numberCategories,
-                memory = testMemory)
+                1,
+                testInputMemory,
+                testTargetMemory)
 
         println(accuracy)
 
 
     }
 
-    testMemory.values.forEach { pointer ->
-
-        cudaFree(pointer)
-
-    }
+    testInputMemory.release()
+    testTargetMemory.release()
 
     network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
 

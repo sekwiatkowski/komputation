@@ -4,7 +4,6 @@ import jcuda.Pointer
 import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
-import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.kernels.EvaluationKernels
 import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
@@ -25,7 +24,7 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
     private val numberLayers = this.layers.size
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
 
-    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, inputMemory : HashMap<Int, Pointer>, isTraining: Boolean) : Pointer {
+    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, inputMemory : InputMemory, isTraining: Boolean) : Pointer {
 
         var output = this.entryPoint.forward(batchId, batchSize, indices, inputs, inputMemory)
 
@@ -62,7 +61,8 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         numberIterations : Int,
         maximumBatchSize: Int,
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null,
-        memory: HashMap<Int, Pointer>? = null): Long {
+        inputMemory: InputMemory? = null,
+        targetMemory: TargetMemory? = null): Long {
 
         val lossFunction = loss.buildForCuda(this.cudaContext)
 
@@ -70,23 +70,33 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         val batches = partitionIndices(numberExamples, maximumBatchSize)
 
-        val firstTarget = targets.first()
-        val targetSize = firstTarget.size
+        val hasSpecifiedInputMemory = inputMemory != null
 
-        val hasSpecifiedInputMemory = memory != null
+        val finalInputMemory = if (hasSpecifiedInputMemory) {
 
-        val inputMemory = if (hasSpecifiedInputMemory) {
-
-            memory!!
+            inputMemory!!
 
         }
         else {
 
-            hashMapOf<Int, Pointer>()
+            InputMemory()
 
         }
 
-        val targetMemory = TargetMemory(targetSize, targets, maximumBatchSize)
+        val hasSpecifiedTargetMemory = targetMemory != null
+
+        val finalTargetMemory = if (hasSpecifiedTargetMemory) {
+
+            targetMemory!!
+
+        }
+        else {
+
+            val targetSize = targets.first().size
+
+            TargetMemory(targetSize)
+
+        }
 
         this.acquireLayerResources(maximumBatchSize)
 
@@ -108,10 +118,10 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
                 val currentBatchSize = batch.size
 
-                val devicePredictions = this.forward(batchId, currentBatchSize, batch, inputs, inputMemory,true)
+                val devicePredictions = this.forward(batchId, currentBatchSize, batch, inputs, finalInputMemory,true)
                 val pointerToDevicePredictions = Pointer.to(devicePredictions)
 
-                val pointerToTargets = targetMemory.get(batchId, batch)
+                val pointerToTargets = finalTargetMemory.get(batchId, currentBatchSize, batch, targets)
 
                 if (trackLoss) {
 
@@ -144,21 +154,21 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         }
 
-        if (!hasSpecifiedInputMemory) {
-
-            inputMemory.values.forEach { pointer ->
-
-                cudaFree(pointer)
-
-            }
-
-        }
-
-        targetMemory.release()
-
         val stop = System.currentTimeMillis()
 
         val time = stop - start
+
+        if (!hasSpecifiedInputMemory) {
+
+            finalInputMemory.release()
+
+        }
+
+        if (!hasSpecifiedTargetMemory) {
+
+            finalTargetMemory.release()
+
+        }
 
         if (lossFunction is Resourceful) {
 
@@ -189,44 +199,60 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
         batchSize: Int,
         numberCategories : Int,
         length : Int = 1,
-        memory : HashMap<Int, Pointer>? = null): Float {
+        inputMemory: InputMemory? = null,
+        targetMemory: TargetMemory? = null): Float {
 
         val numberInstances = inputs.size
 
         val batches = partitionIndices(numberInstances, batchSize)
 
-        val firstTarget = targets.first()
-        val targetSize = firstTarget.size
+        val hasSpecifiedInputMemory = inputMemory != null
 
-        val hasSpecifiedInputMemory = memory != null
-
-        val inputMemory =
+        val finalInputMemory =
 
             if (hasSpecifiedInputMemory) {
 
-                memory!!
+                inputMemory!!
 
             }
             else {
 
-                hashMapOf<Int, Pointer>()
+                InputMemory()
 
             }
 
-        val targetMemory = TargetMemory(targetSize, targets, batchSize)
+        val hasSpecifiedTargetMemory = targetMemory != null
+
+        val finalTargetMemory =
+
+            if (hasSpecifiedTargetMemory) {
+
+                targetMemory!!
+
+            }
+            else {
+
+                val firstTarget = targets.first()
+                val targetSize = firstTarget.size
+
+                TargetMemory(targetSize)
+
+            }
 
         val cudaEvaluation = CudaEvaluation(numberInstances, numberCategories, length, { this.cudaContext.createKernel(EvaluationKernels.evaluation()) })
         cudaEvaluation.acquire(batchSize)
 
         for ((batchId, batch) in batches.withIndex()) {
 
-            val predictions = this.forward(batchId, batch.size, batch, inputs, inputMemory,false)
+            val currentBatchSize = batch.size
+
+            val predictions = this.forward(batchId, currentBatchSize, batch, inputs, finalInputMemory,false)
 
             val pointerToPredictions = Pointer.to(predictions)
 
-            val pointerToTargets = targetMemory.get(batchId, batch)
+            val pointerToTargets = finalTargetMemory.get(batchId, currentBatchSize, batch, targets)
 
-            cudaEvaluation.evaluateBatch(batch.size, pointerToPredictions, pointerToTargets)
+            cudaEvaluation.evaluateBatch(currentBatchSize, pointerToPredictions, pointerToTargets)
 
         }
 
@@ -236,15 +262,16 @@ class CudaNetwork(entryPointInstruction: CudaEntryPointInstruction, vararg forwa
 
         if (!hasSpecifiedInputMemory) {
 
-            inputMemory.values.forEach { pointer ->
-
-                cudaFree(pointer)
-
-            }
+            finalInputMemory.release()
 
         }
 
-        targetMemory.release()
+        if (!hasSpecifiedTargetMemory) {
+
+
+            finalTargetMemory.release()
+
+        }
 
         return accuracy
 

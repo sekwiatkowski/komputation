@@ -12,6 +12,7 @@ import shape.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
 
+// The data set for this demo can be found here: https://pjreddie.com/projects/mnist-in-csv/
 fun main(args: Array<String>) {
 
     if (args.size != 2) {

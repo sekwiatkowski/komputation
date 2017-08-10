@@ -3,11 +3,11 @@ package shape.komputation.cuda
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
-class TargetMemory(private val targetSize : Int, private val targets : Array<FloatArray>, private val maximumBatchSize : Int) {
+class TargetMemory(private val targetSize : Int) {
 
     private val memory = hashMapOf<Int, Pointer>()
 
-    fun get(batchId : Int, batch : IntArray) =
+    fun get(batchId : Int, batchSize : Int, batch : IntArray, targets : Array<FloatArray>) =
 
         if (this.memory.containsKey(batchId)) {
 
@@ -16,19 +16,19 @@ class TargetMemory(private val targetSize : Int, private val targets : Array<Flo
         }
         else {
 
-            val batchTargetSize = this.maximumBatchSize * this.targetSize
+            val batchTargetSize = batchSize * this.targetSize
             val batchTargets = FloatArray(batchTargetSize)
 
             for ((batchIndex, globalIndex) in batch.withIndex()) {
 
-                val target = this.targets[globalIndex]
+                val target = targets[globalIndex]
 
                 System.arraycopy(target, 0, batchTargets, batchIndex * this.targetSize, this.targetSize)
 
             }
 
             val deviceTargets = Pointer()
-            val result = setFloatArray(batchTargets, batchTargetSize, deviceTargets)
+            setFloatArray(batchTargets, batchTargetSize, deviceTargets)
 
             val pointerToDeviceTargets = Pointer.to(deviceTargets)
 
