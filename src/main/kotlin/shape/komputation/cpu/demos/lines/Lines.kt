@@ -31,13 +31,19 @@ fun main(args: Array<String>) {
 
     val maximumBatchSize = 1
 
-    val network = Network(
-        inputLayer(numberRows, numberColumns),
-        convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
-        reluLayer(numberFilters),
-        denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
-    )
-
-    network.train(LinesData.inputs, LinesData.targets, logisticLoss(outputDimension), 30_000, maximumBatchSize, printLoss)
+    Network(
+            maximumBatchSize,
+            inputLayer(numberRows, numberColumns),
+            convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
+            reluLayer(numberFilters),
+            denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
+        )
+        .training(
+            LinesData.inputs,
+            LinesData.targets,
+            30_000,
+            logisticLoss(outputDimension),
+            printLoss)
+        .run()
 
 }

@@ -52,19 +52,19 @@ fun main(args: Array<String>) {
 
     val outputProjection = projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
 
-    val network = Network(
-        inputLayer(inputDimension),
-        encoder,
-        outputProjection
-    )
-
-    network.train(
-        inputs,
-        targets,
-        squaredLoss(outputDimension),
-        numberIterations,
-        batchSize,
-        printLoss
-    )
+    Network(
+            batchSize,
+            inputLayer(inputDimension),
+            encoder,
+            outputProjection
+        )
+        .training(
+            inputs,
+            targets,
+            numberIterations,
+            squaredLoss(outputDimension),
+            printLoss
+        )
+        .run()
 
 }

@@ -28,12 +28,18 @@ fun main(args: Array<String>) {
     val hiddenLayer = denseLayer(inputDimension, hiddenDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
 
-    val network = Network(
-        inputLayer,
-        hiddenLayer,
-        outputLayer
-    )
-
-    network.train(XorData.input, XorData.targets, squaredLoss(outputDimension), 10_000, batchSize, printLoss)
+    Network(
+            batchSize,
+            inputLayer,
+            hiddenLayer,
+            outputLayer
+        )
+        .training(
+            XorData.input,
+            XorData.targets,
+            10_000,
+            squaredLoss(outputDimension),
+            printLoss)
+        .run()
 
 }

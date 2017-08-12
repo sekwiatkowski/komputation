@@ -59,19 +59,19 @@ fun main(args: Array<String>) {
         gaussianInitializationStrategy,
         optimizationStrategy)
 
-    val network = Network(
-        inputLayer(seriesLength),
-        encoder,
-        decoder
-    )
-
-    network.train(
-        inputs,
-        targets,
-        logisticLoss(numberCategories, seriesLength),
-        numberIterations,
-        batchSize,
-        printLoss
-    )
+    Network(
+            batchSize,
+            inputLayer(seriesLength),
+            encoder,
+            decoder
+        )
+        .training(
+            inputs,
+            targets,
+            numberIterations,
+            logisticLoss(numberCategories, seriesLength),
+            printLoss
+        )
+        .run()
 
 }

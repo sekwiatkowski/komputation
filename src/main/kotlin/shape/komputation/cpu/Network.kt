@@ -1,19 +1,21 @@
 package shape.komputation.cpu
 
-import shape.komputation.cpu.evaluation.computeAccuracy
-import shape.komputation.cpu.functions.findMaxIndices
 import shape.komputation.cpu.layers.ForwardLayerState
+import shape.komputation.cpu.workflow.CpuTester
+import shape.komputation.cpu.workflow.CpuTrainer
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.Resourceful
 import shape.komputation.loss.CpuLossFunctionInstruction
 import shape.komputation.matrix.Matrix
-import shape.komputation.matrix.partitionIndices
 import shape.komputation.optimization.Optimizable
 
 val printLoss = { _ : Int, loss : Float -> println(loss) }
 
-class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLayerInstructions: CpuForwardLayerInstruction) {
+class Network(
+    private val maximumBatchSize: Int,
+    entryPointInstruction: CpuEntryPointInstruction,
+    vararg forwardLayerInstructions: CpuForwardLayerInstruction) {
 
     private val entryPoint = entryPointInstruction.buildForCpu()
 
@@ -66,122 +68,36 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     }
 
-    fun train(
+    fun training(
         inputs: Array<Matrix>,
         targets: Array<FloatArray>,
-        loss: CpuLossFunctionInstruction,
         numberIterations : Int,
-        maximumBatchSize: Int,
-        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): Long {
+        loss: CpuLossFunctionInstruction,
+        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
 
-        val lossFunction = loss.buildForCpu()
-
-        val numberExamples = inputs.size
-
-        val batches = partitionIndices(numberExamples, maximumBatchSize)
-
-        this.acquireLayerResources(maximumBatchSize)
-
-        if (lossFunction is Resourceful) {
-
-            lossFunction.acquire(maximumBatchSize)
-
-        }
-
-        val start = System.currentTimeMillis()
-
-        repeat(numberIterations) { indexIteration ->
-
-            var iterationLoss = 0.0f
-
-            for (batch in batches) {
-
-                var batchLoss = 0.0f
-
-                for ((withinBatch, indexExample) in batch.withIndex()) {
-
-                    val input = inputs[indexExample]
-                    val target = targets[indexExample]
-
-                    val prediction = this.forward(withinBatch, input, true)
-
-                    val instanceLoss = lossFunction.forward(prediction, target)
-
-                    val backwardInstanceLoss = lossFunction.backward(prediction, target)
-
-                    this.backward(withinBatch, backwardInstanceLoss)
-
-                    batchLoss += instanceLoss
-
-                }
-
-                iterationLoss += batchLoss
-
-                val scalingFactor = 1.0f.div(batch.size.toFloat())
-
-                this.optimize(scalingFactor)
-
-            }
-
-            if (afterEachIteration != null) {
-
-                afterEachIteration(indexIteration, iterationLoss)
-
-            }
-
-        }
-
-        val stop = System.currentTimeMillis()
-
-        val time = stop - start
-
-        this.releaseLayerResources()
-
-        return time
-
-    }
+        CpuTrainer(this, inputs, targets, numberIterations, this.maximumBatchSize, loss.buildForCpu(), afterEachIteration)
 
     fun test(
         inputs: Array<Matrix>,
         targets: Array<FloatArray>,
         batchSize: Int,
         numberCategories : Int,
-        length : Int = 1): Float {
+        length : Int = 1) =
 
-        val numberInstances = inputs.size
+        CpuTester(
+            this,
+            inputs,
+            targets,
+            batchSize,
+            numberCategories,
+            length
+        )
 
-        val batches = partitionIndices(numberInstances, batchSize)
-
-        val actualCategories = Array(numberInstances) { IntArray(length) }
-        val predictedCategories = Array(numberInstances) { IntArray(length) }
-
-        for((withinBatch, batch) in batches.withIndex()) {
-
-            for (index in batch) {
-
-                val input = inputs[index]
-
-                val batchTargets = targets[index]
-                findMaxIndices(batchTargets, numberCategories, length, actualCategories[index])
-
-                val batchPredictions = this.forward(withinBatch, input, false)
-                findMaxIndices(batchPredictions, numberCategories, length, predictedCategories[index])
-
-            }
-
-        }
-
-        val accuracy = computeAccuracy(actualCategories, predictedCategories, numberInstances)
-
-        return accuracy
-
-    }
-
-    fun acquireLayerResources(maximumBatchSize: Int) {
+    init {
 
         if (this.entryPoint is Resourceful) {
 
-            this.entryPoint.acquire(maximumBatchSize)
+            this.entryPoint.acquire(this.maximumBatchSize)
 
         }
 
@@ -189,7 +105,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
             if (layer is Resourceful) {
 
-                layer.acquire(maximumBatchSize)
+                layer.acquire(this.maximumBatchSize)
 
             }
 
@@ -197,7 +113,7 @@ class Network(entryPointInstruction: CpuEntryPointInstruction, vararg forwardLay
 
     }
 
-    fun releaseLayerResources() {
+    fun free() {
 
         for (layer in this.layers) {
 

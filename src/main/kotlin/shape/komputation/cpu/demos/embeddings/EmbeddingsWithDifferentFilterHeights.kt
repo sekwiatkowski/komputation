@@ -42,7 +42,8 @@ fun main(args: Array<String>) {
 
     val hasFixedLength = true
 
-    val network = Network(
+    Network(
+        maximumBatchSize,
         lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
         concatenation(
             embeddingDimension,
@@ -56,8 +57,13 @@ fun main(args: Array<String>) {
         ),
         reluLayer(totalNumberFilters),
         denseLayer(totalNumberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
-    )
-
-    network.train(input, targets, squaredLoss(numberClasses), 10_000, maximumBatchSize, printLoss)
+        )
+        .training(
+            input,
+            targets,
+            10_000,
+            squaredLoss(numberClasses),
+            printLoss)
+        .run()
 
 }

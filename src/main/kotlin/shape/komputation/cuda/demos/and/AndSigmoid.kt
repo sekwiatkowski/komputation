@@ -23,10 +23,16 @@ fun main(args: Array<String>) {
     val optimization = stochasticGradientDescent(0.03f)
 
     val network = CudaNetwork(
+        maximumBatchSize,
         inputLayer(inputDimension),
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
-    network.train(BinaryAndData.inputs, BinaryAndData.targets, squaredLoss(outputDimension), 10_000, maximumBatchSize, printLoss)
+    val training = network.training(BinaryAndData.inputs, BinaryAndData.targets, 10_000, squaredLoss(outputDimension), printLoss)
+
+    training.run()
+
+    training.free()
+    network.free()
 
 }

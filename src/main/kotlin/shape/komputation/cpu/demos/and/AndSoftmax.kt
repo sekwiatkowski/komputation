@@ -22,11 +22,17 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.03f)
 
-    val network = Network(
-        inputLayer(inputDimension),
-        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Softmax, optimization)
-    )
-
-    network.train(OneHotAndData.input, OneHotAndData.targets, logisticLoss(outputDimension), 10_000, batchSize, printLoss)
+    Network(
+            batchSize,
+            inputLayer(inputDimension),
+            denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Softmax, optimization)
+        )
+        .training(
+            OneHotAndData.input,
+            OneHotAndData.targets,
+            10_000,
+            logisticLoss(outputDimension),
+            printLoss)
+        .run()
 
 }

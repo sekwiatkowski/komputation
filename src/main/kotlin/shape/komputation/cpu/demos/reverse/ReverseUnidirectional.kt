@@ -56,19 +56,19 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val network = Network(
-        inputLayer(numberCategories, seriesLength),
-        singleOutputEncoder(encoderUnit, seriesLength, numberCategories, hiddenDimension),
-        singleInputDecoder(seriesLength, hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
-    )
-
-    network.train(
-        inputs,
-        targets,
-        logisticLoss(numberCategories, seriesLength),
-        numberIterations,
-        batchSize,
-        printLoss
-    )
+    Network(
+            batchSize,
+            inputLayer(numberCategories, seriesLength),
+            singleOutputEncoder(encoderUnit, seriesLength, numberCategories, hiddenDimension),
+            singleInputDecoder(seriesLength, hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
+        )
+        .training(
+            inputs,
+            targets,
+            numberIterations,
+            logisticLoss(numberCategories, seriesLength),
+            printLoss
+        )
+        .run()
 
 }

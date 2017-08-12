@@ -53,6 +53,12 @@ class CudaEvaluation(
 
     }
 
+    fun resetCount() {
+
+        this.count = 0
+
+    }
+
     fun computeAccuracy() =
 
         getIntArray(this.deviceCorrectPredictions, this.numberInstances).sum().toFloat().div(this.numberInstances.toFloat())

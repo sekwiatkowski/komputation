@@ -1,8 +1,6 @@
 package shape.komputation.cuda.demos.mnist
 
 import shape.komputation.cuda.CudaNetwork
-import shape.komputation.cuda.InputMemory
-import shape.komputation.cuda.TargetMemory
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -58,35 +56,29 @@ fun main(args: Array<String>) {
     )
 
     val network = CudaNetwork(
+        batchSize,
         inputLayer(inputDimension),
         hiddenLayer,
         dropoutLayer(random, keepProbability, hiddenDimension),
         outputLayer
     )
 
-    val testInputMemory = InputMemory()
-    val testTargetMemory = TargetMemory(numberCategories)
+    val test = network
+        .test(
+            testInputs,
+            testTargets,
+            batchSize,
+            numberCategories)
 
-    val afterEachIteration = { _ : Int, _ : Float ->
+    val training = network.training(trainingInputs, trainingTargets, numberIterations, logisticLoss(numberCategories)) { _ : Int, _ : Float ->
 
-        val accuracy = network
-            .test(
-                testInputs,
-                testTargets,
-                batchSize,
-                numberCategories,
-                1,
-                testInputMemory,
-                testTargetMemory)
-
-        println(accuracy)
-
+        println(test.run())
 
     }
 
-    testInputMemory.release()
-    testTargetMemory.release()
+    training.run()
 
-    network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
+    training.free()
+    test.free()
 
 }

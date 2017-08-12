@@ -77,19 +77,19 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val network = Network(
-        inputLayer(numberSteps),
-        encoder,
-        decoder
-    )
-
-    network.train(
-        inputs,
-        targets,
-        squaredLoss(numberSteps),
-        numberIterations,
-        batchSize,
-        printLoss
-    )
+    Network(
+            batchSize,
+            inputLayer(numberSteps),
+            encoder,
+            decoder
+        )
+        .training(
+            inputs,
+            targets,
+            numberIterations,
+            squaredLoss(numberSteps),
+            printLoss
+        )
+        .run()
 
 }

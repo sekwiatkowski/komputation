@@ -96,6 +96,7 @@ class TrecTraining {
             .toTypedArray()
 
         val network = Network(
+            batchSize,
             lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, batchSize, optimization),
             concatenation(
                 embeddingDimension,
@@ -115,21 +116,24 @@ class TrecTraining {
             softmaxLayer(numberCategories)
         )
 
-        val afterEachIteration = { _ : Int, _ : Float ->
+        val test = network
+            .test(
+                testRepresentations,
+                testTargets,
+                batchSize,
+                numberCategories,
+                1)
 
-            val accuracy = network
-                .test(
-                    testRepresentations,
-                    testTargets,
-                    numberCategories,
-                    1,
-                    batchSize)
+        network.training(
+            trainingRepresentations,
+            trainingTargets,
+            numberIterations,
+            logisticLoss(numberCategories)) { _ : Int, _ : Float ->
 
-            println(accuracy)
+                println(test.run())
 
-        }
-
-        network.train(trainingRepresentations, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
+            }
+            .run()
 
     }
 

@@ -40,13 +40,19 @@ fun main(args: Array<String>) {
 
     val hasFixedLength = true
 
-    val network = Network(
-        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-        reluLayer(numberFilters),
-        denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
-    )
-
-    network.train(inputs, targets, squaredLoss(numberClasses), 5_000, maximumBatchSize, printLoss)
+    Network(
+            maximumBatchSize,
+            lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
+            convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
+            reluLayer(numberFilters),
+            denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+        )
+        .training(
+            inputs,
+            targets,
+            5_000,
+            squaredLoss(numberClasses),
+            printLoss)
+        .run()
 
 }

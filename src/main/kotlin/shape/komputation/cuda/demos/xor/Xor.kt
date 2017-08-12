@@ -29,11 +29,17 @@ fun main(args: Array<String>) {
     val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
 
     val network = CudaNetwork(
+        batchSize,
         inputLayer,
         hiddenLayer,
         outputLayer
     )
 
-    network.train(XorData.input, XorData.targets, squaredLoss(outputDimension), 10_000, batchSize, printLoss)
+    val training = network.training(XorData.input, XorData.targets, 10_000, squaredLoss(outputDimension), printLoss)
+
+    training.run()
+
+    training.free()
+    network.free()
 
 }

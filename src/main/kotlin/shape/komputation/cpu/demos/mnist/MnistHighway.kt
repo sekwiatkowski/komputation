@@ -65,6 +65,7 @@ fun main(args: Array<String>) {
     }
 
     val network = Network(
+        batchSize,
         inputLayer(inputDimension),
         dimensionalityReductionLayer,
         createHiddenLayer(),
@@ -73,19 +74,21 @@ fun main(args: Array<String>) {
         outputLayer
     )
 
-    val afterEachIteration = { _ : Int, _ : Float ->
+    val test = network
+        .test(
+            testInputs,
+            testTargets,
+            batchSize,
+            numberCategories)
 
-        val accuracy = network
-            .test(
-                testInputs,
-                testTargets,
-                batchSize,
-                numberCategories)
+    network.training(
+        trainingInputs,
+        trainingTargets,
+        numberIterations,
+        logisticLoss(numberCategories)) { _ : Int, _ : Float ->
 
-        println(accuracy)
+            println(test.run())
 
-    }
-
-    network.train(trainingInputs, trainingTargets, logisticLoss(numberCategories), numberIterations, batchSize, afterEachIteration)
+        }
 
 }

@@ -50,19 +50,19 @@ fun main(args: Array<String>) {
         optimizationStrategy
     )
 
-    val network = Network(
-        inputLayer(inputDimension, numberSteps),
-        multiOutputEncoder(encoderUnit, numberSteps, inputDimension, hiddenDimension),
-        projectionLayer(hiddenDimension, numberSteps, false, outputDimension, guassianInitialization, guassianInitialization, optimizationStrategy)
-    )
-
-    network.train(
-        inputs,
-        targets,
-        squaredLoss(numberSteps),
-        numberIterations,
-        batchSize,
-        printLoss
-    )
+    Network(
+            batchSize,
+            inputLayer(inputDimension, numberSteps),
+            multiOutputEncoder(encoderUnit, numberSteps, inputDimension, hiddenDimension),
+            projectionLayer(hiddenDimension, numberSteps, false, outputDimension, guassianInitialization, guassianInitialization, optimizationStrategy)
+        )
+        .training(
+            inputs,
+            targets,
+            numberIterations,
+            squaredLoss(numberSteps),
+            printLoss
+        )
+        .run()
 
 }
