@@ -63,7 +63,9 @@ __global__ void maxPoolingKernel (
         int thisIndex = inputStartInstance + inputStartColumnWithinInstance + indexRow;
         float thisValue = input[thisIndex];
 
-        int warpMaximumIndex = findMaximum(thisIndex, thisValue, warpId < lastWarpId ? warpSize : findNextPowerOfTwo(maximumNumberOfColumns - lastWarpId * warpSize));
+        int width = warpId < lastWarpId ? warpSize : findNextPowerOfTwo(maximumNumberOfColumns - lastWarpId * warpSize);
+
+        int warpMaximumIndex = findMaximum(thisIndex, thisValue, width);
 
         if(laneId == 0) {
 

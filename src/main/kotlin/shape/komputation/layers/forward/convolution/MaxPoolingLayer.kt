@@ -21,6 +21,7 @@ class MaxPoolingLayer(private val name : String?, private val numberRows : Int, 
             this.numberRows,
             this.maximumColumns,
             { context.createKernel(ForwardKernels.maxPooling()) },
+            { context.createKernel(ForwardKernels.backwardMaxPooling()) },
             context.maximumNumberOfThreadsPerBlock,
             context.warpSize)
 

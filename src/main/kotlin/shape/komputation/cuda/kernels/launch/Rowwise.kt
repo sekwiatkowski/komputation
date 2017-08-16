@@ -1,6 +1,5 @@
 package shape.komputation.cuda.kernels.launch
 
-// One column per block
 fun computeRowwiseLaunchConfiguration(
     numberRows : Int,
     numberColumns : Int,
