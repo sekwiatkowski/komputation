@@ -97,7 +97,7 @@ class TrecTraining {
 
         val network = Network(
             batchSize,
-            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, batchSize, optimization),
+            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
             concatenation(
                 embeddingDimension,
                 maximumDocumentLength,

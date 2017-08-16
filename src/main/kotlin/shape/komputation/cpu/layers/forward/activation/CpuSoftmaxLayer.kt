@@ -1,7 +1,7 @@
 package shape.komputation.cpu.layers.forward.activation
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.cpu.layers.forward.CpuNormalizationLayer
+import shape.komputation.cpu.layers.forward.normalization.CpuNormalizationLayer
 import shape.komputation.layers.Resourceful
 
 class CpuSoftmaxLayer internal constructor(

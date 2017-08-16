@@ -1,4 +1,4 @@
-#include "reduction/Reduction.cuh"
+#include "reduction/SumReduction.cuh"
 
 /*
     Example:
@@ -54,28 +54,28 @@ __global__ void logisticLossKernel (int batchSize, int numberRows, int numberEnt
 
     if(indexInstance < batchSize) {
 
+        float thisValue = 0.0f;
+
         if(startIndexWithinColumn < numberRows) {
 
-            float sum = 0.0;
+            thisValue = targets[startIndexWithinBatch] * predictions[startIndexWithinBatch];
 
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+            if(numberIterations > 1) {
 
-                sum += targets[indexEntry] * predictions[indexEntry];
+                for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                    thisValue += targets[indexEntry] * predictions[indexEntry];
+
+                }
 
             }
 
-            sharedData[threadIdx.x] = sum;
-
-        }
-        else {
-
-            sharedData[threadIdx.x] = 0.0;
-
         }
 
-        __syncthreads();
+        int warpId = threadIdx.x / warpSize;
+        int laneId = threadIdx.x % warpSize;
 
-        reduce<blockSize>(threadIdx.x, sharedData, 0);
+        reduceToSum(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
 

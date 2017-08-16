@@ -43,10 +43,15 @@ class BiasLayer(
         val layer = CublasBiasLayer(
             this.name,
             cublasHandle,
-            context.maximumNumberOfThreadsPerBlock,
             this.numberInputRows,
             this.maximumInputColumns,
-            { context.createKernel(ForwardKernels.bias()) }, bias, updateRule)
+            bias,
+            updateRule,
+            { context.createKernel(ForwardKernels.bias()) },
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         return layer
 

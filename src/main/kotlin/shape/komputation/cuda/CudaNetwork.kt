@@ -54,6 +54,8 @@ class CudaNetwork(
 
         }
 
+        val floatArray = getFloatArray(chain, 4 * 784)
+
         return this.entryPoint.backward(chain)
 
     }

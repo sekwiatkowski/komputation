@@ -7,6 +7,7 @@ import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
+import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.optimization.OptimizationInstruction
 
 class HighwayLayer(

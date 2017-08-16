@@ -16,7 +16,7 @@ class SquaredLoss(private val numberRows: Int, private val numberColumns: Int) :
         return CudaSquaredLoss(
             this.numberRows,
             this.numberColumns,
-            { blockSize -> context.createKernel(LossKernels.squaredLoss(blockSize)) },
+            { context.createKernel(LossKernels.squaredLoss()) },
             { context.createKernel(LossKernels.backwardSquaredLoss()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,

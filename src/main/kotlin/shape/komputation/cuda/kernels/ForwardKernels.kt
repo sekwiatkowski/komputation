@@ -5,7 +5,8 @@ object ForwardKernels {
     fun bias() = KernelInstruction(
         "biasKernel",
         "biasKernel",
-        "forward/bias/BiasKernel.cu")
+        "forward/bias/BiasKernel.cu",
+        listOf(KernelHeaders.zero))
 
     fun dropoutTraining() = KernelInstruction(
         "dropoutTrainingKernel",
@@ -37,17 +38,17 @@ object ForwardKernels {
         "forward/exponentiation/BackwardExponentiationKernel.cu",
         listOf(KernelHeaders.zero))
 
-    fun normalization(blockSize : Int) = KernelInstruction(
+    fun normalization() = KernelInstruction(
         "normalizationKernel",
-        "normalizationKernel<$blockSize>",
+        "normalizationKernel",
         "forward/normalization/NormalizationKernel.cu",
-        listOf(KernelHeaders.reduction, KernelHeaders.zero))
+        listOf(KernelHeaders.sumReduction, KernelHeaders.zero))
 
-    fun backwardNormalization(blockSize: Int) = KernelInstruction(
+    fun backwardNormalization() = KernelInstruction(
         "backwardNormalizationKernel",
-        "backwardNormalizationKernel<$blockSize>",
+        "backwardNormalizationKernel",
         "forward/normalization/BackwardNormalizationKernel.cu",
-        listOf(KernelHeaders.reduction, KernelHeaders.zero))
+        listOf(KernelHeaders.sumReduction, KernelHeaders.zero))
 
     fun sigmoid() = KernelInstruction(
         "sigmoidKernel",
@@ -83,4 +84,12 @@ object ForwardKernels {
         "backwardTanhKernel",
         "forward/tanh/BackwardTanhKernel.cu",
         listOf(KernelHeaders.zero))
+
+    fun maxPooling() = KernelInstruction(
+        "maxPoolingKernel",
+        "maxPoolingKernel",
+        "forward/maxpooling/MaxPoolingKernel.cu",
+        listOf(KernelHeaders.zero))
+
+
 }

@@ -1,4 +1,4 @@
-package shape.komputation.cpu.layers.forward
+package shape.komputation.cpu.layers.forward.dense
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer

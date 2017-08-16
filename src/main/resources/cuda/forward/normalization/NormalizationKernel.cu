@@ -1,73 +1,91 @@
-#include "reduction/Reduction.cuh"
+#include "reduction/SumReduction.cuh"
 #include "zero/Zero.cuh"
 
-template <int blockSize>
-__global__ void normalizationKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* input, float* sums, float* result)
-{
+/*
+    number of blocks in x-dimension = number of instances
+    number of blocks in y-dimension = number of columns
+    number threads per block = number of rows
+*/
+
+__global__ void normalizationKernel (
+    int batchSize,
+    int numberRows,
+    int numberEntriesPerInstance,
+    int numberIterations,
+    float* input,
+    float* sums,
+    float* result) {
 
     extern __shared__ float sharedData[];
 
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
+    int numberColumns = gridDim.y;
+    int threadId = threadIdx.x;
 
-    int startIndexWithinColumn = threadIdx.x * numberIterations;
-    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
-    int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
+    int startInstance = indexInstance * numberEntriesPerInstance;
+    int startNextInstance = startInstance + numberEntriesPerInstance;
 
-    int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
-    if(indexInstance < batchSize) {
+    int startColumnWithinInstance = indexColumn * numberRows;
+    int startEntryWithinColumn = threadIdx.x * numberIterations;
 
-        if(startIndexWithinColumn < numberRows) {
+    int firstEntryWithinBatch = startInstance + startColumnWithinInstance + startEntryWithinColumn;
 
-            float sum = 0.0f;
+    if(firstEntryWithinBatch < startNextInstance) {
 
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+        int indexColumnInBatch = indexInstance * numberColumns + indexColumn;
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstance);
 
-                sum += input[indexEntry];
+        if(indexInstance < batchSize) {
+
+            float thisValue = input[firstEntryWithinBatch];
+
+            if(numberIterations > 1) {
+
+                for(int index = firstEntryWithinBatch + 1; index < lastEntryWithinBatch; index++) {
+
+                    thisValue += input[index];
+
+                }
 
             }
 
-            sharedData[threadIdx.x] = sum;
+            int warpId = threadId / warpSize;
+            int laneId = threadId % warpSize;
+
+            reduceToSum(thisValue, warpId, laneId, sharedData);
+
+            result[firstEntryWithinBatch] = input[firstEntryWithinBatch] / sharedData[0];
+
+            if(numberIterations > 1) {
+
+                for(int indexEntry = firstEntryWithinBatch+1; indexEntry < lastEntryWithinBatch; indexEntry++) {
+
+                    result[indexEntry] = input[indexEntry] / sharedData[0];
+
+                }
+
+            }
+
+            if(threadId == 0) {
+
+                sums[indexColumnInBatch] = sharedData[0];
+
+            }
 
         }
         else {
 
-            sharedData[threadIdx.x] = 0.0;
+            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
-        }
+            if(threadId == 0) {
 
-        __syncthreads();
-
-        reduce<blockSize>(threadIdx.x, sharedData, 0);
-
-        if(startIndexWithinColumn < numberRows) {
-
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-
-                result[indexEntry] = input[indexEntry] / sharedData[0];
+                sums[indexColumnInBatch] = 0.0;
 
             }
 
         }
 
-        if(threadIdx.x == 0) {
-
-            sums[indexColumnInBatch] = sharedData[0];
-
-        }
-
     }
-    else {
-
-        setToZero(result, startIndexWithinBatch, numberIterations);
-
-        if(threadIdx.x == 0) {
-
-            sums[indexColumnInBatch] = 0.0;
-
-        }
-
-    }
-
 
 }

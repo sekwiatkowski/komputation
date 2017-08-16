@@ -1,10 +1,11 @@
-package shape.komputation.cuda.layers.forward
+package shape.komputation.cuda.layers.forward.normalization
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeDeviceFloatArraySize
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.layers.Resourceful
 
@@ -12,9 +13,10 @@ class CudaNormalizationLayer internal constructor(
     name : String? = null,
     private val numberRows : Int,
     private val numberColumns : Int,
-    private val createForwardKernel: (Int) -> Kernel,
+    private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: (Int) -> Kernel,
-    private val maximumNumberThreadsPerBlock: Int) : BaseCudaActivationLayer(name), Resourceful {
+    private val maximumNumberThreadsPerBlock: Int,
+    private val warpSize: Int) : BaseCudaActivationLayer(name), Resourceful {
 
     private val numberEntries = this.numberRows * this.numberColumns
 
@@ -32,7 +34,8 @@ class CudaNormalizationLayer internal constructor(
     private var numberBlocksInXDimensions = -1
     private var numberBlocksInYDimensions = -1
     private var numberThreads = -1
-    private var sharedMemoryBytes = -1
+    private var forwardSharedMemoryBytes = -1
+    private var backwardSharedMemoryBytes = -1
 
     private var numberIterations = intArrayOf(-1)
     private val pointerToNumberIterations = Pointer.to(this.numberIterations)
@@ -47,15 +50,19 @@ class CudaNormalizationLayer internal constructor(
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, numberBatchEntries)
 
-        val launchConfiguration = computeColumnwiseLaunchConfiguration(this.numberColumns, this.numberRows, this.maximumNumberThreadsPerBlock)
+        val launchConfiguration = computeColumnwiseLaunchConfiguration(this.numberRows, this.numberColumns, this.maximumNumberThreadsPerBlock)
 
         this.numberBlocksInXDimensions = maximumBatchSize
         this.numberBlocksInYDimensions = launchConfiguration.numberBlocks
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
-        this.sharedMemoryBytes = launchConfiguration.sharedMemoryBytes
 
-        this.forwardKernel = this.createForwardKernel(this.numberThreads)
+        val numberWarps = (this.numberRows / launchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
+
+        this.forwardSharedMemoryBytes = computeDeviceFloatArraySize(numberWarps).toInt()
+        this.backwardSharedMemoryBytes = computeDeviceFloatArraySize(numberWarps).toInt()
+
+        this.forwardKernel = this.createForwardKernel()
         this.backwardKernel = this.createBackwardKernel(this.numberThreads)
 
     }
@@ -88,7 +95,7 @@ class CudaNormalizationLayer internal constructor(
             this.numberBlocksInXDimensions,
             this.numberBlocksInYDimensions,
             this.numberThreads,
-            this.sharedMemoryBytes)
+            this.forwardSharedMemoryBytes)
 
         return this.deviceForwardResult
 
@@ -114,7 +121,7 @@ class CudaNormalizationLayer internal constructor(
             this.numberBlocksInXDimensions,
             this.numberBlocksInYDimensions,
             this.numberThreads,
-            this.sharedMemoryBytes)
+            this.backwardSharedMemoryBytes)
 
         return this.deviceBackwardResult
 

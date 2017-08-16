@@ -1,24 +1,39 @@
+#include "zero/Zero.cuh"
+
 extern "C"
-__global__ void biasKernel (int batchSize, int numberEntriesPerInstance, int numberRows, float* input, float* bias, float* result)
-{
+__global__ void biasKernel (
+    int batchSize,
+    int numberEntriesPerInstance,
+    int numberRows,
+    int numberIterations,
+    float* input,
+    float* bias,
+    float* result) {
 
     int indexInstance = blockIdx.x;
-    int startInstance = indexInstance * numberEntriesPerInstance;
-    int indexEntryInInstance = blockIdx.y * blockDim.x + threadIdx.x;
-    int indexEntryInBatch = startInstance + indexEntryInInstance;
 
-    if(indexEntryInInstance < numberEntriesPerInstance) {
+    int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
+    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
+
+    int firstEntryWithinBatch = startInstanceWithinBatch + blockIdx.y * blockDim.x * numberIterations + threadIdx.x * numberIterations;
+
+    if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
+
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstanceWithinBatch);
 
         if(indexInstance < batchSize) {
 
-            int indexColumn = indexEntryInInstance % numberRows;
+            for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
 
-            result[indexEntryInBatch] = input[indexEntryInBatch] + bias[indexColumn];
+                int indexColumn = indexEntry % numberRows;
+                result[indexEntry] = input[indexEntry] + bias[indexColumn];
+
+            }
 
         }
         else {
 
-            result[indexEntryInBatch] = 0.0;
+            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

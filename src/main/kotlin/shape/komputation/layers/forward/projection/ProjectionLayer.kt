@@ -87,12 +87,15 @@ class ProjectionLayer(
             biasLayer = CublasBiasLayer(
                 biasName,
                 cublasHandle,
-                context.maximumNumberOfThreadsPerBlock,
                 this.numberOutputRows,
                 this.maximumInputColumns,
-                { context.createKernel(ForwardKernels.bias()) },
                 initializedBias,
-                biasUpdateRule)
+                biasUpdateRule,
+                { context.createKernel(ForwardKernels.bias()) },
+                context.numberMultiprocessors,
+                context.maximumNumberOfResidentWarpsPerMultiprocessor,
+                context.warpSize,
+                context.maximumNumberOfThreadsPerBlock)
 
         }
         else {

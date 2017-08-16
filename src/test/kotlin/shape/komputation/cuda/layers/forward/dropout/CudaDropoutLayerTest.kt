@@ -1,4 +1,4 @@
-package shape.komputation.cuda.layers.forward
+package shape.komputation.cuda.layers.forward.dropout
 
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
@@ -33,7 +33,6 @@ class CudaDropoutLayerTest {
         forward(numberEntries, keepProbability, false)
 
     }
-
 
     private fun forward(numberEntries: Int, keepProbability: Float, isTraining : Boolean) {
 

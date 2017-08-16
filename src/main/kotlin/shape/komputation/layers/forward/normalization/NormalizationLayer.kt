@@ -1,10 +1,10 @@
-package shape.komputation.layers.forward
+package shape.komputation.layers.forward.normalization
 
 import jcuda.jcublas.cublasHandle
-import shape.komputation.cpu.layers.forward.CpuNormalizationLayer
+import shape.komputation.cpu.layers.forward.normalization.CpuNormalizationLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.kernels.ForwardKernels
-import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
+import shape.komputation.cuda.layers.forward.normalization.CudaNormalizationLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
@@ -12,7 +12,7 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
 
     override fun buildForCpu() =
 
-        CpuNormalizationLayer(this.name, this.numberRows, if(this.isFixedLength) this.numberColumns else 1, this.numberColumns)
+        CpuNormalizationLayer(this.name, this.numberRows, if (this.isFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaNormalizationLayer {
 
@@ -20,9 +20,10 @@ class NormalizationLayer(private val name : String?, private val numberRows : In
             this.name,
             this.numberRows,
             this.numberColumns,
-            { blockSize -> context.createKernel(ForwardKernels.normalization(blockSize)) },
-            { blockSize -> context.createKernel(ForwardKernels.backwardNormalization(blockSize)) },
-            context.maximumNumberOfThreadsPerBlock)
+            { context.createKernel(ForwardKernels.normalization()) },
+            { context.createKernel(ForwardKernels.backwardNormalization()) },
+            context.maximumNumberOfThreadsPerBlock,
+            context.warpSize)
 
         return normalizationLayer
 

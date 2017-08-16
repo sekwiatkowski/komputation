@@ -10,7 +10,7 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.historical.momentum
 import java.util.*
@@ -43,20 +43,20 @@ fun main(args: Array<String>) {
     val hasFixedLength = true
 
     Network(
-        maximumBatchSize,
-        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
-        concatenation(
-            embeddingDimension,
-            2,
-            hasFixedLength,
-            intArrayOf(numberFilters, numberFilters),
-            1,
-            filterWidths
-                .map { filterWidth -> convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy) }
-                .toTypedArray()
-        ),
-        reluLayer(totalNumberFilters),
-        denseLayer(totalNumberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+            maximumBatchSize,
+            lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
+            concatenation(
+                embeddingDimension,
+                2,
+                hasFixedLength,
+                intArrayOf(numberFilters, numberFilters),
+                1,
+                filterWidths
+                    .map { filterWidth -> convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy) }
+                    .toTypedArray()
+            ),
+            reluLayer(totalNumberFilters),
+            denseLayer(totalNumberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
         )
         .training(
             input,

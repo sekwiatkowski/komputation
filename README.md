@@ -88,7 +88,8 @@ The following code instantiates a convolutional neural network for sentence clas
 
  ```kotlin
     val network = Network(
-        lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, batchSize, optimization),
+        batchSize,
+        lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
         concatenation(
             embeddingDimension,
             maximumDocumentLength,

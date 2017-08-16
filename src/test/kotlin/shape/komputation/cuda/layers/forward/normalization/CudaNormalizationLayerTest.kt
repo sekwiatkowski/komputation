@@ -1,4 +1,4 @@
-package shape.komputation.cuda.layers.forward
+package shape.komputation.cuda.layers.forward.normalization
 
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
-import shape.komputation.layers.forward.normalizationLayer
+import shape.komputation.layers.forward.normalization.normalizationLayer
 import shape.komputation.matrix.FloatMath
 
 class CudaNormalizationLayerTest {
@@ -32,6 +32,17 @@ class CudaNormalizationLayerTest {
         testForward(input, 1, 1, 2, 1, expected)
 
     }
+
+    @Test
+    fun testForwardThreeRowsOneColumn() {
+
+        val input = floatArrayOf(1.0f, 2.0f, 5.0f)
+        val expected = floatArrayOf(0.125f, 0.25f, 0.625f)
+
+        testForward(input, 1, 1, 3, 1, expected)
+
+    }
+
 
     @Test
     fun testForwardTwoRowsTwoColumns() {

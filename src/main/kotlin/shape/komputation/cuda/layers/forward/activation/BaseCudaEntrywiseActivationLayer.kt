@@ -4,7 +4,7 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import shape.komputation.layers.Resourceful
 
 abstract class BaseCudaEntrywiseActivationLayer internal constructor(

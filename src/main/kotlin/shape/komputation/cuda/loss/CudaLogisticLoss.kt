@@ -3,10 +3,11 @@ package shape.komputation.cuda.loss
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeDeviceFloatArraySize
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
-import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 
 // int length, float *predictions, float *targets, float *result
 class CudaLogisticLoss(
@@ -59,12 +60,13 @@ class CudaLogisticLoss(
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberSteps)
 
-        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberSteps, this.numberCategories, this.maximumNumberThreadsPerBlock)
+        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberCategories, this.numberSteps, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocksInYDimension = forwardLaunchConfiguration.numberBlocks
         this.forwardNumberThreadsPerBlock = forwardLaunchConfiguration.numberThreadsPerBlock
         this.forwardNumberIterations[0] = forwardLaunchConfiguration.numberIterations
         this.forwardKernel = this.createForwardKernel(forwardLaunchConfiguration.numberThreadsPerBlock)
-        this.forwardSharedMemoryBytes = forwardLaunchConfiguration.sharedMemoryBytes
+        val numberForwardWarps = (this.numberCategories / forwardLaunchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
+        this.forwardSharedMemoryBytes = computeDeviceFloatArraySize(numberForwardWarps).toInt()
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberEntries)
 

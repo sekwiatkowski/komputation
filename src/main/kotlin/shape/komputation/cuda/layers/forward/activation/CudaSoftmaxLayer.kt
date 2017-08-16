@@ -1,7 +1,7 @@
 package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
-import shape.komputation.cuda.layers.forward.CudaNormalizationLayer
+import shape.komputation.cuda.layers.forward.normalization.CudaNormalizationLayer
 import shape.komputation.layers.Resourceful
 
 class CudaSoftmaxLayer internal constructor(

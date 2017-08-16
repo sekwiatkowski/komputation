@@ -1,7 +1,6 @@
 package shape.komputation.layers.entry
 
 import shape.komputation.cpu.layers.entry.CpuLookupLayer
-import shape.komputation.cpu.optimization.SparseAccumulator
 import shape.komputation.layers.CpuEntryPointInstruction
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -11,7 +10,6 @@ class LookupLayer(
     private val maximumLength: Int,
     private val hasFixedLength: Boolean,
     private val dimension : Int,
-    private val maximumBatchSize : Int,
     private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction {
 
     override fun buildForCpu(): CpuLookupLayer {
@@ -26,11 +24,9 @@ class LookupLayer(
             null
         }
 
-        val sparseAccumulator = SparseAccumulator(this.vectors.size, this.maximumBatchSize, this.maximumLength, this.dimension)
-
         val minimumLength = if(this.hasFixedLength) this.maximumLength else 1
 
-        return CpuLookupLayer(this.name, this.vectors, minimumLength, this.maximumLength, this.dimension, sparseAccumulator, updateRule)
+        return CpuLookupLayer(this.name, this.vectors, minimumLength, this.maximumLength, this.dimension, updateRule)
 
     }
 
@@ -43,7 +39,6 @@ fun lookupLayer(
     maximumLength: Int,
     hasFixedLength: Boolean,
     dimension: Int,
-    maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
 
     lookupLayer(
@@ -52,7 +47,6 @@ fun lookupLayer(
         maximumLength,
         hasFixedLength,
         dimension,
-        maximumBatchSize,
         optimization
     )
 
@@ -62,7 +56,6 @@ fun lookupLayer(
     maximumLength: Int,
     hasFixedLength: Boolean,
     dimension: Int,
-    maximumBatchSize: Int,
     optimization: OptimizationInstruction? = null) =
 
     LookupLayer(
@@ -71,6 +64,5 @@ fun lookupLayer(
         maximumLength,
         hasFixedLength,
         dimension,
-        maximumBatchSize,
         optimization
     )

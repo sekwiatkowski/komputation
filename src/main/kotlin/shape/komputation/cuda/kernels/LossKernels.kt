@@ -2,12 +2,12 @@ package shape.komputation.cuda.kernels
 
 object LossKernels {
 
-    fun squaredLoss(blockSize: Int) =
+    fun squaredLoss() =
         KernelInstruction(
             "squaredLossKernel",
-            "squaredLossKernel<$blockSize>",
+            "squaredLossKernel",
             "loss/squaredloss/SquaredLossKernel.cu",
-            listOf(KernelHeaders.reduction))
+            listOf(KernelHeaders.sumReduction))
 
     fun backwardSquaredLoss() =
         KernelInstruction(
@@ -21,7 +21,7 @@ object LossKernels {
             "logisticLossKernel",
             "logisticLossKernel<$blockSize>",
             "loss/logisticloss/LogisticLossKernel.cu",
-            listOf(KernelHeaders.reduction))
+            listOf(KernelHeaders.sumReduction))
 
     fun backwardLogisticLoss() =
         KernelInstruction(

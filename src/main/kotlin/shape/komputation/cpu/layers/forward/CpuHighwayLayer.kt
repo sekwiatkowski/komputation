@@ -3,6 +3,7 @@ package shape.komputation.cpu.layers.forward
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
 import shape.komputation.cpu.layers.combination.AdditionCombination
 import shape.komputation.cpu.layers.combination.HadamardCombination
+import shape.komputation.cpu.layers.forward.dense.CpuDenseLayer
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable

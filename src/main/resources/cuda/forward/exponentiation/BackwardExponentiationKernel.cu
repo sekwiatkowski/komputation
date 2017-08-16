@@ -1,30 +1,37 @@
 #include "zero/Zero.cuh"
 
 extern "C"
-__global__ void backwardExponentiationKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *forward, float *chain, float *destination) {
+__global__ void backwardExponentiationKernel (
+    int batchSize,
+    int numberEntriesPerInstance,
+    int numberIterations,
+    float *forward,
+    float *chain,
+    float *destination) {
 
-    // What's the first entry index within the instance that this thread should operate on?
-    int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    int indexInstance = blockIdx.x;
 
-    // Continue if this index is smaller than the dimension of the instance.
-    if(startIndexWithinInstance < numberEntriesPerInstance) {
+    int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
+    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
 
-        // What's the first entry index within the batch that this thread should operate on?
-        int startIndexWithinBatch = blockIdx.x * numberEntriesPerInstance + startIndexWithinInstance;
+    int firstEntryWithinBatch = startInstanceWithinBatch + blockIdx.y * blockDim.x * numberIterations + threadIdx.x * numberIterations;
 
-        // Is the instance greater than the current batch size?
-        if(blockIdx.x >= batchSize) {
+    if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
 
-            setToZero(destination, startIndexWithinBatch, numberIterations);
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstanceWithinBatch);
 
-        }
-        else {
+        if(indexInstance < batchSize) {
 
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+            for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
 
                 destination[indexEntry] = chain[indexEntry] * forward[indexEntry];
 
             }
+
+        }
+        else {
+
+            setToZero(destination, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

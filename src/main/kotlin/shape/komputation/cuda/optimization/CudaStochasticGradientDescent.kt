@@ -3,7 +3,7 @@ package shape.komputation.cuda.optimization
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 

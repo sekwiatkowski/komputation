@@ -1,8 +1,8 @@
-package shape.komputation.layers.forward
+package shape.komputation.layers.forward.dense
 
 import jcuda.jcublas.cublasHandle
-import shape.komputation.cpu.layers.forward.CpuDenseLayer
 import shape.komputation.cpu.layers.forward.activation.cpuActivationLayer
+import shape.komputation.cpu.layers.forward.dense.CpuDenseLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.CudaForwardLayer
 import shape.komputation.cuda.layers.forward.activation.cudaActivationLayer
@@ -94,6 +94,25 @@ fun denseLayer(
         inputDimension,
         1,
         outputDimension,
+        weightInitialization,
+        biasInitialization,
+        activationFunction,
+        optimization)
+
+fun denseLayer(
+    numberInputRows: Int,
+    numberInputColumns: Int,
+    numberOutputRows: Int,
+    weightInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy?,
+    activationFunction: ActivationFunction,
+    optimization: OptimizationInstruction? = null) =
+
+    denseLayer(
+        null,
+        numberInputRows,
+        numberInputColumns,
+        numberOutputRows,
         weightInitialization,
         biasInitialization,
         activationFunction,

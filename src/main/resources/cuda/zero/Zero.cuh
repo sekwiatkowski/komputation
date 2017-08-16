@@ -1,8 +1,8 @@
-__device__ void setToZero(float* destination, int start, int numberIterations) {
+__device__ void setToZero(float* destination, int start, int end) {
 
-    for(int indexEntry = start; indexEntry < start + numberIterations; indexEntry++) {
+    for(int index = start; index < end; index++) {
 
-        destination[indexEntry] = 0.0;
+        destination[index] = 0.0;
 
     }
 

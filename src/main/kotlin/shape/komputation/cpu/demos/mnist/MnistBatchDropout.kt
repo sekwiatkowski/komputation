@@ -5,7 +5,7 @@ import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.loss.logisticLoss
 import shape.komputation.optimization.historical.momentum

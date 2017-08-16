@@ -1,7 +1,6 @@
-#include "reduction/Reduction.cuh"
+#include "reduction/SumReduction.cuh"
 #include "zero/Zero.cuh"
 
-template <int blockSize>
 __global__ void backwardNormalizationKernel (
     int batchSize,
     int numberRows,
@@ -12,59 +11,53 @@ __global__ void backwardNormalizationKernel (
     float* sums,
     float* result) {
 
-
     extern __shared__ float sharedData[];
 
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
-    int startIndexWithinColumn = threadIdx.x * numberIterations;
-    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
-    int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
+    int startInstance = indexInstance * numberEntriesPerInstance;
+    int startNextInstance = startInstance + numberEntriesPerInstance;
 
-    if(indexInstance < batchSize) {
+    int startColumnWithinInstance = indexColumn * numberRows;
+    int startEntryWithinColumn = threadIdx.x * numberIterations;
 
-        int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
+    int firstEntryWithinBatch = startInstance + startColumnWithinInstance + startEntryWithinColumn;
 
-        if(startIndexWithinColumn < numberRows) {
+    if(firstEntryWithinBatch < startNextInstance) {
 
-            float sumOfProducts = 0.0;
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstance);
 
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+        if(indexInstance < batchSize) {
 
-                sumOfProducts -= chain[indexEntry] * forward[indexEntry];
+            float thisValue = 0.0f;
+
+            for(int index = firstEntryWithinBatch; index < lastEntryWithinBatch; index++) {
+
+                thisValue += chain[index] * forward[index];
 
             }
 
-            sharedData[threadIdx.x] = sumOfProducts;
+            int warpId = threadIdx.x / warpSize;
+            int laneId = threadIdx.x % warpSize;
+
+            reduceToSum(thisValue, warpId, laneId, sharedData);
+
+            int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
+
+            for(int indexEntry = firstEntryWithinBatch; indexEntry < firstEntryWithinBatch + numberIterations; indexEntry++) {
+
+                result[indexEntry] = (-sharedData[0] + chain[indexEntry]) / sums[indexColumnInBatch];
+
+            }
 
         }
         else {
 
-            sharedData[threadIdx.x] = 0.0;
-
-        }
-
-        __syncthreads();
-
-        reduce<blockSize>(threadIdx.x, sharedData, 0);
-
-        if(startIndexWithinColumn < numberRows) {
-
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-
-                result[indexEntry] = (sharedData[0] + chain[indexEntry]) / sums[indexColumnInBatch];
-
-            }
+            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 
     }
-    else {
-
-        setToZero(result, startIndexWithinBatch, numberIterations);
-
-    }
-
 
 }

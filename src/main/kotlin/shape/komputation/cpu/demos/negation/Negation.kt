@@ -6,7 +6,7 @@ import shape.komputation.demos.negation.NegationData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -23,9 +23,9 @@ fun main(args: Array<String>) {
     val optimization = stochasticGradientDescent(0.01f)
 
     Network(
-        batchSize,
-        inputLayer(inputDimension),
-        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
+            batchSize,
+            inputLayer(inputDimension),
+            denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
         )
         .training(
             NegationData.inputs,

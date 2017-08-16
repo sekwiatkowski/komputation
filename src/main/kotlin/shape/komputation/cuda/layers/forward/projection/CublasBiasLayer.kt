@@ -6,6 +6,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
 import shape.komputation.cuda.kernels.Kernel
+import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setFloatArray
@@ -15,19 +16,22 @@ import shape.komputation.optimization.Optimizable
 class CublasBiasLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
-    private val maximumNumberThreadsPerBlock: Int,
     private val numberInputRows: Int,
     private val numberInputColumns: Int,
-    private val createKernel: () -> Kernel,
     private val initialBias: FloatArray,
-    private val biasUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val biasUpdateRule: CudaUpdateRule?,
+    private val createKernel: () -> Kernel,
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps : Int,
+    private val warpSize : Int,
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
     private val numberInputEntries = this.numberInputRows * this.numberInputColumns
 
     private var kernel : Kernel? = null
 
-    private val numberThreadsPerInstance = Math.min(this.numberInputEntries, this.maximumNumberThreadsPerBlock)
-    private val numberBlocksPerInstance = (this.numberInputColumns + this.maximumNumberThreadsPerBlock - 1) / this.maximumNumberThreadsPerBlock
+    private var numberBlocks = -1
+    private var numberThreadsPerBlock = -1
 
     private val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
@@ -45,6 +49,9 @@ class CublasBiasLayer internal constructor(
 
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
+
+    private val numberIterations = intArrayOf(-1)
+    private val pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     private var numberBatchInputColumns = -1
 
@@ -65,6 +72,11 @@ class CublasBiasLayer internal constructor(
 
         setFloatArray(FloatArray(this.numberBatchInputColumns) { 1f }, this.numberBatchInputColumns, this.deviceOnes)
 
+        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberInputEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.numberBlocks = launchConfiguration.numberBlocks
+        this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
+        this.numberIterations[0] = launchConfiguration.numberIterations
+
     }
 
     override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
@@ -76,13 +88,14 @@ class CublasBiasLayer internal constructor(
                 this.pointerToBatchSize,
                 this.pointerToNumberEntries,
                 this.pointerToNumberInputRows,
+                this.pointerToNumberIterations,
                 Pointer.to(input),
                 this.pointerToDeviceBias,
                 this.pointerToDeviceForwardResult
             ),
             batchSize,
-            this.numberBlocksPerInstance,
-            this.numberThreadsPerInstance,
+            this.numberBlocks,
+            this.numberThreadsPerBlock,
             0
         )
 

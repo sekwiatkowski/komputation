@@ -5,6 +5,7 @@ import shape.komputation.cpu.layers.BaseCpuEntryPoint
 import shape.komputation.cpu.optimization.SparseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateSparsely
+import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
@@ -15,8 +16,7 @@ class CpuLookupLayer internal constructor(
     private val minimumLength: Int,
     private val maximumLength: Int,
     private val dimension : Int,
-    private val gradientAccumulator: SparseAccumulator,
-    private val update: UpdateRule? = null) : BaseCpuEntryPoint(name), Optimizable {
+    private val update: UpdateRule? = null) : BaseCpuEntryPoint(name), Optimizable, Resourceful {
 
     override var forwardResult = FloatArray(0)
     override val numberOutputRows = this.dimension
@@ -26,6 +26,20 @@ class CpuLookupLayer internal constructor(
 
     private val numberLengths = this.maximumLength - this.minimumLength + 1
     private val forwardResultsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray((index+this.minimumLength)*this.dimension) }
+
+    private var gradientAccumulator: SparseAccumulator? = null
+
+    override fun acquire(maximumBatchSize: Int) {
+
+        this.gradientAccumulator = SparseAccumulator(this.vectors.size, maximumBatchSize, this.maximumLength, this.dimension)
+
+    }
+
+    override fun release() {
+
+        this.gradientAccumulator = null
+
+    }
 
     override fun forward(input: Matrix): FloatArray {
 
@@ -44,7 +58,7 @@ class CpuLookupLayer internal constructor(
 
     override fun backward(chain : FloatArray): FloatArray {
 
-        this.gradientAccumulator.accumulate(this.inputEntries, this.numberOutputColumns, chain)
+        this.gradientAccumulator!!.accumulate(this.inputEntries, this.numberOutputColumns, chain)
 
         return chain
 
@@ -54,7 +68,7 @@ class CpuLookupLayer internal constructor(
 
         if (this.update != null) {
 
-            val gradientAccumulator = this.gradientAccumulator
+            val gradientAccumulator = this.gradientAccumulator!!
 
             val size = gradientAccumulator.getSize()
             val ids = gradientAccumulator.getIds()
@@ -65,7 +79,7 @@ class CpuLookupLayer internal constructor(
 
         }
 
-        this.gradientAccumulator.reset()
+        this.gradientAccumulator!!.reset()
 
     }
 

@@ -7,7 +7,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaSoftmaxLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 import shape.komputation.layers.concatenateNames
-import shape.komputation.layers.forward.normalizationLayer
+import shape.komputation.layers.forward.normalization.normalizationLayer
 
 class SoftmaxLayer(
     private val name : String?,

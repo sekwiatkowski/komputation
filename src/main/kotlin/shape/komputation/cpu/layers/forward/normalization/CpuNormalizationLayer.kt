@@ -1,4 +1,4 @@
-package shape.komputation.cpu.layers.forward
+package shape.komputation.cpu.layers.forward.normalization
 
 import shape.komputation.cpu.functions.activation.backwardNormalization
 import shape.komputation.cpu.functions.activation.normalize

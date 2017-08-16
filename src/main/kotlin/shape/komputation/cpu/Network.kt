@@ -38,7 +38,9 @@ class Network(
 
         }
 
-        return previousLayerState.forwardResult
+        val result = previousLayerState.forwardResult
+
+        return result
 
     }
 
@@ -54,7 +56,9 @@ class Network(
 
         }
 
-        return this.entryPoint.backward(chain)
+        val result = this.entryPoint.backward(chain)
+
+        return result
 
     }
 
@@ -75,7 +79,14 @@ class Network(
         loss: CpuLossFunctionInstruction,
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
 
-        CpuTrainer(this, inputs, targets, numberIterations, this.maximumBatchSize, loss.buildForCpu(), afterEachIteration)
+        CpuTrainer(
+            this,
+            inputs,
+            targets,
+            numberIterations,
+            this.maximumBatchSize,
+            loss.buildForCpu(),
+            afterEachIteration)
 
     fun test(
         inputs: Array<Matrix>,

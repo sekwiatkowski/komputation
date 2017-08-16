@@ -3,15 +3,16 @@ package shape.komputation.cuda.loss
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.computeDeviceFloatArraySize
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.computeColumnwiseLaunchConfiguration
-import shape.komputation.cuda.kernels.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 
 class CudaSquaredLoss(
     private val numberRows : Int,
     private val numberColumns : Int,
-    private val createForwardKernel: (Int) -> Kernel,
+    private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val numberMultiprocessors : Int,
     private val numberResidentWarps : Int,
@@ -54,13 +55,14 @@ class CudaSquaredLoss(
 
         this.maximumBatchSize = maximumBatchSize
 
-        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberColumns, this.numberRows, this.maximumNumberThreadsPerBlock)
+        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberRows, this.numberColumns, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocks = forwardLaunchConfiguration.numberBlocks
         this.forwardNumberThreadsPerBlock = forwardLaunchConfiguration.numberThreadsPerBlock
         this.forwardNumberIterations[0] = forwardLaunchConfiguration.numberIterations
-        this.forwardSharedMemoryBytes = forwardLaunchConfiguration.sharedMemoryBytes
+        val numberForwardWarps = (this.numberRows / forwardLaunchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
+        this.forwardSharedMemoryBytes =  computeDeviceFloatArraySize(numberForwardWarps).toInt()
 
-        this.forwardKernel = this.createForwardKernel(this.forwardNumberThreadsPerBlock)
+        this.forwardKernel = this.createForwardKernel()
 
         allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize * this.numberColumns)
 

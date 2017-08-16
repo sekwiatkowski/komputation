@@ -7,9 +7,8 @@ import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
-import shape.komputation.layers.forward.activation.reluLayer
-import shape.komputation.layers.forward.convolution.convolutionalLayer
-import shape.komputation.layers.forward.denseLayer
+import shape.komputation.layers.forward.convolution.maxPoolingLayer
+import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.historical.momentum
 import java.util.*
@@ -29,11 +28,6 @@ fun main(args: Array<String>) {
 
     val optimizationStrategy = momentum(0.01f, 0.9f)
 
-    val numberFilters = 2
-
-    val filterWidth = 2
-    val filterHeight = embeddingDimension
-
     val inputs = EmbeddingData.inputs
     val targets = EmbeddingData.targets
     val numberClasses = EmbeddingData.numberClasses
@@ -42,10 +36,9 @@ fun main(args: Array<String>) {
 
     Network(
             maximumBatchSize,
-            lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, maximumBatchSize, optimizationStrategy),
-            convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-            reluLayer(numberFilters),
-            denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+            lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
+            maxPoolingLayer(embeddingDimension, 2),
+            denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
         )
         .training(
             inputs,

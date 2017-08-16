@@ -1,10 +1,9 @@
-#include "reduction/Reduction.cuh"
+#include "reduction/SumReduction.cuh"
 
 // This assumes that the number of threads is equal to the number of predictions/targets.
 // First, the squared differences between predictions and targets are stored in shared memory.
 // In the second step, the squared differences are summed up using a parallel reduction.
 // Finally, the sum is multiplied by 1/2.
-template <int blockSize>
 __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result)
 {
 
@@ -22,28 +21,28 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
 
     if(indexInstance < batchSize) {
 
+        float thisValue = 0.0f;
+
         if(startIndexWithinColumn < numberRows) {
 
-            float sum = 0.0f;
+            thisValue += powf(predictions[startIndexWithinBatch] - targets[startIndexWithinBatch], 2.0);
 
-            for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+            if(numberIterations > 1) {
 
-                sum  += powf(predictions[indexEntry] - targets[indexEntry], 2.0);
+                for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
+
+                    thisValue += powf(predictions[indexEntry] - targets[indexEntry], 2.0);
+
+                }
 
             }
 
-            sharedData[threadIdx.x] = sum;
-
-        }
-        else {
-
-            sharedData[threadIdx.x] = 0.0;
-
         }
 
-        __syncthreads();
+        int warpId = threadIdx.x / warpSize;
+        int laneId = threadIdx.x % warpSize;
 
-        reduce<blockSize>(threadIdx.x, sharedData, 0);
+        reduceToSum(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
 
