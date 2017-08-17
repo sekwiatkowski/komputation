@@ -168,7 +168,7 @@ class CudaNormalizationLayerTest {
 
         setFloatArray(input, numberBatchEntries, deviceInput)
 
-        val deviceResult = layer.forward(deviceInput, batchSize,false)
+        val deviceResult = layer.forward(batchSize, numberColumns, deviceInput, false)
         val actual = getFloatArray(deviceResult, numberBatchEntries)
 
         cudaFree(deviceInput)
@@ -205,8 +205,8 @@ class CudaNormalizationLayerTest {
         val layer = normalizationLayer(numberRows, numberColumns).buildForCuda(context, cublasHandle())
         layer.acquire(maximumBatchSize)
 
-        layer.forward(deviceInput, batchSize,true)
-        val deviceBackwardResult = layer.backward(deviceChain, batchSize)
+        layer.forward(batchSize, numberColumns, deviceInput,true)
+        val deviceBackwardResult = layer.backward(batchSize, deviceChain)
         val actual = getFloatArray(deviceBackwardResult, numberBatchEntries)
 
         layer.release()

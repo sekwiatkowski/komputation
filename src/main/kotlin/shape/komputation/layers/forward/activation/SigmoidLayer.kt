@@ -22,7 +22,8 @@ class SigmoidLayer(
 
         return CudaSigmoidLayer(
             this.name,
-            this.numberRows * this.numberColumns,
+            this.numberRows,
+            this.numberColumns,
             { context.createKernel(ForwardKernels.sigmoid()) },
             { context.createKernel(ForwardKernels.backwardSigmoid()) },
             context.maximumNumberOfThreadsPerBlock,

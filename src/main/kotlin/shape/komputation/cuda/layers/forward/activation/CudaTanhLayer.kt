@@ -4,10 +4,11 @@ import shape.komputation.cuda.kernels.Kernel
 
 class CudaTanhLayer internal constructor(
     name : String? = null,
-    numberEntries : Int,
+    numberRows : Int,
+    numberColumns : Int,
     createForwardKernel: () -> Kernel,
     createBackwardKernel: () -> Kernel,
     numberMultiprocessors : Int,
     numberResidentWarps : Int,
     warpSize : Int,
-    maximumNumberThreadsPerBlock : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, numberEntries, numberMultiprocessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock)
+    maximumNumberThreadsPerBlock : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, numberRows, numberColumns, numberMultiprocessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock)

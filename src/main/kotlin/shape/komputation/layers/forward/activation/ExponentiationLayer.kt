@@ -22,7 +22,8 @@ class ExponentiationLayer(
 
         val exponentiationLayer = CudaExponentiationLayer(
             this.name,
-            this.numberRows * this.numberColumns,
+            this.numberRows,
+            this.numberColumns,
             { context.createKernel(ForwardKernels.exponentiation()) },
             { context.createKernel(ForwardKernels.backwardExponentiation()) },
             context.numberMultiprocessors,

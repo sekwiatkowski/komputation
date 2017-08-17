@@ -9,7 +9,6 @@ import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.optimization.OptimizationInstruction
@@ -20,61 +19,7 @@ class ShortTermResponse(
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuTanhLayer>) : Resourceful {
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.forgetting.forEach { forgetting ->
-
-            forgetting.acquire(maximumBatchSize)
-
-        }
-
-        this.memoryWeighting.acquire(maximumBatchSize)
-        this.inputWeighting.acquire(maximumBatchSize)
-
-        this.additions.forEach { addition ->
-
-            addition.acquire(maximumBatchSize)
-
-        }
-
-        this.bias?.acquire(maximumBatchSize)
-
-        this.activations.forEach { activation ->
-
-            activation.acquire(maximumBatchSize)
-
-        }
-
-    }
-
-    override fun release() {
-
-        this.forgetting.forEach { forgetting ->
-
-            forgetting.release()
-
-        }
-
-        this.memoryWeighting.release()
-        this.inputWeighting.release()
-
-        this.additions.forEach { addition ->
-
-            addition.release()
-
-        }
-
-        this.bias?.release()
-
-        this.activations.forEach { activation ->
-
-            activation.release()
-
-        }
-
-    }
+    private val activations: Array<CpuTanhLayer>) {
 
     fun forward(withinBatch : Int, step : Int, state : FloatArray, input : FloatArray, forget : FloatArray, isTraining : Boolean): FloatArray {
 

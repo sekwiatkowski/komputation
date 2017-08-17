@@ -21,14 +21,19 @@ class CudaNormalizationLayer internal constructor(
     private val numberEntries = this.numberRows * this.numberColumns
 
     private var forwardKernel : Kernel? = null
-    private val deviceForwardResult = Pointer()
+    override val numberOutputRows = this.numberRows
+    override val numberOutputColumns = this.numberColumns
+    override val deviceForwardResult = Pointer()
+
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private var backwardKernel : Kernel? = null
     private val deviceSums = Pointer()
     private val pointerToDeviceSums = Pointer.to(this.deviceSums)
 
-    private val deviceBackwardResult = Pointer()
+    override val deviceBackwardResult = Pointer()
+    override val numberInputRows = this.numberRows
+    override val numberInputColumns = this.numberColumns
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     private var numberBlocksInXDimensions = -1
@@ -76,7 +81,7 @@ class CudaNormalizationLayer internal constructor(
     private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberRows))
     private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
 
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
 
         this.forwardBatchSize[0] = batchSize
 
@@ -101,7 +106,7 @@ class CudaNormalizationLayer internal constructor(
 
     }
 
-    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
+    override fun backward(batchSize: Int, chain: Pointer) : Pointer {
 
         this.backwardBatchSize[0] = batchSize
 

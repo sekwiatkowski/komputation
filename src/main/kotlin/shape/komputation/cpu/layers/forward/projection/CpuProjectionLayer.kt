@@ -1,43 +1,28 @@
 package shape.komputation.cpu.layers.forward.projection
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CpuProjectionLayer internal constructor(
     name : String? = null,
     private val weightingLayer: CpuWeightingLayer,
-    private val biasLayer : CpuBiasLayer?) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
+    private val biasLayer : CpuBiasLayer?) : BaseCpuForwardLayer(name), Optimizable {
 
-    override val numberOutputRows = this.weightingLayer.numberOutputRows
-    override var numberOutputColumns = -1
+    override val numberOutputRows
+        get() = this.weightingLayer.numberOutputRows
+    override val numberOutputColumns
+        get() = this.weightingLayer.numberOutputColumns
     override var forwardResult = FloatArray(0)
 
-    override val numberInputRows = this.weightingLayer.numberInputRows
-    override var numberInputColumns = -1
+    override val numberInputRows
+        get() = this.weightingLayer.numberInputRows
+    override val numberInputColumns
+        get() = this.weightingLayer.numberInputColumns
     override var backwardResult = FloatArray(0)
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.weightingLayer.acquire(maximumBatchSize)
-        this.biasLayer?.acquire(maximumBatchSize)
-
-    }
-
-    override fun release() {
-
-        this.weightingLayer.release()
-        this.biasLayer?.release()
-
-    }
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining: Boolean): FloatArray {
 
-        this.numberInputColumns = numberInputColumns
-
         val weighted = this.weightingLayer.forward(withinBatch, numberInputColumns, input, isTraining)
-
-        this.numberOutputColumns = this.weightingLayer.numberOutputColumns
 
         this.forwardResult = if (this.biasLayer != null) {
 

@@ -24,7 +24,8 @@ class DropoutLayer(
 
         return CudaDropoutLayer(
             this.name,
-            this.numberRows * this.numberColumns,
+            this.numberRows,
+            this.numberColumns,
             this.random,
             this.keepProbability,
             { context.createKernel(ForwardKernels.dropoutTraining()) },

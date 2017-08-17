@@ -1,13 +1,12 @@
 package shape.komputation.cpu.layers.forward.projection
 
 import shape.komputation.cpu.layers.CpuForwardLayer
-import shape.komputation.cpu.layers.LayerState
+import shape.komputation.cpu.layers.CpuLayerState
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeWeights
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.identityLayer
 import shape.komputation.optimization.OptimizationInstruction
@@ -21,7 +20,7 @@ class SeriesWeighting internal constructor(
     private val weights: FloatArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
-    private val updateRule: UpdateRule?) : LayerState, Resourceful {
+    private val updateRule: UpdateRule?) : CpuLayerState {
 
     private val numberWeightEntries = this.weights.size
 
@@ -29,34 +28,6 @@ class SeriesWeighting internal constructor(
     override var forwardResult = FloatArray(0)
 
     override var backwardResult = FloatArray(0)
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.acquire(maximumBatchSize)
-
-            }
-
-        }
-
-    }
-
-    override fun release() {
-
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.release()
-
-            }
-
-        }
-
-    }
 
     fun forwardStep(withinBatch : Int, step : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 

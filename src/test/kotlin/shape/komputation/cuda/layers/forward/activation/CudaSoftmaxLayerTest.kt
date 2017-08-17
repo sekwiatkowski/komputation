@@ -5,10 +5,14 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
+import shape.komputation.cpu.layers.CpuForwardLayer
 import shape.komputation.cuda.getFloatArray
+import shape.komputation.cuda.layers.CudaForwardLayer
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.layers.acquireRecursively
 import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.layers.releaseRecursively
 
 class CudaSoftmaxLayerTest {
 
@@ -59,23 +63,25 @@ class CudaSoftmaxLayerTest {
 
     private fun forward(numberRows: Int, numberColumns: Int, input: FloatArray): FloatArray {
 
+        val batchSize = 1
+
         val numberEntries = numberRows * numberColumns
 
         val cudaContext = setUpCudaContext()
 
         val softmaxLayer = softmaxLayer(numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
 
-        softmaxLayer.acquire(1)
+        acquireRecursively(softmaxLayer, batchSize)
 
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = softmaxLayer.forward(deviceInput, 1,true)
+        val deviceResult = softmaxLayer.forward(batchSize, numberColumns, deviceInput, true)
         val actual = getFloatArray(deviceResult, numberEntries)
 
         cudaFree(deviceInput)
 
-        softmaxLayer.release()
+        releaseRecursively(softmaxLayer, CudaForwardLayer::class.java)
 
         cudaContext.destroy()
 
@@ -140,14 +146,16 @@ class CudaSoftmaxLayerTest {
         val softmaxLayer = softmaxLayer(numberRows, numberColumns)
 
         val cpuSoftmaxLayer = softmaxLayer.buildForCpu()
-        cpuSoftmaxLayer.acquire(1)
+
+        acquireRecursively(cpuSoftmaxLayer, 1)
+
         cpuSoftmaxLayer.forward(0, numberColumns, input, true)
         cpuSoftmaxLayer.backward(0, chain)
         val expected = cpuSoftmaxLayer.backwardResult
 
         val cudaSoftmaxLayer = softmaxLayer.buildForCuda(cudaContext, cublasHandle())
 
-        cudaSoftmaxLayer.acquire(1)
+        acquireRecursively(cudaSoftmaxLayer, 1)
 
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
@@ -155,14 +163,15 @@ class CudaSoftmaxLayerTest {
         val deviceChain = Pointer()
         setFloatArray(chain, numberEntries, deviceChain)
 
-        cudaSoftmaxLayer.forward(deviceInput, 1,true)
-        val deviceBackwardResult = cudaSoftmaxLayer.backward(deviceChain, 1)
+        cudaSoftmaxLayer.forward(1, numberColumns, deviceInput, true)
+        val deviceBackwardResult = cudaSoftmaxLayer.backward(1, deviceChain)
         val actual = getFloatArray(deviceBackwardResult, numberEntries)
 
         cudaFree(deviceInput)
         cudaFree(deviceChain)
 
-        cudaSoftmaxLayer.release()
+        releaseRecursively(cpuSoftmaxLayer, CpuForwardLayer::class.java)
+        releaseRecursively(cudaSoftmaxLayer, CudaForwardLayer::class.java)
 
         cudaContext.destroy()
 

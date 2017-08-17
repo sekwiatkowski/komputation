@@ -27,29 +27,9 @@ class CpuConcatenation internal constructor(
 
         this.chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
 
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.acquire(maximumBatchSize)
-
-            }
-
-        }
-
     }
 
     override fun release() {
-
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.release()
-
-            }
-
-        }
 
     }
 

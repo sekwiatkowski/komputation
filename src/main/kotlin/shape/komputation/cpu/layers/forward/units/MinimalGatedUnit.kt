@@ -10,7 +10,6 @@ import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.sigmoidLayer
 import shape.komputation.layers.forward.counterProbabilityLayer
@@ -26,74 +25,10 @@ class MinimalGatedUnit internal constructor(
     private val counterProbabilities: Array<CpuCounterProbabilityLayer>,
     private val longTermHadamards: Array<HadamardCombination>,
     private val shortTermHadamards: Array<HadamardCombination>,
-    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Resourceful, Optimizable {
+    private val stateAdditions: Array<AdditionCombination>) : RecurrentUnit(name), Optimizable {
 
     private val previousStateAccumulator = DenseAccumulator(this.hiddenDimension)
     private val inputAccumulator = DenseAccumulator(this.inputDimension)
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.forgetUnit.acquire(maximumBatchSize)
-
-        this.shortTermResponse.acquire(maximumBatchSize)
-
-        this.counterProbabilities.forEach { counterProbability ->
-
-            counterProbability.acquire(maximumBatchSize)
-
-        }
-
-        this.longTermHadamards.forEach { longTermHadamard ->
-
-            longTermHadamard.acquire(maximumBatchSize)
-
-        }
-
-        this.shortTermHadamards.forEach { shortTermHadamard ->
-
-            shortTermHadamard.acquire(maximumBatchSize)
-
-        }
-
-        this.stateAdditions.forEach { stateAddition ->
-
-            stateAddition.acquire(maximumBatchSize)
-
-        }
-
-    }
-
-    override fun release() {
-
-        this.forgetUnit.release()
-
-        this.shortTermResponse.release()
-
-        this.counterProbabilities.forEach { counterProbability ->
-
-            counterProbability.release()
-
-        }
-
-        this.longTermHadamards.forEach { longTermHadamard ->
-
-            longTermHadamard.release()
-
-        }
-
-        this.shortTermHadamards.forEach { shortTermHadamard ->
-
-            shortTermHadamard.release()
-
-        }
-
-        this.stateAdditions.forEach { stateAddition ->
-
-            stateAddition.release()
-
-        }
-
-    }
 
     override fun forwardStep(withinBatch : Int, indexStep: Int, state : FloatArray, input : FloatArray, isTraining : Boolean): FloatArray {
 

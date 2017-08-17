@@ -22,7 +22,8 @@ class TanhLayer(
 
         return CudaTanhLayer(
             this.name,
-            this.numberRows * this.numberColumns,
+            this.numberRows,
+            this.numberColumns,
             { context.createKernel(ForwardKernels.tanh()) },
             { context.createKernel(ForwardKernels.backwardTanh()) },
             context.maximumNumberOfThreadsPerBlock,

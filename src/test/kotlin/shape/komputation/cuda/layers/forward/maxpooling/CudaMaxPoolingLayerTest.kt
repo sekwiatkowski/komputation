@@ -17,7 +17,7 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(1f)
         val expected = floatArrayOf(1f)
 
-        testForward(1, 1, input, expected)
+        testForward(1, 1, 1, input, expected)
 
     }
 
@@ -27,7 +27,7 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(1f, 2f)
         val expected = floatArrayOf(2f)
 
-        testForward(1, 2, input, expected)
+        testForward(1, 2, 2, input, expected)
 
     }
 
@@ -37,7 +37,7 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(2f, 1f)
         val expected = floatArrayOf(2f)
 
-        testForward(1, 2, input, expected)
+        testForward(1, 2, 2, input, expected)
 
     }
 
@@ -47,7 +47,7 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(1f, 3f, 2f)
         val expected = floatArrayOf(3f)
 
-        testForward(1, 3, input, expected)
+        testForward(1, 3, 3, input, expected)
 
     }
 
@@ -57,7 +57,7 @@ class CudaMaxPoolingLayerTest {
         val input = FloatArray(33) { index -> (index+1).toFloat() }
         val expected = floatArrayOf(33f)
 
-        testForward(1, 33, input, expected)
+        testForward(1, 33, 33, input, expected)
 
     }
 
@@ -67,7 +67,7 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(1f, 2f)
         val expected = floatArrayOf(1f, 2f)
 
-        testForward(2, 1, input, expected)
+        testForward(2, 1, 1, input, expected)
 
     }
 
@@ -81,21 +81,32 @@ class CudaMaxPoolingLayerTest {
         val input = floatArrayOf(1f, 2f, 3f, -4f)
         val expected = floatArrayOf(3f, 2f)
 
-        testForward(2, 2, input, expected)
+        testForward(2, 2, 2, input, expected)
 
     }
 
     @Test
+    fun testForwardOneRowOneOutOfTwoColumns() {
+
+        val input = floatArrayOf(1f)
+        val expected = floatArrayOf(1f)
+
+        testForward(1, 1, 2, input, expected)
+
+    }
+
+
+    @Test
     fun testBackwardOneRowOneColumn() {
 
-        testBackward(1, 1, floatArrayOf(2f), floatArrayOf(3f), floatArrayOf(3f))
+        testBackward(1, 1, 1, floatArrayOf(2f), floatArrayOf(3f), floatArrayOf(3f))
 
     }
 
     @Test
     fun testBackwardOneRowTwoColumns() {
 
-        testBackward(1, 2, floatArrayOf(1f, 2f), floatArrayOf(3f), floatArrayOf(0f, 3f))
+        testBackward(1, 2, 2, floatArrayOf(1f, 2f), floatArrayOf(3f), floatArrayOf(0f, 3f))
 
     }
 
@@ -103,14 +114,14 @@ class CudaMaxPoolingLayerTest {
     @Test
     fun testBackwardOneRowTwoColumnsReversedInput() {
 
-        testBackward(1, 2, floatArrayOf(2f, 1f), floatArrayOf(3f), floatArrayOf(3f, 0f))
+        testBackward(1, 2, 2, floatArrayOf(2f, 1f), floatArrayOf(3f), floatArrayOf(3f, 0f))
 
     }
 
     @Test
     fun testBackwardTwoRowsOneColumn() {
 
-        testBackward(2, 1, floatArrayOf(1f, 2f), floatArrayOf(3f, 4f), floatArrayOf(3f, 4f))
+        testBackward(2, 1, 1, floatArrayOf(1f, 2f), floatArrayOf(3f, 4f), floatArrayOf(3f, 4f))
 
     }
 
@@ -122,7 +133,7 @@ class CudaMaxPoolingLayerTest {
             2 3    0 6
          */
 
-        testBackward(2, 2, floatArrayOf(1f, 2f, 4f, 3f), floatArrayOf(5f, 6f), floatArrayOf(0f, 0f, 5f, 6f))
+        testBackward(2, 2, 2, floatArrayOf(1f, 2f, 4f, 3f), floatArrayOf(5f, 6f), floatArrayOf(0f, 0f, 5f, 6f))
 
     }
 
@@ -134,7 +145,7 @@ class CudaMaxPoolingLayerTest {
             4 3    6 0
          */
 
-        testBackward(2, 2, floatArrayOf(1f, 4f, 2f, 3f), floatArrayOf(5f, 6f), floatArrayOf(0f, 6f, 5f, 0f))
+        testBackward(2, 2, 2, floatArrayOf(1f, 4f, 2f, 3f), floatArrayOf(5f, 6f), floatArrayOf(0f, 6f, 5f, 0f))
 
     }
 
@@ -147,24 +158,31 @@ class CudaMaxPoolingLayerTest {
             -7 8 -9    0 12 0
          */
 
-        testBackward(3, 3, floatArrayOf(-1f, 4f, -7f, 2f, -5f, 8f, 3f, -6f, -9f), floatArrayOf(10f, 11f, 12f), floatArrayOf(0f, 11f, 0f, 0f, 0f, 12f, 10f, 0f, 0f))
+        testBackward(3, 3, 3, floatArrayOf(-1f, 4f, -7f, 2f, -5f, 8f, 3f, -6f, -9f), floatArrayOf(10f, 11f, 12f), floatArrayOf(0f, 11f, 0f, 0f, 0f, 12f, 10f, 0f, 0f))
 
     }
 
-    private fun testForward(numberRows : Int, numberColumns : Int, input : FloatArray, expected : FloatArray) {
+    @Test
+    fun testBackwardOneRowOneColumnOutOfTwoColumns() {
+
+        testBackward(1, 1, 2, floatArrayOf(2f), floatArrayOf(3f), floatArrayOf(3f))
+
+    }
+
+    private fun testForward(numberRows : Int, numberColumns : Int, maximumNumberColumns : Int, input : FloatArray, expected : FloatArray) {
 
         val batchSize = 1
 
         val cudaContext = setUpCudaContext()
 
-        val maxPoolingLayer = maxPoolingLayer(numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val maxPoolingLayer = maxPoolingLayer(numberRows, maximumNumberColumns).buildForCuda(cudaContext, cublasHandle())
 
         maxPoolingLayer.acquire(batchSize)
 
         val deviceInput = Pointer()
-        setFloatArray(input, numberRows * numberColumns, deviceInput)
+        setFloatArray(input, numberRows * maximumNumberColumns, deviceInput)
 
-        val deviceResult = maxPoolingLayer.forward(deviceInput, batchSize, false)
+        val deviceResult = maxPoolingLayer.forward(batchSize, numberColumns, deviceInput, false)
 
         val actual = getFloatArray(deviceResult, numberRows)
 
@@ -174,24 +192,24 @@ class CudaMaxPoolingLayerTest {
 
     }
 
-    private fun testBackward(numberRows : Int, numberColumns : Int, input: FloatArray, chain : FloatArray, expected: FloatArray) {
+    private fun testBackward(numberRows : Int, numberColumns : Int, maximumNumberColumns: Int, input: FloatArray, chain : FloatArray, expected: FloatArray) {
 
         val batchSize = 1
 
         val cudaContext = setUpCudaContext()
 
-        val maxPoolingLayer = maxPoolingLayer(numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val maxPoolingLayer = maxPoolingLayer(numberRows, maximumNumberColumns).buildForCuda(cudaContext, cublasHandle())
         maxPoolingLayer.acquire(batchSize)
 
         val deviceInput = Pointer()
-        setFloatArray(input, numberRows * numberColumns, deviceInput)
+        setFloatArray(input, numberRows * maximumNumberColumns, deviceInput)
 
         val deviceChain = Pointer()
         setFloatArray(chain, numberRows, deviceChain)
 
-        maxPoolingLayer.forward(deviceInput, batchSize, false)
+        maxPoolingLayer.forward(batchSize, numberColumns, deviceInput,false)
 
-        val deviceBackwardResult = maxPoolingLayer.backward(deviceChain, batchSize)
+        val deviceBackwardResult = maxPoolingLayer.backward(batchSize, deviceChain)
 
         val actual = getFloatArray(deviceBackwardResult, numberRows * numberColumns)
 

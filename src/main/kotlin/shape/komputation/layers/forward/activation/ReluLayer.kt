@@ -23,7 +23,8 @@ class ReluLayer(
 
         return CudaReluLayer(
             this.name,
-            this.numberRows * this.numberColumns,
+            this.numberRows,
+            this.numberColumns,
             { context.createKernel(ForwardKernels.relu()) },
             { context.createKernel(ForwardKernels.backwardRelu()) },
             context.numberMultiprocessors,

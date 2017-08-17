@@ -1,6 +1,6 @@
 package shape.komputation.cpu.layers
 
-interface ForwardLayerState {
+interface CpuForwardState {
 
     val forwardResult: FloatArray
     val numberOutputRows: Int
@@ -8,7 +8,7 @@ interface ForwardLayerState {
 
 }
 
-interface BackwardLayerState {
+interface CpuBackwardState {
 
     val backwardResult: FloatArray
     val numberInputRows: Int
@@ -16,4 +16,4 @@ interface BackwardLayerState {
 
 }
 
-interface LayerState : ForwardLayerState, BackwardLayerState
+interface CpuLayerState : CpuForwardState, CpuBackwardState

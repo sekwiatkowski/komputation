@@ -18,7 +18,7 @@ class IdentityLayer(
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
 
-        CudaIdentityLayer(this.name)
+        CudaIdentityLayer(this.name, this.numberRows, this.numberColumns)
 }
 
 fun identityLayer(name : String? = null, numberRows : Int, numberColumns : Int = 1) =

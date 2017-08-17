@@ -4,7 +4,11 @@ import shape.komputation.cpu.functions.activation.backwardExponentiation
 import shape.komputation.cpu.functions.activation.exponentiate
 import shape.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 
-class CpuExponentiationLayer internal constructor(name : String? = null, numberRows : Int, minimumColumns : Int, maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
+class CpuExponentiationLayer internal constructor(
+    name : String? = null,
+    numberRows : Int,
+    minimumColumns : Int,
+    maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
     private var numberEntries = -1
 

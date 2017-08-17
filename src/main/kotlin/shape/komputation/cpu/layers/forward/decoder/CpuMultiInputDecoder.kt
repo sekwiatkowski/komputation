@@ -41,47 +41,9 @@ class CpuMultiInputDecoder internal constructor(
         this.forwardResult = FloatArray(this.numberSteps * this.outputDimension)
         this.backwardResult = FloatArray(this.numberSteps * this.inputDimension)
 
-        if (this.unit is Resourceful) {
-
-            this.unit.acquire(maximumBatchSize)
-
-        }
-
-        this.weighting.acquire(maximumBatchSize)
-        this.bias?.acquire(maximumBatchSize)
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.acquire(maximumBatchSize)
-
-            }
-
-        }
-
     }
 
     override fun release() {
-
-        if (this.unit is Resourceful) {
-
-            this.unit.release()
-
-        }
-
-        this.weighting.release()
-        this.bias?.release()
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.release()
-
-            }
-
-        }
 
     }
 

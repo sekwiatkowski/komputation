@@ -35,7 +35,6 @@ abstract class BaseCpuVariableLengthForwardLayer(
 
     override fun release() {
 
-
     }
 
     protected abstract fun computeNumberOutputColumns(lengthIndex : Int, length : Int) : Int

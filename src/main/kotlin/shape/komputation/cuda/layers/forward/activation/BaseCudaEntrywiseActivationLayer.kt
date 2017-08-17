@@ -11,7 +11,8 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     name: String? = null,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    private val numberEntries: Int,
+    private val numberRows: Int,
+    private val numberColumns: Int,
     private val numberMultiprocessors : Int,
     private val numberResidentWarps : Int,
     private val warpSize : Int,
@@ -24,13 +25,18 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val pointerToNumberIterations = Pointer.to(numberIterations)
 
     private var forwardKernel : Kernel? = null
-    private val deviceForwardResult = Pointer()
+    override val numberOutputColumns = this.numberColumns
+    override val numberOutputRows = this.numberRows
+    final override val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private var backwardKernel : Kernel? = null
-    private val deviceBackwardResult = Pointer()
+    final override val deviceBackwardResult = Pointer()
+    override val numberInputColumns = this.numberColumns
+    override val numberInputRows = this.numberRows
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
+    private val numberEntries = this.numberRows * this.numberColumns
     private val pointerToNumberEntriesPerInstance = Pointer.to(intArrayOf(this.numberEntries))
 
     private val batchSize = intArrayOf(-1)
@@ -52,7 +58,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -75,7 +81,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     }
 
-    override fun backward(chain : Pointer, batchSize: Int) : Pointer {
+    override fun backward(batchSize: Int, chain: Pointer) : Pointer {
 
         val backwardParameters = Pointer.to(
             this.pointerToBatchSize,

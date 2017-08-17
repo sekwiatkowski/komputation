@@ -17,29 +17,25 @@ class CudaDropoutLayerTest {
     @Test
     fun testTraining() {
 
-        val numberEntries = 10_000
-        val keepProbability = 0.5f
-
-        forward(numberEntries, keepProbability, true)
+        forward(10_000, 1, 0.5f, true)
 
     }
 
     @Test
     fun testRuntime() {
 
-        val numberEntries = 10_000
-        val keepProbability = 0.5f
-
-        forward(numberEntries, keepProbability, false)
+        forward(10_000, 1, 0.5f, false)
 
     }
 
-    private fun forward(numberEntries: Int, keepProbability: Float, isTraining : Boolean) {
+    private fun forward(numberRows: Int, numberColumns: Int, keepProbability: Float, isTraining : Boolean) {
+
+        val numberEntries = numberRows * numberColumns
 
         val random = Random()
         val input = FloatArray(numberEntries) { random.nextFloat() }
 
-        val cpuLayer = dropoutLayer(Random(1), keepProbability, numberEntries).buildForCpu()
+        val cpuLayer = dropoutLayer(Random(1), keepProbability, numberRows, numberColumns).buildForCpu()
 
         cpuLayer.acquire(1)
 
@@ -47,13 +43,13 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(Random(1), keepProbability, numberEntries).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(Random(1), keepProbability, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
         cudaLayer.acquire(1)
 
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = cudaLayer.forward(deviceInput, 1, isTraining)
+        val deviceResult = cudaLayer.forward(1, numberColumns, deviceInput, isTraining)
         val cudaResult = getFloatArray(deviceResult, numberEntries)
 
         cudaLayer.release()
@@ -72,7 +68,7 @@ class CudaDropoutLayerTest {
         val chain = floatArrayOf(1.0f, 2.0f)
         val expected = floatArrayOf(1.0f, 2.0f)
 
-        val actual = runBackward(chain, chain.size, true)
+        val actual = runBackward(chain, chain.size, 1, true)
 
         assertArrayEquals(expected, actual, 0.001f)
 
@@ -84,18 +80,20 @@ class CudaDropoutLayerTest {
         val chain = floatArrayOf(1.0f, 2.0f)
         val expected = floatArrayOf(0.0f, 0.0f)
 
-        val actual = runBackward(chain, chain.size, false)
+        val actual = runBackward(chain, chain.size, 1,false)
 
         assertArrayEquals(expected, actual, 0.001f)
 
     }
 
 
-    private fun runBackward(chain : FloatArray, numberEntries: Int, keep : Boolean): FloatArray {
+    private fun runBackward(chain : FloatArray, numberRows: Int, numberColumns: Int, keep : Boolean): FloatArray {
+
+        val numberEntries = numberRows * numberColumns
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(Random(1), if(keep) 1.0f else 0.0f, numberEntries).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(Random(1), if(keep) 1.0f else 0.0f, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
 
         cudaLayer.acquire(1)
 
@@ -105,8 +103,8 @@ class CudaDropoutLayerTest {
         val deviceChain = Pointer()
         setFloatArray(chain, numberEntries, deviceChain)
 
-        cudaLayer.forward(deviceInput, 1, true)
-        val deviceResult = cudaLayer.backward(deviceChain, 1)
+        cudaLayer.forward(1, numberColumns, deviceInput, true)
+        val deviceResult = cudaLayer.backward(1, deviceChain)
 
         val cudaResult = getFloatArray(deviceResult, numberEntries)
 

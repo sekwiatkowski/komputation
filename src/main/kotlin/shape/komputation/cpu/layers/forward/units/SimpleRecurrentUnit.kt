@@ -9,7 +9,6 @@ import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.layers.forward.projection.seriesBias
 import shape.komputation.cpu.layers.forward.projection.seriesWeighting
 import shape.komputation.initialization.InitializationStrategy
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.optimization.Optimizable
@@ -21,57 +20,7 @@ class SimpleRecurrentUnit internal constructor(
     private val inputWeighting: SeriesWeighting,
     private val additions: Array<AdditionCombination>,
     private val bias: SeriesBias?,
-    private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Resourceful, Optimizable {
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.previousStateWeighting.acquire(maximumBatchSize)
-        this.inputWeighting.acquire(maximumBatchSize)
-
-        this.additions.forEach { addition ->
-
-            addition.acquire(maximumBatchSize)
-
-        }
-
-        this.bias?.acquire(maximumBatchSize)
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.acquire(maximumBatchSize)
-
-            }
-
-        }
-
-    }
-
-    override fun release() {
-
-        this.previousStateWeighting.release()
-        this.inputWeighting.release()
-
-        this.additions.forEach { addition ->
-
-            addition.release()
-
-        }
-
-        this.bias?.release()
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.release()
-
-            }
-
-        }
-
-    }
+    private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Optimizable {
 
     override fun forwardStep(withinBatch : Int, indexStep: Int, state: FloatArray, input: FloatArray, isTraining : Boolean): FloatArray {
 

@@ -33,23 +33,9 @@ class CpuHighwayLayer internal constructor(
         this.forwardResult = FloatArray(this.numberOutputEntries)
         this.backwardResult = FloatArray(this.numberInputEntries)
 
-        this.transformation.acquire(maximumBatchSize)
-        this.transformationFraction.acquire(maximumBatchSize)
-        this.transformationHadamard.acquire(maximumBatchSize)
-        this.counterProbability.acquire(maximumBatchSize)
-        this.carryHadamard.acquire(maximumBatchSize)
-        this.addition.acquire(maximumBatchSize)
-
     }
 
     override fun release() {
-
-        this.transformation.release()
-        this.transformationFraction.release()
-        this.transformationHadamard.release()
-        this.counterProbability.release()
-        this.carryHadamard.release()
-        this.addition.release()
 
     }
 

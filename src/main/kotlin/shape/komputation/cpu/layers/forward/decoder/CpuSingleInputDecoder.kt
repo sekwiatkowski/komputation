@@ -3,7 +3,7 @@ package shape.komputation.cpu.layers.forward.decoder
 import shape.komputation.cpu.functions.add
 import shape.komputation.cpu.functions.getStep
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
-import shape.komputation.cpu.layers.LayerState
+import shape.komputation.cpu.layers.CpuLayerState
 import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
@@ -43,47 +43,9 @@ class CpuSingleInputDecoder internal constructor(
         this.forwardResult = FloatArray(this.numberSteps * this.outputDimension)
         this.backwardResult = FloatArray(this.numberSteps * this.hiddenDimension)
 
-        if (this.unit is Resourceful) {
-
-            this.unit.acquire(maximumBatchSize)
-
-        }
-
-        this.weighting.acquire(maximumBatchSize)
-        this.bias?.acquire(maximumBatchSize)
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.acquire(maximumBatchSize)
-
-            }
-
-        }
-
     }
 
     override fun release() {
-
-        if (this.unit is Resourceful) {
-
-            this.unit.release()
-
-        }
-
-        this.weighting.release()
-        this.bias?.release()
-
-        this.activations.forEach { activation ->
-
-            if (activation is Resourceful) {
-
-                activation.release()
-
-            }
-
-        }
 
     }
 
@@ -112,7 +74,7 @@ class CpuSingleInputDecoder internal constructor(
 
         this.weighting.forwardStep(withinBatch, indexStep,  newState, isTraining)
 
-        val biased : LayerState =
+        val biased : CpuLayerState =
 
             if (this.bias != null) {
 

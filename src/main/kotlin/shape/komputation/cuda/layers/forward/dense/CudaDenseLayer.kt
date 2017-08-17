@@ -4,41 +4,43 @@ import jcuda.Pointer
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.layers.forward.activation.CudaActivationLayer
 import shape.komputation.cuda.layers.forward.projection.CublasProjectionLayer
-import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CudaDenseLayer internal constructor(
     name: String?,
     private val projectionLayer: CublasProjectionLayer,
-    private val activationLayer: CudaActivationLayer) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val activationLayer: CudaActivationLayer) : BaseCudaForwardLayer(name), Optimizable {
 
-    override fun acquire(maximumBatchSize : Int) {
+    override val deviceForwardResult
+        get() = this.activationLayer.deviceForwardResult
+    override val numberOutputRows
+        get() = this.activationLayer.numberOutputRows
+    override val numberOutputColumns
+        get() = this.activationLayer.numberOutputColumns
 
-        this.projectionLayer.acquire(maximumBatchSize)
+    override val deviceBackwardResult
+        get() = this.projectionLayer.deviceForwardResult
+    override val numberInputRows
+        get() = this.projectionLayer.numberInputRows
+    override val numberInputColumns
+        get() = this.projectionLayer.numberInputColumns
 
-        if (this.activationLayer is Resourceful) {
 
-            this.activationLayer.acquire(maximumBatchSize)
+    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
 
-        }
+        val projected = this.projectionLayer.forward(batchSize, numberInputColumns, input, isTraining)
 
-    }
-
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
-
-        val projected = this.projectionLayer.forward(input, batchSize, isTraining)
-
-        val activated = this.activationLayer.forward(projected, batchSize, isTraining)
+        val activated = this.activationLayer.forward(batchSize, this.projectionLayer.numberOutputColumns, projected, isTraining)
 
         return activated
 
     }
 
-    override fun backward(chain: Pointer, batchSize: Int): Pointer {
+    override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
-        val backwardActivation = this.activationLayer.backward(chain, batchSize)
+        val backwardActivation = this.activationLayer.backward(batchSize, chain)
 
-        val backwardProjection = this.projectionLayer.backward(backwardActivation, batchSize)
+        val backwardProjection = this.projectionLayer.backward(batchSize, backwardActivation)
 
         return backwardProjection
 
@@ -47,18 +49,6 @@ class CudaDenseLayer internal constructor(
     override fun optimize(scalingFactor: Float) {
 
         this.projectionLayer.optimize(scalingFactor)
-
-    }
-
-    override fun release() {
-
-        if (this.activationLayer is Resourceful) {
-
-            this.activationLayer.release()
-
-        }
-
-        this.projectionLayer.release()
 
     }
 

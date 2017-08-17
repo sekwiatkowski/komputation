@@ -2,46 +2,39 @@ package shape.komputation.cuda.layers.forward.activation
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.forward.normalization.CudaNormalizationLayer
-import shape.komputation.layers.Resourceful
 
 class CudaSoftmaxLayer internal constructor(
     name : String? = null,
     private val exponentiationLayer: CudaExponentiationLayer,
-    private val normalizationLayer: CudaNormalizationLayer) : BaseCudaActivationLayer(name), Resourceful {
+    private val normalizationLayer: CudaNormalizationLayer) : BaseCudaActivationLayer(name) {
 
-    override fun acquire(maximumBatchSize : Int) {
+    override val numberOutputRows
+        get() = this.normalizationLayer.numberOutputRows
+    override val numberOutputColumns
+        get() = this.normalizationLayer.numberOutputColumns
+    override val deviceForwardResult
+        get() = this.normalizationLayer.deviceForwardResult
 
-        this.exponentiationLayer.acquire(maximumBatchSize)
+    override val deviceBackwardResult
+        get() = this.exponentiationLayer.deviceBackwardResult
+    override val numberInputRows
+        get() = this.exponentiationLayer.numberInputRows
+    override val numberInputColumns
+        get() = this.exponentiationLayer.numberInputColumns
 
-        this.normalizationLayer.acquire(maximumBatchSize)
+    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
 
-    }
+        val exponentiated = this.exponentiationLayer.forward(batchSize, numberInputColumns, input, isTraining)
 
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
-
-        val exponentiated = this.exponentiationLayer.forward(input, batchSize, isTraining)
-
-        val normalized = this.normalizationLayer.forward(exponentiated, batchSize, isTraining)
-
-        return normalized
-
-    }
-
-    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
-
-        val backwardNormalization = this.normalizationLayer.backward(chain, batchSize)
-
-        val backwardExponentiation = this.exponentiationLayer.backward(backwardNormalization, batchSize)
-
-        return backwardExponentiation
+        return this.normalizationLayer.forward(batchSize, this.exponentiationLayer.numberOutputColumns, exponentiated, isTraining)
 
     }
 
-    override fun release() {
+    override fun backward(batchSize: Int, chain: Pointer) : Pointer {
 
-        this.exponentiationLayer.release()
+        val backwardNormalization = this.normalizationLayer.backward(batchSize, chain)
 
-        this.normalizationLayer.release()
+        return this.exponentiationLayer.backward(batchSize, backwardNormalization)
 
     }
 

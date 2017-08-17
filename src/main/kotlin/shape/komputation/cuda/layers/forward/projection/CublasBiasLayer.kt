@@ -16,8 +16,8 @@ import shape.komputation.optimization.Optimizable
 class CublasBiasLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
-    private val numberInputRows: Int,
-    private val numberInputColumns: Int,
+    override val numberInputRows: Int,
+    override val numberInputColumns: Int,
     private val initialBias: FloatArray,
     private val biasUpdateRule: CudaUpdateRule?,
     private val createKernel: () -> Kernel,
@@ -33,13 +33,15 @@ class CublasBiasLayer internal constructor(
     private var numberBlocks = -1
     private var numberThreadsPerBlock = -1
 
-    private val deviceForwardResult = Pointer()
+    override val deviceForwardResult = Pointer()
+    override val numberOutputRows = this.numberInputRows
+    override val numberOutputColumns = this.numberInputColumns
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private val deviceBias = Pointer()
     private val pointerToDeviceBias = Pointer.to(this.deviceBias)
 
-    private val deviceBackwardResult = Pointer()
+    override val deviceBackwardResult = Pointer()
     private val pointerToDeviceBackwardWrtBias = Pointer.to(this.deviceBackwardResult)
 
     private val deviceOnes = Pointer()
@@ -79,7 +81,7 @@ class CublasBiasLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+    override fun forward(batchSize: Int, numberInputColumns: Int, input: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -103,7 +105,7 @@ class CublasBiasLayer internal constructor(
 
     }
 
-    override fun backward(chain: Pointer, batchSize : Int): Pointer {
+    override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
         cublasBackwardProjectionWrtBias(
             this.cublasHandle,

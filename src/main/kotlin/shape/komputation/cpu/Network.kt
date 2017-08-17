@@ -1,11 +1,10 @@
 package shape.komputation.cpu
 
-import shape.komputation.cpu.layers.ForwardLayerState
+import shape.komputation.cpu.layers.CpuForwardLayer
+import shape.komputation.cpu.layers.CpuForwardState
 import shape.komputation.cpu.workflow.CpuTester
 import shape.komputation.cpu.workflow.CpuTrainer
-import shape.komputation.layers.CpuEntryPointInstruction
-import shape.komputation.layers.CpuForwardLayerInstruction
-import shape.komputation.layers.Resourceful
+import shape.komputation.layers.*
 import shape.komputation.loss.CpuLossFunctionInstruction
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
@@ -28,7 +27,7 @@ class Network(
 
         this.entryPoint.forward(input)
 
-        var previousLayerState : ForwardLayerState = this.entryPoint
+        var previousLayerState : CpuForwardState = this.entryPoint
 
         for (layer in this.layers) {
 
@@ -38,9 +37,7 @@ class Network(
 
         }
 
-        val result = previousLayerState.forwardResult
-
-        return result
+        return previousLayerState.forwardResult
 
     }
 
@@ -106,19 +103,11 @@ class Network(
 
     init {
 
-        if (this.entryPoint is Resourceful) {
-
-            this.entryPoint.acquire(this.maximumBatchSize)
-
-        }
+        acquireRecursively(this.entryPoint, this.maximumBatchSize)
 
         for (layer in this.layers) {
 
-            if (layer is Resourceful) {
-
-                layer.acquire(this.maximumBatchSize)
-
-            }
+            acquireRecursively(layer, this.maximumBatchSize)
 
         }
 
@@ -128,11 +117,7 @@ class Network(
 
         for (layer in this.layers) {
 
-            if (layer is Resourceful) {
-
-                layer.release()
-
-            }
+            releaseRecursively(layer, CpuForwardLayer::class.java)
 
         }
 

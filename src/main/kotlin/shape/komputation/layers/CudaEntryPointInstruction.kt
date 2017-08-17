@@ -1,9 +1,10 @@
 package shape.komputation.layers
 
+import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.layers.CudaEntryPoint
 
 interface CudaEntryPointInstruction {
 
-    fun buildForCuda() : CudaEntryPoint
+    fun buildForCuda(context : CudaContext) : CudaEntryPoint
 
 }

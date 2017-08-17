@@ -1,12 +1,11 @@
 package shape.komputation.cpu.layers.forward.projection
 
-import shape.komputation.cpu.layers.LayerState
+import shape.komputation.cpu.layers.CpuLayerState
 import shape.komputation.cpu.optimization.DenseAccumulator
 import shape.komputation.cpu.optimization.UpdateRule
 import shape.komputation.cpu.optimization.updateDensely
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.initialization.initializeColumnVector
-import shape.komputation.layers.Resourceful
 import shape.komputation.layers.concatenateNames
 import shape.komputation.optimization.OptimizationInstruction
 
@@ -17,7 +16,7 @@ class SeriesBias internal constructor(
     private val bias: FloatArray,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
-    private val updateRule: UpdateRule? = null) : LayerState, Resourceful {
+    private val updateRule: UpdateRule? = null) : CpuLayerState {
 
     private val numberBiasEntries = this.bias.size
 
@@ -28,34 +27,6 @@ class SeriesBias internal constructor(
     override val numberInputRows = this.inputDimension
     override val numberInputColumns = 1
     override var backwardResult = FloatArray(0)
-
-    override fun acquire(maximumBatchSize: Int) {
-
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.acquire(maximumBatchSize)
-
-            }
-
-        }
-
-    }
-
-    override fun release() {
-
-        this.layers.forEach { layer ->
-
-            if (layer is Resourceful) {
-
-                layer.release()
-
-            }
-
-        }
-
-    }
 
     fun forwardStep(withinBatch : Int, step : Int, input : FloatArray, isTraining : Boolean): FloatArray {
 

@@ -29,7 +29,6 @@ class AdditionCombination internal constructor(
 
     override fun release() {
 
-
     }
 
     override fun forward(first: FloatArray, second: FloatArray): FloatArray {

@@ -10,6 +10,7 @@ import shape.komputation.cuda.workflow.CudaTrainer
 import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.Resourceful
+import shape.komputation.layers.acquireRecursively
 import shape.komputation.loss.CudaLossFunctionInstruction
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
@@ -22,7 +23,7 @@ class CudaNetwork(
     private val cudaContext = setUpCudaContext()
     private val cublasHandle = cublasHandle()
 
-    private val entryPoint = entryPointInstruction.buildForCuda()
+    private val entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
 
     private val layers = forwardLayerInstructions.map { it.buildForCuda(this.cudaContext, this.cublasHandle) }
     private val numberLayers = this.layers.size
@@ -30,15 +31,19 @@ class CudaNetwork(
 
     fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, inputMemory : InputMemory, isTraining: Boolean) : Pointer {
 
-        var output = this.entryPoint.forward(batchId, batchSize, indices, inputs, inputMemory)
+        this.entryPoint.forward(batchId, batchSize, indices, inputs, inputMemory)
+
+        var previousLayerState : CudaForwardState = this.entryPoint
 
         for (layer in this.layers) {
 
-            output = layer.forward(output, batchSize, isTraining)
+            layer.forward(batchSize, previousLayerState.numberOutputColumns, previousLayerState.deviceForwardResult, isTraining)
+
+            previousLayerState = layer
 
         }
 
-        return output
+        return previousLayerState.deviceForwardResult
 
     }
 
@@ -50,11 +55,9 @@ class CudaNetwork(
 
             val layer = this.layers[indexLayer]
 
-            chain = layer.backward(chain, batchSize)
+            chain = layer.backward(batchSize, chain)
 
         }
-
-        val floatArray = getFloatArray(chain, 4 * 784)
 
         return this.entryPoint.backward(chain)
 
@@ -64,19 +67,11 @@ class CudaNetwork(
 
         cublasCreate(this.cublasHandle)
 
-        if (this.entryPoint is Resourceful) {
-
-            this.entryPoint.acquire(maximumBatchSize)
-
-        }
+        acquireRecursively(this.entryPoint, this.maximumBatchSize)
 
         for (layer in this.layers) {
 
-            if (layer is Resourceful) {
-
-                layer.acquire(maximumBatchSize)
-
-            }
+            acquireRecursively(layer, this.maximumBatchSize)
 
         }
 

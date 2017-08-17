@@ -1,11 +1,12 @@
 package shape.komputation.cuda.layers
 
 import jcuda.Pointer
+import shape.komputation.cuda.CudaLayerState
 
-interface CudaForwardLayer {
+interface CudaForwardLayer : CudaLayerState {
 
-    fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer
+    fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer
 
-    fun backward(chain : Pointer, batchSize : Int) : Pointer
+    fun backward(batchSize: Int, chain: Pointer) : Pointer
 
 }

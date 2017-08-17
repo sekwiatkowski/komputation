@@ -13,7 +13,8 @@ import java.util.*
 
 class CudaDropoutLayer internal constructor(
     name : String? = null,
-    private val numberEntries: Int,
+    numberRows: Int,
+    numberColumns: Int,
     private val random: Random,
     keepProbability : Float,
     private val createTrainingKernel: () -> Kernel,
@@ -23,6 +24,8 @@ class CudaDropoutLayer internal constructor(
     private val numberResidentWarps : Int,
     private val warpSize : Int,
     private val maximumNumberThreadsPerBlock : Int) : BaseCudaActivationLayer(name), Resourceful {
+
+    private val numberEntries = numberRows * numberColumns
 
     private var numberBlocksInXDimension = -1
     private var numberBlocksInYDimension = -1
@@ -42,12 +45,16 @@ class CudaDropoutLayer internal constructor(
 
     private var trainingKernel : Kernel? = null
     private var runtimeKernel : Kernel? = null
-    private val deviceForwardResults = Pointer()
-    private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResults)
+    override val deviceForwardResult = Pointer()
+    override val numberOutputRows = numberRows
+    override val numberOutputColumns = numberColumns
+    private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResult)
 
     private var backwardKernel : Kernel? = null
-    private val deviceBackwardResults = Pointer()
-    private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResults)
+    override val deviceBackwardResult = Pointer()
+    override val numberInputRows = numberRows
+    override val numberInputColumns = numberColumns
+    private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResult)
 
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
@@ -65,10 +72,10 @@ class CudaDropoutLayer internal constructor(
         setIntArray(seeds, numberBatchEntries, this.deviceSeeds)
 
         allocateDeviceFloatMemory(this.deviceMasks, numberBatchEntries)
-        allocateDeviceFloatMemory(this.deviceForwardResults, numberBatchEntries)
+        allocateDeviceFloatMemory(this.deviceForwardResult, numberBatchEntries)
 
         this.backwardKernel = this.createBackwardKernel()
-        allocateDeviceFloatMemory(this.deviceBackwardResults, numberBatchEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, numberBatchEntries)
 
         this.numberBlocksInXDimension = maximumBatchSize
         val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
@@ -78,7 +85,7 @@ class CudaDropoutLayer internal constructor(
 
     }
 
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
+    override fun forward(batchSize: Int, numberInputColumns: Int, input: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -123,12 +130,12 @@ class CudaDropoutLayer internal constructor(
 
         }
 
-        return this.deviceForwardResults
+        return this.deviceForwardResult
 
     }
 
 
-    override fun backward(chain : Pointer, batchSize : Int) : Pointer {
+    override fun backward(batchSize: Int, chain: Pointer) : Pointer {
 
         this.backwardKernel!!.launch(
             Pointer.to(
@@ -145,16 +152,16 @@ class CudaDropoutLayer internal constructor(
             0
         )
 
-        return this.deviceBackwardResults
+        return this.deviceBackwardResult
 
     }
 
     override fun release() {
 
         this.trainingKernel!!.destroy()
-        cudaFree(this.deviceBackwardResults)
+        cudaFree(this.deviceBackwardResult)
 
-        cudaFree(this.deviceForwardResults)
+        cudaFree(this.deviceForwardResult)
         cudaFree(this.deviceMasks)
         cudaFree(this.deviceSeeds)
 

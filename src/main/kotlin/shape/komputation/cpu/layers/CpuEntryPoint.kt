@@ -2,7 +2,7 @@ package shape.komputation.cpu.layers
 
 import shape.komputation.matrix.Matrix
 
-interface CpuEntryPoint : ForwardLayerState {
+interface CpuEntryPoint : CpuForwardState {
 
     fun forward(input: Matrix) : FloatArray
 

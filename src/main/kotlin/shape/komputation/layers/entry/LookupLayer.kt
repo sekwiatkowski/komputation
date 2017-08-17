@@ -16,7 +16,7 @@ class LookupLayer(
 
         val updateRule = if (this.optimization != null) {
 
-            this.optimization.buildForCpu().invoke(this.vectors.size, this.vectors[0].size)
+            this.optimization.buildForCpu().invoke(this.vectors.size, this.dimension)
 
         }
         else {
@@ -30,9 +30,7 @@ class LookupLayer(
 
     }
 
-
 }
-
 
 fun lookupLayer(
     vectors: Array<FloatArray>,

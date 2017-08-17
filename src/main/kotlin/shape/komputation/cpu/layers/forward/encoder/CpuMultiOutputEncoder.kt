@@ -41,21 +41,9 @@ class CpuMultiOutputEncoder internal constructor(
 
         this.backwardResult = FloatArray(this.numberInputColumns * numberInputRows)
 
-        if (this.unit is Resourceful) {
-
-            this.unit.acquire(maximumBatchSize)
-
-        }
-
     }
 
     override fun release() {
-
-        if (this.unit is Resourceful) {
-
-            this.unit.release()
-
-        }
 
     }
 

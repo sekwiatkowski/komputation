@@ -40,7 +40,7 @@ class CublasBiasLayerTest {
             2 + 1    4 + 1
         */
         setFloatArray(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f), 4, deviceInput)
-        val deviceResult = biasLayer.forward(deviceInput, 1, true)
+        val deviceResult = biasLayer.forward(1, numberInputColumns, deviceInput, true)
 
         val actual = getFloatArray(deviceResult, maximumBatchSize * numberEntries)
 
@@ -74,7 +74,7 @@ class CublasBiasLayerTest {
 
         val devieChain = Pointer()
         setFloatArray(floatArrayOf(1.0f, 2.0f, 3.0f, 4.0f, 0f, 0f, 0f, 0f), 4, devieChain)
-        val deviceResult = biasLayer.backward(devieChain, 1)
+        val deviceResult = biasLayer.backward(1, devieChain)
 
         val actual = getFloatArray(deviceResult, numberInputColumns)
 

@@ -57,7 +57,7 @@ class ConvolutionalLayer(
             this.minimumNumberConvolutions,
             this.maximumNumberConvolutions).buildForCpu()
 
-        return CpuConvolutionalLayer(this.name, this.numberInputRows, expansionLayer, projectionLayer, maxPoolingLayer)
+        return CpuConvolutionalLayer(this.name, expansionLayer, projectionLayer, maxPoolingLayer)
 
     }
 

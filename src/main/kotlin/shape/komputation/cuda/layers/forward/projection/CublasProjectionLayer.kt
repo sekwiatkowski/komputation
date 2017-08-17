@@ -2,46 +2,55 @@ package shape.komputation.cuda.layers.forward.projection
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
-import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
 class CublasProjectionLayer internal constructor(
     name: String?,
     private val weightingLayer: CublasWeightingLayer,
-    private val biasLayer: CublasBiasLayer? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val biasLayer: CublasBiasLayer? = null) : BaseCudaForwardLayer(name), Optimizable {
 
-    override fun acquire(maximumBatchSize : Int) {
+    override var deviceForwardResult = Pointer()
+    override var numberOutputRows = -1
+    override var numberOutputColumns = -1
 
-        this.weightingLayer.acquire(maximumBatchSize)
+    override var deviceBackwardResult = Pointer()
+    override var numberInputRows = -1
+    override var numberInputColumns = -1
 
-        this.biasLayer?.acquire(maximumBatchSize)
+    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
 
-    }
-
-    override fun forward(input : Pointer, batchSize : Int, isTraining : Boolean): Pointer {
-
-        val weighted = this.weightingLayer.forward(input, batchSize, isTraining)
+        val weighted = this.weightingLayer.forward(batchSize, numberInputColumns, input, isTraining)
 
         if (this.biasLayer == null) {
+
+            this.deviceForwardResult = this.weightingLayer.deviceForwardResult
+            this.numberOutputRows = this.weightingLayer.numberOutputRows
+            this.numberOutputColumns = this.weightingLayer.numberOutputColumns
 
             return weighted
 
         }
         else {
 
-            return this.biasLayer.forward(weighted, batchSize, isTraining)
+            val weightedAndBiased = this.biasLayer.forward(batchSize, this.numberOutputColumns, weighted, isTraining)
+
+            this.deviceBackwardResult = this.weightingLayer.deviceBackwardResult
+            this.numberInputRows = this.weightingLayer.numberInputRows
+            this.numberInputColumns = this.weightingLayer.numberInputColumns
+
+            return weightedAndBiased
 
         }
 
     }
 
-    override fun backward(chain: Pointer, batchSize : Int): Pointer {
+    override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
-        val backwardWeighting = this.weightingLayer.backward(chain, batchSize)
+        val backwardWeighting = this.weightingLayer.backward(batchSize, chain)
 
         if (this.biasLayer != null) {
 
-            this.biasLayer.backward(chain, batchSize)
+            this.biasLayer.backward(batchSize, chain)
 
         }
 
@@ -54,14 +63,6 @@ class CublasProjectionLayer internal constructor(
         this.weightingLayer.optimize(scalingFactor)
 
         this.biasLayer?.optimize(scalingFactor)
-
-    }
-
-    override fun release() {
-
-        this.weightingLayer.release()
-
-        this.biasLayer?.release()
 
     }
 
