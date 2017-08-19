@@ -11,32 +11,32 @@ class CublasProjectionLayer internal constructor(
 
     override var deviceForwardResult = Pointer()
     override var numberOutputRows = -1
-    override var numberOutputColumns = -1
+    override var maximumOutputColumns = -1
 
     override var deviceBackwardResult = Pointer()
     override var numberInputRows = -1
-    override var numberInputColumns = -1
+    override var maximumInputColumns = -1
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
-        val weighted = this.weightingLayer.forward(batchSize, numberInputColumns, input, isTraining)
+        val weighted = this.weightingLayer.forward(batchSize, deviceNumberInputColumns, deviceInput, isTraining)
 
         if (this.biasLayer == null) {
 
             this.deviceForwardResult = this.weightingLayer.deviceForwardResult
             this.numberOutputRows = this.weightingLayer.numberOutputRows
-            this.numberOutputColumns = this.weightingLayer.numberOutputColumns
+            this.maximumOutputColumns = this.weightingLayer.maximumOutputColumns
 
             return weighted
 
         }
         else {
 
-            val weightedAndBiased = this.biasLayer.forward(batchSize, this.numberOutputColumns, weighted, isTraining)
+            val weightedAndBiased = this.biasLayer.forward(batchSize, this.deviceNumberOutputColumns, weighted, isTraining)
 
             this.deviceBackwardResult = this.weightingLayer.deviceBackwardResult
             this.numberInputRows = this.weightingLayer.numberInputRows
-            this.numberInputColumns = this.weightingLayer.numberInputColumns
+            this.maximumInputColumns = this.weightingLayer.maximumInputColumns
 
             return weightedAndBiased
 

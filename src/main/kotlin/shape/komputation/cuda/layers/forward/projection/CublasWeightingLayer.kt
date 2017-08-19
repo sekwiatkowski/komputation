@@ -18,19 +18,19 @@ class CublasWeightingLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
     override val numberInputRows: Int,
-    override val numberInputColumns: Int,
+    override val maximumInputColumns: Int,
     override val numberOutputRows: Int,
     private val initialWeights: FloatArray,
     private val weightUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
-    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+    private val numberInputEntries = this.numberInputRows * this.maximumInputColumns
 
     private val numberWeightRows = this.numberOutputRows
     private val numberWeightColumns = this.numberInputRows
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
-    override val numberOutputColumns = this.numberInputColumns
-    private val numberOutputEntries = this.numberOutputRows * this.numberOutputColumns
+    override val maximumOutputColumns = this.maximumInputColumns
+    private val numberOutputEntries = this.numberOutputRows * this.maximumOutputColumns
 
     private var deviceInput = Pointer()
 
@@ -51,8 +51,8 @@ class CublasWeightingLayer internal constructor(
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize
-        this.numberBatchInputColumns = maximumBatchSize * this.numberInputColumns
-        this.numberBatchOutputColumns = maximumBatchSize * this.numberOutputColumns
+        this.numberBatchInputColumns = maximumBatchSize * this.maximumInputColumns
+        this.numberBatchOutputColumns = maximumBatchSize * this.maximumOutputColumns
 
         setFloatArray(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
         allocateDeviceFloatMemory(this.deviceBackwardWrtWeights, this.numberWeightEntries)
@@ -67,11 +67,11 @@ class CublasWeightingLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, numberInputColumns: Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
-        this.deviceInput = input
+        this.deviceInput = deviceInput
 
-        if (batchSize == 1 && this.numberInputColumns == 1) {
+        if (batchSize == 1 && this.maximumInputColumns == 1) {
 
             cublasMatrixVectorMultiplication(
                 this.cublasHandle,

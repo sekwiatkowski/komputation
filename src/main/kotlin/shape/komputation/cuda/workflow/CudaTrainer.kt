@@ -1,15 +1,19 @@
 package shape.komputation.cuda.workflow
 
 import jcuda.Pointer
-import shape.komputation.cuda.CudaNetwork
-import shape.komputation.cuda.InputMemory
-import shape.komputation.cuda.TargetMemory
+import shape.komputation.cuda.CudaBackwardPropagator
+import shape.komputation.cuda.CudaForwardPropagator
 import shape.komputation.cuda.loss.CudaLossFunction
+import shape.komputation.cuda.memory.InputMemory
+import shape.komputation.cuda.memory.TargetMemory
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
+import shape.komputation.optimization.Optimizable
 
 class CudaTrainer(
-    private val network : CudaNetwork,
+    private val forwardPropagator : CudaForwardPropagator,
+    private val backwardPropagator : CudaBackwardPropagator,
+    private val optimizables : Array<Optimizable>,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,
     private val numberIterations : Int,
@@ -20,6 +24,7 @@ class CudaTrainer(
     private val numberExamples = this.inputs.size
 
     private val batches = partitionIndices(this.numberExamples, this.maximumBatchSize)
+
     private val inputMemory = InputMemory()
     private val targetMemory = TargetMemory(this.targets.first().size)
 
@@ -32,8 +37,9 @@ class CudaTrainer(
     fun free() {
 
         this.lossFunction.release()
-        this.inputMemory.release()
-        this.targetMemory.release()
+
+        this.inputMemory.free()
+        this.targetMemory.free()
 
     }
 
@@ -51,7 +57,7 @@ class CudaTrainer(
 
                 val currentBatchSize = batch.size
 
-                val devicePredictions = this.network.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,true)
+                val devicePredictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,true)
                 val pointerToDevicePredictions = Pointer.to(devicePredictions)
 
                 val pointerToTargets = this.targetMemory.get(batchId, currentBatchSize, batch, this.targets)
@@ -64,10 +70,15 @@ class CudaTrainer(
 
                 val backwardLoss = this.lossFunction.backward(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
 
-                this.network.backward(backwardLoss, currentBatchSize)
+                this.backwardPropagator.backward(backwardLoss, currentBatchSize)
 
                 val scalingFactor = 1.0f.div(batch.size.toFloat())
-                this.network.optimize(scalingFactor)
+
+                for (optimizable in this.optimizables) {
+
+                    optimizable.optimize(scalingFactor)
+
+                }
 
                 if (trackLoss) {
 
@@ -87,10 +98,7 @@ class CudaTrainer(
 
         val time = stop - start
 
-        this.lossFunction.release()
-
         return time
-
 
     }
 

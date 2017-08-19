@@ -1,7 +1,18 @@
 package shape.komputation.matrix
 
-sealed class Matrix()
+sealed class Matrix {
 
-open class FloatMatrix(val entries: FloatArray) : Matrix()
+    abstract val numberEntries : Int get
+}
 
-class IntMatrix(val entries : IntArray) : Matrix()
+open class FloatMatrix(val entries: FloatArray) : Matrix() {
+
+    override val numberEntries = entries.size
+
+}
+
+class IntMatrix(val entries : IntArray) : Matrix() {
+
+    override val numberEntries = entries.size
+
+}

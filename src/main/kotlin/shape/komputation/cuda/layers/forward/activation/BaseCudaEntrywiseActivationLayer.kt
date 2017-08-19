@@ -25,15 +25,17 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val pointerToNumberIterations = Pointer.to(numberIterations)
 
     private var forwardKernel : Kernel? = null
-    override val numberOutputColumns = this.numberColumns
+    override val deviceNumberOutputColumns = Pointer()
     override val numberOutputRows = this.numberRows
+    override val maximumOutputColumns = this.numberColumns
     final override val deviceForwardResult = Pointer()
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private var backwardKernel : Kernel? = null
     final override val deviceBackwardResult = Pointer()
-    override val numberInputColumns = this.numberColumns
+    override val deviceNumberInputColumns = Pointer()
     override val numberInputRows = this.numberRows
+    override val maximumInputColumns = this.numberColumns
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     private val numberEntries = this.numberRows * this.numberColumns
@@ -58,7 +60,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -66,7 +68,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
             this.pointerToBatchSize,
             this.pointerToNumberEntriesPerInstance,
             this.pointerToNumberIterations,
-            Pointer.to(input),
+            Pointer.to(deviceInput),
             this.pointerToDeviceForwardResult
         )
 
@@ -109,6 +111,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
         this.backwardKernel!!.destroy()
 
         cudaFree(this.deviceForwardResult)
+
         cudaFree(this.deviceBackwardResult)
 
         this.numberBlocksInXDimension = -1

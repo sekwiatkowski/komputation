@@ -2,14 +2,14 @@ package shape.komputation.cuda.workflow
 
 import jcuda.Pointer
 import shape.komputation.cuda.CudaEvaluation
-import shape.komputation.cuda.CudaNetwork
-import shape.komputation.cuda.InputMemory
-import shape.komputation.cuda.TargetMemory
+import shape.komputation.cuda.CudaForwardPropagator
+import shape.komputation.cuda.memory.InputMemory
+import shape.komputation.cuda.memory.TargetMemory
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
 
 class CudaTester(
-    private val network : CudaNetwork,
+    private val forwardPropagator : CudaForwardPropagator,
     private val evaluation: CudaEvaluation,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,
@@ -27,6 +27,15 @@ class CudaTester(
 
     }
 
+    fun free() {
+
+        this.inputMemory.free()
+        this.targetMemory.free()
+
+        this.evaluation.release()
+
+    }
+
     fun run(): Float {
 
         this.evaluation.resetCount()
@@ -35,7 +44,7 @@ class CudaTester(
 
             val currentBatchSize = batch.size
 
-            val predictions = this.network.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,false)
+            val predictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,false)
 
             val pointerToPredictions = Pointer.to(predictions)
 
@@ -48,15 +57,6 @@ class CudaTester(
         val accuracy = this.evaluation.computeAccuracy()
 
         return accuracy
-
-    }
-
-    fun free() {
-
-        this.inputMemory.release()
-        this.targetMemory.release()
-
-        this.evaluation.release()
 
     }
 

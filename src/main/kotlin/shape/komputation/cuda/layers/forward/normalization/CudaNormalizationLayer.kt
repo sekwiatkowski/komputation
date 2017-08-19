@@ -11,18 +11,18 @@ import shape.komputation.layers.Resourceful
 
 class CudaNormalizationLayer internal constructor(
     name : String? = null,
-    private val numberRows : Int,
-    private val numberColumns : Int,
+    numberRows : Int,
+    numberColumns : Int,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: (Int) -> Kernel,
     private val maximumNumberThreadsPerBlock: Int,
     private val warpSize: Int) : BaseCudaActivationLayer(name), Resourceful {
 
-    private val numberEntries = this.numberRows * this.numberColumns
+    private val numberEntries = numberRows * numberColumns
 
     private var forwardKernel : Kernel? = null
-    override val numberOutputRows = this.numberRows
-    override val numberOutputColumns = this.numberColumns
+    override val numberOutputRows = numberRows
+    override val maximumOutputColumns = numberColumns
     override val deviceForwardResult = Pointer()
 
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
@@ -32,8 +32,8 @@ class CudaNormalizationLayer internal constructor(
     private val pointerToDeviceSums = Pointer.to(this.deviceSums)
 
     override val deviceBackwardResult = Pointer()
-    override val numberInputRows = this.numberRows
-    override val numberInputColumns = this.numberColumns
+    override val numberInputRows = numberRows
+    override val maximumInputColumns = numberColumns
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     private var numberBlocksInXDimensions = -1
@@ -48,21 +48,21 @@ class CudaNormalizationLayer internal constructor(
     override fun acquire(maximumBatchSize : Int) {
 
         val numberBatchEntries = maximumBatchSize * this.numberEntries
-        val numberBatchColumns = maximumBatchSize * this.numberColumns
+        val numberBatchColumns = maximumBatchSize * this.maximumInputColumns
 
         allocateDeviceFloatMemory(this.deviceForwardResult, numberBatchEntries)
         allocateDeviceFloatMemory(this.deviceSums, numberBatchColumns)
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, numberBatchEntries)
 
-        val launchConfiguration = computeColumnwiseLaunchConfiguration(this.numberRows, this.numberColumns, this.maximumNumberThreadsPerBlock)
+        val launchConfiguration = computeColumnwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.maximumNumberThreadsPerBlock)
 
         this.numberBlocksInXDimensions = maximumBatchSize
         this.numberBlocksInYDimensions = launchConfiguration.numberBlocks
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
 
-        val numberWarps = (this.numberRows / launchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
+        val numberWarps = (this.numberInputRows / launchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
 
         this.forwardSharedMemoryBytes = computeDeviceFloatArraySize(numberWarps).toInt()
         this.backwardSharedMemoryBytes = computeDeviceFloatArraySize(numberWarps).toInt()
@@ -78,10 +78,10 @@ class CudaNormalizationLayer internal constructor(
     private val backwardBatchSize = intArrayOf(-1)
     private val pointerToBackwardBatchSize = Pointer.to(this.backwardBatchSize)
 
-    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberRows))
+    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberInputRows))
     private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.forwardBatchSize[0] = batchSize
 
@@ -90,7 +90,7 @@ class CudaNormalizationLayer internal constructor(
             this.pointerToNumberRows,
             this.pointerToNumberEntries,
             this.pointerToNumberIterations,
-            Pointer.to(input),
+            Pointer.to(deviceInput),
             this.pointerToDeviceSums,
             this.pointerToDeviceForwardResult
         )

@@ -1,10 +1,11 @@
 package shape.komputation.cpu.optimization
 
+import shape.komputation.matrix.constantIntArray
 import java.util.*
 
 class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLength : Int, private val dimension : Int) {
 
-    private val idMapping = IntArray(numberVectors) { -1 }
+    private val idMapping = constantIntArray(numberVectors, -1)
     private val visited = BooleanArray(numberVectors)
 
     private val ids = IntArray(maximumBatchSize * maximumLength)

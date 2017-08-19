@@ -28,7 +28,14 @@ fun main(args: Array<String>) {
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
-    val training = network.training(NegationData.inputs, NegationData.targets, 10_000, squaredLoss(outputDimension), printLoss)
+    val training = network
+        .training(
+            NegationData.inputs,
+            NegationData.targets,
+            10_000,
+            squaredLoss(outputDimension),
+            printLoss)
+
     training.run()
 
     training.free()

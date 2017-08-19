@@ -1,7 +1,11 @@
 package shape.komputation.layers.entry
 
 import shape.komputation.cpu.layers.entry.CpuLookupLayer
+import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.EntryKernels
+import shape.komputation.cuda.layers.entry.CudaLookupLayer
 import shape.komputation.layers.CpuEntryPointInstruction
+import shape.komputation.layers.CudaEntryPointInstruction
 import shape.komputation.optimization.OptimizationInstruction
 
 class LookupLayer(
@@ -10,7 +14,7 @@ class LookupLayer(
     private val maximumLength: Int,
     private val hasFixedLength: Boolean,
     private val dimension : Int,
-    private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction {
+    private val optimization : OptimizationInstruction?) : CpuEntryPointInstruction, CudaEntryPointInstruction {
 
     override fun buildForCpu(): CpuLookupLayer {
 
@@ -29,6 +33,30 @@ class LookupLayer(
         return CpuLookupLayer(this.name, this.vectors, minimumLength, this.maximumLength, this.dimension, updateRule)
 
     }
+
+    override fun buildForCuda(context: CudaContext): CudaLookupLayer {
+
+        val updateRule = if (this.optimization != null) {
+
+            this.optimization.buildForCuda(context).invoke(this.vectors.size, this.dimension, this.maximumLength)
+
+        }
+        else {
+
+            null
+        }
+
+        return CudaLookupLayer(
+            this.name,
+            this.vectors,
+            this.maximumLength,
+            this.dimension,
+            updateRule,
+            { context.createKernel(EntryKernels.lookup())},
+            context.maximumNumberOfThreadsPerBlock)
+
+    }
+
 
 }
 

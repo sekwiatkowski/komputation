@@ -5,6 +5,9 @@ import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 import shape.komputation.cuda.kernels.EvaluationKernels
+import shape.komputation.cuda.layers.CudaEntryPoint
+import shape.komputation.cuda.layers.CudaForwardLayer
+import shape.komputation.cuda.memory.InputMemory
 import shape.komputation.cuda.workflow.CudaTester
 import shape.komputation.cuda.workflow.CudaTrainer
 import shape.komputation.layers.CudaEntryPointInstruction
@@ -15,29 +18,19 @@ import shape.komputation.loss.CudaLossFunctionInstruction
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
 
-class CudaNetwork(
-    private val maximumBatchSize: Int,
-    entryPointInstruction: CudaEntryPointInstruction,
-    vararg forwardLayerInstructions: CudaForwardLayerInstruction) {
+class CudaForwardPropagator(
+    private val entryPoint: CudaEntryPoint,
+    private val layers : Array<CudaForwardLayer>) {
 
-    private val cudaContext = setUpCudaContext()
-    private val cublasHandle = cublasHandle()
+    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, memory : InputMemory, isTraining: Boolean) : Pointer {
 
-    private val entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
-
-    private val layers = forwardLayerInstructions.map { it.buildForCuda(this.cudaContext, this.cublasHandle) }
-    private val numberLayers = this.layers.size
-    private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed()
-
-    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, inputMemory : InputMemory, isTraining: Boolean) : Pointer {
-
-        this.entryPoint.forward(batchId, batchSize, indices, inputs, inputMemory)
+        this.entryPoint.forward(batchId, batchSize, indices, inputs, memory)
 
         var previousLayerState : CudaForwardState = this.entryPoint
 
         for (layer in this.layers) {
 
-            layer.forward(batchSize, previousLayerState.numberOutputColumns, previousLayerState.deviceForwardResult, isTraining)
+            layer.forward(batchSize, previousLayerState.deviceNumberOutputColumns, previousLayerState.deviceForwardResult, isTraining)
 
             previousLayerState = layer
 
@@ -46,6 +39,14 @@ class CudaNetwork(
         return previousLayerState.deviceForwardResult
 
     }
+
+}
+
+class CudaBackwardPropagator(
+    private val entryPoint: CudaEntryPoint,
+    private val layers : Array<CudaForwardLayer>) {
+
+    private val numberLayers = this.layers.size
 
     fun backward(lossGradient : Pointer, batchSize: Int): Pointer {
 
@@ -62,6 +63,23 @@ class CudaNetwork(
         return this.entryPoint.backward(chain)
 
     }
+
+}
+
+class CudaNetwork(
+    private val maximumBatchSize: Int,
+    entryPointInstruction: CudaEntryPointInstruction,
+    vararg forwardLayerInstructions: CudaForwardLayerInstruction) {
+
+    private val cudaContext = setUpCudaContext()
+    private val cublasHandle = cublasHandle()
+
+    private val entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
+    private val layers = Array(forwardLayerInstructions.size) { index -> forwardLayerInstructions[index].buildForCuda(this.cudaContext, this.cublasHandle) }
+    private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed().toTypedArray()
+
+    private val forwardPropagator = CudaForwardPropagator(this.entryPoint, this.layers)
+    private val backwardPropagator = CudaBackwardPropagator(this.entryPoint, this.layers)
 
     init {
 
@@ -99,17 +117,6 @@ class CudaNetwork(
 
     }
 
-
-    fun optimize(scalingFactor : Float) {
-
-        for (optimizable in this.optimizables) {
-
-            optimizable.optimize(scalingFactor)
-
-        }
-
-    }
-
     fun training(
         inputs: Array<Matrix>,
         targets: Array<FloatArray>,
@@ -118,7 +125,9 @@ class CudaNetwork(
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
 
         CudaTrainer(
-            this,
+            this.forwardPropagator,
+            this.backwardPropagator,
+            this.optimizables,
             inputs,
             targets,
             numberIterations,
@@ -136,7 +145,7 @@ class CudaNetwork(
         length : Int = 1) =
 
         CudaTester(
-            this,
+            this.forwardPropagator,
             CudaEvaluation(inputs.size, numberCategories, length, { this.cudaContext.createKernel(EvaluationKernels.evaluation()) }),
             inputs,
             targets,

@@ -1,13 +1,13 @@
 package shape.komputation.cpu.workflow
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.CpuForwardPropagator
 import shape.komputation.cpu.evaluation.computeAccuracy
 import shape.komputation.cpu.functions.findMaxIndices
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
 
 class CpuTester(
-    private val network : Network,
+    private val forwardPropagator: CpuForwardPropagator,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,
     batchSize : Int,
@@ -31,7 +31,7 @@ class CpuTester(
                 val batchTargets = this.targets[index]
                 findMaxIndices(batchTargets, this.numberCategories, this.length, this.actualCategories[index])
 
-                val batchPredictions = this.network.forward(withinBatch, input, false)
+                val batchPredictions = this.forwardPropagator.forward(withinBatch, input, false)
                 findMaxIndices(batchPredictions, this.numberCategories, this.length, this.predictedCategories[index])
 
             }

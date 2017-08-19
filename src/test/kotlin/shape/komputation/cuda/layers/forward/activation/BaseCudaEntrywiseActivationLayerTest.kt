@@ -25,7 +25,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = layer.forward(batchSize, 1, deviceInput, true)
+        val deviceResult = layer.forward(batchSize, Pointer(), deviceInput, true)
         val actual = getFloatArray(deviceResult, maximumBatchSize * numberEntries)
 
         cudaFree(deviceInput)
@@ -50,7 +50,7 @@ abstract class BaseCudaEntrywiseActivationLayerTest {
 
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
-        layer.forward(batchSize, 1, deviceInput, true)
+        layer.forward(batchSize, Pointer(), deviceInput, true)
 
         val deviceChain = Pointer()
         setFloatArray(chain, numberEntries, deviceChain)

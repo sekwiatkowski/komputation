@@ -47,13 +47,13 @@ class CudaDropoutLayer internal constructor(
     private var runtimeKernel : Kernel? = null
     override val deviceForwardResult = Pointer()
     override val numberOutputRows = numberRows
-    override val numberOutputColumns = numberColumns
+    override val maximumOutputColumns = numberColumns
     private val pointerToDeviceForwardResults = Pointer.to(this.deviceForwardResult)
 
     private var backwardKernel : Kernel? = null
     override val deviceBackwardResult = Pointer()
     override val numberInputRows = numberRows
-    override val numberInputColumns = numberColumns
+    override val maximumInputColumns = numberColumns
     private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResult)
 
     private val batchSize = intArrayOf(-1)
@@ -85,11 +85,11 @@ class CudaDropoutLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, numberInputColumns: Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
-        val pointerToInput = Pointer.to(input)
+        val pointerToInput = Pointer.to(deviceInput)
 
         if(isTraining) {
 

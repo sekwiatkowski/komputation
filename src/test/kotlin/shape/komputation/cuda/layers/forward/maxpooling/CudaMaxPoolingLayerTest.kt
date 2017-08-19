@@ -182,7 +182,7 @@ class CudaMaxPoolingLayerTest {
         val deviceInput = Pointer()
         setFloatArray(input, numberRows * maximumNumberColumns, deviceInput)
 
-        val deviceResult = maxPoolingLayer.forward(batchSize, numberColumns, deviceInput, false)
+        val deviceResult = maxPoolingLayer.forward(batchSize, Pointer(), deviceInput, false)
 
         val actual = getFloatArray(deviceResult, numberRows)
 
@@ -207,7 +207,7 @@ class CudaMaxPoolingLayerTest {
         val deviceChain = Pointer()
         setFloatArray(chain, numberRows, deviceChain)
 
-        maxPoolingLayer.forward(batchSize, numberColumns, deviceInput,false)
+        maxPoolingLayer.forward(batchSize, Pointer(), deviceInput,false)
 
         val deviceBackwardResult = maxPoolingLayer.backward(batchSize, deviceChain)
 

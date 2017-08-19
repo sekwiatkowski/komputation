@@ -7,20 +7,19 @@ import shape.komputation.cuda.allocateDeviceIntMemory
 import shape.komputation.cuda.computeDeviceIntArraySize
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
-import shape.komputation.cuda.kernels.launch.emptyKernelLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.layers.Resourceful
 
 class CudaMaxPoolingLayer internal constructor(
     name : String?,
     numberRows : Int,
-    private val maximumColumns : Int,
+    override val maximumInputColumns : Int,
     private val createForwardKernel: (Int) -> Kernel,
     private val createBackwardKernel: (Int) -> Kernel,
     private val maximumNumberThreadsPerBlock: Int,
     private val warpSize : Int) : BaseCudaForwardLayer(name), Resourceful {
 
-    private val maximumNumberEntries = numberRows * this.maximumColumns
+    private val maximumNumberEntries = numberRows * this.maximumInputColumns
     private val pointerToMaximumNumberEntries = Pointer.to(intArrayOf(this.maximumNumberEntries))
 
     private val pointerToNumberRows = Pointer.to(intArrayOf(numberRows))
@@ -29,11 +28,10 @@ class CudaMaxPoolingLayer internal constructor(
     override val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
     override val numberOutputRows = numberRows
-    override val numberOutputColumns = 1
+    override val maximumOutputColumns = 1
 
     private var backwardKernel: Kernel? = null
     override val numberInputRows = numberRows
-    override val numberInputColumns = -1
 
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
@@ -41,8 +39,8 @@ class CudaMaxPoolingLayer internal constructor(
     private val deviceMaxIndices = Pointer()
     private val pointerToMaxIndices = Pointer.to(this.deviceMaxIndices)
 
-    private var configuration = emptyKernelLaunchConfiguration()
-    private val numberWarps = (this.maximumColumns+this.warpSize-1)/this.warpSize
+    private var configuration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.maximumNumberThreadsPerBlock)
+    private val numberWarps = (this.maximumInputColumns+this.warpSize-1)/this.warpSize
     private val forwardSharedMemoryBytes = computeDeviceIntArraySize(this.numberWarps).toInt()
 
     private var maximumBatchSize = -1
@@ -63,17 +61,15 @@ class CudaMaxPoolingLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
-
-        this.configuration = computeRowwiseLaunchConfiguration(this.numberInputRows, numberInputColumns, this.maximumNumberThreadsPerBlock)
 
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
                 this.pointerToMaximumNumberEntries,
-                Pointer.to(input),
+                Pointer.to(deviceInput),
                 this.pointerToMaxIndices,
                 this.pointerToForwardResult
             ),

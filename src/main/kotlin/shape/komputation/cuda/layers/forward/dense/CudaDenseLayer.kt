@@ -15,22 +15,24 @@ class CudaDenseLayer internal constructor(
         get() = this.activationLayer.deviceForwardResult
     override val numberOutputRows
         get() = this.activationLayer.numberOutputRows
-    override val numberOutputColumns
-        get() = this.activationLayer.numberOutputColumns
+    override val maximumOutputColumns
+        get() = this.activationLayer.maximumOutputColumns
+    override val deviceNumberOutputColumns
+        get() = this.activationLayer.deviceNumberOutputColumns
 
     override val deviceBackwardResult
         get() = this.projectionLayer.deviceForwardResult
     override val numberInputRows
         get() = this.projectionLayer.numberInputRows
-    override val numberInputColumns
-        get() = this.projectionLayer.numberInputColumns
+    override val maximumInputColumns
+        get() = this.projectionLayer.maximumInputColumns
 
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
-        val projected = this.projectionLayer.forward(batchSize, numberInputColumns, input, isTraining)
+        val projected = this.projectionLayer.forward(batchSize, deviceNumberInputColumns, deviceInput, isTraining)
 
-        val activated = this.activationLayer.forward(batchSize, this.projectionLayer.numberOutputColumns, projected, isTraining)
+        val activated = this.activationLayer.forward(batchSize, this.projectionLayer.deviceNumberOutputColumns, projected, isTraining)
 
         return activated
 

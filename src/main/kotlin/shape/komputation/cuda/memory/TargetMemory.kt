@@ -1,7 +1,8 @@
-package shape.komputation.cuda
+package shape.komputation.cuda.memory
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
+import shape.komputation.cuda.setFloatArray
 
 class TargetMemory(private val targetSize : Int) {
 
@@ -38,7 +39,7 @@ class TargetMemory(private val targetSize : Int) {
 
         }
 
-    fun release() {
+    fun free() {
 
         this.memory.values.forEach { pointer ->
 

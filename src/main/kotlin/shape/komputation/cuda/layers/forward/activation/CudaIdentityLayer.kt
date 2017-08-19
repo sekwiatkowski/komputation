@@ -6,15 +6,15 @@ class CudaIdentityLayer internal constructor(name : String? = null, numberRows :
 
     override var deviceForwardResult = Pointer()
     override val numberInputRows = numberRows
-    override val numberInputColumns = numberColumns
+    override val maximumInputColumns = numberColumns
 
     override var deviceBackwardResult = Pointer()
     override val numberOutputRows = numberRows
-    override val numberOutputColumns = numberColumns
+    override val maximumOutputColumns = numberColumns
 
-    override fun forward(batchSize: Int, numberInputColumns : Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
-        this.deviceForwardResult = input
+        this.deviceForwardResult = deviceInput
 
         return this.deviceForwardResult
 

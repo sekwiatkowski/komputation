@@ -16,8 +16,8 @@ import shape.komputation.optimization.Optimizable
 class CublasBiasLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
-    override val numberInputRows: Int,
-    override val numberInputColumns: Int,
+    numberRows: Int,
+    numberColumns: Int,
     private val initialBias: FloatArray,
     private val biasUpdateRule: CudaUpdateRule?,
     private val createKernel: () -> Kernel,
@@ -26,7 +26,7 @@ class CublasBiasLayer internal constructor(
     private val warpSize : Int,
     private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
-    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
+    private val numberEntries = numberRows * numberColumns
 
     private var kernel : Kernel? = null
 
@@ -34,19 +34,21 @@ class CublasBiasLayer internal constructor(
     private var numberThreadsPerBlock = -1
 
     override val deviceForwardResult = Pointer()
-    override val numberOutputRows = this.numberInputRows
-    override val numberOutputColumns = this.numberInputColumns
+    override val numberOutputRows = numberRows
+    override val maximumOutputColumns = numberColumns
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private val deviceBias = Pointer()
     private val pointerToDeviceBias = Pointer.to(this.deviceBias)
 
     override val deviceBackwardResult = Pointer()
+    override val numberInputRows = numberRows
+    override val maximumInputColumns = numberColumns
     private val pointerToDeviceBackwardWrtBias = Pointer.to(this.deviceBackwardResult)
 
     private val deviceOnes = Pointer()
 
-    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberInputEntries))
+    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
     private val pointerToNumberInputRows = Pointer.to(intArrayOf(this.numberInputRows))
 
     private val batchSize = intArrayOf(-1)
@@ -59,29 +61,29 @@ class CublasBiasLayer internal constructor(
 
     override fun acquire(maximumBatchSize : Int) {
 
-        this.numberBatchInputColumns = maximumBatchSize * this.numberInputColumns
+        this.numberBatchInputColumns = maximumBatchSize * this.maximumInputColumns
 
         this.kernel = this.createKernel()
 
-        setFloatArray(this.initialBias, this.numberInputEntries, this.deviceBias)
+        setFloatArray(this.initialBias, this.numberEntries, this.deviceBias)
 
-        val numberBatchResultEntries = maximumBatchSize * this.numberInputEntries
+        val numberBatchResultEntries = maximumBatchSize * this.numberEntries
         allocateDeviceFloatMemory(this.deviceForwardResult, numberBatchResultEntries)
 
-        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberInputEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.numberEntries)
 
         this.biasUpdateRule?.acquire(maximumBatchSize)
 
         setFloatArray(FloatArray(this.numberBatchInputColumns) { 1f }, this.numberBatchInputColumns, this.deviceOnes)
 
-        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberInputEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
         this.numberBlocks = launchConfiguration.numberBlocks
         this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
 
     }
 
-    override fun forward(batchSize: Int, numberInputColumns: Int, input: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -91,7 +93,7 @@ class CublasBiasLayer internal constructor(
                 this.pointerToNumberEntries,
                 this.pointerToNumberInputRows,
                 this.pointerToNumberIterations,
-                Pointer.to(input),
+                Pointer.to(deviceInput),
                 this.pointerToDeviceBias,
                 this.pointerToDeviceForwardResult
             ),

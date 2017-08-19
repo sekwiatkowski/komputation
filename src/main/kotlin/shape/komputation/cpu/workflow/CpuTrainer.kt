@@ -1,12 +1,16 @@
 package shape.komputation.cpu.workflow
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.CpuBackwardPropagator
+import shape.komputation.cpu.CpuForwardPropagator
 import shape.komputation.cpu.loss.CpuLossFunction
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices
+import shape.komputation.optimization.Optimizable
 
 class CpuTrainer(
-    private val network : Network,
+    private val forwardPropagator : CpuForwardPropagator,
+    private val backwardPropagator : CpuBackwardPropagator,
+    private val optimizables : Array<Optimizable>,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,
     private val numberIterations: Int,
@@ -33,13 +37,13 @@ class CpuTrainer(
                     val input = this.inputs[indexExample]
                     val target = this.targets[indexExample]
 
-                    val prediction = this.network.forward(withinBatch, input, true)
+                    val prediction = this.forwardPropagator.forward(withinBatch, input, true)
 
                     val instanceLoss = this.lossFunction.forward(prediction, target)
 
                     val backwardInstanceLoss = this.lossFunction.backward(prediction, target)
 
-                    this.network.backward(withinBatch, backwardInstanceLoss)
+                    this.backwardPropagator.backward(withinBatch, backwardInstanceLoss)
 
                     batchLoss += instanceLoss
 
@@ -49,7 +53,11 @@ class CpuTrainer(
 
                 val scalingFactor = 1.0f.div(batch.size.toFloat())
 
-                this.network.optimize(scalingFactor)
+                for (optimizable in this.optimizables) {
+
+                    optimizable.optimize(scalingFactor)
+
+                }
 
             }
 

@@ -1,3 +1,5 @@
 package shape.komputation.cuda.layers.forward.activation
 
-abstract class BaseCudaActivationLayer(private val name : String?) : CudaActivationLayer
+import shape.komputation.cuda.layers.BaseCudaForwardLayer
+
+abstract class BaseCudaActivationLayer(name : String?) : BaseCudaForwardLayer(name), CudaActivationLayer
