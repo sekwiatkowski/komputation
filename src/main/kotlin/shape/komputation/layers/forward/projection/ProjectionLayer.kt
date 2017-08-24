@@ -92,8 +92,6 @@ class ProjectionLayer(
                 initializedBias,
                 biasUpdateRule,
                 { context.createKernel(ForwardKernels.bias()) },
-                context.numberMultiprocessors,
-                context.maximumNumberOfResidentWarpsPerMultiprocessor,
                 context.warpSize,
                 context.maximumNumberOfThreadsPerBlock)
 

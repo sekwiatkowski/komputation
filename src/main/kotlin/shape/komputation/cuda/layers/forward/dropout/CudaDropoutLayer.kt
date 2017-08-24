@@ -5,7 +5,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.seed
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.cuda.layers.forward.activation.BaseCudaActivationLayer
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
@@ -20,12 +20,11 @@ class CudaDropoutLayer internal constructor(
     private val createTrainingKernel: () -> Kernel,
     private val createRuntimeKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    private val numberMultiprocessors : Int,
-    private val numberResidentWarps : Int,
     private val warpSize : Int,
     private val maximumNumberThreadsPerBlock : Int) : BaseCudaActivationLayer(name), Resourceful {
 
     private val numberEntries = numberRows * numberColumns
+    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
 
     private var numberBlocksInXDimension = -1
     private var numberBlocksInYDimension = -1
@@ -33,7 +32,6 @@ class CudaDropoutLayer internal constructor(
     private var numberIterations = intArrayOf(-1)
     private val pointerToNumberIterations = Pointer.to(numberIterations)
 
-    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
     private val pointerToKeepProbability = Pointer.to(floatArrayOf(keepProbability))
     private val pointerToDropoutProbability = Pointer.to(floatArrayOf(1.0f - keepProbability))
 
@@ -53,7 +51,10 @@ class CudaDropoutLayer internal constructor(
     private var backwardKernel : Kernel? = null
     override val deviceBackwardResult = Pointer()
     override val numberInputRows = numberRows
+    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberInputRows))
+
     override val maximumInputColumns = numberColumns
+
     private val pointerToDeviceBackwardResults = Pointer.to(this.deviceBackwardResult)
 
     private val batchSize = intArrayOf(-1)
@@ -78,10 +79,11 @@ class CudaDropoutLayer internal constructor(
         allocateDeviceFloatMemory(this.deviceBackwardResult, numberBatchEntries)
 
         this.numberBlocksInXDimension = maximumBatchSize
-        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
-        this.numberBlocksInYDimension = launchConfiguration.numberBlocks
-        this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
-        this.numberIterations[0] = launchConfiguration.numberIterations
+        val (numberIterations, numberThreadsPerBlock) = computeNumberOfThreadsForRows(this.numberInputRows, this.warpSize, this.maximumNumberThreadsPerBlock)
+
+        this.numberBlocksInYDimension = this.maximumInputColumns
+        this.numberIterations[0] = numberIterations
+        this.numberThreadsPerBlock = numberThreadsPerBlock
 
     }
 
@@ -97,6 +99,7 @@ class CudaDropoutLayer internal constructor(
                 Pointer.to(
                     this.pointerToBatchSize,
                     this.pointerToNumberEntries,
+                    this.pointerToNumberRows,
                     this.pointerToNumberIterations,
                     this.pointerToDropoutProbability,
                     pointerToInput,
@@ -117,6 +120,7 @@ class CudaDropoutLayer internal constructor(
                 Pointer.to(
                     this.pointerToBatchSize,
                     this.pointerToNumberEntries,
+                    this.pointerToNumberRows,
                     this.pointerToNumberIterations,
                     this.pointerToKeepProbability,
                     pointerToInput,
@@ -141,6 +145,7 @@ class CudaDropoutLayer internal constructor(
             Pointer.to(
                 this.pointerToBatchSize,
                 this.pointerToNumberEntries,
+                this.pointerToNumberRows,
                 this.pointerToNumberIterations,
                 Pointer.to(chain),
                 this.pointerToDeviceMasks,

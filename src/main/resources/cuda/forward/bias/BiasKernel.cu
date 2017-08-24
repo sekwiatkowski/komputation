@@ -18,11 +18,11 @@ __global__ void biasKernel (
     int startRowWithinColumn = threadIdx.x * numberIterations;
 
     int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
-    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
+    int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
-    if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
+    if(firstEntryWithinBatch < startNextColumn) {
 
-        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstanceWithinBatch);
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
 

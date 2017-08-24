@@ -48,8 +48,6 @@ class BiasLayer(
             bias,
             updateRule,
             { context.createKernel(ForwardKernels.bias()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

@@ -31,8 +31,6 @@ class DropoutLayer(
             { context.createKernel(ForwardKernels.dropoutTraining()) },
             { context.createKernel(ForwardKernels.dropoutRuntime()) },
             { context.createKernel(ForwardKernels.backwardDropout()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

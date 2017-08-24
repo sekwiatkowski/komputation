@@ -12,19 +12,19 @@ object ForwardKernels {
         "dropoutTrainingKernel",
         "dropoutTrainingKernel",
         "forward/dropout/DropoutTrainingKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun dropoutRuntime() = KernelInstruction(
         "dropoutRuntimeKernel",
         "dropoutRuntimeKernel",
         "forward/dropout/DropoutRuntimeKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardDropout() = KernelInstruction(
         "backwardDropoutKernel",
         "backwardDropoutKernel",
         "forward/dropout/BackwardDropoutKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun exponentiation() = KernelInstruction(
         "exponentiationKernel",

@@ -21,8 +21,6 @@ class CublasBiasLayer internal constructor(
     private val initialBias: FloatArray,
     private val biasUpdateRule: CudaUpdateRule?,
     private val createKernel: () -> Kernel,
-    private val numberMultiprocessors : Int,
-    private val numberResidentWarps : Int,
     private val warpSize : Int,
     private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
