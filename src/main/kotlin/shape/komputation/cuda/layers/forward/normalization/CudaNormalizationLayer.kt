@@ -81,7 +81,7 @@ class CudaNormalizationLayer internal constructor(
     private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberInputRows))
     private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
 
-    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.forwardBatchSize[0] = batchSize
 

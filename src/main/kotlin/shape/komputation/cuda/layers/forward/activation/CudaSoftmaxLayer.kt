@@ -22,11 +22,11 @@ class CudaSoftmaxLayer internal constructor(
     override val maximumInputColumns
         get() = this.exponentiationLayer.maximumInputColumns
 
-    override fun forward(batchSize: Int, deviceNumberInputColumns : Pointer, deviceInput : Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput : Pointer, isTraining: Boolean): Pointer {
 
-        val exponentiated = this.exponentiationLayer.forward(batchSize, deviceNumberInputColumns, deviceInput, isTraining)
+        val exponentiated = this.exponentiationLayer.forward(batchSize, deviceInput, isTraining)
 
-        return this.normalizationLayer.forward(batchSize, this.exponentiationLayer.deviceNumberInputColumns, exponentiated, isTraining)
+        return this.normalizationLayer.forward(batchSize, exponentiated, isTraining)
 
     }
 

@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Zero.cuh"
 
 extern "C"
 __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)

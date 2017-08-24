@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 __device__ int findNextPowerOfTwo(int input) {
 
@@ -26,11 +26,6 @@ __device__ int findMaximum(int thisIndex, float thisValue, int nextPowerOfTwo) {
 
 }
 
-/*
-    number of blocks in x-dimension = batch size
-    number of blocks in y-dimension = number of rows
-    number of threads = smallest power of two that is equal to or greater than the number of columns
-*/
 __global__ void maxPoolingKernel (
     int batchSize,
     int numberEntries,
@@ -94,8 +89,8 @@ __global__ void maxPoolingKernel (
     }
     else {
 
-        maxIndices[resultIndex] = 0.0;
-        setToZero(result, resultStartInstance, resultStartInstance + 1);
+        maxIndices[resultIndex] = nanf("NaN");
+        setToNan(result, resultStartInstance, resultStartInstance + 1);
 
     }
 

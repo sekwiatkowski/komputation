@@ -25,7 +25,6 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val pointerToNumberIterations = Pointer.to(numberIterations)
 
     private var forwardKernel : Kernel? = null
-    override val deviceNumberOutputColumns = Pointer()
     override val numberOutputRows = this.numberRows
     override val maximumOutputColumns = this.numberColumns
     final override val deviceForwardResult = Pointer()
@@ -33,7 +32,6 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     private var backwardKernel : Kernel? = null
     final override val deviceBackwardResult = Pointer()
-    override val deviceNumberInputColumns = Pointer()
     override val numberInputRows = this.numberRows
     override val maximumInputColumns = this.numberColumns
     private val pointerToDeviceBackwardResult = Pointer.to(this.deviceBackwardResult)
@@ -60,7 +58,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 

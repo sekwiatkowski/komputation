@@ -14,8 +14,8 @@ class CudaMaxPoolingLayer internal constructor(
     name : String?,
     numberRows : Int,
     override val maximumInputColumns : Int,
-    private val createForwardKernel: (Int) -> Kernel,
-    private val createBackwardKernel: (Int) -> Kernel,
+    private val createForwardKernel: () -> Kernel,
+    private val createBackwardKernel: () -> Kernel,
     private val maximumNumberThreadsPerBlock: Int,
     private val warpSize : Int) : BaseCudaForwardLayer(name), Resourceful {
 
@@ -39,7 +39,7 @@ class CudaMaxPoolingLayer internal constructor(
     private val deviceMaxIndices = Pointer()
     private val pointerToMaxIndices = Pointer.to(this.deviceMaxIndices)
 
-    private var configuration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.maximumNumberThreadsPerBlock)
+    private var forwardConfiguration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.maximumNumberThreadsPerBlock)
     private val numberWarps = (this.maximumInputColumns+this.warpSize-1)/this.warpSize
     private val forwardSharedMemoryBytes = computeDeviceIntArraySize(this.numberWarps).toInt()
 
@@ -51,8 +51,8 @@ class CudaMaxPoolingLayer internal constructor(
     override fun acquire(maximumBatchSize : Int) {
 
         this.maximumBatchSize = maximumBatchSize
-        this.forwardKernel = this.createForwardKernel(this.configuration.numberThreadsPerBlock)
-        this.backwardKernel = this.createBackwardKernel(this.configuration.numberThreadsPerBlock)
+        this.forwardKernel = this.createForwardKernel()
+        this.backwardKernel = this.createBackwardKernel()
 
         allocateDeviceIntMemory(this.deviceMaxIndices, maximumBatchSize * this.numberInputRows)
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberInputRows)
@@ -61,7 +61,7 @@ class CudaMaxPoolingLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 
@@ -74,8 +74,8 @@ class CudaMaxPoolingLayer internal constructor(
                 this.pointerToForwardResult
             ),
             this.maximumBatchSize,
-            this.configuration.numberBlocks,
-            this.configuration.numberThreadsPerBlock,
+            this.forwardConfiguration.numberBlocks,
+            this.forwardConfiguration.numberThreadsPerBlock,
             this.forwardSharedMemoryBytes
         )
 
@@ -95,8 +95,8 @@ class CudaMaxPoolingLayer internal constructor(
                 this.pointerToBackwardResult
             ),
             this.maximumBatchSize,
-            this.configuration.numberBlocks,
-            this.configuration.numberThreadsPerBlock,
+            this.numberInputRows,
+            this.maximumInputColumns,
             0
         )
 

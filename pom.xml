@@ -6,10 +6,10 @@
 
     <groupId>com.shape</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.9.2</version>
+    <version>0.9.3</version>
 
     <properties>
-        <kotlin.version>1.1.4</kotlin.version>
+        <kotlin.version>1.1.4-2</kotlin.version>
     </properties>
 
     <dependencies>

@@ -38,7 +38,7 @@ class LookupLayer(
 
         val updateRule = if (this.optimization != null) {
 
-            this.optimization.buildForCuda(context).invoke(this.vectors.size, this.dimension, this.maximumLength)
+            this.optimization.buildForCuda(context).invoke(this.vectors.size, this.dimension, 1)
 
         }
         else {
@@ -50,6 +50,7 @@ class LookupLayer(
             this.name,
             this.vectors,
             this.maximumLength,
+            this.hasFixedLength,
             this.dimension,
             updateRule,
             { context.createKernel(EntryKernels.lookup())},

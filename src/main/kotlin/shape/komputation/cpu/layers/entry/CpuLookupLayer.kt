@@ -75,7 +75,7 @@ class CpuLookupLayer internal constructor(
             val counts = gradientAccumulator.getCounts()
             val gradients = gradientAccumulator.getSums()
 
-            updateSparsely(this.vectors, this.dimension, size, ids, counts, gradients, update)
+            updateSparsely(this.vectors, this.dimension, size, ids, counts, gradients, this.update)
 
         }
 

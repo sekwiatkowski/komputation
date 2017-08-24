@@ -21,7 +21,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
         val expected = floatArrayOf(1f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -35,7 +35,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -49,7 +49,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0, 1))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -63,7 +63,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(1, 0))
         val expected = floatArrayOf(2f, 1f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -75,9 +75,9 @@ class CudaLookupLayerTest {
         val batch = intArrayOf(0)
         val maximumLength = 2
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
-        val expected = floatArrayOf(1f, 0f)
+        val expected = floatArrayOf(1f, Float.NaN)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -89,9 +89,9 @@ class CudaLookupLayerTest {
         val batch = intArrayOf(0)
         val maximumLength = 2
         val inputs : Array<Matrix> = arrayOf(intMatrix(1))
-        val expected = floatArrayOf(2f, 0f)
+        val expected = floatArrayOf(2f, Float.NaN)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -105,7 +105,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(2, 0))
         val expected = floatArrayOf(5f, 6f, 1f, 2f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -119,7 +119,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0), intMatrix(0))
         val expected = floatArrayOf(1f, 1f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -133,15 +133,15 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0), intMatrix(1))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, maximumLength, inputs, expected)
+        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
-    private fun test(vectors: Array<FloatArray>, dimension : Int, batch: IntArray, maximumLength: Int, inputs: Array<Matrix>, expected: FloatArray) {
+    private fun test(vectors: Array<FloatArray>, dimension : Int, batch: IntArray, hasFixedLength : Boolean, maximumLength: Int, inputs: Array<Matrix>, expected: FloatArray) {
 
         val cudaContext = setUpCudaContext()
 
-        val lookupLayer = lookupLayer(vectors, maximumLength, true, dimension).buildForCuda(cudaContext)
+        val lookupLayer = lookupLayer(vectors, maximumLength, hasFixedLength, dimension).buildForCuda(cudaContext)
 
         val maximumBatchSize = batch.size
 

@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Zero.cuh"
 
 __device__  int xorShift(int seed) {
 

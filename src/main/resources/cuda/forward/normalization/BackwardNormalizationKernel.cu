@@ -1,5 +1,5 @@
 #include "reduction/SumReduction.cuh"
-#include "zero/Zero.cuh"
+#include "symbols/Zero.cuh"
 
 __global__ void backwardNormalizationKernel (
     int batchSize,

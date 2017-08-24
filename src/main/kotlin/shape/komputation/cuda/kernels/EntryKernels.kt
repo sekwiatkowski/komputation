@@ -6,6 +6,6 @@ object EntryKernels {
         "lookupKernel",
         "lookupKernel",
         "entry/LookupKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
 }

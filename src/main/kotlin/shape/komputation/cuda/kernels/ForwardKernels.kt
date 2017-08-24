@@ -89,12 +89,11 @@ object ForwardKernels {
         "maxPoolingKernel",
         "maxPoolingKernel",
         "forward/maxpooling/MaxPoolingKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardMaxPooling() = KernelInstruction(
         "backwardMaxPoolingKernel",
         "backwardMaxPoolingKernel",
-        "forward/maxpooling/BackwardMaxPoolingKernel.cu",
-        listOf(KernelHeaders.zero))
+        "forward/maxpooling/BackwardMaxPoolingKernel.cu")
 
 }

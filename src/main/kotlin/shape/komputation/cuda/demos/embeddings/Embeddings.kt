@@ -1,7 +1,7 @@
-package shape.komputation.cpu.demos.embeddings
+package shape.komputation.cuda.demos.embeddings
 
-import shape.komputation.cpu.Network
 import shape.komputation.cpu.printLoss
+import shape.komputation.cuda.CudaNetwork
 import shape.komputation.demos.embeddings.EmbeddingData
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.uniformInitialization
@@ -35,12 +35,12 @@ fun main(args: Array<String>) {
 
     val hasFixedLength = true
 
-    Network(
-            maximumBatchSize,
-            lookupLayer(embeddings, length, hasFixedLength, embeddingDimension, optimizationStrategy),
-            maxPoolingLayer(embeddingDimension, length),
-            denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
-        )
+    CudaNetwork(
+        maximumBatchSize,
+        lookupLayer(embeddings, length, hasFixedLength, embeddingDimension, optimizationStrategy),
+        maxPoolingLayer(embeddingDimension, length),
+        denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

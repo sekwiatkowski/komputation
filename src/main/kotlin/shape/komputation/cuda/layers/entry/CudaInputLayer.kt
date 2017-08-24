@@ -1,12 +1,10 @@
 package shape.komputation.cuda.layers.entry
 
 import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cpu.functions.sparselyConcatenateFloatMatrixEntries
+import shape.komputation.cpu.functions.concatenate
 import shape.komputation.cuda.layers.BaseCudaEntryPoint
 import shape.komputation.cuda.memory.InputMemory
 import shape.komputation.cuda.setFloatArray
-import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
@@ -18,7 +16,6 @@ class CudaInputLayer(
 
     override val numberOutputRows = numberRows
     override val maximumOutputColumns = numberColumns
-    override var deviceNumberOutputColumns = Pointer()
     override var deviceForwardResult = Pointer()
 
     private val numberEntries = numberRows * numberColumns
@@ -32,16 +29,12 @@ class CudaInputLayer(
         this.batchInputs = Array(maximumBatchSize) { FloatArray(0) }
         this.numberBatchEntries = maximumBatchSize * numberEntries
 
-        setIntArray(IntArray(maximumBatchSize) { this.maximumOutputColumns }, maximumBatchSize, this.deviceNumberOutputColumns)
-
     }
 
     override fun release() {
 
         this.concatenation = FloatArray(0)
         this.numberBatchEntries = -1
-
-        cudaFree(this.deviceNumberOutputColumns)
 
     }
 
@@ -67,11 +60,13 @@ class CudaInputLayer(
             for ((withinBatch, id) in batch.withIndex()) {
 
                 val input = inputs[id] as FloatMatrix
-                this.batchInputs[withinBatch] = input.entries
+                val inputEntries = input.entries
+
+                this.batchInputs[withinBatch] = inputEntries
+
+                concatenate(inputEntries, withinBatch * this.numberOutputRows, this.numberOutputRows, this.concatenation)
 
             }
-
-            sparselyConcatenateFloatMatrixEntries(this.batchInputs, this.numberOutputRows, this.concatenation)
 
             val deviceInput = Pointer()
             setFloatArray(this.concatenation, this.numberBatchEntries, deviceInput)

@@ -1,5 +1,3 @@
-#include "zero/Zero.cuh"
-
 __global__ void backwardMaxPoolingKernel (
     int batchSize,
     int numberEntriesPerInstance,
@@ -9,22 +7,20 @@ __global__ void backwardMaxPoolingKernel (
     float* result) {
 
     int indexInstance = blockIdx.x;
-    int startInstance = indexInstance * numberEntriesPerInstance;
+    int indexRow = blockIdx.y;
+    int indexColumn = threadIdx.x;
 
-    int indexColumn = threadIdx.x / numberRows;
+    int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
     int startColumnWithinInstance = indexColumn * numberRows;
-
-    int indexEntryWithinBatch = startInstance + startColumnWithinInstance + threadIdx.x;
+    int indexEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + indexRow;
 
     result[indexEntryWithinBatch] = 0.0;
 
-    if(threadIdx.x == 0) {
+    int maxIndexWithinRow = maxIndices[indexRow];
 
-        int indexRow = blockIdx.y;
+    if(indexEntryWithinBatch == maxIndexWithinRow) {
 
-        int maxIndex = maxIndices[indexRow];
-
-        result[maxIndex] = chain[indexRow];
+        result[indexEntryWithinBatch] = chain[indexRow];
 
     }
 

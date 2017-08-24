@@ -49,7 +49,7 @@ class CudaDropoutLayerTest {
         val deviceInput = Pointer()
         setFloatArray(input, numberEntries, deviceInput)
 
-        val deviceResult = cudaLayer.forward(1, Pointer(), deviceInput, isTraining)
+        val deviceResult = cudaLayer.forward(1, deviceInput, isTraining)
         val cudaResult = getFloatArray(deviceResult, numberEntries)
 
         cudaLayer.release()
@@ -103,7 +103,7 @@ class CudaDropoutLayerTest {
         val deviceChain = Pointer()
         setFloatArray(chain, numberEntries, deviceChain)
 
-        cudaLayer.forward(1, Pointer(), deviceInput, true)
+        cudaLayer.forward(1, deviceInput, true)
         val deviceResult = cudaLayer.backward(1, deviceChain)
 
         val cudaResult = getFloatArray(deviceResult, numberEntries)

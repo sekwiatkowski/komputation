@@ -85,7 +85,7 @@ class CudaDropoutLayer internal constructor(
 
     }
 
-    override fun forward(batchSize: Int, deviceNumberInputColumns: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
 

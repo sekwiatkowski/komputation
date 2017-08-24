@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Zero.cuh"
 
 extern "C"
 __global__ void backwardDropoutKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float* chain, float* mask, float* result)

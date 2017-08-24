@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 __global__ void lookupKernel (
     float* vectors,
@@ -26,6 +26,7 @@ __global__ void lookupKernel (
         int indexVectorId = indexInstance * maximumLength + indexColumn;
         int vectorId = vectorIds[indexVectorId];
 
+
         if(indexInstance < maximumBatchSize && vectorId != -1) {
 
             int startWithinLookupTable = vectorId * dimension + startEntryWithinColumn;
@@ -39,7 +40,7 @@ __global__ void lookupKernel (
         }
         else {
 
-            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

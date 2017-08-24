@@ -1,4 +1,4 @@
-#include "zero/Zero.cuh"
+#include "symbols/Zero.cuh"
 
 extern "C"
 __global__ void dropoutRuntimeKernel (

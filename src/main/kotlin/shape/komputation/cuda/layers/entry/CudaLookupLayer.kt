@@ -1,8 +1,8 @@
 package shape.komputation.cuda.layers.entry
 
 import jcuda.Pointer
-import shape.komputation.cpu.functions.denselyConcatenateFloatArrays
-import shape.komputation.cpu.functions.sparselyPadAndConcatenateIntMatrixEntries
+import shape.komputation.cpu.functions.concatenate
+import shape.komputation.cpu.functions.pad
 import shape.komputation.cuda.CudaForwardState
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
@@ -21,6 +21,7 @@ class CudaLookupLayer(
     name : String?,
     private val vectors: Array<FloatArray>,
     maximumLength : Int,
+    private val hasFixedLength: Boolean,
     dimension : Int,
     private val updateRule: CudaUpdateRule?,
     private val createKernel: () -> Kernel,
@@ -34,9 +35,8 @@ class CudaLookupLayer(
     override val maximumOutputColumns = maximumLength
 
     private var pointerToDeviceIndices = Pointer()
-    override var deviceNumberOutputColumns = Pointer()
 
-    private var columnSizes = IntArray(0)
+    private var numbersOfColumns = IntArray(0)
     private var indices = IntArray(0)
     private var forwardResult = FloatArray(0)
     private var maximumBatchSize = intArrayOf(-1)
@@ -62,7 +62,7 @@ class CudaLookupLayer(
 
     override fun acquire(maximumBatchSize: Int) {
 
-        this.columnSizes = IntArray(maximumBatchSize)
+        this.numbersOfColumns = IntArray(maximumBatchSize)
         this.indices = IntArray(maximumBatchSize * this.maximumOutputColumns)
 
         this.maximumBatchSize[0] = maximumBatchSize
@@ -71,7 +71,12 @@ class CudaLookupLayer(
 
         val concatenationSize = this.vectors.size * this.numberOutputRows
         val concatenation = FloatArray(concatenationSize)
-        denselyConcatenateFloatArrays(this.vectors, this.numberOutputRows, concatenation)
+
+        for ((index, vector) in this.vectors.withIndex()) {
+
+            concatenate(vector, index * this.numberOutputRows, this.numberOutputRows, concatenation)
+
+        }
 
         setFloatArray(concatenation, concatenationSize, this.deviceVectors)
 
@@ -83,7 +88,7 @@ class CudaLookupLayer(
 
     override fun release() {
 
-        this.columnSizes = IntArray(0)
+        this.numbersOfColumns = IntArray(0)
         this.indices = IntArray(0)
 
         this.forwardResult = FloatArray(0)
@@ -99,40 +104,53 @@ class CudaLookupLayer(
 
         if (optionalDeviceIndices == null) {
 
-            var totalNumberOfColumns = 0
+            var batchNumberEntries = 0
 
             for ((withinBatch, id) in batch.withIndex()) {
 
                 val input = inputs[id] as IntMatrix
+                val inputEntries = input.entries
 
-                val numberColumns = inputs[withinBatch].numberEntries.div(this.numberOutputRows)
+                val numberEntries = input.numberEntries
 
-                this.batchInputs[withinBatch] = input.entries
-                this.columnSizes[withinBatch] = numberColumns
-                totalNumberOfColumns += numberColumns
+                this.batchInputs[withinBatch] = inputEntries
+                this.numbersOfColumns[withinBatch] = numberEntries
+                batchNumberEntries += numberEntries
+
+                val finalEntries = if (this.hasFixedLength) {
+
+                    inputEntries
+
+                }
+                else {
+
+                    val paddedInputEntries = IntArray(this.maximumOutputColumns)
+                    pad(inputEntries, numberEntries, this.maximumOutputColumns, -1, paddedInputEntries)
+
+                    paddedInputEntries
+
+                }
+
+                concatenate(finalEntries, withinBatch * this.maximumOutputColumns, this.maximumOutputColumns, this.indices)
 
             }
 
-            sparselyPadAndConcatenateIntMatrixEntries(this.batchInputs, this.maximumOutputColumns, this.indices)
             val deviceIndices = Pointer()
             setIntArray(this.indices, this.indices.size, deviceIndices)
 
             val deviceNumbersOfColumns = Pointer()
-            setIntArray(this.columnSizes, this.columnSizes.size, deviceNumbersOfColumns)
+            setIntArray(this.numbersOfColumns, this.numbersOfColumns.size, deviceNumbersOfColumns)
 
             memory.setData(batchId, deviceIndices)
-            memory.setColumnLengths(batchId, deviceNumbersOfColumns)
-            memory.setTotalNumberOfColumns(batchId, totalNumberOfColumns)
+            memory.setTotalNumberOfColumns(batchId, batchNumberEntries)
 
             this.pointerToDeviceIndices = Pointer.to(deviceIndices)
-            this.deviceNumberOutputColumns = this.deviceNumberOutputColumns
-            this.numberParameters = totalNumberOfColumns
+            this.numberParameters = batchNumberEntries
 
         }
         else {
 
             this.pointerToDeviceIndices = Pointer.to(optionalDeviceIndices)
-            this.deviceNumberOutputColumns = memory.getDeviceNumbersOfColumns(batchId)
             this.numberParameters = memory.getTotalNumbersOfColumns(batchId)
 
         }
@@ -167,8 +185,7 @@ class CudaLookupLayer(
 
     override fun optimize(scalingFactor: Float) {
 
-        // this.updateRule?.sparseUpdate(this.numberParameters, this.pointerToDeviceIndices, this.pointerToDeviceVectors, scalingFactor, this.pointerToBackwardResult)
-        throw NotImplementedError()
+        this.updateRule?.sparseUpdate(this.numberParameters, this.pointerToDeviceIndices, this.pointerToDeviceVectors, scalingFactor, this.pointerToBackwardResult)
 
     }
 

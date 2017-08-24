@@ -6,7 +6,6 @@ import jcuda.runtime.JCuda.cudaFree
 class InputMemory {
 
     private val deviceData = hashMapOf<Int, Pointer>()
-    private val deviceColumnLengths = hashMapOf<Int, Pointer>()
     private val totalNumbersOfColumns = hashMapOf<Int, Int>()
 
     fun tryToGetData(id: Int) =
@@ -16,10 +15,6 @@ class InputMemory {
     fun getDeviceData(id : Int) =
 
         this.deviceData[id]!!
-
-    fun getDeviceNumbersOfColumns(id : Int) =
-
-        this.deviceColumnLengths[id]!!
 
     fun getTotalNumbersOfColumns(id: Int) =
 
@@ -31,11 +26,6 @@ class InputMemory {
 
     }
 
-    fun setColumnLengths(id : Int, pointer: Pointer) {
-
-        this.deviceColumnLengths[id] = pointer
-
-    }
 
     fun setTotalNumberOfColumns(id : Int, number : Int) {
 
@@ -45,7 +35,7 @@ class InputMemory {
 
     fun free() {
 
-        arrayOf(this.deviceData, this.deviceColumnLengths).forEach { map ->
+        arrayOf(this.deviceData).forEach { map ->
 
             map.values.forEach { pointer ->
 
@@ -56,7 +46,6 @@ class InputMemory {
         }
 
         this.deviceData.clear()
-        this.deviceColumnLengths.clear()
         this.totalNumbersOfColumns.clear()
 
     }
