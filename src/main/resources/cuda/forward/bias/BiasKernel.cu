@@ -1,4 +1,4 @@
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 extern "C"
 __global__ void biasKernel (
@@ -11,11 +11,14 @@ __global__ void biasKernel (
     float* result) {
 
     int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
 
     int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
-    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
+    int startColumnWithinInstance = indexColumn * numberRows;
+    int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + blockIdx.y * blockDim.x * numberIterations + threadIdx.x * numberIterations;
+    int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
+    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
 
     if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
 
@@ -33,7 +36,7 @@ __global__ void biasKernel (
         }
         else {
 
-            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

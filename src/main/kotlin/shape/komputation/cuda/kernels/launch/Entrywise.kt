@@ -2,6 +2,32 @@ package shape.komputation.cuda.kernels.launch
 
 import shape.komputation.matrix.IntMath
 
+fun computeNumberOfThreadsForRows(numberRows : Int, warpSize: Int, maximumNumberThreadsPerBlock : Int) : Pair<Int, Int> {
+
+    if (numberRows < maximumNumberThreadsPerBlock) {
+
+        val numberIterations = 1
+
+        val numberWarps = (numberRows + warpSize - 1) / warpSize
+        val numberThreads = numberWarps * warpSize
+
+        return numberIterations to numberThreads
+
+    }
+    else {
+
+        val numberIterations = (numberRows + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+
+        val iterativeWarpSize = warpSize * numberIterations
+        val numberIterativeWarps = (numberRows + iterativeWarpSize - 1) / iterativeWarpSize
+        val numberThreads = numberIterativeWarps * warpSize
+
+        return numberIterations to numberThreads
+
+    }
+
+}
+
 fun computeEntrywiseLaunchConfiguration(
     numberElements : Int,
     numberMultiProcessors : Int,

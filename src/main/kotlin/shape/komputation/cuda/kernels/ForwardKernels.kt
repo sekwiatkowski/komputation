@@ -6,7 +6,7 @@ object ForwardKernels {
         "biasKernel",
         "biasKernel",
         "forward/bias/BiasKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun dropoutTraining() = KernelInstruction(
         "dropoutTrainingKernel",

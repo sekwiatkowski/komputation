@@ -6,7 +6,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setFloatArray
@@ -30,7 +30,8 @@ class CublasBiasLayer internal constructor(
 
     private var kernel : Kernel? = null
 
-    private var numberBlocks = -1
+    private var numberBlocksInXDimension = -1
+    private var numberBlocksInYDimension = -1
     private var numberThreadsPerBlock = -1
 
     override val deviceForwardResult = Pointer()
@@ -76,10 +77,13 @@ class CublasBiasLayer internal constructor(
 
         setFloatArray(FloatArray(this.numberBatchInputColumns) { 1f }, this.numberBatchInputColumns, this.deviceOnes)
 
-        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
-        this.numberBlocks = launchConfiguration.numberBlocks
-        this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
-        this.numberIterations[0] = launchConfiguration.numberIterations
+        this.numberBlocksInXDimension = maximumBatchSize
+        this.numberBlocksInYDimension = this.maximumInputColumns
+
+        val (numberIterations, numberThreadsPerBlock) = computeNumberOfThreadsForRows(this.numberInputRows, this.warpSize, this.maximumNumberThreadsPerBlock)
+
+        this.numberThreadsPerBlock = numberIterations
+        this.numberIterations[0] = numberThreadsPerBlock
 
     }
 
@@ -97,8 +101,8 @@ class CublasBiasLayer internal constructor(
                 this.pointerToDeviceBias,
                 this.pointerToDeviceForwardResult
             ),
-            batchSize,
-            this.numberBlocks,
+            this.numberBlocksInXDimension,
+            this.numberBlocksInYDimension,
             this.numberThreadsPerBlock,
             0
         )
