@@ -109,12 +109,11 @@ fun cublasBackwardProjectionWrtWeights(
     numberChainColumns : Int,
     deviceInput: Pointer,
     numberInputRows : Int,
-    numberInputColumns : Int,
     deviceResult: Pointer,
     numberResultEntries: Int) =
 
     // X is a vector
-    if(numberInputColumns == 1) {
+    if(numberChainColumns == 1) {
 
         cublasOuterProduct(
             cublasHandle,

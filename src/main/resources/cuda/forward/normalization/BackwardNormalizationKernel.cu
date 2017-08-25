@@ -1,5 +1,5 @@
 #include "reduction/SumReduction.cuh"
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 __global__ void backwardNormalizationKernel (
     int batchSize,
@@ -54,7 +54,7 @@ __global__ void backwardNormalizationKernel (
         }
         else {
 
-            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

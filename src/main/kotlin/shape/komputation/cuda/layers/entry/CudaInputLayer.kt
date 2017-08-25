@@ -9,7 +9,7 @@ import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.FloatMatrix
 import shape.komputation.matrix.Matrix
 
-class CudaInputLayer(
+class CudaInputLayer internal constructor(
     name : String?,
     numberRows: Int,
     numberColumns : Int) : BaseCudaEntryPoint(name), Resourceful {

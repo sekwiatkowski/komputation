@@ -30,60 +30,60 @@ object ForwardKernels {
         "exponentiationKernel",
         "exponentiationKernel",
         "forward/exponentiation/ExponentiationKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardExponentiation() = KernelInstruction(
         "backwardExponentiationKernel",
         "backwardExponentiationKernel",
         "forward/exponentiation/BackwardExponentiationKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun normalization() = KernelInstruction(
         "normalizationKernel",
         "normalizationKernel",
         "forward/normalization/NormalizationKernel.cu",
-        listOf(KernelHeaders.sumReduction, KernelHeaders.zero))
+        listOf(KernelHeaders.sumReduction, KernelHeaders.nan))
 
     fun backwardNormalization() = KernelInstruction(
         "backwardNormalizationKernel",
         "backwardNormalizationKernel",
         "forward/normalization/BackwardNormalizationKernel.cu",
-        listOf(KernelHeaders.sumReduction, KernelHeaders.zero))
+        listOf(KernelHeaders.sumReduction, KernelHeaders.nan))
 
     fun sigmoid() = KernelInstruction(
         "sigmoidKernel",
         "sigmoidKernel",
         "forward/sigmoid/SigmoidKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardSigmoid() = KernelInstruction(
         "backwardSigmoidKernel",
         "backwardSigmoidKernel",
         "forward/sigmoid/BackwardSigmoidKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun relu() = KernelInstruction(
         "reluKernel",
         "reluKernel",
         "forward/relu/ReluKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardRelu() = KernelInstruction(
         "backwardReluKernel",
         "backwardReluKernel",
         "forward/relu/BackwardReluKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun tanh() = KernelInstruction("tanhKernel",
         "tanhKernel",
         "forward/tanh/TanhKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun backwardTanh() = KernelInstruction(
         "backwardTanhKernel",
         "backwardTanhKernel",
         "forward/tanh/BackwardTanhKernel.cu",
-        listOf(KernelHeaders.zero))
+        listOf(KernelHeaders.nan))
 
     fun maxPooling() = KernelInstruction(
         "maxPoolingKernel",

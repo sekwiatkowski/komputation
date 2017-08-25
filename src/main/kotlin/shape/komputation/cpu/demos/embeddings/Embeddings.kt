@@ -36,11 +36,11 @@ fun main(args: Array<String>) {
     val hasFixedLength = true
 
     Network(
-            maximumBatchSize,
-            lookupLayer(embeddings, length, hasFixedLength, embeddingDimension, optimizationStrategy),
-            maxPoolingLayer(embeddingDimension, length),
-            denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
-        )
+        maximumBatchSize,
+        lookupLayer(embeddings, length, hasFixedLength, embeddingDimension, optimizationStrategy),
+        maxPoolingLayer(embeddingDimension, length),
+        denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

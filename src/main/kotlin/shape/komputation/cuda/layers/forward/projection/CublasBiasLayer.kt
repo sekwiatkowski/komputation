@@ -9,6 +9,7 @@ import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
+import shape.komputation.cuda.setArrayToZero
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
@@ -57,8 +58,11 @@ class CublasBiasLayer internal constructor(
     private val pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     private var numberBatchInputColumns = -1
+    private var maximumBatchSize = -1
 
     override fun acquire(maximumBatchSize : Int) {
+
+        this.maximumBatchSize = maximumBatchSize
 
         this.numberBatchInputColumns = maximumBatchSize * this.maximumInputColumns
 
@@ -111,13 +115,30 @@ class CublasBiasLayer internal constructor(
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
-        cublasBackwardProjectionWrtBias(
-            this.cublasHandle,
-            chain,
-            this.numberInputRows,
-            this.numberBatchInputColumns,
-            this.deviceOnes,
-            this.deviceBackwardResult)
+        if(batchSize < this.maximumBatchSize) {
+
+            setArrayToZero(this.deviceBackwardResult, this.numberEntries)
+
+            cublasBackwardProjectionWrtBias(
+                this.cublasHandle,
+                chain,
+                this.numberInputRows,
+                batchSize * this.maximumInputColumns,
+                this.deviceOnes,
+                this.deviceBackwardResult)
+
+        }
+        else {
+
+            cublasBackwardProjectionWrtBias(
+                this.cublasHandle,
+                chain,
+                this.numberInputRows,
+                this.numberBatchInputColumns,
+                this.deviceOnes,
+                this.deviceBackwardResult)
+
+        }
 
         return this.deviceBackwardResult
 

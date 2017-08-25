@@ -27,8 +27,6 @@ class ReluLayer(
             this.numberColumns,
             { context.createKernel(ForwardKernels.relu()) },
             { context.createKernel(ForwardKernels.backwardRelu()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

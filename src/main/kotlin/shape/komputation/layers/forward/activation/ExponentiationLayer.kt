@@ -26,8 +26,6 @@ class ExponentiationLayer(
             this.numberColumns,
             { context.createKernel(ForwardKernels.exponentiation()) },
             { context.createKernel(ForwardKernels.backwardExponentiation()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

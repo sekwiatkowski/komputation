@@ -3,8 +3,8 @@
 extern "C"
 __global__ void backwardDropoutKernel (
     int batchSize,
-    int numberEntriesPerInstance,
     int numberRows,
+    int numberEntriesPerInstance,
     int numberIterations,
     float* chain,
     float* mask,

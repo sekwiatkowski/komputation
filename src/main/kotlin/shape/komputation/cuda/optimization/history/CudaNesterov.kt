@@ -10,7 +10,7 @@ import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
-class CudaNesterov(
+class CudaNesterov internal constructor(
     private val numberParameters : Int,
     private val parameterSize : Int,
     private val learningRate: Float,

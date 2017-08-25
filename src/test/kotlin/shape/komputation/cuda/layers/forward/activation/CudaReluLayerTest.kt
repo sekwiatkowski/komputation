@@ -15,8 +15,8 @@ class CudaReluLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {
 
-        val input = floatArrayOf(1.0f, 0.0f)
-        val expected = floatArrayOf(relu(1.0f), 0.0f)
+        val input = floatArrayOf(1.0f, Float.NaN)
+        val expected = floatArrayOf(relu(1.0f), Float.NaN)
 
         testForward(input, 1, 2, expected)
 
@@ -25,8 +25,8 @@ class CudaReluLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardOneOfTwoInstancesTwoDimensional() {
 
-        val input = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
-        val expected = floatArrayOf(relu(1.0f), relu(2.0f), 0.0f, 0.0f)
+        val input = floatArrayOf(1.0f, 2.0f, Float.NaN, Float.NaN)
+        val expected = floatArrayOf(relu(1.0f), relu(2.0f), Float.NaN, Float.NaN)
 
         testForward(input, 1, 2, expected)
 
@@ -35,9 +35,9 @@ class CudaReluLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardOneDimension1() {
 
-        val input = floatArrayOf(1.0f, 0.0f)
-        val chain = floatArrayOf(2.0f, 0.0f)
-        val expected = floatArrayOf(2.0f, 0.0f)
+        val input = floatArrayOf(1.0f, Float.NaN)
+        val chain = floatArrayOf(2.0f, Float.NaN)
+        val expected = floatArrayOf(2.0f, Float.NaN)
 
         testBackward(input, chain, 1, 2, expected)
 
@@ -69,9 +69,9 @@ class CudaReluLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardTwoDimensions() {
 
-        val input = floatArrayOf(-1.0f, 1.0f, 0.0f, 0.0f)
-        val chain = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
-        val expected = floatArrayOf(0.0f, 2.0f, 0.0f, 0.0f)
+        val input = floatArrayOf(-1.0f, 1.0f, Float.NaN, Float.NaN)
+        val chain = floatArrayOf(1.0f, 2.0f, Float.NaN, Float.NaN)
+        val expected = floatArrayOf(0.0f, 2.0f, Float.NaN, Float.NaN)
 
         testBackward(input, chain, 1, 2, expected)
 

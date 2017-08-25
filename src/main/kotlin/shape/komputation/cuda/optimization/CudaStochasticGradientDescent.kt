@@ -7,7 +7,7 @@ import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
-class CudaStochasticGradientDescent(
+class CudaStochasticGradientDescent internal constructor(
     private val size : Int,
     private val learningRate: Float,
     private val createKernel: () -> Kernel,

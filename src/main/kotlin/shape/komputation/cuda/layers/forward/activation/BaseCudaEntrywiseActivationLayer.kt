@@ -4,7 +4,7 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
-import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
+import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.layers.Resourceful
 
 abstract class BaseCudaEntrywiseActivationLayer internal constructor(
@@ -13,8 +13,6 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val createBackwardKernel: () -> Kernel,
     private val numberRows: Int,
     private val numberColumns: Int,
-    private val numberMultiprocessors : Int,
-    private val numberResidentWarps : Int,
     private val warpSize : Int,
     private val maximumNumberThreadsPerBlock : Int) : BaseCudaActivationLayer(name), Resourceful {
 
@@ -39,6 +37,8 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
     private val numberEntries = this.numberRows * this.numberColumns
     private val pointerToNumberEntriesPerInstance = Pointer.to(intArrayOf(this.numberEntries))
 
+    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberRows))
+
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
 
@@ -51,10 +51,12 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
         this.backwardKernel = this.createBackwardKernel()
 
         this.numberBlocksInXDimension = maximumBatchSize
-        val launchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
-        this.numberBlocksInYDimension = launchConfiguration.numberBlocks
-        this.numberThreadsPerBlock = launchConfiguration.numberThreadsPerBlock
-        this.numberIterations[0] = launchConfiguration.numberIterations
+        this.numberBlocksInYDimension = this.numberColumns
+
+        val (numberIterations, numberThreadsPerBlock) = computeNumberOfThreadsForRows(this.numberRows, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.numberThreadsPerBlock = numberThreadsPerBlock
+        this.numberIterations[0] = numberIterations
+
 
     }
 
@@ -64,6 +66,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
         val forwardParameters = Pointer.to(
             this.pointerToBatchSize,
+            this.pointerToNumberRows,
             this.pointerToNumberEntriesPerInstance,
             this.pointerToNumberIterations,
             Pointer.to(deviceInput),
@@ -85,6 +88,7 @@ abstract class BaseCudaEntrywiseActivationLayer internal constructor(
 
         val backwardParameters = Pointer.to(
             this.pointerToBatchSize,
+            this.pointerToNumberRows,
             this.pointerToNumberEntriesPerInstance,
             this.pointerToNumberIterations,
             this.pointerToDeviceForwardResult,

@@ -57,8 +57,8 @@ class CudaNormalizationLayerTest {
     @Test
     fun testForwardTwoRowsTwoColumnsIncompleteBatch() {
 
-        val input = floatArrayOf(1.0f, 1.0f, 1.0f, 3.0f, 0.0f, 0.0f, 0.0f, 0.0f)
-        val expected = floatArrayOf(0.5f, 0.5f, 0.25f, 0.75f, 0.0f, 0.0f, 0.0f, 0.0f)
+        val input = floatArrayOf(1.0f, 1.0f, 1.0f, 3.0f, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
+        val expected = floatArrayOf(0.5f, 0.5f, 0.25f, 0.75f, Float.NaN, Float.NaN, Float.NaN, Float.NaN)
 
         testForward(input, 1, 2, 2, 2, expected)
 

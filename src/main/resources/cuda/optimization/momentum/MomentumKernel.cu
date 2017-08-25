@@ -8,8 +8,7 @@ __global__ void momentumKernel (
     int parameterSize,
     float* parameters,
     float scalingFactor,
-    float* gradient)
-{
+    float* gradient) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 

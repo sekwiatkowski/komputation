@@ -10,6 +10,7 @@ import shape.komputation.cuda.functions.cublasMatrixMatrixMultiplication
 import shape.komputation.cuda.functions.cublasMatrixVectorMultiplication
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.optimization.CudaUpdateRule
+import shape.komputation.cuda.setArrayToZero
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
@@ -59,11 +60,8 @@ class CublasWeightingLayer internal constructor(
 
         this.weightUpdateRule?.acquire(maximumBatchSize)
 
-        val maxiumumNumberOutputEntries = this.numberOutputEntries * maximumBatchSize
-        allocateDeviceFloatMemory(this.deviceForwardResult, maxiumumNumberOutputEntries)
-
-        val maxiumumNumberInputEntries = this.numberInputEntries * maximumBatchSize
-        allocateDeviceFloatMemory(this.deviceBackwardResult, maxiumumNumberInputEntries)
+        allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberOutputEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberInputEntries)
 
     }
 
@@ -101,28 +99,64 @@ class CublasWeightingLayer internal constructor(
 
     }
 
+    private var lastBatchSize = -1
+
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
-        cublasBackwardProjectionWrtInput(
-            this.cublasHandle,
-            this.deviceWeights,
-            this.numberWeightRows,
-            this.numberWeightColumns,
-            chain,
-            this.numberOutputRows,
-            this.numberBatchOutputColumns,
-            this.deviceBackwardResult)
+        lastBatchSize = batchSize
 
-        cublasBackwardProjectionWrtWeights(
-            this.cublasHandle,
-            chain,
-            this.numberOutputRows,
-            this.numberBatchInputColumns,
-            this.deviceInput,
-            this.numberInputRows,
-            this.numberBatchInputColumns,
-            this.deviceBackwardWrtWeights,
-            this.numberWeightEntries)
+        if (batchSize < this.maximumBatchSize) {
+
+            // Reset the result entries to zero
+            setArrayToZero(this.deviceBackwardResult, this.maximumBatchSize * this.numberInputEntries)
+
+            cublasBackwardProjectionWrtInput(
+                this.cublasHandle,
+                this.deviceWeights,
+                this.numberWeightRows,
+                this.numberWeightColumns,
+                chain,
+                this.numberOutputRows,
+                batchSize * this.maximumOutputColumns,
+                this.deviceBackwardResult)
+
+            // Reset the result entries to zero
+            setArrayToZero(this.deviceBackwardWrtWeights, this.numberWeightEntries)
+
+            cublasBackwardProjectionWrtWeights(
+                this.cublasHandle,
+                chain,
+                this.numberOutputRows,
+                batchSize * this.maximumOutputColumns,
+                this.deviceInput,
+                this.numberInputRows,
+                this.deviceBackwardWrtWeights,
+                this.numberWeightEntries)
+
+        }
+        else {
+
+            cublasBackwardProjectionWrtInput(
+                this.cublasHandle,
+                this.deviceWeights,
+                this.numberWeightRows,
+                this.numberWeightColumns,
+                chain,
+                this.numberOutputRows,
+                this.numberBatchOutputColumns,
+                this.deviceBackwardResult)
+
+            cublasBackwardProjectionWrtWeights(
+                this.cublasHandle,
+                chain,
+                this.numberOutputRows,
+                this.numberBatchInputColumns,
+                this.deviceInput,
+                this.numberInputRows,
+                this.deviceBackwardWrtWeights,
+                this.numberWeightEntries)
+
+        }
 
         return this.deviceBackwardResult
 

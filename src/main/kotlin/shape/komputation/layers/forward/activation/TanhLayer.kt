@@ -26,8 +26,6 @@ class TanhLayer(
             this.numberColumns,
             { context.createKernel(ForwardKernels.tanh()) },
             { context.createKernel(ForwardKernels.backwardTanh()) },
-            context.maximumNumberOfThreadsPerBlock,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

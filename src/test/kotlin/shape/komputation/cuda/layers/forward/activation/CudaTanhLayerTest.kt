@@ -15,8 +15,8 @@ class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardOneOfTwoInstancesOneDimensional() {
 
-        val input = floatArrayOf(1.0f, 0.0f)
-        val expected = floatArrayOf(FloatMath.tanh(1.0f), 0.0f)
+        val input = floatArrayOf(1.0f, Float.NaN)
+        val expected = floatArrayOf(FloatMath.tanh(1.0f), Float.NaN)
 
         testForward(input, 1, 2, expected)
 
@@ -25,8 +25,8 @@ class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testForwardOneOfTwoInstancesTwoDimensional() {
 
-        val input = floatArrayOf(1.0f, 2.0f, 0.0f, 0.0f)
-        val expected = floatArrayOf(FloatMath.tanh(1.0f), FloatMath.tanh(2.0f), 0.0f, 0.0f)
+        val input = floatArrayOf(1.0f, 2.0f, Float.NaN, Float.NaN)
+        val expected = floatArrayOf(FloatMath.tanh(1.0f), FloatMath.tanh(2.0f), Float.NaN, Float.NaN)
 
         testForward(input, 1, 2, expected)
 
@@ -35,9 +35,9 @@ class CudaTanhLayerTest : BaseCudaEntrywiseActivationLayerTest() {
     @Test
     fun testBackwardOneDimension() {
 
-        val input = floatArrayOf(1.0f, 0.0f)
-        val chain = floatArrayOf(1.0f, 0.0f)
-        val expected = floatArrayOf(1.0f * (1.0f - FloatMath.pow(FloatMath.tanh(1.0f), 2.0f)), 0.0f)
+        val input = floatArrayOf(1.0f, Float.NaN)
+        val chain = floatArrayOf(1.0f, Float.NaN)
+        val expected = floatArrayOf(1.0f * (1.0f - FloatMath.pow(FloatMath.tanh(1.0f), 2.0f)), Float.NaN)
 
         testBackward(input, chain, 1, 2, expected)
 

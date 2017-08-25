@@ -3,8 +3,8 @@
 extern "C"
 __global__ void dropoutRuntimeKernel (
     int batchSize,
-    int numberEntriesPerInstance,
     int numberRows,
+    int numberEntriesPerInstance,
     int numberIterations,
     float keepProbability,
     float* input,

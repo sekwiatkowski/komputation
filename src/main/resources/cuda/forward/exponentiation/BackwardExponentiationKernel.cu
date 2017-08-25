@@ -1,8 +1,9 @@
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 extern "C"
 __global__ void backwardExponentiationKernel (
     int batchSize,
+    int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
     float *forward,
@@ -10,15 +11,20 @@ __global__ void backwardExponentiationKernel (
     float *destination) {
 
     int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
 
     int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
-    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
+    int startColumnWithinInstance = indexColumn * numberRows;
+    int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + blockIdx.y * blockDim.x * numberIterations + threadIdx.x * numberIterations;
+    int startColumnWithinBatch = startInstanceWithinBatch + startColumnWithinInstance;
 
-    if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
+    int firstEntryWithinBatch = startColumnWithinBatch + startRowWithinColumn;
+    int startNextColumn = startColumnWithinBatch + numberRows;
 
-        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstanceWithinBatch);
+    if(firstEntryWithinBatch < startNextColumn) {
+
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
 
@@ -31,7 +37,7 @@ __global__ void backwardExponentiationKernel (
         }
         else {
 
-            setToZero(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

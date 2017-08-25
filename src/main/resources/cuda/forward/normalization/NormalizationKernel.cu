@@ -1,5 +1,5 @@
 #include "reduction/SumReduction.cuh"
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 /*
     number of blocks in x-dimension = number of instances
@@ -76,7 +76,7 @@ __global__ void normalizationKernel (
         }
         else {
 
-            setToZero(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
             if(threadId == 0) {
 

@@ -1,4 +1,4 @@
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 __device__ float sigmoid (float x) {
 
@@ -9,21 +9,25 @@ __device__ float sigmoid (float x) {
 extern "C"
 __global__ void sigmoidKernel (
     int batchSize,
+    int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
     float *source,
     float *destination) {
 
     int indexInstance = blockIdx.x;
+    int indexColumn = blockIdx.y;
 
     int startInstanceWithinBatch = indexInstance * numberEntriesPerInstance;
-    int startNextInstanceWithinBatch = startInstanceWithinBatch + numberEntriesPerInstance;
+    int startColumnWithinInstance = indexColumn * numberRows;
+    int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + blockIdx.y * blockDim.x * numberIterations + threadIdx.x * numberIterations;
+    int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
+    int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
-    if(firstEntryWithinBatch < startNextInstanceWithinBatch) {
+    if(firstEntryWithinBatch < startNextColumn) {
 
-        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstanceWithinBatch);
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
 
@@ -36,7 +40,7 @@ __global__ void sigmoidKernel (
         }
         else {
 
-            setToZero(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
 
         }
 

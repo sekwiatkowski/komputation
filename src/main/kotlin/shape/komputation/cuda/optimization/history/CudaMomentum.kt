@@ -9,7 +9,7 @@ import shape.komputation.cuda.optimization.CudaUpdateRule
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
-class CudaMomentum(
+class CudaMomentum internal constructor(
     private val numberParameters : Int,
     private val parameterSize : Int,
     private val learningRate: Float,

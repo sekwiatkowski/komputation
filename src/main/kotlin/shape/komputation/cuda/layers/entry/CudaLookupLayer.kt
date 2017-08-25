@@ -17,7 +17,7 @@ import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
 
-class CudaLookupLayer(
+class CudaLookupLayer internal constructor(
     name : String?,
     private val vectors: Array<FloatArray>,
     maximumLength : Int,

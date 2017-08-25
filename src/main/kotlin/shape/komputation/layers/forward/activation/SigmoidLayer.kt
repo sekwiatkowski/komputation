@@ -26,8 +26,6 @@ class SigmoidLayer(
             this.numberColumns,
             { context.createKernel(ForwardKernels.sigmoid()) },
             { context.createKernel(ForwardKernels.backwardSigmoid()) },
-            context.maximumNumberOfThreadsPerBlock,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

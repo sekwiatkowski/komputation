@@ -9,8 +9,7 @@ import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 
-// int length, float *predictions, float *targets, float *result
-class CudaLogisticLoss(
+class CudaLogisticLoss internal constructor(
     private val numberCategories : Int,
     private val numberSteps : Int,
     private val createForwardKernel : (Int) -> Kernel,

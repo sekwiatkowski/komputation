@@ -28,8 +28,8 @@ __device__ float generateMask(float seed, float dropoutProbability) {
 extern "C"
 __global__ void dropoutTrainingKernel (
     int batchSize,
-    int numberEntriesPerInstance,
     int numberRows,
+    int numberEntriesPerInstance,
     int numberIterations,
     float dropoutProbability,
     float* input,

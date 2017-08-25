@@ -8,7 +8,5 @@ class CudaReluLayer internal constructor(
     numberColumns : Int,
     createForwardKernel: () -> Kernel,
     createBackwardKernel: () -> Kernel,
-    numberMultiprocessors : Int,
-    numberResidentWarps : Int,
     warpSize : Int,
-    maximumNumberThreadsPerBlock : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, numberRows, numberColumns, numberMultiprocessors, numberResidentWarps, warpSize, maximumNumberThreadsPerBlock)
+    maximumNumberThreadsPerBlock : Int) : BaseCudaEntrywiseActivationLayer(name, createForwardKernel, createBackwardKernel, numberRows, numberColumns, warpSize, maximumNumberThreadsPerBlock)

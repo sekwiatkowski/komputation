@@ -9,7 +9,7 @@ import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 
-class CudaSquaredLoss(
+class CudaSquaredLoss internal constructor(
     private val numberRows : Int,
     private val numberColumns : Int,
     private val createForwardKernel: () -> Kernel,

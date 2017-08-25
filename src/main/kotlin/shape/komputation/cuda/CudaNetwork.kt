@@ -24,15 +24,15 @@ class CudaForwardPropagator(
 
     fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, memory : InputMemory, isTraining: Boolean) : Pointer {
 
-        var previousLayerState = this.entryPoint.forward(batchId, batchSize, indices, inputs, memory)
+        var result = this.entryPoint.forward(batchId, batchSize, indices, inputs, memory)
 
         for (layer in this.layers) {
 
-            previousLayerState = layer.forward(batchSize, previousLayerState, isTraining)
+            result = layer.forward(batchSize, result, isTraining)
 
         }
 
-        return previousLayerState
+        return result
 
     }
 
