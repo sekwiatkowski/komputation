@@ -27,21 +27,19 @@ __global__ void nesterovKernel (
         int startParameter = indexParameter * parameterSize + startEntry;
         int startGradient = indexGradient * parameterSize + startEntry;
 
-        for(int i = 0; i < numberIterations; i++) {
+        for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-            int indexEntry = startParameter + i;
+            float entryBackup = history[indexParameter];
 
-            float entryBackup = history[indexEntry];
+            backup[indexParameter] = entryBackup;
 
-            backup[indexEntry] = entryBackup;
+            float entryUpdate = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
 
-            float entryUpdate = momentum * history[indexEntry] - scalingFactor * learningRate * gradient[startGradient + i];
+            history[indexParameter] = entryUpdate;
 
-            history[indexEntry] = entryUpdate;
+            float removedPreviousLookAhead = parameters[indexParameter] - momentum * entryBackup;
 
-            float removedPreviousLookAhead = parameters[indexEntry] - momentum * entryBackup;
-
-            parameters[indexEntry] = removedPreviousLookAhead + (1.0f + momentum) * entryUpdate;
+            parameters[indexParameter] = removedPreviousLookAhead + (1.0f + momentum) * entryUpdate;
 
         }
 

@@ -6,7 +6,6 @@ __device__ float sigmoid (float x) {
 
 }
 
-extern "C"
 __global__ void sigmoidKernel (
     int batchSize,
     int numberRows,

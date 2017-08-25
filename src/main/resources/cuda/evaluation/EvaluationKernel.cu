@@ -1,4 +1,3 @@
-extern "C"
 __global__ void evaluationKernel (
     int batchStart,
     int numberRows,

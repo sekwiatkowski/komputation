@@ -7,7 +7,6 @@ __device__ float backwardTanh (float forward, float chain)
 
 }
 
-extern "C"
 __global__ void backwardTanhKernel (
     int batchSize,
     int numberRows,

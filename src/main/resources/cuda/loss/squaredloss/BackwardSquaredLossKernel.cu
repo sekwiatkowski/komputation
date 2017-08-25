@@ -1,4 +1,4 @@
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 extern "C"
 __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
@@ -16,7 +16,7 @@ __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerIn
         // Is the instance greater than the current batch size?
         if(blockIdx.x >= batchSize) {
 
-            setToZero(result, startIndexWithinBatch, numberIterations);
+            setToNan(result, startIndexWithinBatch, numberIterations);
 
         }
         else {

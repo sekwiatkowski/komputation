@@ -6,7 +6,6 @@ __device__ float tanh (float x) {
 
 }
 
-extern "C"
 __global__ void tanhKernel (
     int batchSize,
     int numberRows,

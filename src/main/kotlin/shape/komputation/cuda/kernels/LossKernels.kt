@@ -14,7 +14,7 @@ object LossKernels {
             "backwardSquaredLossKernel",
             "backwardSquaredLossKernel",
             "loss/squaredloss/BackwardSquaredLossKernel.cu",
-            listOf(KernelHeaders.zero))
+            listOf(KernelHeaders.nan))
 
     fun logisticLoss(blockSize: Int) =
         KernelInstruction(
@@ -28,6 +28,6 @@ object LossKernels {
             "backwardLogisticLossKernel",
             "backwardLogisticLossKernel",
             "loss/logisticloss/BackwardLogisticLossKernel.cu",
-            listOf(KernelHeaders.zero))
+            listOf(KernelHeaders.nan))
 
 }

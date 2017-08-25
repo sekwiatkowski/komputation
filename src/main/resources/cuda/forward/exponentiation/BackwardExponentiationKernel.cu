@@ -1,6 +1,5 @@
 #include "symbols/Nan.cuh"
 
-extern "C"
 __global__ void backwardExponentiationKernel (
     int batchSize,
     int numberRows,

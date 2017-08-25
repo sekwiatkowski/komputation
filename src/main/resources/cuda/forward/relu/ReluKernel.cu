@@ -7,7 +7,6 @@ __device__ float relu (float x)
 
 }
 
-extern "C"
 __global__ void reluKernel (
     int batchSize,
     int numberRows,

@@ -19,9 +19,9 @@ __global__ void stochasticGradientDescentKernel (
         int startParameter = indexParameter * parameterSize + startEntry;
         int startGradient = indexGradient * parameterSize + startEntry;
 
-        for(int i = 0; i < numberIterations; i++) {
+        for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-            parameters[startParameter + i] -= scalingFactor * learningRate * gradient[startGradient + i];
+            parameters[indexParameter] -= scalingFactor * learningRate * gradient[indexGradient];
 
         }
 

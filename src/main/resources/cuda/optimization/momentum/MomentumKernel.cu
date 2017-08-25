@@ -20,12 +20,12 @@ __global__ void momentumKernel (
         int startParameter = indexParameter * parameterSize + startEntry;
         int startGradient = indexGradient * parameterSize + startEntry;
 
-        for(int i = 0; i < numberIterations; i++) {
+        for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-            float update = momentum * history[startParameter + i] - scalingFactor * learningRate * gradient[startGradient + i];
+            float update = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
 
-            history[startParameter + i] = update;
-            parameters[startParameter + i] += update;
+            history[indexParameter] = update;
+            parameters[indexParameter] += update;
 
         }
 

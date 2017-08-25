@@ -1,6 +1,7 @@
-#include "symbols/Zero.cuh"
+#include "symbols/Nan.cuh"
 
 // -1/target probability if target = 1.0, 0.0 otherwise
+extern "C"
 __global__ void backwardLogisticLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
 {
 
@@ -16,7 +17,7 @@ __global__ void backwardLogisticLossKernel (int batchSize, int numberEntriesPerI
         // Is the instance greater than the current batch size?
         if(blockIdx.x >= batchSize) {
 
-            setToZero(result, startIndexWithinBatch, numberIterations);
+            setToNan(result, startIndexWithinBatch, numberIterations);
 
         }
         else {

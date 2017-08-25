@@ -7,7 +7,6 @@ __device__ float backwardSigmoid (float forward, float chain)
 
 }
 
-extern "C"
 __global__ void backwardSigmoidKernel (
     int batchSize,
     int numberRows,

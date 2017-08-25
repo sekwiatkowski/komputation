@@ -16,7 +16,6 @@ __device__ float backwardRelu (float forward, float chain)
 
 }
 
-extern "C"
 __global__ void backwardReluKernel (
     int batchSize,
     int numberRows,
