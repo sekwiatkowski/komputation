@@ -1,7 +1,6 @@
 package shape.komputation.cuda.workflow
 
 import jcuda.Pointer
-import shape.komputation.cuda.CudaBackwardPropagator
 import shape.komputation.cuda.CudaForwardPropagator
 import shape.komputation.cuda.loss.CudaLossFunction
 import shape.komputation.cuda.memory.InputMemory
@@ -12,7 +11,7 @@ import shape.komputation.optimization.Optimizable
 
 class CudaTrainer(
     private val forwardPropagator : CudaForwardPropagator,
-    private val backwardPropagator : CudaBackwardPropagator,
+    private val backwardPropagator : CudaBackwardPropagation,
     private val optimizables : Array<Optimizable>,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,

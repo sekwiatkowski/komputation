@@ -2,6 +2,7 @@ package shape.komputation.cuda.layers.forward.dropout
 
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
+import jcuda.runtime.JCuda
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
@@ -54,7 +55,7 @@ class CudaDropoutLayerTest {
 
         cudaLayer.release()
 
-        cudaFree(deviceInput)
+        JCuda.cudaFree(deviceInput)
 
         cudaContext.destroy()
 
@@ -93,7 +94,7 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(Random(1), if(keep) 1.0f else 0.0f, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(Random(1), if (keep) 1.0f else 0.0f, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
 
         cudaLayer.acquire(1)
 

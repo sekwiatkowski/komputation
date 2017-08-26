@@ -10,3 +10,9 @@ interface CudaForwardLayer : CudaLayerState {
     fun backward(batchSize: Int, chain: Pointer) : Pointer
 
 }
+
+interface CudaVariableLengthForwardLayer {
+
+    fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer
+
+}

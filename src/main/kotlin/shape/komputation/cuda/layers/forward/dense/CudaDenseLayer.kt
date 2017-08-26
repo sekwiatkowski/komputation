@@ -25,7 +25,6 @@ class CudaDenseLayer internal constructor(
     override val maximumInputColumns
         get() = this.projectionLayer.maximumInputColumns
 
-
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         val projected = this.projectionLayer.forward(batchSize, deviceInput, isTraining)

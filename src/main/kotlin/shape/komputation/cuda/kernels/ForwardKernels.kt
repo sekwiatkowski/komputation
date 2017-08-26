@@ -96,4 +96,10 @@ object ForwardKernels {
         "backwardMaxPoolingKernel",
         "forward/maxpooling/BackwardMaxPoolingKernel.cu")
 
+    fun expansion() = KernelInstruction(
+        "expansionKernel",
+        "expansionKernel",
+        "forward/expansion/ExpansionKernel.cu",
+        listOf(KernelHeaders.nan, KernelHeaders.zero))
+
 }

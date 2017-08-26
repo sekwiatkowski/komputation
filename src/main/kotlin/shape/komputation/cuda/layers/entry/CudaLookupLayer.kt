@@ -21,7 +21,7 @@ class CudaLookupLayer internal constructor(
     name : String?,
     private val vectors: Array<FloatArray>,
     maximumLength : Int,
-    private val hasFixedLength: Boolean,
+    override val hasFixedLength: Boolean,
     dimension : Int,
     private val updateRule: CudaUpdateRule?,
     private val createKernel: () -> Kernel,
@@ -100,6 +100,8 @@ class CudaLookupLayer internal constructor(
 
     override fun forward(batchId : Int, batchSize : Int, batch: IntArray, inputs : Array<Matrix>, memory: InputMemory) : Pointer {
 
+        val maximumBatchSize = this.maximumBatchSize[0]
+
         val optionalDeviceIndices = memory.tryToGetData(batchId)
 
         if (optionalDeviceIndices == null) {
@@ -144,6 +146,30 @@ class CudaLookupLayer internal constructor(
             memory.setData(batchId, deviceIndices)
             memory.setTotalNumberOfColumns(batchId, batchNumberEntries)
 
+            if (this.hasFixedLength) {
+
+                val lengths = IntArray(maximumBatchSize) { index ->
+
+                    if (index < batchSize) {
+
+                        inputs[batch[index]].numberEntries
+
+                    }
+                    else {
+
+                        0
+
+                    }
+
+                }
+
+                val deviceLengths = Pointer()
+                setIntArray(lengths, maximumBatchSize, deviceLengths)
+
+                memory.setLengths(batchId, deviceLengths)
+
+            }
+
             this.pointerToDeviceIndices = Pointer.to(deviceIndices)
             this.numberParameters = batchNumberEntries
 
@@ -165,7 +191,7 @@ class CudaLookupLayer internal constructor(
                 this.pointerToDimension,
                 this.pointerToNumberIterations
             ),
-            this.maximumBatchSize[0],
+            maximumBatchSize,
             this.launchConfiguration.numberBlocks,
             this.launchConfiguration.numberThreadsPerBlock,
             0)

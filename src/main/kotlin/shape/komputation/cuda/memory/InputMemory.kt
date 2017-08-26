@@ -7,6 +7,7 @@ class InputMemory {
 
     private val deviceData = hashMapOf<Int, Pointer>()
     private val totalNumbersOfColumns = hashMapOf<Int, Int>()
+    private val deviceLengths = hashMapOf<Int, Pointer>()
 
     fun tryToGetData(id: Int) =
 
@@ -16,20 +17,29 @@ class InputMemory {
 
         this.deviceData[id]!!
 
-    fun getTotalNumbersOfColumns(id: Int) =
-
-        this.totalNumbersOfColumns[id]!!
-
     fun setData(id : Int, pointer: Pointer) {
 
         this.deviceData[id] = pointer
 
     }
 
+    fun getTotalNumbersOfColumns(id: Int) =
+
+        this.totalNumbersOfColumns[id]!!
 
     fun setTotalNumberOfColumns(id : Int, number : Int) {
 
         this.totalNumbersOfColumns[id] = number
+
+    }
+
+    fun getLengths(id : Int) =
+
+        this.deviceLengths[id]!!
+
+    fun setLengths(id : Int, pointer : Pointer) {
+
+        this.deviceLengths[id] = pointer
 
     }
 

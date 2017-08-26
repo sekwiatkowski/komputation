@@ -18,4 +18,8 @@ interface CudaPropagation {
 
 }
 
-interface CudaEntryPoint : CudaForwardState, CudaPropagation
+interface CudaEntryPoint : CudaForwardState, CudaPropagation {
+
+    val hasFixedLength : Boolean
+
+}

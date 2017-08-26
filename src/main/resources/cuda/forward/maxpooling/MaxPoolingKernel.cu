@@ -28,12 +28,14 @@ __device__ int findMaximum(int thisIndex, float thisValue, int nextPowerOfTwo) {
 
 __global__ void maxPoolingKernel (
     int batchSize,
+    int* lengths,
     int numberEntries,
-    float* input,
     int* maxIndices,
+    float* input,
     float* result) {
 
     int indexInstance = blockIdx.x;
+    int length = lengths[indexInstance];
     int indexRow = blockIdx.y;
     int indexColumn = threadIdx.x;
     int numberRows = gridDim.y;
@@ -52,13 +54,14 @@ __global__ void maxPoolingKernel (
         int warpId = indexColumn / warpSize;
         int laneId = indexColumn % warpSize;
 
-        int inputStartInstance = indexInstance * numberEntries;
-        int inputStartColumnWithinInstance = indexColumn * numberRows;
+        int startInstanceWithinBatch = indexInstance * numberEntries;
+        int startColumnWithinBatch = indexColumn * numberRows;
 
-        int thisIndex = inputStartInstance + inputStartColumnWithinInstance + indexRow;
-        float thisValue = input[thisIndex];
+        int thisIndex = startInstanceWithinBatch + startColumnWithinBatch + indexRow;
 
-        int width = warpId < lastWarpId ? warpSize : findNextPowerOfTwo(maximumNumberOfColumns - lastWarpId * warpSize);
+        float thisValue = warpId < lastWarpId ? input[thisIndex] : (indexColumn < length ? input[thisIndex] : __int_as_float(0xff800000));
+
+        int width = warpId < lastWarpId ? warpSize : findNextPowerOfTwo(length);
 
         int warpMaximumIndex = findMaximum(thisIndex, thisValue, width);
 
