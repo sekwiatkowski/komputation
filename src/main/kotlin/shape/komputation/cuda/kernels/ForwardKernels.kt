@@ -102,4 +102,10 @@ object ForwardKernels {
         "forward/expansion/ExpansionKernel.cu",
         listOf(KernelHeaders.nan, KernelHeaders.zero))
 
+    fun backwardExpansion() = KernelInstruction(
+        "backwardExpansionKernel",
+        "backwardExpansionKernel",
+        "forward/expansion/BackwardExpansionKernel.cu",
+        listOf(KernelHeaders.sumReduction))
+
 }

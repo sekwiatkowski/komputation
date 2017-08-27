@@ -109,7 +109,10 @@ class CudaExpansionLayerTest {
             maximumInputColumns,
             filterHeight,
             filterWidth,
-            { context.createKernel(ForwardKernels.expansion()) })
+            { context.createKernel(ForwardKernels.expansion()) },
+            { context.createKernel(ForwardKernels.backwardExpansion()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         val deviceInput = Pointer()
         setFloatArray(input, input.size, deviceInput)
@@ -159,7 +162,10 @@ class CudaExpansionLayerTest {
             maximumInputColumns,
             filterHeight,
             filterWidth,
-            { context.createKernel(ForwardKernels.expansion()) })
+            { context.createKernel(ForwardKernels.expansion()) },
+            { context.createKernel(ForwardKernels.backwardExpansion()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         val deviceLengths = Pointer()
         setIntArray(lengths, lengths.size, deviceLengths)
@@ -172,9 +178,46 @@ class CudaExpansionLayerTest {
 
         val actual = getFloatArray(deviceResult, maximumBatchSize * expansionLayer.maximumOutputColumns * expansionLayer.numberOutputRows)
 
+        expansionLayer.release()
+
         context.destroy()
 
         assertArrayEquals(expected, actual, 0.01f)
+    }
+
+    @Test
+    fun testBackward() {
+
+        val context = setUpCudaContext()
+
+        val expansionLayer = CudaExpansionLayer(
+            null,
+            1,
+            1,
+            1,
+            1,
+            { context.createKernel(ForwardKernels.expansion()) },
+            { context.createKernel(ForwardKernels.backwardExpansion()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
+
+        expansionLayer.acquire(1)
+
+        val input = floatArrayOf(1f)
+        val deviceInput = Pointer()
+        setFloatArray(input, input.size, deviceInput)
+
+        val chain = floatArrayOf(1f)
+        val deviceChain = Pointer()
+        setFloatArray(chain, chain.size, deviceChain)
+
+        expansionLayer.forward(1, deviceInput, false)
+        expansionLayer.backward(1, deviceChain)
+
+        expansionLayer.release()
+
+        context.destroy()
+
     }
 
 
