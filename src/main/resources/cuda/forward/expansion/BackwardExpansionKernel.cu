@@ -1,13 +1,5 @@
 #include "reduction/SumReduction.cuh"
 
-/*
-
-    1 4 7     1 4   2 5   4 7   5 8
-    2 5 8     2 5   3 6   5 8   6 9
-    3 6 9
-
-*/
-
 __global__ void backwardExpansionKernel(
     int batchSize,
     int* lengths,
@@ -34,26 +26,32 @@ __global__ void backwardExpansionKernel(
 
     if(indexInstance < batchSize) {
 
-        int indexRow = indexEntryWithinInstance % numberRows;
-        int indexColumn = indexEntryWithinInstance / numberRows;
-
-        int warpId = threadIdx.x / warpSize;
         int laneId = threadIdx.x % warpSize;
 
+        // Go through each position within the filter
         if(laneId < filterLength) {
+
+            int indexRowWithinInstance = indexEntryWithinInstance % numberRows;
+            int indexColumnWithinInstance = indexEntryWithinInstance / numberRows;
 
             int indexRowWithinFilter = laneId % filterHeight;
             int indexColumnWithinFilter = laneId / filterHeight;
 
-            int firstRowInConvolution = indexRow - indexRowWithinFilter;
+            // At which row does the convolution for the given filter position start
+            int firstRowInConvolution = indexRowWithinInstance - indexRowWithinFilter;
+            // At which row does the convolution for the given filter position end
             int lastRowInConvolution = firstRowInConvolution + filterHeight - 1;
 
-            int firstColumnInConvolution = indexColumn - indexColumnWithinFilter;
+            // At which column does the convolution for the given filter position start
+            int firstColumnInConvolution = indexColumnWithinInstance - indexColumnWithinFilter;
+
+            // At which column does the convolution for the given filter position end
             int lastColumnInConvolution = firstColumnInConvolution + filterWidth - 1;
 
             float thisValue;
 
-            if(firstRowInConvolution >= 0 && lastRowInConvolution < numberRows && firstColumnInConvolution >= 0 && lastColumnInConvolution < lengths[indexInstance]) {
+            if(firstRowInConvolution >= 0 && lastRowInConvolution < numberRows &&
+               firstColumnInConvolution >= 0 && lastColumnInConvolution < lengths[indexInstance]) {
 
                 int indexConvolution = firstColumnInConvolution * convolutionsPerRow + firstRowInConvolution;
 
@@ -68,15 +66,11 @@ __global__ void backwardExpansionKernel(
 
             }
 
-            sharedData[laneId] = thisValue;
-
-            __syncthreads();
-
-            reduceToSum(thisValue, warpId, laneId, sharedData);
+            float sum = warpReduceToSum(thisValue);
 
             if(laneId == 0) {
 
-                result[indexEntryWithinBatch] = sharedData[0];
+                result[indexEntryWithinBatch] = sum;
 
             }
 

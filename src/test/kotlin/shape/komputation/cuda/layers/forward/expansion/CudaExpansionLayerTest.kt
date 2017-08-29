@@ -186,16 +186,85 @@ class CudaExpansionLayerTest {
     }
 
     @Test
-    fun testBackward() {
+    fun testBackwardOneByOneInputOneByOneFilter() {
+
+        val input = floatArrayOf(1f)
+        val chain = floatArrayOf(1f)
+        val expected = floatArrayOf(1f)
+
+        testBackward(1, 1, input, 1, 1, chain, expected)
+
+    }
+
+    @Test
+    fun testBackwardTwoByTwoInputTwoByTwoFilter() {
+
+        val input = floatArrayOf(1f, 2f, 3f, 4f)
+        val chain = floatArrayOf(5f, 6f, 7f, 8f)
+        val expected = floatArrayOf(5f, 6f, 7f, 8f)
+
+        testBackward(2, 2, input, 2, 2, chain, expected)
+
+    }
+
+    @Test
+    fun testBackwardTwoByTwoInputOneByOneFilter() {
+
+        val input = floatArrayOf(1f, 2f, 3f, 4f)
+        val chain = floatArrayOf(5f, 6f, 7f, 8f)
+        val expected = floatArrayOf(5f, 6f, 7f, 8f)
+
+        testBackward(2, 2, input, 1, 1, chain, expected)
+
+    }
+
+    @Test
+    fun testBackwardThreeByThreeInputTwoByTwoFilter() {
+
+        /*
+
+            1 4 7     1 4   2 5   4 7   5 8
+            2 5 8     2 5   3 6   5 8   6 9
+            3 6 9
+
+             1  4     2  5     4  7     5  8
+             2  5     3  6     5  8     6  9
+            10 12    14 16    18 20    22 24
+            11 13    15 17    19 21    23 25
+
+        */
+
+        val input = floatArrayOf(1f, 2f, 3f, 4f, 5f, 6f, 7f, 8f, 9f)
+        val chain = floatArrayOf(
+            10f, 11f, 12f, 13f,
+            14f, 15f, 16f, 17f,
+            18f, 19f, 20f, 21f,
+            22f, 23f, 24f, 25f)
+        val expected = floatArrayOf(
+            10f, // 1
+            11f + 14f, // 2
+            15f, // 3
+            12f + 18f, // 4
+            13f + 16f + 19f + 22f, // 5
+            17f + 23f, // 6
+            20f, // 7
+            21f + 24f, // 8
+            25f) // 9
+
+        testBackward(3, 3, input, 2, 2, chain, expected)
+
+    }
+
+    private fun testBackward(numberInputRows: Int, maximumInputColumns: Int, input : FloatArray, filterHeight: Int, filterWidth: Int, chain : FloatArray, expected: FloatArray) {
 
         val context = setUpCudaContext()
 
         val expansionLayer = CudaExpansionLayer(
             null,
-            1,
-            1,
-            1,
-            1,
+            numberInputRows,
+            maximumInputColumns,
+            filterHeight,
+            filterWidth,
             { context.createKernel(ForwardKernels.expansion()) },
             { context.createKernel(ForwardKernels.backwardExpansion()) },
             context.warpSize,
@@ -203,20 +272,23 @@ class CudaExpansionLayerTest {
 
         expansionLayer.acquire(1)
 
-        val input = floatArrayOf(1f)
         val deviceInput = Pointer()
         setFloatArray(input, input.size, deviceInput)
 
-        val chain = floatArrayOf(1f)
         val deviceChain = Pointer()
         setFloatArray(chain, chain.size, deviceChain)
 
         expansionLayer.forward(1, deviceInput, false)
-        expansionLayer.backward(1, deviceChain)
+        val deviceBackwardResult = expansionLayer.backward(1, deviceChain)
+
+        val actual = getFloatArray(deviceBackwardResult, numberInputRows * maximumInputColumns)
 
         expansionLayer.release()
 
         context.destroy()
+
+        assertArrayEquals(expected, actual)
+
 
     }
 
