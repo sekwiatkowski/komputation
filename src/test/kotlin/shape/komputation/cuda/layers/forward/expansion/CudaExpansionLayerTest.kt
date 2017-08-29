@@ -255,6 +255,27 @@ class CudaExpansionLayerTest {
 
     }
 
+    @Test
+    fun testBackwardWithFilterSizeGreaterThanWarpSize() {
+
+        val context = setUpCudaContext()
+        val warpSize = context.warpSize
+        context.destroy()
+
+        val filterWidth = 1
+        val filterHeight = warpSize + 1
+
+        val filterSize = filterHeight
+
+        val input = FloatArray(filterSize) { 1f }
+        val chain = FloatArray(filterSize) { 2f }
+        val expected = FloatArray(filterSize) { 2f }
+
+        val numberInputRows = filterHeight
+        testBackward(numberInputRows, 1, input, filterHeight, filterWidth, chain, expected)
+
+    }
+
     private fun testBackward(numberInputRows: Int, maximumInputColumns: Int, input : FloatArray, filterHeight: Int, filterWidth: Int, chain : FloatArray, expected: FloatArray) {
 
         val context = setUpCudaContext()

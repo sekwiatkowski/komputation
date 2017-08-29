@@ -3,6 +3,7 @@
 __global__ void backwardExpansionKernel(
     int batchSize,
     int* lengths,
+    int numberIterations,
     int numberRows,
     int numberEntries,
     int numberOfWarpsPerBlocks,
@@ -13,8 +14,6 @@ __global__ void backwardExpansionKernel(
     int convolutionsPerRow,
     float* gradient,
     float* result) {
-
-    extern __shared__ float sharedData[];
 
     int indexInstance = blockIdx.x;
     int startInstanceWithinBatch = indexInstance * numberEntries;
@@ -28,14 +27,18 @@ __global__ void backwardExpansionKernel(
 
         int laneId = threadIdx.x % warpSize;
 
-        // Go through each position within the filter
-        if(laneId < filterLength) {
+        int startFilter = laneId * numberIterations;
+        int endFilter = min(startFilter + numberIterations, filterLength);
 
-            int indexRowWithinInstance = indexEntryWithinInstance % numberRows;
-            int indexColumnWithinInstance = indexEntryWithinInstance / numberRows;
+        int indexRowWithinInstance = indexEntryWithinInstance % numberRows;
+        int indexColumnWithinInstance = indexEntryWithinInstance / numberRows;
 
-            int indexRowWithinFilter = laneId % filterHeight;
-            int indexColumnWithinFilter = laneId / filterHeight;
+        float thisValue = 0.0;
+
+        for(int indexFilter = startFilter; indexFilter < endFilter; indexFilter++) {
+
+            int indexRowWithinFilter = indexFilter % filterHeight;
+            int indexColumnWithinFilter = indexFilter / filterHeight;
 
             // At which row does the convolution for the given filter position start
             int firstRowInConvolution = indexRowWithinInstance - indexRowWithinFilter;
@@ -44,11 +47,10 @@ __global__ void backwardExpansionKernel(
 
             // At which column does the convolution for the given filter position start
             int firstColumnInConvolution = indexColumnWithinInstance - indexColumnWithinFilter;
-
             // At which column does the convolution for the given filter position end
             int lastColumnInConvolution = firstColumnInConvolution + filterWidth - 1;
 
-            float thisValue;
+            float thisValueInIteration;
 
             if(firstRowInConvolution >= 0 && lastRowInConvolution < numberRows &&
                firstColumnInConvolution >= 0 && lastColumnInConvolution < lengths[indexInstance]) {
@@ -57,7 +59,7 @@ __global__ void backwardExpansionKernel(
 
                 int indexGradient = indexInstance * maximumConvolutions + indexConvolution * filterLength + indexColumnWithinFilter * filterHeight + indexRowWithinFilter;
 
-                thisValue = gradient[indexGradient];
+                thisValueInIteration = gradient[indexGradient];
 
             }
             else {
@@ -66,13 +68,15 @@ __global__ void backwardExpansionKernel(
 
             }
 
-            float sum = warpReduceToSum(thisValue);
+            thisValue += thisValueInIteration;
 
-            if(laneId == 0) {
+        }
 
-                result[indexEntryWithinBatch] = sum;
+        float sum = warpReduceToSum(thisValue);
 
-            }
+        if(laneId == 0) {
+
+            result[indexEntryWithinBatch] = sum;
 
         }
 

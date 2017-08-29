@@ -41,8 +41,8 @@ class CudaExpansionLayer internal constructor(
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
 
-    private val deviceMaximumBatchLengths = Pointer()
-    private var pointerToMaximumBatchLengths = Pointer()
+    private val deviceBatchLengths = Pointer()
+    private var pointerToBatchLengths = Pointer()
 
     private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberInputRows))
 
@@ -70,6 +70,9 @@ class CudaExpansionLayer internal constructor(
     private var numberBackwardBlocksInYDimension = -1
     private var numberBackwardThreads = -1
 
+    private val numberBackwardIterations = intArrayOf(-1)
+    private val pointerToNumberIterations = Pointer.to(this.numberBackwardIterations)
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize
@@ -77,9 +80,9 @@ class CudaExpansionLayer internal constructor(
         this.forwardKernel = this.createForwardKernel()
 
         val maximumBatchLengths = IntArray(maximumBatchSize) { this.maximumInputColumns }
-        setIntArray(maximumBatchLengths, maximumBatchSize, this.deviceMaximumBatchLengths)
+        setIntArray(maximumBatchLengths, maximumBatchSize, this.deviceBatchLengths)
 
-        this.pointerToMaximumBatchLengths = Pointer.to(this.deviceMaximumBatchLengths)
+        this.pointerToBatchLengths = Pointer.to(this.deviceBatchLengths)
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberResultEntries)
 
@@ -87,15 +90,16 @@ class CudaExpansionLayer internal constructor(
 
         allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberInputEntries)
 
-        val backwardLaunch = computeBackwardLaunchConfiguration(this.numberInputEntries, this.maximumNumberWarpsPerBlock, this.warpSize)
+        val backwardLaunch = computeBackwardLaunchConfiguration(this.numberInputEntries, this.filterSize, this.maximumNumberWarpsPerBlock, this.warpSize)
 
         this.numberBackwardBlocksInYDimension = backwardLaunch.numberBlocks
         this.numberBackwardThreads = backwardLaunch.numberThreadsPerBlock
+        this.numberBackwardIterations[0] = backwardLaunch.numberIterations
 
 
     }
 
-    private fun computeBackwardLaunchConfiguration(numberInputEntries : Int, maximumNumberWarpsPerBlock : Int, warpSize: Int): KernelLaunchConfiguration {
+    private fun computeBackwardLaunchConfiguration(numberInputEntries : Int, filterSize : Int, maximumNumberWarpsPerBlock : Int, warpSize: Int): KernelLaunchConfiguration {
 
         val numberBackwardBlocksInYDimension =
             if(numberInputEntries <= maximumNumberWarpsPerBlock)
@@ -110,13 +114,15 @@ class CudaExpansionLayer internal constructor(
 
         val numberThreads = numberWarpsPerBlock * warpSize
 
-        return KernelLaunchConfiguration(numberBackwardBlocksInYDimension, numberThreads, 1)
+        val numberIterations = (warpSize + filterSize - 1)/ warpSize
+
+        return KernelLaunchConfiguration(numberBackwardBlocksInYDimension, numberThreads, numberIterations)
 
     }
 
     override fun release() {
 
-        cudaFree(this.deviceMaximumBatchLengths)
+        cudaFree(this.deviceBatchLengths)
 
         this.forwardKernel!!.destroy()
         cudaFree(this.deviceForwardResult)
@@ -133,7 +139,7 @@ class CudaExpansionLayer internal constructor(
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                this.pointerToMaximumBatchLengths,
+                this.pointerToBatchLengths,
                 this.pointerToNumberRows,
                 this.pointerToNumberFilterRowPositions,
                 this.pointerToNumberInputEntries,
@@ -187,7 +193,8 @@ class CudaExpansionLayer internal constructor(
         this.backwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                this.pointerToMaximumBatchLengths,
+                this.pointerToBatchLengths,
+                this.pointerToNumberIterations,
                 this.pointerToNumberRows,
                 this.pointerToNumberInputEntries,
                 this.pointerToNumberWarpsPerBlock,
