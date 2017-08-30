@@ -5,10 +5,12 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.computeNumberFilterColumnPositions
 import shape.komputation.cpu.functions.computeNumberFilterRowPositions
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.KernelLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.layers.CudaVariableLengthForwardLayer
+import shape.komputation.cuda.network.CudaChangesLengths
 import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
@@ -21,7 +23,7 @@ class CudaExpansionLayer internal constructor(
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize : Int,
-    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
+    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer, CudaChangesLengths {
 
     private val pointerToFilterHeight = Pointer.to(intArrayOf(filterHeight))
     private val pointerToFilterWidth = Pointer.to(intArrayOf(filterWidth))
@@ -48,11 +50,11 @@ class CudaExpansionLayer internal constructor(
 
     private val numberFilterRowPositions = computeNumberFilterRowPositions(this.numberInputRows, filterHeight)
     private val pointerToNumberFilterRowPositions = Pointer.to(intArrayOf(this.numberFilterRowPositions))
-    private val numberFilterColumnPositions = computeNumberFilterColumnPositions(this.maximumInputColumns, filterHeight)
+    private val numberFilterColumnPositions = computeNumberFilterColumnPositions(this.maximumInputColumns, filterWidth)
 
     private val maximumConvolutions = this.numberFilterRowPositions * this.numberFilterColumnPositions
     private val pointerToNumberConvolutions = Pointer.to(intArrayOf(this.maximumConvolutions))
-    override val maximumOutputColumns = maximumConvolutions
+    override val maximumOutputColumns = this.maximumConvolutions
 
     private val numberInputEntries = this.numberInputRows * this.maximumInputColumns
     private val pointerToNumberInputEntries = Pointer.to(intArrayOf(this.numberInputEntries))
@@ -73,6 +75,9 @@ class CudaExpansionLayer internal constructor(
     private val numberBackwardIterations = intArrayOf(-1)
     private val pointerToNumberIterations = Pointer.to(this.numberBackwardIterations)
 
+    override val deviceOutputLengths = Pointer()
+    private val pointerToOutputLengths = Pointer.to(this.deviceOutputLengths)
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize
@@ -85,6 +90,7 @@ class CudaExpansionLayer internal constructor(
         this.pointerToBatchLengths = Pointer.to(this.deviceBatchLengths)
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberResultEntries)
+        allocateDeviceFloatMemory(this.deviceOutputLengths, maximumBatchSize)
 
         this.backwardKernel = this.createBackwardKernel()
 
@@ -148,7 +154,8 @@ class CudaExpansionLayer internal constructor(
                 this.pointerToFilterWidth,
                 this.pointerToFilterSize,
                 Pointer.to(deviceInput),
-                this.pointerToForwardResult
+                this.pointerToForwardResult,
+                this.pointerToOutputLengths
             ),
             this.maximumBatchSize,
             this.numberForwardBlocksInYDimension,
@@ -176,7 +183,8 @@ class CudaExpansionLayer internal constructor(
                 this.pointerToFilterWidth,
                 this.pointerToFilterSize,
                 Pointer.to(deviceInput),
-                this.pointerToForwardResult
+                this.pointerToForwardResult,
+                this.pointerToOutputLengths
             ),
             this.maximumBatchSize,
             this.numberForwardBlocksInYDimension,

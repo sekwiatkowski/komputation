@@ -12,10 +12,10 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 - Standard feed-forward networks:
   - [Projection](./src/main/kotlin/shape/komputation/layers/forward/projection/ProjectionLayer.kt)
-  - [Dense](./src/main/kotlin/shape/komputation/layers/forward/DenseLayer.kt)
+  - [Dense](./src/main/kotlin/shape/komputation/layers/forward/dense/DenseLayer.kt)
 
 - Convolutional neural networks (CNNs):
-  - [Convolution](./src/main/kotlin/shape/komputation/layers/forward/convolution/ConvolutionalLayer.kt)
+  - [Convolution](./src/main/kotlin/shape/komputation/layers/forward/convolution/ConvolutionLayer.kt)
   - [Max-pooling](./src/main/kotlin/shape/komputation/layers/forward/convolution/MaxPoolingLayer.kt)
 
 - Recurrent neural networks (RNNs):

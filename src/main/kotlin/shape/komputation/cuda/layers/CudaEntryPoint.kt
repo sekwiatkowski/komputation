@@ -5,7 +5,7 @@ import shape.komputation.cuda.CudaForwardState
 import shape.komputation.cuda.memory.InputMemory
 import shape.komputation.matrix.Matrix
 
-interface CudaPropagation {
+interface CudaEntryPoint : CudaForwardState {
 
     fun forward(
         batchId : Int,
@@ -15,10 +15,6 @@ interface CudaPropagation {
         memory : InputMemory) : Pointer
 
     fun backward(chain : Pointer) : Pointer
-
-}
-
-interface CudaEntryPoint : CudaForwardState, CudaPropagation {
 
     val hasFixedLength : Boolean
 

@@ -14,7 +14,7 @@
 */
 __global__ void expansionKernel(
     int batchSize,
-    int* batchLengths,
+    int* inputLengths,
     int numberRows,
     int numberFilterRowPositions,
     int numberInputEntries,
@@ -23,10 +23,10 @@ __global__ void expansionKernel(
     int filterWidth,
     int filterLength,
     float* input,
-    float* result) {
+    float* result,
+    int* resultLengths) {
 
     int indexInstance = blockIdx.x;
-    int length = batchLengths[indexInstance];
 
     int indexConvolution = blockIdx.y;
     int indexConvolutionEntry = threadIdx.x;
@@ -44,7 +44,9 @@ __global__ void expansionKernel(
 
     if(indexInstance < batchSize) {
 
-        int numberConvolutions = (length - filterWidth + 1) * numberFilterRowPositions;
+        int inputLength = inputLengths[indexInstance];
+
+        int numberConvolutions = (inputLength - filterWidth + 1) * numberFilterRowPositions;
 
         if(indexConvolution < numberConvolutions) {
 
@@ -57,10 +59,18 @@ __global__ void expansionKernel(
 
         }
 
+        if(blockIdx.y == 0 && threadIdx.x == 0) {
+
+            resultLengths[indexInstance] = numberConvolutions;
+
+        }
+
     }
     else {
 
         result[indexEntryWithinResult] = nanf("NaN");
+
+        resultLengths[indexInstance] = 0;
 
     }
 

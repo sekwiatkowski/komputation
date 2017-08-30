@@ -45,7 +45,7 @@ class CudaVariableLengthForwardPropagator(
 
         var result = this.entryPoint.forward(batchId, batchSize, indices, inputs, memory)
 
-        result = this.firstLayer.forward(batchId, memory.getLengths(batchId), result, isTraining)
+        result = this.firstLayer.forward(batchSize, memory.getLengths(batchId), result, isTraining)
 
         for (layer in this.remainingLayer) {
 
@@ -56,5 +56,11 @@ class CudaVariableLengthForwardPropagator(
         return result
 
     }
+
+}
+
+interface CudaChangesLengths {
+
+    val deviceOutputLengths : Pointer
 
 }

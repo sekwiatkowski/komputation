@@ -3,6 +3,7 @@ package shape.komputation.cuda.layers.forward.activation
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.layers.Resourceful

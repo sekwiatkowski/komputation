@@ -2,6 +2,7 @@ package shape.komputation.cuda.layers.forward.convolution
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
+import shape.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import shape.komputation.cuda.layers.forward.maxpooling.CudaMaxPoolingLayer
 import shape.komputation.cuda.layers.forward.projection.CublasProjectionLayer
 import shape.komputation.optimization.Optimizable
@@ -10,7 +11,7 @@ class CudaConvolutionLayer(
     name : String?,
     private val expansionLayer: CudaExpansionLayer,
     private val projectionLayer: CublasProjectionLayer,
-    private val maxPoolingLayer: CudaMaxPoolingLayer) : BaseCudaForwardLayer(name), Optimizable {
+    private val maxPoolingLayer: CudaMaxPoolingLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
 
     override val deviceForwardResult: Pointer
         get() = this.maxPoolingLayer.deviceForwardResult
@@ -33,6 +34,18 @@ class CudaConvolutionLayer(
         val projected = this.projectionLayer.forward(batchSize, expanded, isTraining)
 
         val maxPooled = this.maxPoolingLayer.forward(batchSize, projected, isTraining)
+
+        return maxPooled
+
+    }
+
+    override fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+
+        val expanded = this.expansionLayer.forward(batchSize, deviceLengths, deviceInput, isTraining)
+
+        val projected = this.projectionLayer.forward(batchSize, expanded, isTraining)
+
+        val maxPooled = this.maxPoolingLayer.forward(batchSize, this.expansionLayer.deviceOutputLengths, projected, isTraining)
 
         return maxPooled
 
