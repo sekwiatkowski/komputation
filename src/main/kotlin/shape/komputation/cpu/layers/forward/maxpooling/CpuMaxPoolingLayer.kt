@@ -1,4 +1,4 @@
-package shape.komputation.cpu.layers.forward.convolution
+package shape.komputation.cpu.layers.forward.maxpooling
 
 import shape.komputation.cpu.functions.findMaxIndicesInRows
 import shape.komputation.cpu.functions.selectEntries

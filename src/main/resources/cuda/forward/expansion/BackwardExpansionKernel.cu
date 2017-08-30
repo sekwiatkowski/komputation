@@ -64,7 +64,7 @@ __global__ void backwardExpansionKernel(
             }
             else {
 
-                thisValue = 0.0;
+                thisValueInIteration = 0.0;
 
             }
 

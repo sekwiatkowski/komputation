@@ -1,4 +1,4 @@
-package shape.komputation.cuda.layers.forward.expansion
+package shape.komputation.cuda.layers.forward.convolution
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree

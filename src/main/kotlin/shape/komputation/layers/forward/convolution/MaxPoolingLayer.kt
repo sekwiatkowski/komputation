@@ -1,14 +1,18 @@
 package shape.komputation.layers.forward.convolution
 
 import jcuda.jcublas.cublasHandle
-import shape.komputation.cpu.layers.forward.convolution.CpuMaxPoolingLayer
+import shape.komputation.cpu.layers.forward.maxpooling.CpuMaxPoolingLayer
 import shape.komputation.cuda.CudaContext
 import shape.komputation.cuda.kernels.ForwardKernels
 import shape.komputation.cuda.layers.forward.maxpooling.CudaMaxPoolingLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class MaxPoolingLayer(private val name : String?, private val numberRows : Int, private val minimumColumns : Int, private val maximumColumns : Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+class MaxPoolingLayer(
+    private val name : String?,
+    private val numberRows : Int,
+    private val minimumColumns : Int,
+    private val maximumColumns : Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
@@ -24,7 +28,6 @@ class MaxPoolingLayer(private val name : String?, private val numberRows : Int, 
             { context.createKernel(ForwardKernels.backwardMaxPooling()) },
             context.maximumNumberOfThreadsPerBlock,
             context.warpSize)
-
 
 }
 

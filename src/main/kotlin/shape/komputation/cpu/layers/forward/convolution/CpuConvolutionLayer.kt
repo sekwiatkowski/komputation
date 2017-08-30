@@ -1,10 +1,11 @@
 package shape.komputation.cpu.layers.forward.convolution
 
 import shape.komputation.cpu.layers.BaseCpuForwardLayer
+import shape.komputation.cpu.layers.forward.maxpooling.CpuMaxPoolingLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import shape.komputation.optimization.Optimizable
 
-class CpuConvolutionalLayer internal constructor(
+class CpuConvolutionLayer internal constructor(
     name : String? = null,
     private val expansionLayer: CpuExpansionLayer,
     private val projectionLayer: CpuProjectionLayer,

@@ -2,7 +2,7 @@ package shape.komputation.layers.forward
 
 import shape.komputation.cpu.layers.combination.additionCombination
 import shape.komputation.cpu.layers.combination.hadamardCombination
-import shape.komputation.cpu.layers.forward.CpuHighwayLayer
+import shape.komputation.cpu.layers.forward.highway.CpuHighwayLayer
 import shape.komputation.initialization.InitializationStrategy
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.concatenateNames

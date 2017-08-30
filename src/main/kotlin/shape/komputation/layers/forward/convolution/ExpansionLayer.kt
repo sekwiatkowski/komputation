@@ -1,20 +1,24 @@
 package shape.komputation.layers.forward.convolution
 
+import jcuda.jcublas.cublasHandle
 import shape.komputation.cpu.layers.forward.convolution.CpuExpansionLayer
+import shape.komputation.cuda.CudaContext
+import shape.komputation.cuda.kernels.ForwardKernels
+import shape.komputation.cuda.layers.forward.convolution.CudaExpansionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
+import shape.komputation.layers.CudaForwardLayerInstruction
 
 
 class ExpansionLayer(
     private val name : String?,
     private val numberInputRows : Int,
-    private val numberInputColumns : Int,
+    private val maximumInputColumns: Int,
     private val hasFixedLength: Boolean,
     private val numberFilterRowPositions: Int,
     private val filterWidth: Int,
-    private val filterHeight: Int) : CpuForwardLayerInstruction {
+    private val filterHeight: Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
-    private val minimumInputLength = if(this.hasFixedLength) this.numberInputColumns else this.filterWidth
-    private val maximumInputLength = this.numberInputColumns
+    private val minimumInputLength = if(this.hasFixedLength) this.maximumInputColumns else this.filterWidth
 
     private val filterLength = this.filterWidth * this.filterHeight
 
@@ -24,11 +28,24 @@ class ExpansionLayer(
             this.name,
             this.numberInputRows,
             this.minimumInputLength,
-            this.maximumInputLength,
+            this.maximumInputColumns,
             this.numberFilterRowPositions,
             this.filterLength,
             this.filterWidth,
             this.filterHeight)
+
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+
+        CudaExpansionLayer(
+            this.name,
+            this.numberInputRows,
+            this.maximumInputColumns,
+            this.filterHeight,
+            this.filterWidth,
+            { context.createKernel(ForwardKernels.expansion()) },
+            { context.createKernel(ForwardKernels.backwardExpansion()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
 
 }

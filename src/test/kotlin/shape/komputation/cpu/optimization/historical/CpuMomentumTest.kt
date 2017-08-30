@@ -1,9 +1,9 @@
 package shape.komputation.cpu.optimization.historical
 
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
-class MomentumTest {
+class CpuMomentumTest {
 
     @Test
     fun name() {
@@ -19,7 +19,8 @@ class MomentumTest {
         // history * decay + learning rate * gradient = 0.9 * (-0.01) - 0.1 * 0.1 = -0.009 - 0.01 = -0.019
         momentum.updateDensely(parameter, floatArrayOf(0.1f), gradientSize)
 
-        Assertions.assertArrayEquals(floatArrayOf(1.0f - 0.01f - 0.019f), parameter)
+        assertArrayEquals(floatArrayOf(1.0f - 0.01f - 0.019f), parameter)
 
     }
+
 }
