@@ -1,12 +1,12 @@
 package shape.komputation.cuda.demos.and
 
-import shape.komputation.cpu.printLoss
-import shape.komputation.cuda.CudaNetwork
+import shape.komputation.cuda.network.CudaNetwork
 import shape.komputation.demos.and.BinaryAndData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.dense.denseLayer
+import shape.komputation.loss.printLoss
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.stochasticGradientDescent
 import java.util.*

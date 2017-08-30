@@ -1,6 +1,6 @@
 package shape.komputation.cuda.demos.mnist
 
-import shape.komputation.cuda.CudaNetwork
+import shape.komputation.cuda.network.CudaNetwork
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer

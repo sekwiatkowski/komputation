@@ -1,8 +1,8 @@
 package shape.komputation.cuda.workflow
 
 import jcuda.Pointer
-import shape.komputation.cuda.CudaBackwardPropagator
-import shape.komputation.cuda.CudaForwardPropagator
+import shape.komputation.cuda.network.CudaBackwardPropagator
+import shape.komputation.cuda.network.CudaForwardPropagator
 import shape.komputation.cuda.loss.CudaLossFunction
 import shape.komputation.cuda.memory.InputMemory
 import shape.komputation.cuda.memory.TargetMemory

@@ -1,67 +1,12 @@
-package shape.komputation.cpu
+package shape.komputation.cpu.network
 
-import shape.komputation.cpu.layers.CpuEntryPoint
 import shape.komputation.cpu.layers.CpuForwardLayer
-import shape.komputation.cpu.layers.CpuForwardState
 import shape.komputation.cpu.workflow.CpuTester
 import shape.komputation.cpu.workflow.CpuTrainer
 import shape.komputation.layers.*
 import shape.komputation.loss.CpuLossFunctionInstruction
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
-
-val printLoss = { _ : Int, loss : Float -> println(loss) }
-
-class CpuForwardPropagator(
-    private val entryPoint: CpuEntryPoint,
-    private val layers : Array<CpuForwardLayer>) {
-
-    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : FloatArray {
-
-        this.entryPoint.forward(input)
-
-        var previousLayerState : CpuForwardState = this.entryPoint
-
-        for (layer in this.layers) {
-
-            layer.forward(withinBatch, previousLayerState.numberOutputColumns, previousLayerState.forwardResult, isTraining)
-
-            previousLayerState = layer
-
-        }
-
-        return previousLayerState.forwardResult
-
-    }
-
-}
-
-class CpuBackwardPropagator(
-    private val entryPoint: CpuEntryPoint,
-    private val layers : Array<CpuForwardLayer>) {
-
-    private val numberLayers = this.layers.size
-
-    fun backward(withinBatch: Int, lossGradient: FloatArray) : FloatArray {
-
-        var chain = lossGradient
-
-        for(indexLayer in this.numberLayers - 1 downTo 0) {
-
-            val layer = this.layers[indexLayer]
-
-            chain = layer.backward(withinBatch, chain)
-
-        }
-
-        val result = this.entryPoint.backward(chain)
-
-        return result
-
-    }
-
-
-}
 
 class Network(
     private val maximumBatchSize: Int,

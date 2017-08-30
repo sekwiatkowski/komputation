@@ -2,7 +2,7 @@ package shape.komputation.cuda.workflow
 
 import jcuda.Pointer
 import shape.komputation.cuda.CudaEvaluation
-import shape.komputation.cuda.CudaForwardPropagator
+import shape.komputation.cuda.network.CudaForwardPropagator
 import shape.komputation.cuda.memory.InputMemory
 import shape.komputation.cuda.memory.TargetMemory
 import shape.komputation.matrix.Matrix

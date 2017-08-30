@@ -1,6 +1,6 @@
 package shape.komputation.cpu.demos.trec
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.network.Network
 import shape.komputation.demos.trec.NLP
 import shape.komputation.demos.trec.TRECData
 import shape.komputation.initialization.uniformInitialization

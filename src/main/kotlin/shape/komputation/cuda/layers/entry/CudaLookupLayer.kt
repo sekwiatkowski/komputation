@@ -146,7 +146,7 @@ class CudaLookupLayer internal constructor(
             memory.setData(batchId, deviceIndices)
             memory.setTotalNumberOfColumns(batchId, batchNumberEntries)
 
-            if (this.hasFixedLength) {
+            if (!this.hasFixedLength) {
 
                 val lengths = IntArray(maximumBatchSize) { index ->
 

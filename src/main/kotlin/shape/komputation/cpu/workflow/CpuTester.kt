@@ -1,6 +1,6 @@
 package shape.komputation.cpu.workflow
 
-import shape.komputation.cpu.CpuForwardPropagator
+import shape.komputation.cpu.network.CpuForwardPropagator
 import shape.komputation.cpu.evaluation.computeAccuracy
 import shape.komputation.cpu.functions.findMaxIndices
 import shape.komputation.matrix.Matrix

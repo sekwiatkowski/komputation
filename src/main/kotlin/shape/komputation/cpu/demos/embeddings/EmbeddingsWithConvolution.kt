@@ -1,7 +1,7 @@
 package shape.komputation.cpu.demos.embeddings
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.printLoss
+import shape.komputation.cpu.network.Network
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.embeddings.EmbeddingData
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.uniformInitialization
@@ -41,12 +41,12 @@ fun main(args: Array<String>) {
     val hasFixedLength = true
 
     Network(
-            maximumBatchSize,
-            lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
-            convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
-            reluLayer(numberFilters),
-            denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
-        )
+        maximumBatchSize,
+        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
+        convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy),
+        reluLayer(numberFilters),
+        denseLayer(numberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

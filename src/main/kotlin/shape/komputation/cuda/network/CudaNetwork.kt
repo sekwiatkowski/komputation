@@ -1,9 +1,11 @@
-package shape.komputation.cuda
+package shape.komputation.cuda.network
 
 import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
+import shape.komputation.cuda.CudaEvaluation
 import shape.komputation.cuda.kernels.EvaluationKernels
+import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.cuda.workflow.CudaTester
 import shape.komputation.cuda.workflow.CudaTrainer
 import shape.komputation.layers.CudaEntryPointInstruction

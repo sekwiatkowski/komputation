@@ -1,7 +1,7 @@
 package shape.komputation.cpu.demos.lines
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.printLoss
+import shape.komputation.cpu.network.Network
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.lines.LinesData
 import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -32,12 +32,12 @@ fun main(args: Array<String>) {
     val maximumBatchSize = 1
 
     Network(
-            maximumBatchSize,
-            inputLayer(numberRows, numberColumns),
-            convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
-            reluLayer(numberFilters),
-            denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
-        )
+        maximumBatchSize,
+        inputLayer(numberRows, numberColumns),
+        convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
+        reluLayer(numberFilters),
+        denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
+    )
         .training(
             LinesData.inputs,
             LinesData.targets,

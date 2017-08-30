@@ -1,7 +1,7 @@
 package shape.komputation.cpu.demos.and
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.printLoss
+import shape.komputation.cpu.network.Network
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.and.BinaryAndData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
@@ -23,10 +23,10 @@ fun main(args: Array<String>) {
     val optimization = stochasticGradientDescent(0.03f)
 
     Network(
-            batchSize,
-            inputLayer(inputDimension),
-            denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
-        )
+        batchSize,
+        inputLayer(inputDimension),
+        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
+    )
         .training(
             BinaryAndData.inputs,
             BinaryAndData.targets,

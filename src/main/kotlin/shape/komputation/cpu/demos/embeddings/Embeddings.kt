@@ -1,7 +1,7 @@
 package shape.komputation.cpu.demos.embeddings
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.printLoss
+import shape.komputation.cpu.network.Network
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.embeddings.EmbeddingData
 import shape.komputation.initialization.initializeColumnVector
 import shape.komputation.initialization.uniformInitialization

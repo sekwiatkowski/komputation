@@ -1,8 +1,8 @@
 package shape.komputation.cpu.demos.reverse
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.network.Network
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.printLoss
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.reverse.ReverseData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
@@ -69,21 +69,21 @@ fun main(args: Array<String>) {
     )
 
     Network(
-            batchSize,
-            inputLayer(numberCategories, seriesLength),
-            concatenation(
-                numberCategories,
-                seriesLength,
-                true,
-                intArrayOf(hiddenDimension, hiddenDimension),
-                1,
-                arrayOf(
-                    singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
-                    singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
-                )
-            ),
-            singleInputDecoder(seriesLength, 2 * hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
-        )
+        batchSize,
+        inputLayer(numberCategories, seriesLength),
+        concatenation(
+            numberCategories,
+            seriesLength,
+            true,
+            intArrayOf(hiddenDimension, hiddenDimension),
+            1,
+            arrayOf(
+                singleOutputEncoder(forwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, false),
+                singleOutputEncoder(backwardEncoderUnit, seriesLength, numberCategories, hiddenDimension, true)
+            )
+        ),
+        singleInputDecoder(seriesLength, 2 * hiddenDimension, numberCategories, decoderUnit, gaussianInitialization, null, ActivationFunction.Softmax, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

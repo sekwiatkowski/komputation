@@ -1,4 +1,4 @@
-package shape.komputation.cuda
+package shape.komputation.cuda.network
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.CudaEntryPoint

@@ -1,8 +1,7 @@
 package shape.komputation.cpu.demos.runningtotal
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.network.Network
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.printLoss
 import shape.komputation.demos.runningtotal.RunningTotalData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
@@ -11,6 +10,7 @@ import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.encoder.multiOutputEncoder
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.loss.printLoss
 import shape.komputation.loss.squaredLoss
 import shape.komputation.matrix.IntMath
 import shape.komputation.optimization.stochasticGradientDescent
@@ -51,11 +51,11 @@ fun main(args: Array<String>) {
     )
 
     Network(
-            batchSize,
-            inputLayer(inputDimension, numberSteps),
-            multiOutputEncoder(encoderUnit, numberSteps, inputDimension, hiddenDimension),
-            projectionLayer(hiddenDimension, numberSteps, false, outputDimension, guassianInitialization, guassianInitialization, optimizationStrategy)
-        )
+        batchSize,
+        inputLayer(inputDimension, numberSteps),
+        multiOutputEncoder(encoderUnit, numberSteps, inputDimension, hiddenDimension),
+        projectionLayer(hiddenDimension, numberSteps, false, outputDimension, guassianInitialization, guassianInitialization, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

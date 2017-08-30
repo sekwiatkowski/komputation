@@ -1,7 +1,7 @@
 package shape.komputation.cuda.demos.xor
 
-import shape.komputation.cpu.printLoss
-import shape.komputation.cuda.CudaNetwork
+import shape.komputation.loss.printLoss
+import shape.komputation.cuda.network.CudaNetwork
 import shape.komputation.demos.xor.XorData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer

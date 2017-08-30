@@ -1,6 +1,6 @@
 package shape.komputation.cpu.demos.mnist
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.network.Network
 import shape.komputation.demos.mnist.MnistData
 import shape.komputation.initialization.constantInitialization
 import shape.komputation.initialization.gaussianInitialization

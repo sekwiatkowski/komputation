@@ -1,7 +1,7 @@
 package shape.komputation.cpu.workflow
 
-import shape.komputation.cpu.CpuBackwardPropagator
-import shape.komputation.cpu.CpuForwardPropagator
+import shape.komputation.cpu.network.CpuBackwardPropagator
+import shape.komputation.cpu.network.CpuForwardPropagator
 import shape.komputation.cpu.loss.CpuLossFunction
 import shape.komputation.matrix.Matrix
 import shape.komputation.matrix.partitionIndices

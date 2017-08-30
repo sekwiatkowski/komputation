@@ -1,8 +1,8 @@
 package shape.komputation.cpu.demos.addition
 
-import shape.komputation.cpu.Network
+import shape.komputation.cpu.network.Network
 import shape.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import shape.komputation.cpu.printLoss
+import shape.komputation.loss.printLoss
 import shape.komputation.demos.addition.AdditionProblemData
 import shape.komputation.initialization.gaussianInitialization
 import shape.komputation.initialization.identityInitialization
@@ -48,11 +48,11 @@ fun main(args: Array<String>) {
     )
 
     Network(
-            batchSize,
-            inputLayer(inputDimension),
-            singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension),
-            projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
-        )
+        batchSize,
+        inputLayer(inputDimension),
+        singleOutputEncoder(encoderUnit, length, inputDimension, hiddenDimension),
+        projectionLayer(hiddenDimension, outputDimension, gaussianInitializationStrategy, gaussianInitializationStrategy, optimizationStrategy)
+    )
         .training(
             inputs,
             targets,

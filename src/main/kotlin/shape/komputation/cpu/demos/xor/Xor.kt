@@ -1,12 +1,12 @@
 package shape.komputation.cpu.demos.xor
 
-import shape.komputation.cpu.Network
-import shape.komputation.cpu.printLoss
+import shape.komputation.cpu.network.Network
 import shape.komputation.demos.xor.XorData
 import shape.komputation.initialization.heInitialization
 import shape.komputation.layers.entry.inputLayer
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.dense.denseLayer
+import shape.komputation.loss.printLoss
 import shape.komputation.loss.squaredLoss
 import shape.komputation.optimization.historical.nesterov
 import java.util.*
@@ -29,11 +29,11 @@ fun main(args: Array<String>) {
     val outputLayer = denseLayer(hiddenDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
 
     Network(
-            batchSize,
-            inputLayer,
-            hiddenLayer,
-            outputLayer
-        )
+        batchSize,
+        inputLayer,
+        hiddenLayer,
+        outputLayer
+    )
         .training(
             XorData.input,
             XorData.targets,
