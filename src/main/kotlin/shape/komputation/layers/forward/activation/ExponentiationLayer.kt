@@ -8,7 +8,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class ExponentiationLayer(
+class ExponentiationLayer internal constructor(
     private val name : String?,
     private val numberRows: Int,
     private val numberColumns: Int,

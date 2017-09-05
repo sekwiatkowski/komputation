@@ -43,7 +43,7 @@ class CudaConvolutionLayer(
 
         val expanded = this.expansionLayer.forward(batchSize, deviceLengths, deviceInput, isTraining)
 
-        val projected = this.projectionLayer.forward(batchSize, expanded, isTraining)
+        val projected = this.projectionLayer.forward(batchSize, this.expansionLayer.deviceOutputLengths, expanded, isTraining)
 
         val maxPooled = this.maxPoolingLayer.forward(batchSize, this.expansionLayer.deviceOutputLengths, projected, isTraining)
 
@@ -63,9 +63,9 @@ class CudaConvolutionLayer(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.projectionLayer.optimize(scalingFactor)
+        this.projectionLayer.optimize(batchSize)
 
     }
 

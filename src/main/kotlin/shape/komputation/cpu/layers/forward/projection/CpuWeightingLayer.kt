@@ -106,11 +106,11 @@ class CpuWeightingLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         if (this.weightUpdateRule != null) {
 
-            updateDensely(this.weights, this.weightAccumulator.getAccumulation(), this.numberWeightEntries, scalingFactor, this.weightUpdateRule)
+            updateDensely(this.weights, this.weightAccumulator.getAccumulation(), this.numberWeightEntries, batchSize, this.weightUpdateRule)
 
             this.weightAccumulator.reset()
 

@@ -3,12 +3,15 @@ package shape.komputation.cuda.layers.forward.maxpooling
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setIntArray
 import shape.komputation.cuda.setUpCudaContext
+import shape.komputation.layers.forward.convolution.MaxPoolingLayer
 import shape.komputation.layers.forward.convolution.maxPoolingLayer
+import java.util.*
 
 class CudaMaxPoolingLayerTest {
 
@@ -245,6 +248,67 @@ class CudaMaxPoolingLayerTest {
 
     }
 
+    @Test
+    fun testComparison() {
 
+        val random = Random()
+
+        val maximumBatchSize = 1
+
+        repeat(5) {
+
+            val cudaContext = setUpCudaContext()
+
+            val numberRows = random.nextInt(100) + 1
+            val maximumColumns = random.nextInt(100) + 1
+
+            val maxPoolingLayer = MaxPoolingLayer(null, numberRows, 1, maximumColumns, Float.NaN)
+
+            val cudaLayer = maxPoolingLayer.buildForCuda(cudaContext, cublasHandle())
+            val cpuLayer = maxPoolingLayer.buildForCpu()
+
+            val input = FloatArray(numberRows * maximumColumns) { Float.NaN }
+
+            val numberColumns = random.nextInt(maximumColumns) + 1
+
+            for (indexColumn in 0..numberColumns - 1) {
+
+                val startColumn = indexColumn * numberRows
+
+                for (indexRow in 0..numberRows - 1) {
+
+                    input[startColumn + indexRow] = random.nextFloat()
+
+                }
+
+            }
+
+            cpuLayer.acquire(1)
+            cudaLayer.acquire(1)
+
+            val cpuResult = cpuLayer.forward(0, numberColumns, input, false)
+
+            val deviceInput = Pointer()
+            setFloatArray(input, input.size, deviceInput)
+            val deviceLengths = Pointer()
+            setIntArray(IntArray(maximumBatchSize) { numberColumns }, maximumBatchSize, deviceLengths)
+
+            val deviceCudaResult = cudaLayer.forward(1, deviceLengths, deviceInput, false)
+            val cudaResult = getFloatArray(deviceCudaResult, numberRows)
+
+            for (indexEntry in 0..numberRows-1) {
+
+                assertEquals(cpuResult[indexEntry], cudaResult[indexEntry], 0.00001f)
+
+            }
+
+            cpuLayer.release()
+            cudaLayer.release()
+
+            cudaContext.destroy()
+
+        }
+
+    }
 
 }

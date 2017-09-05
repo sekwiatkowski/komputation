@@ -14,7 +14,7 @@ import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.optimization.OptimizationInstruction
 
-class ConvolutionLayer(
+class ConvolutionLayer internal constructor(
     private val name : String?,
     private val numberInputRows : Int,
     private val numberInputColumns : Int,
@@ -23,7 +23,7 @@ class ConvolutionLayer(
     private val filterWidth: Int,
     private val filterHeight : Int,
     private val weightInitialization: InitializationStrategy,
-    private val biasInitialization: InitializationStrategy?,
+    private val biasInitialization: InitializationStrategy,
     private val optimization: OptimizationInstruction? = null) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     private val minimumInputColumns = if(this.hasFixedLength) this.numberInputColumns else this.filterWidth
@@ -60,7 +60,8 @@ class ConvolutionLayer(
             concatenateNames(this.name, "max-pooling"),
             this.numberFilters,
             this.minimumNumberConvolutions,
-            this.maximumNumberConvolutions).buildForCpu()
+            this.maximumNumberConvolutions,
+            0f).buildForCpu()
 
         return CpuConvolutionLayer(this.name, expansionLayer, projectionLayer, maxPoolingLayer)
 
@@ -91,7 +92,8 @@ class ConvolutionLayer(
             concatenateNames(this.name, "max-pooling"),
             this.numberFilters,
             this.minimumNumberConvolutions,
-            this.maximumNumberConvolutions).buildForCuda(context, cublasHandle)
+            this.maximumNumberConvolutions,
+            0f).buildForCuda(context, cublasHandle)
 
         return CudaConvolutionLayer(this.name, expansionLayer, projectionLayer, maxPoolingLayer)
 
@@ -109,7 +111,7 @@ fun convolutionalLayer(
     filterWidth: Int,
     filterHeight : Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
+    biasInitialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
 
     convolutionalLayer(null, numberInputRows, numberInputColumns, hasFixedLength, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)
@@ -123,7 +125,7 @@ fun convolutionalLayer(
     filterWidth: Int,
     filterHeight : Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
+    biasInitialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
 
     ConvolutionLayer(name, numberInputRows, numberInputColumns, hasFixedLength, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)

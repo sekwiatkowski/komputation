@@ -3,7 +3,10 @@ package shape.komputation.layers.forward
 import shape.komputation.cpu.layers.forward.CpuTranspositionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class TranspositionLayer(private val name : String? = null, private val numberRows: Int, private val numberColumns: Int) : CpuForwardLayerInstruction {
+class TranspositionLayer internal constructor(
+    private val name : String? = null,
+    private val numberRows: Int,
+    private val numberColumns: Int) : CpuForwardLayerInstruction {
 
     override fun buildForCpu() =
 

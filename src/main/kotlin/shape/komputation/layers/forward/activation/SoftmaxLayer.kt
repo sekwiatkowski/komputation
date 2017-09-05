@@ -9,7 +9,7 @@ import shape.komputation.layers.CudaActivationLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.normalization.normalizationLayer
 
-class SoftmaxLayer(
+class SoftmaxLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,

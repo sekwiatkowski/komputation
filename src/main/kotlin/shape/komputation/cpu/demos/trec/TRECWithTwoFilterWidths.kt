@@ -7,6 +7,7 @@ import shape.komputation.initialization.uniformInitialization
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.layers.forward.activation.reluLayer
 import shape.komputation.layers.forward.activation.softmaxLayer
+import shape.komputation.layers.forward.concatenation
 import shape.komputation.layers.forward.convolution.convolutionalLayer
 import shape.komputation.layers.forward.dropout.dropoutLayer
 import shape.komputation.layers.forward.projection.projectionLayer
@@ -26,11 +27,11 @@ fun main(args: Array<String>) {
     val embeddingFilePath = args.first()
     val dimensions = args.last().toInt()
 
-    TrecWithOneFilterWidth().run(embeddingFilePath, dimensions)
+    TrecWithTwoFilterWidths().run(embeddingFilePath, dimensions)
 
 }
 
-class TrecWithOneFilterWidth {
+class TrecWithTwoFilterWidths {
 
     fun run(embeddingFilePath: String, embeddingDimension: Int) {
 
@@ -41,14 +42,13 @@ class TrecWithOneFilterWidth {
 
         val batchSize = 1
         val hasFixedLength = false
-        val numberIterations = 3
+        val numberIterations = 20
 
         val numberFilters = 100
         val filterWidths = intArrayOf(2, 3)
         val maximumFilterWidth = filterWidths.max()!!
 
         val filterHeight = embeddingDimension
-        val filterWidth = 2
         val numberFilterWidths = filterWidths.size
 
         val keepProbability = 0.8f
@@ -98,10 +98,21 @@ class TrecWithOneFilterWidth {
         val network = Network(
             batchSize,
             lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
-            convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
+            concatenation(
+                embeddingDimension,
+                maximumDocumentLength,
+                false,
+                IntArray(numberFilterWidths) { numberFilters },
+                1,
+                filterWidths
+                    .map { filterWidth ->
+                        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
+                    }
+                    .toTypedArray()
+            ),
             reluLayer(numberFilterWidths * numberFilters),
             dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
-            projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
+            projectionLayer(filterWidths.size * numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )
 
@@ -119,9 +130,9 @@ class TrecWithOneFilterWidth {
             numberIterations,
             logisticLoss(numberCategories)) { _ : Int, _ : Float ->
 
-            println(test.run())
+                println(test.run())
 
-        }
+            }
             .run()
 
     }

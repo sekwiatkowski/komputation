@@ -1,5 +1,7 @@
 __global__ void backwardMaxPoolingKernel (
     int batchSize,
+    int* lengths,
+    float symbolForUnusedColumns,
     int numberEntriesPerInstance,
     int numberRows,
     int* maxIndices,
@@ -7,6 +9,7 @@ __global__ void backwardMaxPoolingKernel (
     float* result) {
 
     int indexInstance = blockIdx.x;
+
     int indexRow = blockIdx.y;
     int indexColumn = threadIdx.x;
 
@@ -14,13 +17,36 @@ __global__ void backwardMaxPoolingKernel (
     int startColumnWithinInstance = indexColumn * numberRows;
     int indexEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + indexRow;
 
-    result[indexEntryWithinBatch] = 0.0;
+    if(indexInstance < batchSize) {
 
-    int maxIndexWithinRow = maxIndices[indexRow];
+        int length = lengths[indexInstance];
 
-    if(indexEntryWithinBatch == maxIndexWithinRow) {
+        if(indexColumn < length) {
 
-        result[indexEntryWithinBatch] = chain[indexRow];
+            int maxIndex = maxIndices[indexInstance * numberRows + indexRow];
+
+            if(indexEntryWithinBatch == maxIndex) {
+
+                result[indexEntryWithinBatch] = chain[indexInstance * numberRows + indexRow];
+
+            }
+            else {
+
+                result[indexEntryWithinBatch] = 0.0;
+
+            }
+
+        }
+        else {
+
+            result[indexEntryWithinBatch] = symbolForUnusedColumns;
+
+        }
+
+    }
+    else {
+
+        result[indexEntryWithinBatch] = symbolForUnusedColumns;
 
     }
 

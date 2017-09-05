@@ -14,11 +14,12 @@ import shape.komputation.layers.forward.activation.softmaxLayer
 import shape.komputation.layers.forward.activation.tanhLayer
 import shape.komputation.layers.forward.columnRepetitionLayer
 import shape.komputation.layers.forward.projection.projectionLayer
+import shape.komputation.layers.forward.projection.weightingLayer
 import shape.komputation.layers.forward.transpositionLayer
 import shape.komputation.optimization.OptimizationInstruction
 
 
-class AttentiveDecoder(
+class AttentiveDecoder internal constructor(
     private val name : String?,
     private val numberSteps : Int,
     private val encodingDimension : Int,
@@ -30,8 +31,8 @@ class AttentiveDecoder(
 
     override fun buildForCpu(): CpuAttentiveDecoder {
 
-        val encodingProjectionName = concatenateNames(this.name, "encoding-projection")
-        val encodingProjection = projectionLayer(encodingProjectionName, this.encodingDimension, this.numberSteps, true, this.encodingDimension, this.weightInitialization, null, this.optimization).buildForCpu()
+        val encodingWeightingName = concatenateNames(this.name, "encoding-projection")
+        val encodingWeighting = weightingLayer(encodingWeightingName, this.encodingDimension, this.numberSteps, true, this.encodingDimension, this.weightInitialization, this.optimization).buildForCpu()
 
         val columnRepetitionLayers = Array(this.numberSteps) { indexStep ->
 
@@ -101,7 +102,7 @@ class AttentiveDecoder(
             this.numberSteps,
             this.encodingDimension,
             this.decodingDimension,
-            encodingProjection,
+            encodingWeighting,
             attentionPreviousStateWeighting,
             columnRepetitionLayers,
             attentionAdditions,

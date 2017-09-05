@@ -2,67 +2,63 @@ package shape.komputation.cuda.layers.forward.projection
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
+import shape.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import shape.komputation.optimization.Optimizable
 
 class CublasProjectionLayer internal constructor(
     name: String?,
     private val weightingLayer: CublasWeightingLayer,
-    private val biasLayer: CublasBiasLayer? = null) : BaseCudaForwardLayer(name), Optimizable {
+    private val biasLayer: CublasBiasLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
 
-    override var deviceForwardResult = Pointer()
-    override var numberOutputRows = -1
-    override var maximumOutputColumns = -1
+    override val deviceForwardResult
+        get() = this.biasLayer.deviceForwardResult
+    override val numberOutputRows
+        get() = this.biasLayer.numberOutputRows
+    override val maximumOutputColumns
+        get() = this.biasLayer.maximumOutputColumns
 
-    override var deviceBackwardResult = Pointer()
-    override var numberInputRows = -1
-    override var maximumInputColumns = -1
+    override val deviceBackwardResult
+        get() = this.weightingLayer.deviceBackwardResult
+    override val numberInputRows
+        get() = this.weightingLayer.numberInputRows
+    override val maximumInputColumns
+        get() = this.weightingLayer.maximumInputColumns
 
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         val weighted = this.weightingLayer.forward(batchSize, deviceInput, isTraining)
 
-        if (this.biasLayer == null) {
+        this.biasLayer.forward(batchSize, weighted, isTraining)
 
-            this.deviceForwardResult = this.weightingLayer.deviceForwardResult
-            this.numberOutputRows = this.weightingLayer.numberOutputRows
-            this.maximumOutputColumns = this.weightingLayer.maximumOutputColumns
+        return this.deviceForwardResult
 
-            return weighted
+    }
 
-        }
-        else {
+    override fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
-            val weightedAndBiased = this.biasLayer.forward(batchSize, weighted, isTraining)
+        val weighted = this.weightingLayer.forward(batchSize, deviceInput, isTraining)
 
-            this.deviceBackwardResult = this.weightingLayer.deviceBackwardResult
-            this.numberInputRows = this.weightingLayer.numberInputRows
-            this.maximumInputColumns = this.weightingLayer.maximumInputColumns
+        this.biasLayer.forward(batchSize, deviceLengths, weighted, isTraining)
 
-            return weightedAndBiased
-
-        }
+        return this.deviceForwardResult
 
     }
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
-        val backwardWeighting = this.weightingLayer.backward(batchSize, chain)
+        this.biasLayer.backward(batchSize, chain)
 
-        if (this.biasLayer != null) {
+        this.weightingLayer.backward(batchSize, chain)
 
-            this.biasLayer.backward(batchSize, chain)
-
-        }
-
-        return backwardWeighting
+        return this.deviceBackwardResult
 
     }
 
-    override fun optimize(scalingFactor: Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.weightingLayer.optimize(scalingFactor)
+        this.weightingLayer.optimize(batchSize)
 
-        this.biasLayer?.optimize(scalingFactor)
+        this.biasLayer.optimize(batchSize)
 
     }
 

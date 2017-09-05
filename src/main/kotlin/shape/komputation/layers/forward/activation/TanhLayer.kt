@@ -8,7 +8,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaTanhLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class TanhLayer(
+class TanhLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,

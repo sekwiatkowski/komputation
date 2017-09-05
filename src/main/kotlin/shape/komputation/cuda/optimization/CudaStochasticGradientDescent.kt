@@ -14,7 +14,7 @@ class CudaStochasticGradientDescent internal constructor(
     private val numberMultiprocessors : Int,
     private val numberResidentWarps : Int,
     private val warpSize : Int,
-    private val maximumNumberThreads : Int) : CudaUpdateRule, Resourceful {
+    private val maximumNumberThreads : Int) : BaseCudaUpdateRule(), Resourceful {
 
     private val pointerToSize = Pointer.to(intArrayOf(this.size))
     private val pointerToLearningRate = Pointer.to(floatArrayOf(this.learningRate))
@@ -25,10 +25,9 @@ class CudaStochasticGradientDescent internal constructor(
     private val numberIterations = intArrayOf(-1)
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
-    private val deviceArrayOfZero = Pointer()
-    private val pointToArrayOfZero = Pointer.to(this.deviceArrayOfZero)
-
     override fun acquire(maximumBatchSize : Int) {
+
+        super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
 
@@ -37,42 +36,28 @@ class CudaStochasticGradientDescent internal constructor(
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
 
-        setIntArray(intArrayOf(0), 1, this.deviceArrayOfZero)
-
     }
 
-    private val scalingFactorArray = floatArrayOf(Float.NaN)
-    private val pointerToScalingFactor = Pointer.to(this.scalingFactorArray)
-
-    override fun denseUpdate(pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer) {
-
-        this.launchKernel(1, this.pointToArrayOfZero, pointerToParameters, scalingFactor, pointerToGradient)
-
-    }
-
-    override fun sparseUpdate(numberParameters : Int, pointerToParameterIndices: Pointer, pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer) {
-
-        this.launchKernel(numberParameters, pointerToParameterIndices, pointerToParameters, scalingFactor, pointerToGradient)
-
-    }
-
-    private fun launchKernel(numberParameters: Int, pointerToParameterIndices : Pointer, pointerToDeviceParameter: Pointer, scalingFactor: Float, pointerToDeviceGradient: Pointer) {
-
-        this.scalingFactorArray[0] = scalingFactor
+    override fun launchKernel(
+        maximumParameters: Int,
+        pointerToIndices: Pointer,
+        pointerToCounts : Pointer,
+        pointerToParameters: Pointer,
+        pointerToGradient: Pointer) : Int {
 
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
             this.pointerToLearningRate,
-            pointerToParameterIndices,
+            pointerToIndices,
+            pointerToCounts,
             this.pointerToSize,
-            pointerToDeviceParameter,
-            this.pointerToScalingFactor,
-            pointerToDeviceGradient
+            pointerToParameters,
+            pointerToGradient
         )
 
-        this.kernel!!.launch(
+        return this.kernel!!.launch(
             parameters,
-            numberParameters,
+            maximumParameters,
             this.numberBlocks,
             this.numberThreads,
             0
@@ -84,7 +69,7 @@ class CudaStochasticGradientDescent internal constructor(
 
         this.kernel!!.destroy()
 
-        cudaFree(this.deviceArrayOfZero)
+        super.release()
 
     }
 

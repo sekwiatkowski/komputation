@@ -32,12 +32,12 @@ class CudaMomentumTest {
         // history = scaling factor * learning rate * gradient = -1.0 * 0.1 * 0.1 = -0.01
         // parameter = 2.0 + history = 1.99
         setFloatArray(floatArrayOf(0.1f), size, deviceGradient)
-        momentum.denseUpdate(Pointer.to(deviceParameter), 1.0f, Pointer.to(deviceGradient))
+        momentum.denseUpdate(1, Pointer.to(deviceParameter), Pointer.to(deviceGradient))
 
         // history = momentum * history - scaling factor * learning rate * gradient = 0.9 * (-0.01) - 1.0 * 0.1 * 0.2 = -0.009 - 0.02 = -0.029
         // parameter = 1.99 + history = 1.961
         setFloatArray(floatArrayOf(0.2f), size, deviceGradient)
-        momentum.denseUpdate(Pointer.to(deviceParameter), 1.0f, Pointer.to(deviceGradient))
+        momentum.denseUpdate(1, Pointer.to(deviceParameter), Pointer.to(deviceGradient))
 
         val hostParameter = getFloatArray(deviceParameter, size)
 

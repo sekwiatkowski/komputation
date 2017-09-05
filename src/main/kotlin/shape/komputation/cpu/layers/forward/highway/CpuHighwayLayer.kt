@@ -126,10 +126,10 @@ class CpuHighwayLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.transformation.optimize(scalingFactor)
-        this.transformationFraction.optimize(scalingFactor)
+        this.transformation.optimize(batchSize)
+        this.transformationFraction.optimize(batchSize)
 
     }
 

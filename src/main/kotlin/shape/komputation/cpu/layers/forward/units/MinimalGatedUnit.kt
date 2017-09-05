@@ -131,10 +131,10 @@ class MinimalGatedUnit internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.forgetUnit.optimize(scalingFactor)
-        this.shortTermResponse.optimize(scalingFactor)
+        this.forgetUnit.optimize(batchSize)
+        this.shortTermResponse.optimize(batchSize)
 
     }
 

@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
     val random = Random(1)
 
-    val numberIterations = 50
+    val numberIterations = 30
     val batchSize = 64
 
     val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()))

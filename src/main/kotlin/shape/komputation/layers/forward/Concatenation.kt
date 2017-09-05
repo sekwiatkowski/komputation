@@ -3,7 +3,7 @@ package shape.komputation.layers.forward
 import shape.komputation.cpu.layers.forward.CpuConcatenation
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class Concatenation(
+class Concatenation internal constructor(
     private val name : String?,
     private val numberInputRows : Int,
     private val numberInputColumns : Int,

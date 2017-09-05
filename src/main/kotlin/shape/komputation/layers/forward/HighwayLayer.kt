@@ -10,12 +10,12 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.dense.denseLayer
 import shape.komputation.optimization.OptimizationInstruction
 
-class HighwayLayer(
+class HighwayLayer internal constructor(
     private val name : String?,
     private val dimension: Int,
     private val weightInitialization: InitializationStrategy,
-    private val transformationBiasInitialization: InitializationStrategy?,
-    private val transformationFractionBiasInitialization: InitializationStrategy?,
+    private val transformationBiasInitialization: InitializationStrategy,
+    private val transformationFractionBiasInitialization: InitializationStrategy,
     private val transformationFunction: ActivationFunction,
     private val optimization: OptimizationInstruction?) : CpuForwardLayerInstruction {
 
@@ -50,8 +50,8 @@ class HighwayLayer(
 fun highwayLayer(
     dimension: Int,
     weightInitialization: InitializationStrategy,
-    transformationBiasInitialization: InitializationStrategy?,
-    transformationFractionBiasInitialization: InitializationStrategy?,
+    transformationBiasInitialization: InitializationStrategy,
+    transformationFractionBiasInitialization: InitializationStrategy,
     transformationFunction: ActivationFunction,
     optimization: OptimizationInstruction?) =
 
@@ -61,8 +61,8 @@ fun highwayLayer(
     name : String?,
     dimension: Int,
     weightInitialization: InitializationStrategy,
-    transformationBiasInitialization: InitializationStrategy?,
-    transformationFractionBiasInitialization: InitializationStrategy?,
+    transformationBiasInitialization: InitializationStrategy,
+    transformationFractionBiasInitialization: InitializationStrategy,
     transformationFunction: ActivationFunction,
     optimization: OptimizationInstruction?) =
 

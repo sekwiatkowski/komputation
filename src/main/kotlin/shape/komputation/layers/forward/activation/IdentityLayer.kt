@@ -7,7 +7,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaIdentityLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class IdentityLayer(
+class IdentityLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {

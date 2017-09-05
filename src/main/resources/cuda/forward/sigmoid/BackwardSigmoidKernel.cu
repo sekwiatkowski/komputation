@@ -1,4 +1,4 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 __device__ float backwardSigmoid (float forward, float chain)
 {

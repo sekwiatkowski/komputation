@@ -2,7 +2,7 @@ package shape.komputation.cuda.kernels
 
 object KernelHeaders {
 
-    val nan = "symbols/Nan.cuh"
+    val nan = "symbols/NaN.cuh"
 
     val zero = "symbols/Zero.cuh"
 

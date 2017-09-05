@@ -1,7 +1,8 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 __global__ void biasKernel (
     int batchSize,
+    int* lengths,
     int numberEntriesPerInstance,
     int numberRows,
     int numberIterations,
@@ -16,19 +17,33 @@ __global__ void biasKernel (
     int startColumnWithinInstance = indexColumn * numberRows;
     int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
-    int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
+    int firstEntryWithinInstance = startColumnWithinInstance + startRowWithinColumn;
 
-    if(firstEntryWithinBatch < startNextColumn) {
+    if(firstEntryWithinInstance < numberEntriesPerInstance) {
 
-        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
+        int startColumnWithinBatch = startInstanceWithinBatch + startColumnWithinInstance;
+        int firstEntryWithinBatch = startColumnWithinBatch + startRowWithinColumn;
+
+        int startNextColumnWithinBatch = startColumnWithinBatch + numberRows;
+        int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumnWithinBatch);
 
         if(indexInstance < batchSize) {
 
-            for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
+            int length = lengths[indexInstance];
 
-                int indexColumn = indexEntry % numberRows;
-                result[indexEntry] = input[indexEntry] + bias[indexColumn];
+            if(indexColumn < length) {
+
+                for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
+
+                    int indexColumn = indexEntry % numberRows;
+                    result[indexEntry] = input[indexEntry] + bias[indexColumn];
+
+                }
+
+            }
+            else {
+
+                setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
             }
 

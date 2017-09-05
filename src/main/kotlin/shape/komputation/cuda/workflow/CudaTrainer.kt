@@ -51,7 +51,7 @@ class CudaTrainer(
 
         repeat(this.numberIterations) { indexIteration ->
 
-            var iterationLoss = if(trackLoss) 0.0f else Float.NaN
+            var iterationLoss = if(trackLoss) 0f else Float.NaN
 
             for ((batchId, batch) in this.batches.withIndex()) {
 
@@ -72,11 +72,9 @@ class CudaTrainer(
 
                 this.backwardPropagator.backward(backwardLoss, currentBatchSize)
 
-                val scalingFactor = 1.0f.div(batch.size.toFloat())
-
                 for (optimizable in this.optimizables) {
 
-                    optimizable.optimize(scalingFactor)
+                    optimizable.optimize(currentBatchSize)
 
                 }
 

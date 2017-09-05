@@ -56,11 +56,11 @@ class SeriesWeighting internal constructor(
 
     }
 
-    fun optimize(scalingFactor : Float) {
+    fun optimize(batchSize : Int) {
 
         if (this.updateRule != null) {
 
-            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries, scalingFactor, this.updateRule)
+            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries, batchSize, this.updateRule)
 
         }
 

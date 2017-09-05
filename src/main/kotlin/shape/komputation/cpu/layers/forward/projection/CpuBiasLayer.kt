@@ -35,11 +35,11 @@ class CpuBiasLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         if (this.biasUpdateRule != null) {
 
-            updateDensely(this.bias, this.biasAccumulator.getAccumulation(), this.numberBiasEntries, scalingFactor, this.biasUpdateRule)
+            updateDensely(this.bias, this.biasAccumulator.getAccumulation(), this.numberBiasEntries, batchSize, this.biasUpdateRule)
 
             this.biasAccumulator.reset()
 

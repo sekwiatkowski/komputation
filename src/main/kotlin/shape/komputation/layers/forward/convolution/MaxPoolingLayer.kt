@@ -8,11 +8,12 @@ import shape.komputation.cuda.layers.forward.maxpooling.CudaMaxPoolingLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class MaxPoolingLayer(
+class MaxPoolingLayer internal constructor (
     private val name : String?,
     private val numberRows : Int,
     private val minimumColumns : Int,
-    private val maximumColumns : Int) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+    private val maximumColumns : Int,
+    private val symbolForUnusedColumns : Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 
@@ -24,6 +25,7 @@ class MaxPoolingLayer(
             this.name,
             this.numberRows,
             this.maximumColumns,
+            this.symbolForUnusedColumns,
             { context.createKernel(ForwardKernels.maxPooling()) },
             { context.createKernel(ForwardKernels.backwardMaxPooling()) },
             context.maximumNumberOfThreadsPerBlock,
@@ -37,4 +39,4 @@ fun maxPoolingLayer(numberRows : Int, numberColumns: Int) =
 
 fun maxPoolingLayer(name : String? = null, numberRows : Int, numberColumns: Int) =
 
-    MaxPoolingLayer(name, numberRows, numberColumns, numberColumns)
+    MaxPoolingLayer(name, numberRows, numberColumns, numberColumns, Float.NaN)

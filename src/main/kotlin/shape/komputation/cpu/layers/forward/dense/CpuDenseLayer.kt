@@ -40,9 +40,9 @@ class CpuDenseLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.projection.optimize(scalingFactor)
+        this.projection.optimize(batchSize)
 
     }
 

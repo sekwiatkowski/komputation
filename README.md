@@ -64,8 +64,9 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 - [Computer vision toy problem](./src/main/kotlin/shape/komputation/cpu/demos/lines/Lines.kt)
 
 - Word embedding toy problem:
-  - [CNN with one filter width](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/Embeddings.kt)
-  - [CNN with two filter widths](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithDifferentFilterHeights.kt)
+  - [Feed-forward network](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/Embeddings.kt)
+  - [CNN with one filter width](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithConvolution.kt)
+  - [CNN with two filter widths](./src/main/kotlin/shape/komputation/cpu/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
 
 - Addition problem:
   - [Simple recurrent unit](./src/main/kotlin/shape/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
@@ -80,36 +81,28 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
   - [CPU demo](./src/main/kotlin/shape/komputation/cpu/demos/mnist/MnistBatchDropout.kt)
   - [GPU/CUDA demo](./src/main/kotlin/shape/komputation/cuda/demos/mnist/MnistBatchDropout.kt)
 
-- [TREC question classification](./src/main/kotlin/shape/komputation/cpu/demos/trec/TREC.kt)
+- TREC:
+  - [CPU demo](./src/main/kotlin/shape/komputation/cpu/demos/trec/TREC.kt)
+  - [CPU demo with two filter widths](./src/main/kotlin/shape/komputation/cpu/demos/trec/TRECWithTwoFilterWidths.kt)
+  - [GPU/CUDA demo](./src/main/kotlin/shape/komputation/cuda/demos/trec/TREC.kt)
 
 ## Sample code
 
-The following code instantiates a convolutional neural network for sentence classification:
+The following code instantiates a GPU-accelerated convolutional neural network for sentence classification:
 
  ```kotlin
-    val network = Network(
+    val network = CudaNetwork(
         batchSize,
         lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
-        concatenation(
-            embeddingDimension,
-            maximumDocumentLength,
-            false,
-            IntArray(numberFilterWidths) { numberFilters },
-            1,
-            filterWidths
-                .map { filterWidth ->
-                    convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
-                }
-                .toTypedArray()
-        ),
-        reluLayer(numberFilterWidths * numberFilters),
-        dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
-        projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
+        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization),
+        reluLayer(numberFilters),
+        dropoutLayer(random, keepProbability, numberFilters),
+        projectionLayer(numberFilters, numberCategories, weightInitialization, biasInitialization, optimization),
         softmaxLayer(numberCategories)
     )
 ```
 
-See the [TREC demo](./src/main/kotlin/shape/komputation/cpus/demos/trec/TREC.kt) for more details.
+See the [TREC demo](./src/main/kotlin/shape/komputation/cuda/demos/trec/TREC.kt) for more details.
 
 ## Initialization
 

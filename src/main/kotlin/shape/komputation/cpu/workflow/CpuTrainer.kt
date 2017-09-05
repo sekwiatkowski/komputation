@@ -51,11 +51,9 @@ class CpuTrainer(
 
                 iterationLoss += batchLoss
 
-                val scalingFactor = 1.0f.div(batch.size.toFloat())
-
                 for (optimizable in this.optimizables) {
 
-                    optimizable.optimize(scalingFactor)
+                    optimizable.optimize(batch.size)
 
                 }
 

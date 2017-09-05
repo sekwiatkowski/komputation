@@ -96,11 +96,11 @@ class ShortTermResponse(
 
     }
 
-    fun optimize(scalingFactor : Float) {
+    fun optimize(batchSize : Int) {
 
-        this.memoryWeighting.optimize(scalingFactor)
-        this.inputWeighting.optimize(scalingFactor)
-        this.bias?.optimize(scalingFactor)
+        this.memoryWeighting.optimize(batchSize)
+        this.inputWeighting.optimize(batchSize)
+        this.bias?.optimize(batchSize)
 
     }
 

@@ -1,4 +1,4 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 __global__ void exponentiationKernel (
     int batchSize,

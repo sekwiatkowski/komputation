@@ -11,7 +11,7 @@ import shape.komputation.layers.concatenateNames
 import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.optimization.OptimizationInstruction
 
-class SingleInputDecoder(
+class SingleInputDecoder internal constructor(
     private val name : String?,
     private val numberSteps: Int,
     private val hiddenDimension : Int,

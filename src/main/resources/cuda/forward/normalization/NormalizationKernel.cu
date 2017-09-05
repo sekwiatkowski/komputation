@@ -1,5 +1,5 @@
 #include "reduction/SumReduction.cuh"
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 /*
     number of blocks in x-dimension = number of instances

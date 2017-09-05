@@ -1,4 +1,4 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 __device__ int findNextPowerOfTwo(int input) {
 
@@ -34,56 +34,62 @@ __global__ void maxPoolingKernel (
     float* input,
     float* result) {
 
+    extern __shared__ int warpMaximumIndices[];
+
+    // One instance per block in the X dimension
     int indexInstance = blockIdx.x;
-    int length = lengths[indexInstance];
+    // One row per block in the Y dimension
     int indexRow = blockIdx.y;
+    // One column per thread
     int indexColumn = threadIdx.x;
+
     int numberRows = gridDim.y;
-    int maximumNumberOfColumns = blockDim.x;
 
     int resultStartInstance = indexInstance * numberRows;
     int resultIndex = resultStartInstance + indexRow;
 
     if(indexInstance < batchSize) {
 
-        extern __shared__ int warpMaximumIndices[];
-
-        int numberWarps = (maximumNumberOfColumns + warpSize - 1) / warpSize;
-        int lastWarpId = numberWarps - 1;
+        int length = lengths[indexInstance];
 
         int warpId = indexColumn / warpSize;
-        int laneId = indexColumn % warpSize;
 
-        int startInstanceWithinBatch = indexInstance * numberEntries;
-        int startColumnWithinBatch = indexColumn * numberRows;
+        int numberRequiredWarps = (length + warpSize - 1) / warpSize;
 
-        int thisIndex = startInstanceWithinBatch + startColumnWithinBatch + indexRow;
+        // Some instances/rows require more warps than others
+        if(warpId < numberRequiredWarps) {
 
-        float thisValue = warpId < lastWarpId ? input[thisIndex] : (indexColumn < length ? input[thisIndex] : __int_as_float(0xff800000));
+            int laneId = indexColumn % warpSize;
 
-        int width = warpId < lastWarpId ? warpSize : findNextPowerOfTwo(length);
+            int thisIndex = indexInstance * numberEntries + indexColumn * numberRows + indexRow;
+            float thisValue = indexColumn < length ? input[thisIndex] : __int_as_float(0xff800000);
 
-        int warpMaximumIndex = findMaximum(thisIndex, thisValue, width);
+            int lastWarpId = numberRequiredWarps - 1;
+            int width = warpId < lastWarpId ? warpSize : findNextPowerOfTwo(length - lastWarpId * warpSize);
 
-        if(laneId == 0) {
-
-            warpMaximumIndices[warpId] = warpMaximumIndex;
-
-        }
-
-        __syncthreads();
-
-        if (warpId == 0 && laneId < numberWarps) {
-
-            int thisWarpMaximumIndex = warpMaximumIndices[laneId];
-            int thisWarpMaximumValue = input[thisWarpMaximumIndex];
-
-            int blockMaximumIndex = findMaximum(thisWarpMaximumIndex, thisWarpMaximumValue, findNextPowerOfTwo(numberWarps));
+            int warpMaximumIndex = findMaximum(thisIndex, thisValue, width);
 
             if(laneId == 0) {
 
-                maxIndices[resultIndex] = blockMaximumIndex;
-                result[resultIndex] = input[blockMaximumIndex];
+                warpMaximumIndices[warpId] = warpMaximumIndex;
+
+            }
+
+            __syncthreads();
+
+            if (warpId == 0 && laneId < numberRequiredWarps) {
+
+                int warpMaximumIndex = warpMaximumIndices[laneId];
+                float warpMaximumValue = input[warpMaximumIndex];
+
+                int blockMaximumIndex = findMaximum(warpMaximumIndex, warpMaximumValue, findNextPowerOfTwo(numberRequiredWarps));
+
+                if(laneId == 0) {
+
+                    maxIndices[resultIndex] = blockMaximumIndex;
+                    result[resultIndex] = input[blockMaximumIndex];
+
+                }
 
             }
 

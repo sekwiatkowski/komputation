@@ -83,12 +83,12 @@ class SimpleRecurrentUnit internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.previousStateWeighting.optimize(scalingFactor)
-        this.inputWeighting.optimize(scalingFactor)
+        this.previousStateWeighting.optimize(batchSize)
+        this.inputWeighting.optimize(batchSize)
 
-        this.bias?.optimize(scalingFactor)
+        this.bias?.optimize(batchSize)
 
     }
 

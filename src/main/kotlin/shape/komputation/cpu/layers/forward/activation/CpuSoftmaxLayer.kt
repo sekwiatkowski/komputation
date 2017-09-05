@@ -26,7 +26,9 @@ class CpuSoftmaxLayer internal constructor(
 
         this.exponentiationLayer.forward(withinBatch, numberInputColumns, input, isTraining)
 
-        return this.normalizationLayer.forward(withinBatch, this.exponentiationLayer.numberOutputColumns, this.exponentiationLayer.forwardResult, isTraining)
+        val normalized = this.normalizationLayer.forward(withinBatch, this.exponentiationLayer.numberOutputColumns, this.exponentiationLayer.forwardResult, isTraining)
+
+        return normalized
 
     }
 
@@ -34,7 +36,9 @@ class CpuSoftmaxLayer internal constructor(
 
         val backwardNormalization = this.normalizationLayer.backward(withinBatch, chain)
 
-        return this.exponentiationLayer.backward(withinBatch, backwardNormalization)
+        val backwardExponentiation = this.exponentiationLayer.backward(withinBatch, backwardNormalization)
+
+        return backwardExponentiation
 
     }
 

@@ -3,14 +3,13 @@ package shape.komputation.cuda.layers.forward.projection
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.*
 import shape.komputation.cuda.functions.cublasBackwardProjectionWrtBias
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
-import shape.komputation.cuda.optimization.CudaUpdateRule
-import shape.komputation.cuda.setArrayToZero
-import shape.komputation.cuda.setFloatArray
+import shape.komputation.cuda.layers.CudaVariableLengthForwardLayer
+import shape.komputation.cuda.optimization.BaseCudaUpdateRule
 import shape.komputation.layers.Resourceful
 import shape.komputation.optimization.Optimizable
 
@@ -20,10 +19,10 @@ class CublasBiasLayer internal constructor(
     numberRows: Int,
     numberColumns: Int,
     private val initialBias: FloatArray,
-    private val biasUpdateRule: CudaUpdateRule?,
+    private val biasUpdateRule: BaseCudaUpdateRule?,
     private val createKernel: () -> Kernel,
     private val warpSize : Int,
-    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable, Resourceful {
 
     private val numberEntries = numberRows * numberColumns
 
@@ -59,6 +58,8 @@ class CublasBiasLayer internal constructor(
 
     private var numberBatchInputColumns = -1
     private var maximumBatchSize = -1
+    private val deviceMaximumInputColumns = Pointer()
+    private val pointerToMaximumInputColumns = Pointer.to(deviceMaximumInputColumns)
 
     override fun acquire(maximumBatchSize : Int) {
 
@@ -67,6 +68,8 @@ class CublasBiasLayer internal constructor(
         this.numberBatchInputColumns = maximumBatchSize * this.maximumInputColumns
 
         this.kernel = this.createKernel()
+
+        setIntArray(IntArray(maximumBatchSize) { this.maximumInputColumns }, this.maximumBatchSize, this.deviceMaximumInputColumns)
 
         setFloatArray(this.initialBias, this.numberEntries, this.deviceBias)
 
@@ -96,6 +99,7 @@ class CublasBiasLayer internal constructor(
         this.kernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
+                this.pointerToMaximumInputColumns,
                 this.pointerToNumberEntries,
                 this.pointerToNumberInputRows,
                 this.pointerToNumberIterations,
@@ -112,6 +116,32 @@ class CublasBiasLayer internal constructor(
         return this.deviceForwardResult
 
     }
+
+    override fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean): Pointer {
+
+        this.batchSize[0] = batchSize
+
+        this.kernel!!.launch(
+            Pointer.to(
+                this.pointerToBatchSize,
+                Pointer.to(deviceLengths),
+                this.pointerToNumberEntries,
+                this.pointerToNumberInputRows,
+                this.pointerToNumberIterations,
+                Pointer.to(deviceInput),
+                this.pointerToDeviceBias,
+                this.pointerToDeviceForwardResult
+            ),
+            this.numberBlocksInXDimension,
+            this.numberBlocksInYDimension,
+            this.numberThreadsPerBlock,
+            0
+        )
+
+        return this.deviceForwardResult
+
+    }
+
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
 
@@ -144,9 +174,12 @@ class CublasBiasLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.biasUpdateRule?.denseUpdate(this.pointerToDeviceBias, scalingFactor, this.pointerToDeviceBackwardWrtBias)
+        this.biasUpdateRule?.denseUpdate(
+            batchSize,
+            this.pointerToDeviceBias,
+            this.pointerToDeviceBackwardWrtBias)
 
     }
 

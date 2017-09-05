@@ -3,7 +3,10 @@ package shape.komputation.layers.forward
 import shape.komputation.cpu.layers.forward.CpuColumnRepetitionLayer
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class ColumnRepetitionLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int) : CpuForwardLayerInstruction {
+class ColumnRepetitionLayer internal constructor(
+    private val name : String?,
+    private val numberRows : Int,
+    private val numberColumns : Int) : CpuForwardLayerInstruction {
 
     override fun buildForCpu() =
 

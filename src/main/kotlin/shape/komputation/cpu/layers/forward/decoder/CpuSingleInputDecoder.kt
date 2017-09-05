@@ -173,16 +173,16 @@ class CpuSingleInputDecoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         if (this.unit is Optimizable) {
 
-            this.unit.optimize(scalingFactor)
+            this.unit.optimize(batchSize)
 
         }
 
-        this.weighting.optimize(scalingFactor)
-        this.bias?.optimize(scalingFactor)
+        this.weighting.optimize(batchSize)
+        this.bias?.optimize(batchSize)
 
     }
 

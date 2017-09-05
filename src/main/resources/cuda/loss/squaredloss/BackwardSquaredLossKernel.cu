@@ -1,6 +1,5 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
-extern "C"
 __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
 {
 

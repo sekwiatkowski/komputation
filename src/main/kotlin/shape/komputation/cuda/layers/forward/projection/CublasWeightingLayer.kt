@@ -9,7 +9,7 @@ import shape.komputation.cuda.functions.cublasBackwardProjectionWrtWeights
 import shape.komputation.cuda.functions.cublasMatrixMatrixMultiplication
 import shape.komputation.cuda.functions.cublasMatrixVectorMultiplication
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
-import shape.komputation.cuda.optimization.CudaUpdateRule
+import shape.komputation.cuda.optimization.BaseCudaUpdateRule
 import shape.komputation.cuda.setArrayToZero
 import shape.komputation.cuda.setFloatArray
 import shape.komputation.layers.Resourceful
@@ -22,7 +22,7 @@ class CublasWeightingLayer internal constructor(
     override val maximumInputColumns: Int,
     override val numberOutputRows: Int,
     private val initialWeights: FloatArray,
-    private val weightUpdateRule: CudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
+    private val weightUpdateRule: BaseCudaUpdateRule? = null) : BaseCudaForwardLayer(name), Optimizable, Resourceful {
 
     private val numberInputEntries = this.numberInputRows * this.maximumInputColumns
 
@@ -162,9 +162,12 @@ class CublasWeightingLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.weightUpdateRule?.denseUpdate(this.pointerToDeviceWeights, scalingFactor, this.pointerToDeviceBackwardWrtWeights)
+        this.weightUpdateRule?.denseUpdate(
+            batchSize,
+            this.pointerToDeviceWeights,
+            this.pointerToDeviceBackwardWrtWeights)
 
     }
 

@@ -5,7 +5,6 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cpu.functions.computeNumberFilterColumnPositions
 import shape.komputation.cpu.functions.computeNumberFilterRowPositions
 import shape.komputation.cuda.allocateDeviceFloatMemory
-import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.KernelLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
@@ -43,8 +42,10 @@ class CudaExpansionLayer internal constructor(
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
 
-    private val deviceBatchLengths = Pointer()
-    private var pointerToBatchLengths = Pointer()
+    private val deviceMaximumBatchLengths = Pointer()
+    private var pointerToMaximumBatchLengths = Pointer.to(this.deviceMaximumBatchLengths)
+
+    private var pointerToCurrentBatchLengths = Pointer()
 
     private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberInputRows))
 
@@ -85,9 +86,7 @@ class CudaExpansionLayer internal constructor(
         this.forwardKernel = this.createForwardKernel()
 
         val maximumBatchLengths = IntArray(maximumBatchSize) { this.maximumInputColumns }
-        setIntArray(maximumBatchLengths, maximumBatchSize, this.deviceBatchLengths)
-
-        this.pointerToBatchLengths = Pointer.to(this.deviceBatchLengths)
+        setIntArray(maximumBatchLengths, maximumBatchSize, this.deviceMaximumBatchLengths)
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberResultEntries)
         allocateDeviceFloatMemory(this.deviceOutputLengths, maximumBatchSize)
@@ -128,7 +127,7 @@ class CudaExpansionLayer internal constructor(
 
     override fun release() {
 
-        cudaFree(this.deviceBatchLengths)
+        cudaFree(this.deviceMaximumBatchLengths)
 
         this.forwardKernel!!.destroy()
         cudaFree(this.deviceForwardResult)
@@ -141,11 +140,12 @@ class CudaExpansionLayer internal constructor(
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         this.batchSize[0] = batchSize
+        this.pointerToCurrentBatchLengths = this.pointerToMaximumBatchLengths
 
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                this.pointerToBatchLengths,
+                this.pointerToCurrentBatchLengths,
                 this.pointerToNumberRows,
                 this.pointerToNumberFilterRowPositions,
                 this.pointerToNumberInputEntries,
@@ -170,11 +170,12 @@ class CudaExpansionLayer internal constructor(
     override fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean) : Pointer {
 
         this.batchSize[0] = batchSize
+        this.pointerToCurrentBatchLengths = Pointer.to(deviceLengths)
 
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                Pointer.to(deviceLengths),
+                this.pointerToCurrentBatchLengths,
                 this.pointerToNumberRows,
                 this.pointerToNumberFilterRowPositions,
                 this.pointerToNumberInputEntries,
@@ -201,7 +202,7 @@ class CudaExpansionLayer internal constructor(
         this.backwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                this.pointerToBatchLengths,
+                this.pointerToCurrentBatchLengths,
                 this.pointerToNumberIterations,
                 this.pointerToNumberRows,
                 this.pointerToNumberInputEntries,

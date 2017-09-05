@@ -6,34 +6,28 @@ import shape.komputation.optimization.Optimizable
 class CpuProjectionLayer internal constructor(
     name : String? = null,
     private val weightingLayer: CpuWeightingLayer,
-    private val biasLayer : CpuBiasLayer?) : BaseCpuForwardLayer(name), Optimizable {
+    private val biasLayer : CpuBiasLayer) : BaseCpuForwardLayer(name), Optimizable {
 
     override val numberOutputRows
-        get() = this.weightingLayer.numberOutputRows
+        get() = this.biasLayer.numberOutputRows
     override val numberOutputColumns
-        get() = this.weightingLayer.numberOutputColumns
-    override var forwardResult = FloatArray(0)
+        get() = this.biasLayer.numberOutputColumns
+    override val forwardResult
+        get() = this.biasLayer.forwardResult
 
     override val numberInputRows
         get() = this.weightingLayer.numberInputRows
     override val numberInputColumns
         get() = this.weightingLayer.numberInputColumns
-    override var backwardResult = FloatArray(0)
+    override val backwardResult
+        get() = this.weightingLayer.backwardResult
+
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining: Boolean): FloatArray {
 
         val weighted = this.weightingLayer.forward(withinBatch, numberInputColumns, input, isTraining)
 
-        this.forwardResult = if (this.biasLayer != null) {
-
-            this.biasLayer.forward(withinBatch, numberInputColumns, weighted, isTraining)
-
-        }
-        else {
-
-            weighted
-
-        }
+        this.biasLayer.forward(withinBatch, numberInputColumns, weighted, isTraining)
 
         return this.forwardResult
 
@@ -41,21 +35,19 @@ class CpuProjectionLayer internal constructor(
 
     override fun backward(withinBatch : Int, chain : FloatArray) : FloatArray {
 
+        this.biasLayer.backward(withinBatch, chain)
+
         this.weightingLayer.backward(withinBatch, chain)
-
-        this.biasLayer?.backward(withinBatch, chain)
-
-        this.backwardResult = this.weightingLayer.backwardResult
 
         return this.backwardResult
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.weightingLayer.optimize(scalingFactor)
+        this.weightingLayer.optimize(batchSize)
 
-        this.biasLayer?.optimize(scalingFactor)
+        this.biasLayer.optimize(batchSize)
 
     }
 

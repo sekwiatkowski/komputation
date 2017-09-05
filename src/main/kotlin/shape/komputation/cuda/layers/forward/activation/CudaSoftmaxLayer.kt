@@ -26,7 +26,9 @@ class CudaSoftmaxLayer internal constructor(
 
         val exponentiated = this.exponentiationLayer.forward(batchSize, deviceInput, isTraining)
 
-        return this.normalizationLayer.forward(batchSize, exponentiated, isTraining)
+        val normalized = this.normalizationLayer.forward(batchSize, exponentiated, isTraining)
+
+        return normalized
 
     }
 
@@ -34,7 +36,9 @@ class CudaSoftmaxLayer internal constructor(
 
         val backwardNormalization = this.normalizationLayer.backward(batchSize, chain)
 
-        return this.exponentiationLayer.backward(batchSize, backwardNormalization)
+        val backwardExponentiation = this.exponentiationLayer.backward(batchSize, backwardNormalization)
+
+        return backwardExponentiation
 
     }
 

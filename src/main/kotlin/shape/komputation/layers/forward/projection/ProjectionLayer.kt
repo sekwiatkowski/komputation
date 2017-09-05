@@ -18,14 +18,14 @@ import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.layers.concatenateNames
 import shape.komputation.optimization.OptimizationInstruction
 
-class ProjectionLayer(
+class ProjectionLayer internal constructor(
     private val name : String?,
     private val numberInputRows: Int,
     private val numberInputColumns: Int,
     private val hasFixedLength: Boolean,
     private val numberOutputRows : Int,
     private val weightInitializationStrategy: InitializationStrategy,
-    private val biasInitializationStrategy: InitializationStrategy?,
+    private val biasInitializationStrategy: InitializationStrategy,
     private val optimizationStrategy : OptimizationInstruction? = null) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     private val minimumInputColumns = if (this.hasFixedLength) this.numberInputColumns else 1
@@ -45,22 +45,13 @@ class ProjectionLayer(
 
         val weightingLayer = CpuWeightingLayer(weightingName, weights, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, weightAccumulator, weightingUpdateRule)
 
-        val biasLayer = if (this.biasInitializationStrategy != null) {
+        val biasName = concatenateNames(name, "bias")
 
-            val biasName = concatenateNames(name, "bias")
+        val bias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
+        val biasAccumulator = DenseAccumulator(bias.size)
+        val biasUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(bias.size, 1)
 
-            val bias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
-            val biasAccumulator = DenseAccumulator(bias.size)
-            val biasUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(bias.size, 1)
-
-            CpuBiasLayer(biasName, this.numberWeightRows, this.minimumInputColumns, this.maximumInputColumns, bias, biasAccumulator, biasUpdateRule)
-
-        }
-        else {
-
-            null
-
-        }
+        val biasLayer = CpuBiasLayer(biasName, this.numberWeightRows, this.minimumInputColumns, this.maximumInputColumns, bias, biasAccumulator, biasUpdateRule)
 
         return CpuProjectionLayer(this.name, weightingLayer, biasLayer)
 
@@ -75,32 +66,21 @@ class ProjectionLayer(
 
         val weightingLayer = CublasWeightingLayer(weightingName, cublasHandle, this.numberInputRows, this.maximumInputColumns, this.numberOutputRows, initialWeights, weightUpdateRule)
 
-        val biasLayer : CublasBiasLayer?
+        val biasName = concatenateNames(this.name, "bias")
 
-        if (this.biasInitializationStrategy != null) {
+        val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
+        val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberOutputRows, 1)
 
-            val biasName = concatenateNames(this.name, "bias")
-
-            val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
-            val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberOutputRows, 1)
-
-            biasLayer = CublasBiasLayer(
-                biasName,
-                cublasHandle,
-                this.numberOutputRows,
-                this.maximumInputColumns,
-                initializedBias,
-                biasUpdateRule,
-                { context.createKernel(ForwardKernels.bias()) },
-                context.warpSize,
-                context.maximumNumberOfThreadsPerBlock)
-
-        }
-        else {
-
-            biasLayer = null
-
-        }
+        val biasLayer = CublasBiasLayer(
+            biasName,
+            cublasHandle,
+            this.numberOutputRows,
+            this.maximumInputColumns,
+            initializedBias,
+            biasUpdateRule,
+            { context.createKernel(ForwardKernels.bias()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         return CublasProjectionLayer(this.name, weightingLayer, biasLayer)
 
@@ -114,7 +94,7 @@ fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy? = null,
+    biasInitializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     projectionLayer(null, inputDimension, outputDimension, weightInitializationStrategy, biasInitializationStrategy, optimizationStrategy)
@@ -124,7 +104,7 @@ fun projectionLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy? = null,
+    biasInitializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     projectionLayer(
@@ -143,7 +123,7 @@ fun projectionLayer(
     hasFixedLength : Boolean,
     outputRows: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy? = null,
+    biasInitializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     projectionLayer(
@@ -164,7 +144,7 @@ fun projectionLayer(
     hasFixedLength: Boolean,
     outputRows: Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy? = null,
+    biasInitializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
 
     ProjectionLayer(

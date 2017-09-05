@@ -9,7 +9,7 @@ import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
 
-class ExpansionLayer(
+class ExpansionLayer internal constructor(
     private val name : String?,
     private val numberInputRows : Int,
     private val maximumInputColumns: Int,

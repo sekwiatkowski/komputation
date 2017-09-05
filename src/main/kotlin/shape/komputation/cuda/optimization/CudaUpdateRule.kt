@@ -1,12 +1,20 @@
 package shape.komputation.cuda.optimization
 
 import jcuda.Pointer
-import shape.komputation.layers.Resourceful
 
-interface CudaUpdateRule : Resourceful {
+interface CudaUpdateRule {
 
-    fun denseUpdate(pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer)
+    fun denseUpdate(
+        count : Int,
+        pointerToParameters: Pointer,
+        pointerToGradient: Pointer)
 
-    fun sparseUpdate(numberParameters : Int, pointerToParameterIndices : Pointer, pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer)
+    fun sparseUpdate(
+        maximumParameters : Int,
+        pointerToIndices: Pointer,
+        pointerToCounts: Pointer,
+        pointerToParameters: Pointer,
+        pointerToGradient: Pointer)
+
 
 }

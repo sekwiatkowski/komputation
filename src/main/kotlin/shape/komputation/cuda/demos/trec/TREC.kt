@@ -26,30 +26,27 @@ fun main(args: Array<String>) {
     val embeddingFilePath = args.first()
     val dimensions = args.last().toInt()
 
-    TrecWithOneFilterWidth().run(embeddingFilePath, dimensions)
+    Trec().run(embeddingFilePath, dimensions)
 
 }
 
-class TrecWithOneFilterWidth {
+class Trec {
 
     fun run(embeddingFilePath: String, embeddingDimension: Int) {
 
         val random = Random(1)
         val initialization = uniformInitialization(random, -0.1f, 0.1f)
 
-        val optimization = nesterov(0.001f, 0.85f)
+        val optimization = nesterov(0.01f, 0.9f)
 
-        val batchSize = 1
+        val batchSize = 32
         val hasFixedLength = false
-        val numberIterations = 3
+        val numberIterations = 7
 
         val numberFilters = 100
-        val filterWidths = intArrayOf(2, 3)
-        val maximumFilterWidth = filterWidths.max()!!
 
         val filterHeight = embeddingDimension
         val filterWidth = 2
-        val numberFilterWidths = filterWidths.size
 
         val keepProbability = 0.8f
 
@@ -73,8 +70,8 @@ class TrecWithOneFilterWidth {
 
         val testDocumentsWithFilteredTokens = NLP.filterTokens(testDocuments, embeddableVocabulary) // NLP.cutOff(NLP.filterTokens(testDocuments, embeddableVocabulary), maximumDocumentLength)
 
-        val embeddableTrainingIndices = NLP.filterDocuments(trainingDocumentsWithFilteredTokens, maximumFilterWidth)
-        val embeddableTestIndices = NLP.filterDocuments(testDocumentsWithFilteredTokens, maximumFilterWidth)
+        val embeddableTrainingIndices = NLP.filterDocuments(trainingDocumentsWithFilteredTokens, filterWidth)
+        val embeddableTestIndices = NLP.filterDocuments(testDocumentsWithFilteredTokens, filterWidth)
 
         val embeddableTrainingDocuments = trainingDocumentsWithFilteredTokens.slice(embeddableTrainingIndices)
         val embeddableTestDocuments = testDocumentsWithFilteredTokens.slice(embeddableTestIndices)
@@ -99,9 +96,9 @@ class TrecWithOneFilterWidth {
             batchSize,
             lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
             convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-            reluLayer(numberFilterWidths * numberFilters),
-            dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
-            projectionLayer(numberFilterWidths * numberFilters, numberCategories, initialization, initialization, optimization),
+            reluLayer(numberFilters),
+            dropoutLayer(random, keepProbability, numberFilters),
+            projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )
 
@@ -113,15 +110,16 @@ class TrecWithOneFilterWidth {
                 numberCategories,
                 1)
 
-        network.training(
-            trainingRepresentations,
-            trainingTargets,
-            numberIterations,
-            logisticLoss(numberCategories)) { _ : Int, _ : Float ->
+        network
+            .training(
+                trainingRepresentations,
+                trainingTargets,
+                numberIterations,
+                logisticLoss(numberCategories)) { _ : Int, _: Float ->
 
-            println(test.run())
+                println(test.run())
 
-        }
+            }
             .run()
 
     }

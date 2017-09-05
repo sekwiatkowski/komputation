@@ -3,44 +3,49 @@ package shape.komputation.cuda.layers.entry
 import jcuda.Pointer
 import shape.komputation.cpu.functions.concatenate
 import shape.komputation.cpu.functions.pad
-import shape.komputation.cuda.CudaForwardState
-import shape.komputation.cuda.allocateDeviceFloatMemory
+import shape.komputation.cuda.*
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaEntryPoint
 import shape.komputation.cuda.memory.InputMemory
-import shape.komputation.cuda.optimization.CudaUpdateRule
-import shape.komputation.cuda.setFloatArray
-import shape.komputation.cuda.setIntArray
+import shape.komputation.cuda.optimization.BaseCudaUpdateRule
 import shape.komputation.layers.Resourceful
 import shape.komputation.matrix.IntMatrix
 import shape.komputation.matrix.Matrix
 import shape.komputation.optimization.Optimizable
+import jcuda.runtime.JCuda.cudaFree
+import java.util.*
 
 class CudaLookupLayer internal constructor(
     name : String?,
-    private val vectors: Array<FloatArray>,
+    private var vectors: FloatArray,
     maximumLength : Int,
     override val hasFixedLength: Boolean,
     dimension : Int,
-    private val updateRule: CudaUpdateRule?,
-    private val createKernel: () -> Kernel,
+    private val updateRule: BaseCudaUpdateRule?,
+    private val createForwardKernel: () -> Kernel,
+    private val hashing: CudaHashing,
+    private val groupSum: CudaGroupSum,
     private val maximumNumberThreadsPerBlock : Int) : BaseCudaEntryPoint(name), CudaForwardState, Resourceful, Optimizable {
+
+    private val numberVectorEntries = vectors.size
 
     override val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
-    private var pointerToBackwardResult = Pointer.to()
 
     override val numberOutputRows = dimension
     override val maximumOutputColumns = maximumLength
 
-    private var pointerToDeviceIndices = Pointer()
+    private val numberEntries = this.numberOutputRows * this.maximumOutputColumns
+
+    private var deviceIndices = Pointer()
+    private var pointerToIndices = Pointer.to(this.deviceIndices)
 
     private var numbersOfColumns = IntArray(0)
     private var indices = IntArray(0)
     private var forwardResult = FloatArray(0)
     private var maximumBatchSize = intArrayOf(-1)
-    private var kernel : Kernel? = null
+    private var forwardKernel: Kernel? = null
 
     private val deviceVectors = Pointer()
     private val pointerToDeviceVectors = Pointer.to(this.deviceVectors)
@@ -58,31 +63,28 @@ class CudaLookupLayer internal constructor(
 
     private var batchInputs = emptyArray<IntArray>()
 
-    private var numberParameters = -1
+    private var maximumParameters = -1
 
     override fun acquire(maximumBatchSize: Int) {
+
+        this.maximumBatchSize[0] = maximumBatchSize
 
         this.numbersOfColumns = IntArray(maximumBatchSize)
         this.indices = IntArray(maximumBatchSize * this.maximumOutputColumns)
 
-        this.maximumBatchSize[0] = maximumBatchSize
+        this.forwardKernel = this.createForwardKernel()
 
-        this.kernel = this.createKernel()
+        setFloatArray(this.vectors, this.numberVectorEntries, this.deviceVectors)
 
-        val concatenationSize = this.vectors.size * this.numberOutputRows
-        val concatenation = FloatArray(concatenationSize)
-
-        for ((index, vector) in this.vectors.withIndex()) {
-
-            concatenate(vector, index * this.numberOutputRows, this.numberOutputRows, concatenation)
-
-        }
-
-        setFloatArray(concatenation, concatenationSize, this.deviceVectors)
-
-        allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.maximumOutputColumns * this.numberOutputRows)
+        val numberBatchEntries = maximumBatchSize * this.numberEntries
+        allocateDeviceFloatMemory(this.deviceForwardResult, numberBatchEntries)
 
         this.batchInputs = Array(maximumBatchSize) { IntArray(0) }
+
+        this.hashing.acquire(maximumBatchSize)
+        this.maximumParameters = this.hashing.getMaximumKeys()
+
+        this.groupSum.acquire(maximumBatchSize)
 
     }
 
@@ -94,7 +96,16 @@ class CudaLookupLayer internal constructor(
         this.forwardResult = FloatArray(0)
         this.maximumBatchSize[0] = -1
 
-        this.kernel!!.destroy()
+        this.forwardKernel!!.destroy()
+
+        this.vectors = getFloatArray(this.deviceVectors, this.numberVectorEntries)
+
+        cudaFree(this.deviceVectors)
+
+        this.hashing.release()
+        this.maximumParameters = -1
+
+        this.groupSum.release()
 
     }
 
@@ -102,89 +113,13 @@ class CudaLookupLayer internal constructor(
 
         val maximumBatchSize = this.maximumBatchSize[0]
 
-        val optionalDeviceIndices = memory.tryToGetData(batchId)
+        this.deviceIndices = getIndices(memory, batchId, batch, inputs, batchSize, maximumBatchSize)
+        this.pointerToIndices = Pointer.to(this.deviceIndices)
 
-        if (optionalDeviceIndices == null) {
-
-            var batchNumberEntries = 0
-
-            for ((withinBatch, id) in batch.withIndex()) {
-
-                val input = inputs[id] as IntMatrix
-                val inputEntries = input.entries
-
-                val numberEntries = input.numberEntries
-
-                this.batchInputs[withinBatch] = inputEntries
-                this.numbersOfColumns[withinBatch] = numberEntries
-                batchNumberEntries += numberEntries
-
-                val finalEntries = if (this.hasFixedLength) {
-
-                    inputEntries
-
-                }
-                else {
-
-                    val paddedInputEntries = IntArray(this.maximumOutputColumns)
-                    pad(inputEntries, numberEntries, this.maximumOutputColumns, -1, paddedInputEntries)
-
-                    paddedInputEntries
-
-                }
-
-                concatenate(finalEntries, withinBatch * this.maximumOutputColumns, this.maximumOutputColumns, this.indices)
-
-            }
-
-            val deviceIndices = Pointer()
-            setIntArray(this.indices, this.indices.size, deviceIndices)
-
-            val deviceNumbersOfColumns = Pointer()
-            setIntArray(this.numbersOfColumns, this.numbersOfColumns.size, deviceNumbersOfColumns)
-
-            memory.setData(batchId, deviceIndices)
-            memory.setTotalNumberOfColumns(batchId, batchNumberEntries)
-
-            if (!this.hasFixedLength) {
-
-                val lengths = IntArray(maximumBatchSize) { index ->
-
-                    if (index < batchSize) {
-
-                        inputs[batch[index]].numberEntries
-
-                    }
-                    else {
-
-                        0
-
-                    }
-
-                }
-
-                val deviceLengths = Pointer()
-                setIntArray(lengths, maximumBatchSize, deviceLengths)
-
-                memory.setLengths(batchId, deviceLengths)
-
-            }
-
-            this.pointerToDeviceIndices = Pointer.to(deviceIndices)
-            this.numberParameters = batchNumberEntries
-
-        }
-        else {
-
-            this.pointerToDeviceIndices = Pointer.to(optionalDeviceIndices)
-            this.numberParameters = memory.getTotalNumbersOfColumns(batchId)
-
-        }
-
-        this.kernel!!.launch(
+        this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToDeviceVectors,
-                this.pointerToDeviceIndices,
+                this.pointerToIndices,
                 this.pointerToForwardResult,
                 this.pointerToMaximumBatchSize,
                 this.pointerToMaximumLength,
@@ -200,20 +135,110 @@ class CudaLookupLayer internal constructor(
 
     }
 
+    private fun getIndices(memory: InputMemory, batchId: Int, batch: IntArray, inputs: Array<Matrix>, batchSize: Int, maximumBatchSize: Int): Pointer {
+
+        val optionalDeviceIndices = memory.tryToGetData(batchId)
+
+        if(optionalDeviceIndices != null) {
+
+            return optionalDeviceIndices
+
+        }
+
+        var batchNumberEntries = 0
+
+        for ((withinBatch, id) in batch.withIndex()) {
+
+            val input = inputs[id] as IntMatrix
+            val inputEntries = input.entries
+
+            val numberEntries = input.numberEntries
+
+            this.batchInputs[withinBatch] = inputEntries
+            this.numbersOfColumns[withinBatch] = numberEntries
+            batchNumberEntries += numberEntries
+
+            val finalEntries = if (this.hasFixedLength) {
+
+                inputEntries
+
+            }
+            else {
+
+                val paddedInputEntries = IntArray(this.maximumOutputColumns)
+                pad(inputEntries, numberEntries, this.maximumOutputColumns, -1, paddedInputEntries)
+
+                paddedInputEntries
+
+            }
+
+            concatenate(finalEntries, withinBatch * this.maximumOutputColumns, this.maximumOutputColumns, this.indices)
+
+        }
+
+        if (batchSize < this.maximumBatchSize[0]) {
+
+            Arrays.fill(this.indices, batchSize * this.maximumOutputColumns, this.maximumBatchSize[0] * this.maximumOutputColumns, -1)
+
+        }
+
+        val deviceIndices = Pointer()
+        setIntArray(this.indices, this.indices.size, deviceIndices)
+
+        val deviceNumbersOfColumns = Pointer()
+        setIntArray(this.numbersOfColumns, this.numbersOfColumns.size, deviceNumbersOfColumns)
+
+        memory.setData(batchId, deviceIndices)
+
+        if (!this.hasFixedLength) {
+
+            val lengths = IntArray(maximumBatchSize) { index ->
+
+                if (index < batchSize) {
+
+                    inputs[batch[index]].numberEntries
+
+                }
+                else {
+
+                    0
+
+                }
+
+            }
+
+            val deviceLengths = Pointer()
+            setIntArray(lengths, maximumBatchSize, deviceLengths)
+
+            memory.setLengths(batchId, deviceLengths)
+
+        }
+
+        return deviceIndices
+
+    }
 
     override fun backward(chain: Pointer) : Pointer {
 
-        this.pointerToBackwardResult = Pointer.to(chain)
+        this.hashing.reset()
+        this.hashing.hash(Pointer.to(this.deviceIndices))
+
+        this.groupSum.reset()
+        this.groupSum.sum(this.hashing.getPointerToMapping(), Pointer.to(chain))
 
         return chain
 
     }
 
-    override fun optimize(scalingFactor: Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.updateRule?.sparseUpdate(this.numberParameters, this.pointerToDeviceIndices, this.pointerToDeviceVectors, scalingFactor, this.pointerToBackwardResult)
+        this.updateRule?.sparseUpdate(
+            this.maximumParameters,
+            this.hashing.getPointerToHashTable(),
+            this.hashing.getPointerToCounts(),
+            this.pointerToDeviceVectors,
+            this.groupSum.getPointerToSum())
 
     }
-
 
 }

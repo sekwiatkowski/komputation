@@ -8,7 +8,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaSigmoidLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class SigmoidLayer(
+class SigmoidLayer internal constructor(
     private val name : String?,
     private val numberRows: Int,
     private val numberColumns: Int,

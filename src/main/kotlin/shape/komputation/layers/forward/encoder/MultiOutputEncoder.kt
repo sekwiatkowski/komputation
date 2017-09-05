@@ -4,7 +4,7 @@ import shape.komputation.cpu.layers.forward.encoder.CpuMultiOutputEncoder
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class MultiOutputEncoder(
+class MultiOutputEncoder internal constructor(
     private val name: String?,
     private val unit: RecurrentUnit,
     private val numberSteps: Int,

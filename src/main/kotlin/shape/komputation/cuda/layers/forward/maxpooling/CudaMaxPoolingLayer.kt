@@ -2,20 +2,18 @@ package shape.komputation.cuda.layers.forward.maxpooling
 
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import shape.komputation.cuda.allocateDeviceFloatMemory
-import shape.komputation.cuda.allocateDeviceIntMemory
-import shape.komputation.cuda.computeDeviceIntArraySize
+import shape.komputation.cuda.*
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
 import shape.komputation.cuda.layers.CudaVariableLengthForwardLayer
-import shape.komputation.cuda.setIntArray
 import shape.komputation.layers.Resourceful
 
 class CudaMaxPoolingLayer internal constructor(
     name : String?,
     numberRows : Int,
     override val maximumInputColumns : Int,
+    private val symbolForUnusedColumns : Float,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val maximumNumberThreadsPerBlock: Int,
@@ -53,6 +51,10 @@ class CudaMaxPoolingLayer internal constructor(
     private val deviceMaximumBatchLengths = Pointer()
     private var pointerToMaximumBatchLengths = Pointer()
 
+    private var pointerToForwardBatchLengths = Pointer()
+
+    private val pointerToSymbolForUnusedColumns = Pointer.to(floatArrayOf(this.symbolForUnusedColumns))
+
     override fun acquire(maximumBatchSize : Int) {
 
         this.maximumBatchSize = maximumBatchSize
@@ -69,6 +71,8 @@ class CudaMaxPoolingLayer internal constructor(
         this.pointerToMaximumBatchLengths = Pointer.to(this.deviceMaximumBatchLengths)
 
     }
+
+    var count = 0
 
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
@@ -89,6 +93,8 @@ class CudaMaxPoolingLayer internal constructor(
             this.forwardSharedMemoryBytes
         )
 
+        this.pointerToForwardBatchLengths = this.pointerToMaximumBatchLengths
+
         return this.deviceForwardResult
 
     }
@@ -97,10 +103,12 @@ class CudaMaxPoolingLayer internal constructor(
 
         this.batchSize[0] = batchSize
 
+        val pointerToLengths = Pointer.to(deviceLengths)
+
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
-                Pointer.to(deviceLengths),
+                pointerToLengths,
                 this.pointerToMaximumNumberEntries,
                 this.pointerToMaxIndices,
                 Pointer.to(deviceInput),
@@ -112,6 +120,8 @@ class CudaMaxPoolingLayer internal constructor(
             this.forwardSharedMemoryBytes
         )
 
+        this.pointerToForwardBatchLengths = pointerToLengths
+
         return this.deviceForwardResult
 
     }
@@ -121,6 +131,8 @@ class CudaMaxPoolingLayer internal constructor(
         this.backwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
+                this.pointerToForwardBatchLengths,
+                this.pointerToSymbolForUnusedColumns,
                 this.pointerToMaximumNumberEntries,
                 this.pointerToNumberRows,
                 this.pointerToMaxIndices,

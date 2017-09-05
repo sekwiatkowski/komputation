@@ -2,6 +2,7 @@ package shape.komputation.cuda.layers.forward.dense
 
 import jcuda.Pointer
 import shape.komputation.cuda.layers.BaseCudaForwardLayer
+import shape.komputation.cuda.layers.CudaForwardLayer
 import shape.komputation.cuda.layers.forward.activation.CudaActivationLayer
 import shape.komputation.cuda.layers.forward.projection.CublasProjectionLayer
 import shape.komputation.optimization.Optimizable
@@ -45,9 +46,9 @@ class CudaDenseLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor: Float) {
+    override fun optimize(batchSize: Int) {
 
-        this.projectionLayer.optimize(scalingFactor)
+        this.projectionLayer.optimize(batchSize)
 
     }
 

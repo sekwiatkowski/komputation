@@ -21,69 +21,72 @@ __global__ void backwardExpansionKernel(
     int indexEntryWithinYBlock = threadIdx.x / warpSize;
 
     int indexEntryWithinInstance = firstEntryInYBlockWithinInstance + indexEntryWithinYBlock;
-    int indexEntryWithinBatch = startInstanceWithinBatch + indexEntryWithinInstance;
 
-    if(indexInstance < batchSize) {
+    if(indexEntryWithinInstance < numberEntries) {
 
-        int laneId = threadIdx.x % warpSize;
+        int length = lengths[indexInstance];
 
-        int startFilter = laneId * numberIterations;
-        int endFilter = min(startFilter + numberIterations, filterLength);
+        int indexEntryWithinBatch = startInstanceWithinBatch + indexEntryWithinInstance;
+        result[indexEntryWithinBatch] = nanf("NaN");
 
-        int indexRowWithinInstance = indexEntryWithinInstance % numberRows;
-        int indexColumnWithinInstance = indexEntryWithinInstance / numberRows;
+        if(indexInstance < batchSize && indexEntryWithinInstance < length * numberRows) {
 
-        float thisValue = 0.0;
+            int laneId = threadIdx.x % warpSize;
 
-        for(int indexFilter = startFilter; indexFilter < endFilter; indexFilter++) {
+            int startFilter = laneId * numberIterations;
+            int endFilter = min(startFilter + numberIterations, filterLength);
 
-            int indexRowWithinFilter = indexFilter % filterHeight;
-            int indexColumnWithinFilter = indexFilter / filterHeight;
+            int indexRowWithinInstance = indexEntryWithinInstance % numberRows;
+            int indexColumnWithinInstance = indexEntryWithinInstance / numberRows;
 
-            // At which row does the convolution for the given filter position start
-            int firstRowInConvolution = indexRowWithinInstance - indexRowWithinFilter;
-            // At which row does the convolution for the given filter position end
-            int lastRowInConvolution = firstRowInConvolution + filterHeight - 1;
+            float thisValue = 0.0;
 
-            // At which column does the convolution for the given filter position start
-            int firstColumnInConvolution = indexColumnWithinInstance - indexColumnWithinFilter;
-            // At which column does the convolution for the given filter position end
-            int lastColumnInConvolution = firstColumnInConvolution + filterWidth - 1;
+            for(int indexFilter = startFilter; indexFilter < endFilter; indexFilter++) {
 
-            float thisValueInIteration;
+                int indexRowWithinFilter = indexFilter % filterHeight;
+                int indexColumnWithinFilter = indexFilter / filterHeight;
 
-            if(firstRowInConvolution >= 0 && lastRowInConvolution < numberRows &&
-               firstColumnInConvolution >= 0 && lastColumnInConvolution < lengths[indexInstance]) {
+                // At which row does the convolution for the given filter position start
+                int firstRowInConvolution = indexRowWithinInstance - indexRowWithinFilter;
+                // At which row does the convolution for the given filter position end
+                int lastRowInConvolution = firstRowInConvolution + filterHeight - 1;
 
-                int indexConvolution = firstColumnInConvolution * convolutionsPerRow + firstRowInConvolution;
+                // At which column does the convolution for the given filter position start
+                int firstColumnInConvolution = indexColumnWithinInstance - indexColumnWithinFilter;
+                // At which column does the convolution for the given filter position end
+                int lastColumnInConvolution = firstColumnInConvolution + filterWidth - 1;
 
-                int indexGradient = indexInstance * maximumConvolutions + indexConvolution * filterLength + indexColumnWithinFilter * filterHeight + indexRowWithinFilter;
+                float thisValueInIteration;
 
-                thisValueInIteration = gradient[indexGradient];
+                if(firstRowInConvolution >= 0 && lastRowInConvolution < numberRows &&
+                   firstColumnInConvolution >= 0 && lastColumnInConvolution < lengths[indexInstance]) {
+
+                    int indexConvolution = firstColumnInConvolution * convolutionsPerRow + firstRowInConvolution;
+
+                    int indexGradient = indexInstance * maximumConvolutions * filterLength + indexConvolution * filterLength + indexColumnWithinFilter * filterHeight + indexRowWithinFilter;
+
+                    thisValueInIteration = gradient[indexGradient];
+
+                }
+                else {
+
+                    thisValueInIteration = 0.0;
+
+                }
+
+                thisValue += thisValueInIteration;
 
             }
-            else {
 
-                thisValueInIteration = 0.0;
+            float sum = warpReduceToSum(thisValue);
+
+            if(laneId == 0) {
+
+                result[indexEntryWithinBatch] = sum;
 
             }
 
-            thisValue += thisValueInIteration;
-
         }
-
-        float sum = warpReduceToSum(thisValue);
-
-        if(laneId == 0) {
-
-            result[indexEntryWithinBatch] = sum;
-
-        }
-
-    }
-    else {
-
-        result[indexEntryWithinBatch] = nan("NaN");
 
     }
 

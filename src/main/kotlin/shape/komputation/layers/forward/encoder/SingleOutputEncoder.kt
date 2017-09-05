@@ -4,7 +4,7 @@ import shape.komputation.cpu.layers.forward.encoder.CpuSingleOutputEncoder
 import shape.komputation.cpu.layers.forward.units.RecurrentUnit
 import shape.komputation.layers.CpuForwardLayerInstruction
 
-class SingleOutputEncoder(
+class SingleOutputEncoder internal constructor(
     private val name : String?,
     private val unit : RecurrentUnit,
     private val numberSteps : Int,

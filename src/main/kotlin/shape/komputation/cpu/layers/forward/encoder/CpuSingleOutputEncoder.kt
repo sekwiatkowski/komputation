@@ -81,11 +81,11 @@ class CpuSingleOutputEncoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         if (this.unit is Optimizable) {
 
-            this.unit.optimize(scalingFactor)
+            this.unit.optimize(batchSize)
 
         }
 

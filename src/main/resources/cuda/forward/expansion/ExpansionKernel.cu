@@ -1,4 +1,4 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 #include "symbols/Zero.cuh"
 
 /*

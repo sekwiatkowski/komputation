@@ -51,11 +51,11 @@ class SeriesBias internal constructor(
 
     }
 
-    fun optimize(scalingFactor : Float) {
+    fun optimize(batchSize : Int) {
 
         if (this.updateRule != null) {
 
-            updateDensely(this.bias, this.batchAccumulator.getAccumulation(), this.numberBiasEntries, scalingFactor, this.updateRule)
+            updateDensely(this.bias, this.batchAccumulator.getAccumulation(), this.numberBiasEntries, batchSize, this.updateRule)
 
         }
 

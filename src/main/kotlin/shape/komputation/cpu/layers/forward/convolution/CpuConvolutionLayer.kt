@@ -49,9 +49,9 @@ class CpuConvolutionLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
-        this.projectionLayer.optimize(scalingFactor)
+        this.projectionLayer.optimize(batchSize)
 
     }
 

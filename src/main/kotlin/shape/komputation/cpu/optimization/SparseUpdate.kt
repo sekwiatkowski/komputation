@@ -13,7 +13,7 @@ fun updateSparsely(vectors: Array<FloatArray>, dimension : Int, size : Int, ids:
 
         val gradient = gradients[index]
         val count = counts[index]
-        val scalingFactor = 1.0f.div(count)
+        val scalingFactor = 1f.div(count)
         scale(gradient, scalingFactor, gradient, dimension)
 
         rule.updateSparsely(start, parameters, gradient, dimension)

@@ -5,10 +5,10 @@ import java.util.*
 
 class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLength : Int, private val dimension : Int) {
 
-    private val idMapping = constantIntArray(numberVectors, -1)
+    private val hashTable = constantIntArray(numberVectors, -1)
     private val visited = BooleanArray(numberVectors)
 
-    private val ids = IntArray(maximumBatchSize * maximumLength)
+    private val reverseHashTable = constantIntArray(maximumBatchSize * maximumLength, -1)
     private val counts = FloatArray(maximumBatchSize * maximumLength)
     private val sums = Array(maximumBatchSize * maximumLength) { FloatArray(dimension) }
 
@@ -16,48 +16,66 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
     fun accumulate(ids: IntArray, numberIds : Int, gradient: FloatArray) {
 
-        var start = 0
-
         for (indexId in 0..numberIds-1) {
 
-            val id = ids[indexId]
+            val currentId = ids[indexId]
 
-            var mappedId = this.idMapping[id]
+            val hashedId = this.hashId(currentId)
 
-            if (mappedId == -1) {
-
-                mappedId = ++lastNewId
-
-                this.idMapping[id] = mappedId
-                this.ids[mappedId] = id
-
-            }
-
-            val sum = this.sums[mappedId]
-
-            for (indexDimension in 0..this.dimension - 1) {
-
-                sum[indexDimension] += gradient[start++]
-
-            }
+            this.addToSum(indexId, hashedId, gradient)
 
             // Is this the first occurrence of the vector?
-            if (!this.visited[id]) {
+            if (!this.visited[currentId]) {
 
                 // Increment the count
-                this.counts[mappedId] += 1.0f
+                this.counts[hashedId] += 1.0f
 
                 // Avoid further increments for the current example.
-                this.visited[id] = true
+                this.visited[currentId] = true
 
             }
 
         }
 
         // Reset the visit flag
-        for (id in ids) {
+        for (currentId in ids) {
 
-            this.visited[id] = false
+            this.visited[currentId] = false
+
+        }
+
+    }
+
+    private fun hashId(id: Int): Int {
+
+        val existingHash = this.hashTable[id]
+
+        if (existingHash == -1) {
+
+            val newHash = ++this.lastNewId
+
+            this.hashTable[id] = newHash
+            this.reverseHashTable[newHash] = id
+
+            return newHash
+
+        }
+        else {
+
+            return existingHash
+
+        }
+
+    }
+
+    private fun addToSum(indexId: Int, hashedId: Int, gradient: FloatArray) {
+
+        val sum = this.sums[hashedId]
+
+        val start = indexId * this.dimension
+        for (indexDimension in 0..this.dimension - 1) {
+
+            sum[indexDimension] += gradient[start + indexDimension]
 
         }
 
@@ -65,7 +83,7 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
     fun getSize() = this.lastNewId + 1
 
-    fun getIds() = this.ids
+    fun getIds() = this.reverseHashTable
 
     fun getCounts() = this.counts
 
@@ -73,17 +91,16 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
     fun reset() {
 
-        for (id in this.ids) {
+        for (indexId in 0..this.lastNewId) {
 
-            this.idMapping[id] = -1
+            val id = this.reverseHashTable[indexId]
 
-        }
+            this.reverseHashTable[indexId] = -1
+            this.hashTable[id] = -1
 
-        for (index in 0..lastNewId) {
+            this.counts[indexId] = 0.0f
 
-            this.counts[index] = 0.0f
-
-            Arrays.fill(this.sums[index], 0.0f)
+            Arrays.fill(this.sums[indexId], 0.0f)
 
         }
 

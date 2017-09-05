@@ -6,8 +6,7 @@ import jcuda.runtime.JCuda.cudaFree
 import shape.komputation.cuda.allocateDeviceFloatMemory
 import shape.komputation.cuda.kernels.Kernel
 import shape.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
-import shape.komputation.cuda.optimization.CudaUpdateRule
-import shape.komputation.cuda.setIntArray
+import shape.komputation.cuda.optimization.BaseCudaUpdateRule
 import shape.komputation.layers.Resourceful
 
 class CudaNesterov internal constructor(
@@ -19,7 +18,7 @@ class CudaNesterov internal constructor(
     private val numberMultiprocessors : Int,
     private val numberResidentWarps : Int,
     private val warpSize : Int,
-    private val maximumNumberThreads : Int) : CudaUpdateRule, Resourceful {
+    private val maximumNumberThreads : Int) : BaseCudaUpdateRule(), Resourceful {
 
     private val pointerToParameterSize = Pointer.to(intArrayOf(this.parameterSize))
     private val pointerToLearningRate = Pointer.to(floatArrayOf(this.learningRate))
@@ -37,10 +36,9 @@ class CudaNesterov internal constructor(
     private val numberIterations = intArrayOf(-1)
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
-    private val deviceArrayOfZero = Pointer()
-    private val pointToArrayOfZero = Pointer.to(this.deviceArrayOfZero)
-
     override fun acquire(maximumBatchSize : Int) {
+
+        super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
 
@@ -48,8 +46,6 @@ class CudaNesterov internal constructor(
         this.numberBlocks = launchConfiguration.numberBlocks
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
-
-        setIntArray(intArrayOf(0), 1, this.deviceArrayOfZero)
 
         val totalNumberEntries = this.numberParameters * this.parameterSize
 
@@ -59,24 +55,12 @@ class CudaNesterov internal constructor(
 
     }
 
-    private val scalingFactorArray = floatArrayOf(Float.NaN)
-    private val pointerToScalingFactor = Pointer.to(this.scalingFactorArray)
-
-    override fun denseUpdate(pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer) {
-
-        this.launchKernel(1, this.pointToArrayOfZero, pointerToParameters, scalingFactor, pointerToGradient)
-
-    }
-
-    override fun sparseUpdate(numberParameters : Int, pointerToParameterIndices: Pointer, pointerToParameters: Pointer, scalingFactor : Float, pointerToGradient: Pointer) {
-
-        this.launchKernel(numberParameters, pointerToParameterIndices, pointerToParameters, scalingFactor, pointerToGradient)
-
-    }
-
-    private fun launchKernel(numberParameters: Int, pointerToParameterIndices : Pointer, pointerToDeviceParameter: Pointer, scalingFactor: Float, pointerToDeviceGradient: Pointer) {
-
-        this.scalingFactorArray[0] = scalingFactor
+    override fun launchKernel(
+        maximumParameters: Int,
+        pointerToIndices : Pointer,
+        pointerToCounts : Pointer,
+        pointerToParameters: Pointer,
+        pointerToGradient: Pointer) : Int {
 
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
@@ -84,16 +68,16 @@ class CudaNesterov internal constructor(
             this.pointerToMomentum,
             this.pointerToHistory,
             this.pointerToBackup,
-            pointerToParameterIndices,
+            pointerToIndices,
+            pointerToCounts,
             this.pointerToParameterSize,
-            pointerToDeviceParameter,
-            this.pointerToScalingFactor,
-            pointerToDeviceGradient
+            pointerToParameters,
+            pointerToGradient
         )
 
-        this.kernel!!.launch(
+        return this.kernel!!.launch(
             parameters,
-            numberParameters,
+            maximumParameters,
             this.numberBlocks,
             this.numberThreads,
             0
@@ -103,11 +87,12 @@ class CudaNesterov internal constructor(
 
     override fun release() {
 
+        super.release()
+
         this.kernel!!.destroy()
 
         cudaFree(this.deviceHistory)
         cudaFree(this.deviceBackup)
-        cudaFree(this.deviceArrayOfZero)
 
     }
 

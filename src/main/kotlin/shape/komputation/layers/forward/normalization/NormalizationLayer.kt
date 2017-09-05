@@ -8,7 +8,11 @@ import shape.komputation.cuda.layers.forward.normalization.CudaNormalizationLaye
 import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 
-class NormalizationLayer(private val name : String?, private val numberRows : Int, private val numberColumns : Int, private val isFixedLength: Boolean) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
+class NormalizationLayer internal constructor(
+    private val name : String?,
+    private val numberRows : Int,
+    private val numberColumns : Int,
+    private val isFixedLength: Boolean) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
 

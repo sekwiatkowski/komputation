@@ -9,7 +9,7 @@ import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import java.util.*
 
-class DropoutLayer(
+class DropoutLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,

@@ -1,7 +1,6 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 // -1/target probability if target = 1.0, 0.0 otherwise
-extern "C"
 __global__ void backwardLogisticLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
 {
 

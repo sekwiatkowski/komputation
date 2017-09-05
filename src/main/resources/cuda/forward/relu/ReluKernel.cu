@@ -1,4 +1,4 @@
-#include "symbols/Nan.cuh"
+#include "symbols/NaN.cuh"
 
 __device__ float relu (float x)
 {

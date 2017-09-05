@@ -9,6 +9,7 @@ import shape.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import shape.komputation.cpu.layers.forward.activation.CpuSoftmaxLayer
 import shape.komputation.cpu.layers.forward.activation.CpuTanhLayer
 import shape.komputation.cpu.layers.forward.projection.CpuProjectionLayer
+import shape.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import shape.komputation.cpu.layers.forward.projection.SeriesBias
 import shape.komputation.cpu.layers.forward.projection.SeriesWeighting
 import shape.komputation.cpu.optimization.DenseAccumulator
@@ -21,7 +22,7 @@ class CpuAttentiveDecoder internal constructor(
     private val numberSteps : Int,
     private val encodingDimension: Int,
     private val decodingDimension: Int,
-    private val encodingProjection : CpuProjectionLayer,
+    private val encodingWeighting: CpuWeightingLayer,
     private val attentionPreviousStateWeighting: SeriesWeighting,
     private val columnRepetitions: Array<CpuColumnRepetitionLayer>,
     private val attentionAdditions : Array<AdditionCombination>,
@@ -87,7 +88,7 @@ class CpuAttentiveDecoder internal constructor(
         this.input = input
 
         // encoding weights * encodings
-        val projectedEncoding = this.encodingProjection.forward(withinBatch, numberInputColumns, input, isTraining)
+        val projectedEncoding = this.encodingWeighting.forward(withinBatch, numberInputColumns, input, isTraining)
 
         val blasEncodingMatrix = org.jblas.FloatMatrix(this.encodingDimension, this.numberSteps, *this.input)
 
@@ -259,8 +260,8 @@ class CpuAttentiveDecoder internal constructor(
             val backwardAttentionActivationWrtAttentionPreactivation = tanh.backwardResult
 
             // d W^e * E + expand(...) / d E
-            this.encodingProjection.backward(withinBatch, backwardAttentionActivationWrtAttentionPreactivation)
-            val backwardAttentionPreactivationWrtEncodings = this.encodingProjection.backwardResult
+            this.encodingWeighting.backward(withinBatch, backwardAttentionActivationWrtAttentionPreactivation)
+            val backwardAttentionPreactivationWrtEncodings = this.encodingWeighting.backwardResult
             this.inputAccumulator.accumulate(backwardAttentionPreactivationWrtEncodings)
 
             // d W^e * E + expand(W^d * d_t-1) / d W^d * d_t-1
@@ -298,20 +299,20 @@ class CpuAttentiveDecoder internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         // W^e
-        this.encodingProjection.optimize(scalingFactor)
+        this.encodingWeighting.optimize(batchSize)
         // W^d
-        this.attentionPreviousStateWeighting.optimize(scalingFactor)
+        this.attentionPreviousStateWeighting.optimize(batchSize)
         // s
-        this.scoringWeighting.optimize(scalingFactor)
+        this.scoringWeighting.optimize(batchSize)
         // U^e
-        this.attendedEncodingWeighting.optimize(scalingFactor)
+        this.attendedEncodingWeighting.optimize(batchSize)
         // U^d
-        this.decodingPreviousDecoderWeighting.optimize(scalingFactor)
+        this.decodingPreviousDecoderWeighting.optimize(batchSize)
         // b
-        this.bias?.optimize(scalingFactor)
+        this.bias?.optimize(batchSize)
 
     }
 

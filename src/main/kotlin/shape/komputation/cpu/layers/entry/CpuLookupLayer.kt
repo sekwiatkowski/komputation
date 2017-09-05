@@ -64,7 +64,7 @@ class CpuLookupLayer internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         if (this.update != null) {
 

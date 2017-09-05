@@ -8,7 +8,7 @@ import shape.komputation.cuda.layers.forward.activation.CudaReluLayer
 import shape.komputation.layers.CpuActivationLayerInstruction
 import shape.komputation.layers.CudaActivationLayerInstruction
 
-class ReluLayer(
+class ReluLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,

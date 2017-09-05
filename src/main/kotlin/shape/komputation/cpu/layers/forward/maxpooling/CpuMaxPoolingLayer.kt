@@ -29,7 +29,6 @@ class CpuMaxPoolingLayer internal constructor(
 
         selectEntries(input, this.maxRowIndices, result, this.numberInputRows)
 
-
     }
 
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {

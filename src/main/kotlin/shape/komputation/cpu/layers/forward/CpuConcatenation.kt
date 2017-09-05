@@ -76,13 +76,13 @@ class CpuConcatenation internal constructor(
 
     }
 
-    override fun optimize(scalingFactor : Float) {
+    override fun optimize(batchSize : Int) {
 
         for (layer in this.layers) {
 
             if (layer is Optimizable) {
 
-                layer.optimize(scalingFactor)
+                layer.optimize(batchSize)
 
             }
 

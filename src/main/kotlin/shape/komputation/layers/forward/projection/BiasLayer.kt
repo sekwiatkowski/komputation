@@ -12,7 +12,7 @@ import shape.komputation.layers.CpuForwardLayerInstruction
 import shape.komputation.layers.CudaForwardLayerInstruction
 import shape.komputation.optimization.OptimizationInstruction
 
-class BiasLayer(
+class BiasLayer internal constructor(
     private val name : String?,
     private val numberInputRows: Int,
     private val numberInputColumns: Int,

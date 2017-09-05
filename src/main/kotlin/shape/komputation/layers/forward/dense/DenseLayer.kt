@@ -15,13 +15,13 @@ import shape.komputation.layers.forward.activation.ActivationFunction
 import shape.komputation.layers.forward.projection.projectionLayer
 import shape.komputation.optimization.OptimizationInstruction
 
-class DenseLayer(
+class DenseLayer internal constructor(
     private val name : String?,
     private val numberInputRows : Int,
     private val numberInputColumns : Int,
     private val numberOutputRows : Int,
     private val weightInitialization: InitializationStrategy,
-    private val biasInitialization: InitializationStrategy?,
+    private val biasInitialization: InitializationStrategy,
     private val activationFunction: ActivationFunction,
     private val optimization: OptimizationInstruction?) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
@@ -65,7 +65,7 @@ fun denseLayer(
     inputDimension : Int,
     outputDimension : Int,
     weightInitializationStrategy: InitializationStrategy,
-    biasInitializationStrategy: InitializationStrategy?,
+    biasInitializationStrategy: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationInstruction? = null) =
 
@@ -85,7 +85,7 @@ fun denseLayer(
     inputDimension: Int,
     outputDimension: Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
+    biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
 
@@ -104,7 +104,7 @@ fun denseLayer(
     numberInputColumns: Int,
     numberOutputRows: Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
+    biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
 
@@ -124,7 +124,7 @@ fun denseLayer(
     numberInputColumns: Int,
     numberOutputRows: Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
+    biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
 

@@ -1,9 +1,11 @@
 package shape.komputation.cuda.layers.entry
 
+import jcuda.Pointer
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import shape.komputation.cuda.getFloatArray
 import shape.komputation.cuda.memory.InputMemory
+import shape.komputation.cuda.setFloatArray
 import shape.komputation.cuda.setUpCudaContext
 import shape.komputation.layers.entry.lookupLayer
 import shape.komputation.matrix.Matrix
@@ -21,7 +23,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
         val expected = floatArrayOf(1f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -35,7 +37,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -49,7 +51,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0, 1))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -63,7 +65,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(1, 0))
         val expected = floatArrayOf(2f, 1f)
 
-        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -77,7 +79,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0))
         val expected = floatArrayOf(1f, Float.NaN)
 
-        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -91,7 +93,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(1))
         val expected = floatArrayOf(2f, Float.NaN)
 
-        test(vectors, dimension, batch, false, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, false, maximumLength, inputs, expected)
 
     }
 
@@ -105,7 +107,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(2, 0))
         val expected = floatArrayOf(5f, 6f, 1f, 2f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -119,7 +121,7 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0), intMatrix(0))
         val expected = floatArrayOf(1f, 1f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
@@ -133,11 +135,11 @@ class CudaLookupLayerTest {
         val inputs : Array<Matrix> = arrayOf(intMatrix(0), intMatrix(1))
         val expected = floatArrayOf(1f, 2f)
 
-        test(vectors, dimension, batch, true, maximumLength, inputs, expected)
+        testForward(vectors, dimension, batch, true, maximumLength, inputs, expected)
 
     }
 
-    private fun test(vectors: Array<FloatArray>, dimension : Int, batch: IntArray, hasFixedLength : Boolean, maximumLength: Int, inputs: Array<Matrix>, expected: FloatArray) {
+    private fun testForward(vectors: Array<FloatArray>, dimension : Int, batch: IntArray, hasFixedLength : Boolean, maximumLength: Int, inputs: Array<Matrix>, expected: FloatArray) {
 
         val cudaContext = setUpCudaContext()
 
@@ -154,6 +156,32 @@ class CudaLookupLayerTest {
         lookupLayer.release()
 
         assertArrayEquals(expected, actual)
+
+        cudaContext.destroy()
+
+    }
+
+    @Test
+    fun testBackward() {
+
+        val cudaContext = setUpCudaContext()
+
+        val vectors = arrayOf(floatArrayOf(1f, 2f), floatArrayOf(3f, 4f))
+        val lookupLayer = lookupLayer(vectors, 3, true, 2)
+            .buildForCuda(cudaContext)
+
+        lookupLayer.acquire(1)
+
+        lookupLayer.forward(0, 1, intArrayOf(0), arrayOf(intMatrix(0, 1, 0)), InputMemory())
+
+        val deviceChain = Pointer()
+        setFloatArray(floatArrayOf(1f, 2f, 3f, 4f, 5f, 6f), 6, deviceChain)
+
+        lookupLayer.backward(deviceChain)
+
+        lookupLayer.release()
+
+        cudaContext.destroy()
 
     }
 
