@@ -4,6 +4,16 @@
 
 Komputation is a neural network framework for the JVM written in the Kotlin programming language.
 
+## Maven
+
+Komputation is available through Maven Central:
+
+```xml
+    <groupId>com.komputation</groupId>
+    <artifactId>komputation</artifactId>
+    <version>0.10.1</version>
+```
+
 ## Layers
 
 - Entry points:
@@ -90,7 +100,7 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 
 The following code instantiates a GPU-accelerated convolutional neural network for sentence classification:
 
- ```kotlin
+```kotlin
     val network = CudaNetwork(
         batchSize,
         lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),

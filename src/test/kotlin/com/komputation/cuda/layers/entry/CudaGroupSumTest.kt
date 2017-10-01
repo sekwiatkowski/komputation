@@ -1,7 +1,7 @@
 package com.komputation.cuda.layers.entry
 
 import jcuda.Pointer
-import org.junit.Assert.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 import com.komputation.cuda.*
 import com.komputation.cuda.kernels.FillKernels
