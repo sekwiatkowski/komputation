@@ -27,6 +27,14 @@ class CudaConvolutionLayer(
     override val maximumInputColumns: Int
         get() = this.expansionLayer.maximumInputColumns
 
+    fun getDeviceWeights() =
+
+        this.projectionLayer.getDeviceWeights()
+
+    fun getDeviceBias() =
+
+        this.projectionLayer.getDeviceBias()
+
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean) : Pointer {
 
         val expanded = this.expansionLayer.forward(batchSize, deviceInput, isTraining)

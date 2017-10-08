@@ -24,6 +24,14 @@ class CublasProjectionLayer internal constructor(
     override val maximumInputColumns
         get() = this.weightingLayer.maximumInputColumns
 
+    fun getDeviceWeights() =
+
+        this.weightingLayer.getDeviceWeights()
+
+    fun getDeviceBias() =
+
+        this.biasLayer.getDeviceBias()
+
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
 
         val weighted = this.weightingLayer.forward(batchSize, deviceInput, isTraining)

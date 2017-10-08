@@ -49,6 +49,10 @@ class CublasWeightingLayer internal constructor(
     private var numberBatchInputColumns = -1
     private var numberBatchOutputColumns = -1
 
+    fun getDeviceWeights() =
+
+        this.deviceWeights
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.maximumBatchSize = maximumBatchSize

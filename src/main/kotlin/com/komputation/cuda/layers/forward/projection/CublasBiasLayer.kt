@@ -61,6 +61,10 @@ class CublasBiasLayer internal constructor(
     private val deviceMaximumInputColumns = Pointer()
     private val pointerToMaximumInputColumns = Pointer.to(deviceMaximumInputColumns)
 
+    fun getDeviceBias() =
+
+        this.deviceBias
+
     override fun acquire(maximumBatchSize : Int) {
 
         this.maximumBatchSize = maximumBatchSize
