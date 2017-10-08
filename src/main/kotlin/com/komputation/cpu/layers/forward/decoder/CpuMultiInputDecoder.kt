@@ -33,6 +33,10 @@ class CpuMultiInputDecoder internal constructor(
     override val numberInputColumns = this.numberSteps
     override var backwardResult = FloatArray(0)
 
+    fun getUnit() =
+
+        this.unit
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }

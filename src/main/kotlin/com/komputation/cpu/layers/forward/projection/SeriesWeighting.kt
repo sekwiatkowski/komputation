@@ -29,6 +29,10 @@ class SeriesWeighting internal constructor(
 
     override var backwardResult = FloatArray(0)
 
+    fun getWeights() =
+
+        this.weights
+
     fun forwardStep(withinBatch : Int, step : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
         this.forwardResult = this.layers[step].forward(withinBatch, this.numberInputColumns, input, isTraining)

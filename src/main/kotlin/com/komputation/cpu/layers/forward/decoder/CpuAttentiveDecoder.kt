@@ -58,6 +58,30 @@ class CpuAttentiveDecoder internal constructor(
     private var backwardAttendedEncodingWrtEncoding = FloatArray(0)
     private var backwardWeightedAttendedEncodingWrtTransposedAttentionDistribution = FloatArray(0)
 
+    fun getEncodingWeights() =
+
+        this.encodingWeighting.getWeights()
+
+    fun getAttentionPreviousStateWeights() =
+
+        this.attentionPreviousStateWeighting.getWeights()
+
+    fun getScoringWeights() =
+
+        this.scoringWeighting.getWeights()
+
+    fun getAttendedEncodingWeights() =
+
+        this.attendedEncodingWeighting.getWeights()
+
+    fun getDecodingPreviousDecoderWeights() =
+
+        this.decodingPreviousDecoderWeighting.getWeights()
+
+    fun getBias() =
+
+        this.bias
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.attentionDistribution = FloatArray(this.numberSteps)

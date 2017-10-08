@@ -28,6 +28,10 @@ class SeriesBias internal constructor(
     override val numberInputColumns = 1
     override var backwardResult = FloatArray(0)
 
+    fun getBias() =
+
+        this.bias
+
     fun forwardStep(withinBatch : Int, step : Int, input : FloatArray, isTraining : Boolean): FloatArray {
 
         this.forwardResult = this.layers[step].forward(withinBatch, 1, input, isTraining)

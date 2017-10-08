@@ -24,6 +24,14 @@ class CpuDenseLayer internal constructor(
     override val backwardResult
         get() = this.projection.backwardResult
 
+    fun getBias() =
+
+        this.projection.getBias()
+
+    fun getWeights() =
+
+        this.projection.getWeights()
+
     override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
         val projected = this.projection.forward(withinBatch, numberInputColumns, input, isTraining)

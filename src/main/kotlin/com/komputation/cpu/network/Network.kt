@@ -20,6 +20,14 @@ class Network(
     private val forwardPropagator = CpuForwardPropagator(this.entryPoint, this.layers)
     private val backwardPropagator = CpuBackwardPropagator(this.entryPoint, this.layers)
 
+    fun getEntryPoint() =
+
+        this.entryPoint
+
+    fun getLayer(index : Int) =
+
+        this.layers[index]
+
     fun training(
         inputs: Array<Matrix>,
         targets: Array<FloatArray>,

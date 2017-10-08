@@ -22,6 +22,18 @@ class SimpleRecurrentUnit internal constructor(
     private val bias: SeriesBias?,
     private val activations: Array<CpuActivationLayer>) : RecurrentUnit(name), Optimizable {
 
+    fun getPreviousStateWeights() =
+
+        this.previousStateWeighting.getWeights()
+
+    fun getInputWeights() =
+
+        this.inputWeighting.getWeights()
+
+    fun getBias() =
+
+        this.bias
+
     override fun forwardStep(withinBatch : Int, indexStep: Int, state: FloatArray, input: FloatArray, isTraining : Boolean): FloatArray {
 
         // weighted state = state weights * state

@@ -31,6 +31,10 @@ class CpuSingleOutputEncoder internal constructor(
     private val inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }
     private var steps = emptyArray<FloatArray>()
 
+    fun getUnit() =
+
+        this.unit
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.states = Array(this.numberSteps+1) { FloatArray(this.hiddenDimension) }

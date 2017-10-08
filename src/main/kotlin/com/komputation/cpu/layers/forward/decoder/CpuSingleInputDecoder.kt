@@ -35,6 +35,10 @@ class CpuSingleInputDecoder internal constructor(
     override val numberInputColumns = this.numberSteps
     override var backwardResult = FloatArray(0)
 
+    fun getUnit() =
+
+        this.unit
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.inputs = Array(this.numberSteps+1) { FloatArray(this.outputDimension) }

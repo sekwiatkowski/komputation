@@ -25,6 +25,14 @@ class CpuConvolutionLayer internal constructor(
     override val backwardResult
         get() = this.expansionLayer.backwardResult
 
+    fun getWeights() =
+
+        this.projectionLayer.getWeights()
+
+    fun getBias() =
+
+        this.projectionLayer.getBias()
+
     override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
 
         this.expansionLayer.forward(withinBatch, numberInputColumns, input, isTraining)

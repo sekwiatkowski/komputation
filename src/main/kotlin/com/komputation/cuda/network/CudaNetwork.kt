@@ -56,6 +56,15 @@ class CudaNetwork(
 
     }
 
+    fun getEntryPoint() =
+
+        this.entryPoint
+
+    fun getLayer(index : Int) =
+
+        this.layers[index]
+
+
     fun free() {
 
         cublasDestroy(this.cublasHandle)

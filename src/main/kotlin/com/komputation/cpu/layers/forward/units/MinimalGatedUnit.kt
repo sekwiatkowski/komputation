@@ -30,6 +30,30 @@ class MinimalGatedUnit internal constructor(
     private val previousStateAccumulator = DenseAccumulator(this.hiddenDimension)
     private val inputAccumulator = DenseAccumulator(this.inputDimension)
 
+    fun getForgetBias() =
+
+        this.forgetUnit.getBias()
+
+    fun getForgetInputWeights() =
+
+        this.forgetUnit.getInputWeights()
+
+    fun getForgetPreviousStateWeights() =
+
+        this.forgetUnit.getPreviousStateWeights()
+
+    fun getShortTermResponseBias() =
+
+        this.shortTermResponse.getBias()
+
+    fun getShortTermResponseInputWeights() =
+
+        this.shortTermResponse.getInputWeights()
+
+    fun getShortTermResponseMemoryWeights() =
+
+        this.shortTermResponse.getMemoryWeights()
+
     override fun forwardStep(withinBatch : Int, indexStep: Int, state : FloatArray, input : FloatArray, isTraining : Boolean): FloatArray {
 
         val forget = this.forgetUnit.forwardStep(withinBatch, indexStep, state, input, isTraining)

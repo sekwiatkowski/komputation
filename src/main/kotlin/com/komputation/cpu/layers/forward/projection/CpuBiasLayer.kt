@@ -19,6 +19,10 @@ class CpuBiasLayer internal constructor(
 
     private val numberBiasEntries = numberRows
 
+    fun getBias() =
+
+        this.bias
+
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {

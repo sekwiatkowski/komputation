@@ -43,6 +43,10 @@ class CpuWeightingLayer internal constructor(
 
     private var lengthIndex = -1
 
+    fun getWeights() =
+
+        this.weights
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.blasOutputMatricesOverPossibleLengths = Array(this.numberLengths) { index -> org.jblas.FloatMatrix(this.numberOutputRows, this.lengths[index]) }

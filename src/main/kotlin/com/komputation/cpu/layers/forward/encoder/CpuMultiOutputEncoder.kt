@@ -32,6 +32,10 @@ class CpuMultiOutputEncoder internal constructor(
     override val numberInputColumns = this.numberSteps
     override var backwardResult = FloatArray(0)
 
+    fun getUnit() =
+
+        this.unit
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.steps = Array(this.numberSteps) { FloatArray(this.inputDimension) }

@@ -29,6 +29,22 @@ class CpuHighwayLayer internal constructor(
     private val numberInputEntries = this.numberInputRows * this.numberInputColumns
     override var backwardResult = FloatArray(0)
 
+    fun getTransformationWeights() =
+
+        this.transformation.getWeights()
+
+    fun getTransformationBias() =
+
+        this.transformation.getBias()
+
+    fun getTransformationFractionWeights() =
+
+        this.transformationFraction.getWeights()
+
+    fun getTransformationFractionBias() =
+
+        this.transformationFraction.getBias()
+
     override fun acquire(maximumBatchSize: Int) {
 
         this.forwardResult = FloatArray(this.numberOutputEntries)

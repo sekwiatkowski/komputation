@@ -21,6 +21,18 @@ class ShortTermResponse(
     private val bias: SeriesBias?,
     private val activations: Array<CpuTanhLayer>) {
 
+    fun getMemoryWeights() =
+
+        this.memoryWeighting.getWeights()
+
+    fun getInputWeights() =
+
+        this.inputWeighting.getWeights()
+
+    fun getBias() =
+
+        this.bias
+
     fun forward(withinBatch : Int, step : Int, state : FloatArray, input : FloatArray, forget : FloatArray, isTraining : Boolean): FloatArray {
 
         val shortTermMemory = this.forgetting[step].forward(state, forget)
