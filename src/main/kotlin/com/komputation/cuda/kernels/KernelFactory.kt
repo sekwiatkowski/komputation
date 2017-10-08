@@ -1,16 +1,16 @@
 package com.komputation.cuda.kernels
 
-import java.io.File
+import org.apache.commons.io.IOUtils
 
 class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
-    private fun resolveRelativePath(relativePath: String) =
+    private fun read(relativePath: String) =
 
-        File(this.javaClass.getResource("/cuda/$relativePath").toURI())
+        IOUtils.toString(this.javaClass.getResourceAsStream("/cuda/$relativePath"), "UTF-8")
 
     fun create(instruction: KernelInstruction): Kernel {
 
-        val kernelFile = resolveRelativePath(instruction.relativePath)
+        val sourceCode = read(instruction.relativePath)
 
         val relativeHeaderPaths = instruction.relativeHeaderPaths
         val includeNames = Array(relativeHeaderPaths.size) { index ->
@@ -19,9 +19,9 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
         }
 
-        val headerFiles = Array(relativeHeaderPaths.size) { index -> resolveRelativePath(relativeHeaderPaths[index]) }
+        val headerFiles = Array(relativeHeaderPaths.size) { index -> read(relativeHeaderPaths[index]) }
 
-        return Kernel(this.capabilities, kernelFile, instruction.name, instruction.nameExpression, headerFiles, includeNames)
+        return Kernel(this.capabilities, sourceCode, instruction.name, instruction.nameExpression, headerFiles, includeNames)
 
     }
 

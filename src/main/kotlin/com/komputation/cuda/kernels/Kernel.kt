@@ -4,14 +4,13 @@ import jcuda.Pointer
 import jcuda.driver.CUfunction
 import jcuda.nvrtc.JNvrtc.nvrtcDestroyProgram
 import jcuda.nvrtc.nvrtcProgram
-import java.io.File
 
 class Kernel(
     private val computeCapabilities : Pair<Int, Int>,
-    private val cuFile : File,
+    private val sourceCode : String,
     private val name : String,
     private val nameExpression : String,
-    private val headerFiles : Array<File>,
+    private val headers : Array<String>,
     private val includeNames : Array<String>) {
 
     private val program = nvrtcProgram()
@@ -19,7 +18,7 @@ class Kernel(
 
     init {
 
-        compileKernel(this.program, this.computeCapabilities, this.cuFile, this.name, arrayOf(this.nameExpression), this.headerFiles, this.includeNames)
+        compileKernel(this.program, this.computeCapabilities, this.sourceCode, this.name, arrayOf(this.nameExpression), this.headers, this.includeNames)
 
         loadKernel(this.kernel, this.program, this.nameExpression)
 

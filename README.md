@@ -9,9 +9,11 @@ Komputation is a neural network framework for the JVM written in the Kotlin prog
 Komputation is available through Maven Central:
 
 ```xml
+<dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
     <version>0.10.1</version>
+</dependency>
 ```
 
 ## Layers

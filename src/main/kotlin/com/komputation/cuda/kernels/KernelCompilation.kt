@@ -12,19 +12,15 @@ import java.io.File
 fun compileKernel(
     program : nvrtcProgram,
     computeCapabilities : Pair<Int, Int>,
-    cuFile : File,
+    sourceCode : String,
     name : String,
     nameExpressions : Array<String>,
-    headerFiles : Array<File>,
+    headers : Array<String>,
     includeNames : Array<String>) {
 
-    val sourceCode = cuFile.readText()
+    val numberHeaders = headers.size
 
-    val headerSources = Array(headerFiles.size) { index -> headerFiles[index].readText() }
-
-    val numberHeaders = headerFiles.size
-
-    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headerSources, includeNames)
+    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headers, includeNames)
 
     for (nameExpression in nameExpressions) {
 
