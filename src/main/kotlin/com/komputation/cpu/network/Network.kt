@@ -91,4 +91,10 @@ class Network(
 
     }
 
+    fun predict(input : Matrix) : FloatArray {
+
+        return this.forwardPropagator.forward(0, input, false).copyOf()
+
+    }
+
 }

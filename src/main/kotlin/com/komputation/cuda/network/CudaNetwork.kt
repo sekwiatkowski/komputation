@@ -1,10 +1,8 @@
 package com.komputation.cuda.network
 
-import jcuda.jcublas.JCublas2.cublasCreate
-import jcuda.jcublas.JCublas2.cublasDestroy
-import jcuda.jcublas.cublasHandle
 import com.komputation.cuda.CudaEvaluation
 import com.komputation.cuda.kernels.EvaluationKernels
+import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.setUpCudaContext
 import com.komputation.cuda.workflow.CudaTester
 import com.komputation.cuda.workflow.CudaTrainer
@@ -15,6 +13,10 @@ import com.komputation.layers.acquireRecursively
 import com.komputation.loss.CudaLossFunctionInstruction
 import com.komputation.matrix.Matrix
 import com.komputation.optimization.Optimizable
+import jcuda.Pointer
+import jcuda.jcublas.JCublas2.cublasCreate
+import jcuda.jcublas.JCublas2.cublasDestroy
+import jcuda.jcublas.cublasHandle
 
 
 class CudaNetwork(
@@ -121,5 +123,15 @@ class CudaNetwork(
             targets,
             batchSize
         )
+
+    fun predict(input : Matrix) : Pointer {
+
+        val inputMemory = InputMemory()
+        val prediction = this.forwardPropagator.forward(0, 1, intArrayOf(0), arrayOf(input), inputMemory, false)
+        inputMemory.free()
+
+        return prediction
+
+    }
 
 }
