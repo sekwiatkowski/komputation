@@ -11,7 +11,7 @@ class CpuSquaredLoss(
 
         var loss = 0.0f
 
-        for (indexRow in 0..this.numberInputEntries-1) {
+        for (indexRow in 0 until this.numberInputEntries) {
 
             val prediction = predictions[indexRow]
             val target = targets[indexRow]
@@ -32,7 +32,7 @@ class CpuSquaredLoss(
 
     override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
 
-        for(indexEntry in 0..this.numberInputEntries - 1) {
+        for(indexEntry in 0 until this.numberInputEntries) {
 
             this.backwardResult[indexEntry] = predictions[indexEntry] - targets[indexEntry]
 

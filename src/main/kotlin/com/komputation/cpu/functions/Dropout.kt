@@ -5,7 +5,7 @@ import java.util.*
 
 fun seed(random : Random, result: IntArray, size: Int) {
 
-    for (index in 0..size - 1) {
+    for (index in 0 until size) {
 
         result[index] = random.nextInt()
 
@@ -15,7 +15,7 @@ fun seed(random : Random, result: IntArray, size: Int) {
 
 fun nextInteger(seeds : IntArray, offset : Int, length: Int) {
 
-    for(index in offset..offset + length - 1) {
+    for(index in offset until offset + length) {
 
         seeds[index] = xorShift(seeds[index])
 
@@ -41,7 +41,7 @@ fun mask(length: Int, limit: Int, offset: Int, seeds: IntArray, result: BooleanA
 
 fun dropout(numberEntries: Int, input: FloatArray, mask: BooleanArray, result: FloatArray) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = if(mask[index]) input[index] else 0.0f
 
@@ -51,7 +51,7 @@ fun dropout(numberEntries: Int, input: FloatArray, mask: BooleanArray, result: F
 
 fun backwardDropout(chain : FloatArray, mask : BooleanArray, result: FloatArray, numberEntries: Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = if(mask[index]) chain[index] else 0.0f
 

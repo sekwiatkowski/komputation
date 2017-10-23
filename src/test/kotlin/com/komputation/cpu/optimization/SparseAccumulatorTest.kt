@@ -120,7 +120,7 @@ class SparseAccumulatorTest {
 
         assertEquals(expectedSize, actualSize)
 
-        for (index in 0..actualSize - 1) {
+        for (index in 0 until actualSize) {
 
             assertEquals(expectedIds[index], actualIds[index])
             assertEquals(expectedCounts[index], actualCounts[index])

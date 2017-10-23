@@ -15,7 +15,7 @@ object ReverseData {
 
             val inputEntries = FloatArray(seriesLength * numberCategories)
 
-            for (indexStep in 0..seriesLength - 1) {
+            for (indexStep in 0 until seriesLength) {
 
                 setStep(oneHotArray(numberCategories, random.nextInt(10), 1.0f), indexStep, inputEntries, numberCategories)
 
@@ -33,7 +33,7 @@ object ReverseData {
 
             val reversedSequenceMatrix = FloatArray(numberCategories * seriesLength)
 
-            for (indexStep in 0..seriesLength - 1) {
+            for (indexStep in 0 until seriesLength) {
 
                 val reverseStep = seriesLength - indexStep - 1
 

@@ -2,13 +2,13 @@ package com.komputation.cpu.functions
 
 fun findMaxIndicesInRows(input: FloatArray, numberRows : Int, numberColumns : Int, result : IntArray) {
 
-    for (indexRow in 0..numberRows - 1) {
+    for (indexRow in 0 until numberRows) {
 
         var maxValue = input[indexRow]
         var maxIndex = indexRow
 
         // Go through the columns in the given row
-        for (indexColumn in 1..numberColumns - 1) {
+        for (indexColumn in 1 until numberColumns) {
 
             val index = indexRow + indexColumn * numberRows
 
@@ -34,7 +34,7 @@ fun findMaxIndex(input: FloatArray, offset : Int, limit : Int): Int {
     var maxIndex = -1
     var maxValue = Float.NEGATIVE_INFINITY
 
-    for(index in offset..offset + limit - 1) {
+    for(index in offset until offset + limit) {
 
         val value = input[index]
 
@@ -53,7 +53,7 @@ fun findMaxIndex(input: FloatArray, offset : Int, limit : Int): Int {
 
 fun findMaxIndices(input: FloatArray, numberIndices: Int, length: Int, result: IntArray) {
 
-    for (step in 0..length - 1) {
+    for (step in 0 until length) {
 
         val offset = step * numberIndices
 

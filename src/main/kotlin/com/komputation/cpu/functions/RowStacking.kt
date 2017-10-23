@@ -4,17 +4,17 @@ fun stackRows(heights : IntArray, totalNumberRows : Int, numberColumns : Int, st
 
     var startAtRow = 0
 
-    for(indexArray in 0..arrays.size - 1) {
+    for(indexArray in 0 until arrays.size) {
 
         val numberRows = heights[indexArray]
 
         val array = arrays[indexArray]
 
-        for (indexColumn in 0..numberColumns - 1) {
+        for (indexColumn in 0 until numberColumns) {
 
             val startAtIndex = indexColumn * totalNumberRows
 
-            for (indexMatrixRow in 0..numberRows - 1) {
+            for (indexMatrixRow in 0 until numberRows) {
 
                 stacked[startAtIndex + startAtRow + indexMatrixRow] = array[indexColumn * numberRows + indexMatrixRow]
 

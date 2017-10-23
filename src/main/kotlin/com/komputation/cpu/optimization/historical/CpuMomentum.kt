@@ -20,7 +20,7 @@ class CpuMomentum(private val learningRate: Float, private val momentum: Float, 
 
     override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
 
-        for(localIndex in 0..numberEntries - 1) {
+        for(localIndex in 0 until numberEntries) {
 
             val historyIndex = start + localIndex
 

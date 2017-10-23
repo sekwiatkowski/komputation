@@ -4,7 +4,7 @@ import com.komputation.matrix.FloatMath
 
 fun sigmoid(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = sigmoid(input[index])
 
@@ -18,7 +18,7 @@ fun sigmoid(x: Float) =
 
 fun differentiateSigmoid(forwardEntries: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         val forward = forwardEntries[index]
 

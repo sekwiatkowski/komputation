@@ -35,7 +35,7 @@ class CpuMaxPoolingLayer internal constructor(
 
         Arrays.fill(result, 0f)
 
-        for (indexRow in 0..this.numberInputRows - 1) {
+        for (indexRow in 0 until this.numberInputRows) {
 
             result[this.maxRowIndices[indexRow]] = chain[indexRow]
 

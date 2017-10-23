@@ -2,7 +2,7 @@ package com.komputation.cpu.functions
 
 fun add(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = a[index] + b[index]
 
@@ -12,7 +12,7 @@ fun add(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) 
 
 fun subtract(a: FloatArray, b: FloatArray, numberEntries: Int, result: FloatArray) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = a[index] - b[index]
 
@@ -22,7 +22,7 @@ fun subtract(a: FloatArray, b: FloatArray, numberEntries: Int, result: FloatArra
 
 fun hadamard(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = a[index] * b[index]
 
@@ -32,7 +32,7 @@ fun hadamard(a: FloatArray, b: FloatArray, result : FloatArray, numberEntries : 
 
 fun negate(vector: FloatArray, result : FloatArray, numberEntries: Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = -vector[index]
 
@@ -42,7 +42,7 @@ fun negate(vector: FloatArray, result : FloatArray, numberEntries: Int) {
 
 fun scale(vector: FloatArray, scalar : Float, result : FloatArray, numberEntries: Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = scalar * vector[index]
 

@@ -117,7 +117,7 @@ class CpuAttentiveDecoder internal constructor(
 
         Arrays.fill(this.previousDecoderState, 0f)
 
-        for (indexStep in 0..this.numberSteps - 1) {
+        for (indexStep in 0 until this.numberSteps) {
 
             // previous decoder state weights (for attention) * previous decoder state
             val attentionWeightedPreviousState = this.attentionPreviousStateWeighting.forwardStep(withinBatch, indexStep, this.previousDecoderState, isTraining)

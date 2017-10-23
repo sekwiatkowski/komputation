@@ -2,12 +2,12 @@ package com.komputation.cpu.functions.activation
 
 fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: FloatArray, result: FloatArray) {
 
-    for (indexColumn in 0..numberColumns - 1) {
+    for (indexColumn in 0 until numberColumns) {
 
         val start = indexColumn * numberRows
 
         var sum = 0.0f
-        for (indexRow in 0..numberRows - 1) {
+        for (indexRow in 0 until numberRows) {
 
             val indexEntry = start + indexRow
 
@@ -20,7 +20,7 @@ fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: Floa
 
         sums[indexColumn] = sum
 
-        for (indexRow in 0..numberRows - 1) {
+        for (indexRow in 0 until numberRows) {
 
             result[start + indexRow] /= sum
 
@@ -59,13 +59,13 @@ fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: Floa
 
 fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: FloatArray, forwardEntries: FloatArray, denominators: FloatArray, result: FloatArray) {
 
-    for (indexColumn in 0..numberColumns - 1) {
+    for (indexColumn in 0 until numberColumns) {
 
         val startColumn = indexColumn * numberRows
 
         var productSum = 0.0f
 
-        for (indexRow in 0..numberRows - 1) {
+        for (indexRow in 0 until numberRows) {
 
             val indexEntry = startColumn + indexRow
 
@@ -76,7 +76,7 @@ fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: Flo
 
         }
 
-        for (indexRow in 0..numberRows - 1) {
+        for (indexRow in 0 until numberRows) {
 
             val indexEntry = startColumn + indexRow
             val chainEntry = chainEntries[indexEntry]

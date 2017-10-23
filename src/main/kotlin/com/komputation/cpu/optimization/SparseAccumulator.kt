@@ -16,7 +16,7 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
 
     fun accumulate(ids: IntArray, numberIds : Int, gradient: FloatArray) {
 
-        for (indexId in 0..numberIds-1) {
+        for (indexId in 0 until numberIds) {
 
             val currentId = ids[indexId]
 
@@ -73,7 +73,7 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
         val sum = this.sums[hashedId]
 
         val start = indexId * this.dimension
-        for (indexDimension in 0..this.dimension - 1) {
+        for (indexDimension in 0 until this.dimension) {
 
             sum[indexDimension] += gradient[start + indexDimension]
 

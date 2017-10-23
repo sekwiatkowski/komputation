@@ -16,7 +16,7 @@ class CpuMultiOutputEncoder internal constructor(
     private val inputDimension: Int,
     private val hiddenDimension : Int) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
-    private val startAtTheBeginning = 0..numberSteps - 1
+    private val startAtTheBeginning = 0 until numberSteps
     private val startAtTheEnd = this.numberSteps - 1 downTo 0
 
     private var inputIndices = if(isReversed) IntArray(this.numberSteps) { index -> this.numberSteps - 1 - index } else IntArray(this.numberSteps) { index -> index }

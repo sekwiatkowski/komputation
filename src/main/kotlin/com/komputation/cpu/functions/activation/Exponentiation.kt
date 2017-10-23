@@ -5,7 +5,7 @@ import com.komputation.matrix.FloatMath
 
 fun exponentiate(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for(index in 0..numberEntries-1) {
+    for(index in 0 until numberEntries) {
 
         result[index] = FloatMath.exp(input[index])
 

@@ -11,11 +11,11 @@ fun floatArrayFromRows(vararg rows: FloatArray): FloatArray {
 
     val entries = FloatArray(numberRows * numberColumns)
 
-    for (indexRow in 0..numberRows - 1) {
+    for (indexRow in 0 until numberRows) {
 
         val row = rows[indexRow]
 
-        for (indexColumn in 0..numberColumns - 1) {
+        for (indexColumn in 0 until numberColumns) {
 
             entries[indexRow + indexColumn * numberRows] = row[indexColumn]
 

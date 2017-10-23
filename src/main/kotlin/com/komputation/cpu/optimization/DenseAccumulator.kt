@@ -8,7 +8,7 @@ class DenseAccumulator(private val size : Int) {
 
     fun accumulate(gradient: FloatArray) {
 
-        for (index in 0..this.size - 1) {
+        for (index in 0 until this.size) {
 
             this.accumulation[index] += gradient[index]
 

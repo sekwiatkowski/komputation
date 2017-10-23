@@ -4,7 +4,7 @@ fun computeAccuracy(predictions: Array<IntArray>, targets: Array<IntArray>, numb
 
     var correctPredictions = 0
 
-    for (indexComparison in 0..numberComparisons - 1) {
+    for (indexComparison in 0 until numberComparisons) {
 
         if(targets[indexComparison].contentEquals(predictions[indexComparison])) {
 

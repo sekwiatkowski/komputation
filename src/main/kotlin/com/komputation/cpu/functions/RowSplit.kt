@@ -4,14 +4,14 @@ fun splitRows(numberRows : Int, numberColumns : Int, entries : FloatArray, heigh
 
     var runningHeight = 0
 
-    for (indexBlock in 0..numberBlocks - 1) {
+    for (indexBlock in 0 until numberBlocks) {
 
         val height = heights[indexBlock]
         val block = result[indexBlock]
 
-        for (indexColumn in 0..numberColumns - 1) {
+        for (indexColumn in 0 until numberColumns) {
 
-            for (indexRow in 0..height - 1) {
+            for (indexRow in 0 until height) {
 
                 block[indexColumn * height + indexRow] = entries[indexColumn * numberRows + (runningHeight + indexRow)]
 

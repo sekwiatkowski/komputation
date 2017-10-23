@@ -9,7 +9,7 @@ class CpuAdagrad(private val learningRate: Float, private val epsilon : Float, s
 
     override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
 
-        for(index in 0..numberEntries -1) {
+        for(index in 0 until numberEntries) {
 
             val historyIndex = start + index
             val derivative = gradient[index]

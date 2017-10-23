@@ -10,7 +10,7 @@ package com.komputation.cpu.functions
 
 fun lookup(vectors: Array<FloatArray>, dimension: Int, length: Int, ids: IntArray, result: FloatArray) {
 
-    for (index in 0..length - 1) {
+    for (index in 0 until length) {
 
         val id = ids[index]
 

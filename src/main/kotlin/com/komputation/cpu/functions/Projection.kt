@@ -2,11 +2,11 @@ package com.komputation.cpu.functions
 
 fun addBias(input: FloatArray, numberInputRows: Int, numberInputColumns: Int, bias: FloatArray, result: FloatArray) {
 
-    for(indexColumn in 0..numberInputColumns - 1) {
+    for(indexColumn in 0 until numberInputColumns) {
 
         val firstColumnIndex = indexColumn * numberInputRows
 
-        for (indexRow in 0..numberInputRows-1) {
+        for (indexRow in 0 until numberInputRows) {
 
             val indexEntry = firstColumnIndex + indexRow
             result[indexEntry] = input[indexEntry] + bias[indexRow]
@@ -28,13 +28,13 @@ fun backwardProjectionWrtInput(
 
     var index = 0
 
-    for (indexInputColumn in 0..numberInputColumns - 1) {
+    for (indexInputColumn in 0 until numberInputColumns) {
 
-        for (indexInputRow in 0..numberInputRows - 1) {
+        for (indexInputRow in 0 until numberInputRows) {
 
             var derivative = 0.0f
 
-            for (indexWeightRow in 0..numberWeightRows - 1) {
+            for (indexWeightRow in 0 until numberWeightRows) {
 
                 val chainEntry = chainEntries[indexWeightRow + indexInputColumn * numberChainRows]
                 val weightEntry = weightEntries[indexWeightRow + indexInputRow * numberWeightRows]
@@ -63,13 +63,13 @@ fun backwardProjectionWrtWeights(
 
     var index = 0
 
-    for (indexWeightColumn in 0..numberWeightColumns - 1) {
+    for (indexWeightColumn in 0 until numberWeightColumns) {
 
-        for (indexWeightRow in 0..numberWeightRows - 1) {
+        for (indexWeightRow in 0 until numberWeightRows) {
 
             var derivative = 0.0f
 
-            for (indexChainColumn in 0..numberChainColumns - 1) {
+            for (indexChainColumn in 0 until numberChainColumns) {
 
                 // d pre ij / d wk
                 val inputEntry = inputEntries[indexWeightColumn + indexChainColumn * numberInputRows]
@@ -98,11 +98,11 @@ fun backwardProjectionWrtWeights(
 
 fun backwardProjectionWrtBias(numberBiasRows : Int, chain: FloatArray, numberChainRows: Int, numberChainColumns: Int, result : FloatArray) {
 
-    for (indexRow in 0..numberBiasRows - 1) {
+    for (indexRow in 0 until numberBiasRows) {
 
         var derivative = 0.0f
 
-        for (indexChainColumn in 0..numberChainColumns - 1) {
+        for (indexChainColumn in 0 until numberChainColumns) {
 
             val chainEntry = chain[indexChainColumn * numberChainRows + indexRow]
             derivative += chainEntry

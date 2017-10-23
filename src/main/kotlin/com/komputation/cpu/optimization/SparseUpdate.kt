@@ -4,7 +4,7 @@ import com.komputation.cpu.functions.scale
 
 fun updateSparsely(vectors: Array<FloatArray>, dimension : Int, size : Int, ids: IntArray, counts : FloatArray, gradients: Array<FloatArray>, rule : UpdateRule) {
 
-    for (index in 0..size - 1) {
+    for (index in 0 until size) {
 
         val id = ids[index]
         val start = id * dimension

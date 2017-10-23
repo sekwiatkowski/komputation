@@ -10,11 +10,11 @@ fun transpose(numberRows: Int, numberColumns: Int, entries: FloatArray, result :
 
     }
 
-    for (indexColumn in 0..numberColumns-1) {
+    for (indexColumn in 0 until numberColumns) {
 
         val start = indexColumn * numberRows
 
-        for(indexRow in 0..numberRows-1) {
+        for(indexRow in 0 until numberRows) {
 
             result[indexRow * numberColumns + indexColumn] = entries[start + indexRow]
 

@@ -271,11 +271,11 @@ class CudaMaxPoolingLayerTest {
 
             val numberColumns = random.nextInt(maximumColumns) + 1
 
-            for (indexColumn in 0..numberColumns - 1) {
+            for (indexColumn in 0 until numberColumns) {
 
                 val startColumn = indexColumn * numberRows
 
-                for (indexRow in 0..numberRows - 1) {
+                for (indexRow in 0 until numberRows) {
 
                     input[startColumn + indexRow] = random.nextFloat()
 
@@ -296,7 +296,7 @@ class CudaMaxPoolingLayerTest {
             val deviceCudaResult = cudaLayer.forward(1, deviceLengths, deviceInput, false)
             val cudaResult = getFloatArray(deviceCudaResult, numberRows)
 
-            for (indexEntry in 0..numberRows-1) {
+            for (indexEntry in 0 until numberRows) {
 
                 assertEquals(cpuResult[indexEntry], cudaResult[indexEntry], 0.00001f)
 

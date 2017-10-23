@@ -22,7 +22,7 @@ class CpuAdam(
 
         this.step += 1.0f
 
-        for (index in 0..numberEntries - 1) {
+        for (index in 0 until numberEntries) {
 
             val derivative = gradient[index]
 

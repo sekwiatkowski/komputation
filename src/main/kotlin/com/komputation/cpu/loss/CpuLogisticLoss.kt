@@ -15,7 +15,7 @@ class CpuLogisticLoss(
 
         var loss = 0.0f
 
-        for (index in 0..this.numberInputEntries-1) {
+        for (index in 0 until this.numberInputEntries) {
 
             val target = targets[index]
 
@@ -34,7 +34,7 @@ class CpuLogisticLoss(
     // -1/target probability if target = 1.0, 0.0 otherwise
     override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
 
-        for(indexEntry in 0..this.numberInputEntries - 1) {
+        for(indexEntry in 0 until this.numberInputEntries) {
 
             if (targets[indexEntry] == 1.0f) {
 

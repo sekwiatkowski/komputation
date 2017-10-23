@@ -58,7 +58,7 @@ class CpuSingleInputDecoder internal constructor(
         // Use the encoder output as the first state
         this.states[0] = input
 
-        for (indexStep in 0..this.numberSteps - 1) {
+        for (indexStep in 0 until this.numberSteps) {
 
             val newState = this.unit.forwardStep(withinBatch, indexStep, this.states[indexStep], this.inputs[indexStep], isTraining)
             this.states[indexStep+1] = newState

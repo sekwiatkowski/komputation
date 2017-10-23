@@ -4,11 +4,11 @@ fun repeatColumn(column: FloatArray, numberRepetitions: Int, repetition: FloatAr
 
     val numberRows = column.size
 
-    for(indexColumn in 0..numberRepetitions - 1) {
+    for(indexColumn in 0 until numberRepetitions) {
 
         val start = indexColumn * numberRows
 
-        for (indexRow in 0..numberRows - 1) {
+        for (indexRow in 0 until numberRows) {
 
             repetition[start+indexRow] = column[indexRow]
 

@@ -4,7 +4,7 @@ import com.komputation.matrix.FloatMath
 
 fun tanh(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         result[index] = FloatMath.tanh(input[index])
 
@@ -14,7 +14,7 @@ fun tanh(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
 fun differentiateTanh(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for (index in 0..numberEntries - 1) {
+    for (index in 0 until numberEntries) {
 
         val inputEntry = input[index]
 

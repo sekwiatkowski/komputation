@@ -12,7 +12,7 @@ object AdditionProblemData {
         Array<Matrix>(size) {
 
             val input = FloatArray(length * 2)
-            for (index in 0..length - 1) {
+            for (index in 0 until length) {
 
                 input[index * 2] = random.nextFloat()
 
@@ -60,7 +60,7 @@ object AdditionProblemData {
 
             val inputEntries = input.entries
 
-            for (indexStep in 0..numberSteps - 1) {
+            for (indexStep in 0 until numberSteps) {
 
                 val step = FloatArray(2)
                 getStep(inputEntries, indexStep, step, 2)

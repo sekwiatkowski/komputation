@@ -21,13 +21,13 @@ fun expandForConvolution(
 
     var count = 0
 
-    for (columnStart in 0..numberFilterColumnPositions - 1) {
+    for (columnStart in 0 until numberFilterColumnPositions) {
 
-        for (rowStart in 0..numberFilterRowPositions - 1) {
+        for (rowStart in 0 until numberFilterRowPositions) {
 
-            for (indexColumn in columnStart..columnStart + filterWidth - 1) {
+            for (indexColumn in columnStart until columnStart + filterWidth) {
 
-                for (indexRow in rowStart..rowStart + filterHeight - 1) {
+                for (indexRow in rowStart until rowStart + filterHeight) {
 
                     resultEntries[count++] = inputEntries[indexRow + indexColumn * numberInputRows]
 
@@ -54,12 +54,12 @@ fun backwardExpansionForConvolution(
 
     Arrays.fill(result, 0f)
 
-    for (indexConvolution in 0..numberFilterColumnPositions - 1) {
+    for (indexConvolution in 0 until numberFilterColumnPositions) {
 
         val firstColumnOfConvolution = firstColumnOfConvolution(indexConvolution, numberFilterRowPositions)
         val firstRowOfConvolution = firstRowOfConvolution(indexConvolution, numberFilterRowPositions)
 
-        for (indexConvolutionEntry in 0..numberChainRows - 1) {
+        for (indexConvolutionEntry in 0 until numberChainRows) {
 
             val columnInConvolution = columnInConvolution(indexConvolutionEntry, filterHeight)
             val column = firstColumnOfConvolution + columnInConvolution

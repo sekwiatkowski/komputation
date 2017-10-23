@@ -2,7 +2,7 @@ package com.komputation.cpu.functions.activation
 
 fun relu(input: FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for(index in 0..numberEntries-1) {
+    for(index in 0 until numberEntries) {
 
         result[index] = relu(input[index])
 
@@ -18,7 +18,7 @@ fun relu(entry: Float) =
 // = 1 if x > 0.0, 0.0 otherwise
 fun backwardRelu(forwardEntries : FloatArray, chainEntries : FloatArray, result : FloatArray, numberEntries : Int) {
 
-    for(index in 0..numberEntries-1) {
+    for(index in 0 until numberEntries) {
 
         result[index] =
 

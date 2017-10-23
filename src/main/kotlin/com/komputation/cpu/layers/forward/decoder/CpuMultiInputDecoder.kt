@@ -53,7 +53,7 @@ class CpuMultiInputDecoder internal constructor(
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean): FloatArray {
 
-        for (indexStep in 0..this.numberSteps - 1) {
+        for (indexStep in 0 until this.numberSteps) {
 
             val step = this.steps[indexStep]
             getStep(input, indexStep, step, this.inputDimension)

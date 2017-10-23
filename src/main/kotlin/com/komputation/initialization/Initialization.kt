@@ -10,9 +10,9 @@ fun initializeWeights(strategy: InitializationStrategy, numberRows: Int, numberC
 
     val array = FloatArray(numberRows * numberColumns)
 
-    for (indexRow in 0..numberRows - 1) {
+    for (indexRow in 0 until numberRows) {
 
-        for (indexColumn in 0..numberColumns - 1) {
+        for (indexColumn in 0 until numberColumns) {
 
             array[indexColumn * numberRows + indexRow] = strategy.initialize(indexRow, indexColumn, numberIncoming)
 

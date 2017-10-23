@@ -11,7 +11,7 @@ class CpuRMSProp(private val learningRate : Float, private val decay : Float, pr
 
     override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
 
-        for(index in 0..numberEntries -1) {
+        for(index in 0 until numberEntries) {
 
             val derivative = gradient[index]
 

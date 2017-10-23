@@ -37,7 +37,7 @@ class CpuConcatenation internal constructor(
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
 
-        for (indexLayer in (0..this.numberLayers-1)) {
+        for (indexLayer in (0 until this.numberLayers)) {
 
             this.individualResults[indexLayer] = this.layers[indexLayer].forward(withinBatch, numberInputColumns, input, isTraining)
 
@@ -58,7 +58,7 @@ class CpuConcatenation internal constructor(
 
         System.arraycopy(firstIndividualBackwardResult, 0, result, 0, firstIndividualBackwardResult.size)
 
-        for (indexNetwork in (1..this.numberLayers-1)) {
+        for (indexNetwork in (1 until this.numberLayers)) {
 
             val layer = this.layers[indexNetwork]
 
@@ -66,7 +66,7 @@ class CpuConcatenation internal constructor(
 
             val individualBackwardResult = layer.backwardResult
 
-            for (index in 0..individualBackwardResult.size - 1) {
+            for (index in 0 until individualBackwardResult.size) {
 
                 result[index] += individualBackwardResult[index]
 
