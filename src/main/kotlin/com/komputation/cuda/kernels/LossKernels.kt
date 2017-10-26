@@ -16,18 +16,32 @@ object LossKernels {
             "loss/squaredloss/BackwardSquaredLossKernel.cu",
             listOf(KernelHeaders.nan))
 
-    fun logisticLoss(blockSize: Int) =
+    fun logisticLoss() =
         KernelInstruction(
             "logisticLossKernel",
-            "logisticLossKernel<$blockSize>",
+            "logisticLossKernel",
             "loss/logisticloss/LogisticLossKernel.cu",
-            listOf(KernelHeaders.sumReduction))
+            listOf(KernelHeaders.productReduction))
 
     fun backwardLogisticLoss() =
         KernelInstruction(
             "backwardLogisticLossKernel",
             "backwardLogisticLossKernel",
             "loss/logisticloss/BackwardLogisticLossKernel.cu",
+            listOf(KernelHeaders.nan))
+
+    fun crossEntropyLoss() =
+        KernelInstruction(
+            "crossEntropyLossKernel",
+            "crossEntropyLossKernel",
+            "loss/crossentropy/CrossEntropyLossKernel.cu",
+            listOf(KernelHeaders.sumReduction))
+
+    fun backwardCrossEntropyLoss() =
+        KernelInstruction(
+            "backwardCrossEntropyLossKernel",
+            "backwardCrossEntropyLossKernel",
+            "loss/crossentropy/BackwardCrossEntropyLossKernel.cu",
             listOf(KernelHeaders.nan))
 
 }

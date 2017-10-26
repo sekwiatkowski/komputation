@@ -1,13 +1,13 @@
 package com.komputation.cpu.demos.and
 
 import com.komputation.cpu.network.Network
-import com.komputation.loss.printLoss
 import com.komputation.demos.and.OneHotAndData
 import com.komputation.initialization.heInitialization
 import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.dense.denseLayer
-import com.komputation.loss.logisticLoss
+import com.komputation.loss.crossEntropyLoss
+import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
             OneHotAndData.input,
             OneHotAndData.targets,
             10_000,
-            logisticLoss(outputDimension),
+            crossEntropyLoss(outputDimension),
             printLoss)
         .run()
 

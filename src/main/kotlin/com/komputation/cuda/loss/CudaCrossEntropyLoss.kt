@@ -4,12 +4,13 @@ import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.computeDeviceFloatArraySize
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.kernels.Kernel
+import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
-import com.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
-class CudaLogisticLoss internal constructor(
+class CudaCrossEntropyLoss internal constructor(
+    private val numberCategories : Int,
     private val numberSteps : Int,
     private val createForwardKernel : () -> Kernel,
     private val createBackwardKernel : () -> Kernel,
@@ -18,7 +19,10 @@ class CudaLogisticLoss internal constructor(
     private val warpSize: Int,
     private val maximumNumberThreadsPerBlock : Int) : CudaLossFunction {
 
-    private val pointerToNumberSteps = Pointer.to(intArrayOf(this.numberSteps))
+    private val numberEntries = this.numberCategories * this.numberSteps
+    private val pointerToNumberEntries = Pointer.to(intArrayOf(this.numberEntries))
+
+    private val pointerToNumberRows = Pointer.to(intArrayOf(this.numberCategories))
 
     private var forwardKernel : Kernel? = null
 
@@ -55,17 +59,17 @@ class CudaLogisticLoss internal constructor(
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberSteps)
 
-        val forwardLaunchConfiguration = computeRowwiseLaunchConfiguration(1, this.numberSteps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberCategories, this.numberSteps, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocksInYDimension = forwardLaunchConfiguration.numberBlocks
         this.forwardNumberThreadsPerBlock = forwardLaunchConfiguration.numberThreadsPerBlock
-        this.forwardNumberIterations[0] = forwardLaunchConfiguration.numberIterations
+        this.forwardNumberIterations[0] = this.forwardNumberThreadsPerBlock
         this.forwardKernel = this.createForwardKernel()
-        val numberForwardWarps = (this.numberSteps / forwardLaunchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
+        val numberForwardWarps = (this.numberCategories / forwardLaunchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
         this.forwardSharedMemoryBytes = computeDeviceFloatArraySize(numberForwardWarps).toInt()
 
-        allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberSteps)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberEntries)
 
-        val backwardLaunchConfiguration = computeEntrywiseLaunchConfiguration(this.numberSteps, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        val backwardLaunchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
         this.backwardNumberBlocksInYDimension = backwardLaunchConfiguration.numberBlocks
         this.backwardNumberThreadsPerBlock = backwardLaunchConfiguration.numberThreadsPerBlock
         this.backwardNumberIterations[0] = backwardLaunchConfiguration.numberIterations
@@ -79,7 +83,8 @@ class CudaLogisticLoss internal constructor(
 
         val parameters = Pointer.to(
             this.pointerToForwardBatchSize,
-            this.pointerToNumberSteps,
+            this.pointerToNumberRows,
+            this.pointerToNumberEntries,
             this.pointerToForwardNumberIterations,
             pointerToPredictions,
             pointerToTargets,
@@ -110,7 +115,7 @@ class CudaLogisticLoss internal constructor(
 
         val parameters = Pointer.to(
             this.pointerToBackwardBatchSize,
-            this.pointerToNumberSteps,
+            this.pointerToNumberEntries,
             this.pointerToBackwardNumberIterations,
             pointerToPredictions,
             pointerToTargets,

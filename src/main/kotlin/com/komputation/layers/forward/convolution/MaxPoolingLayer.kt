@@ -1,12 +1,12 @@
 package com.komputation.layers.forward.convolution
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.maxpooling.CpuMaxPoolingLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
 import com.komputation.cuda.layers.forward.maxpooling.CudaMaxPoolingLayer
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
+import jcuda.jcublas.cublasHandle
 
 class MaxPoolingLayer internal constructor (
     private val name : String?,
@@ -28,8 +28,8 @@ class MaxPoolingLayer internal constructor (
             this.symbolForUnusedColumns,
             { context.createKernel(ForwardKernels.maxPooling()) },
             { context.createKernel(ForwardKernels.backwardMaxPooling()) },
-            context.maximumNumberOfThreadsPerBlock,
-            context.warpSize)
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
 }
 

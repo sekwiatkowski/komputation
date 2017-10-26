@@ -9,7 +9,7 @@ import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.dense.denseLayer
 import com.komputation.layers.forward.highwayLayer
-import com.komputation.loss.logisticLoss
+import com.komputation.loss.crossEntropyLoss
 import com.komputation.optimization.historical.momentum
 import java.io.File
 import java.util.*
@@ -85,7 +85,7 @@ fun main(args: Array<String>) {
         trainingInputs,
         trainingTargets,
         numberIterations,
-        logisticLoss(numberCategories)) { _ : Int, _ : Float ->
+        crossEntropyLoss(numberCategories)) { _ : Int, _ : Float ->
 
             println(test.run())
 

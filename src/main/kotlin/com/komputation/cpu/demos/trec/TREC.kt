@@ -10,7 +10,7 @@ import com.komputation.layers.forward.activation.softmaxLayer
 import com.komputation.layers.forward.convolution.convolutionalLayer
 import com.komputation.layers.forward.dropout.dropoutLayer
 import com.komputation.layers.forward.projection.projectionLayer
-import com.komputation.loss.logisticLoss
+import com.komputation.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
@@ -115,7 +115,7 @@ class Trec {
                 trainingRepresentations,
                 trainingTargets,
                 numberIterations,
-                logisticLoss(numberCategories)) { _ : Int, _: Float ->
+                crossEntropyLoss(numberCategories)) { _ : Int, _: Float ->
 
                 println(test.run())
 

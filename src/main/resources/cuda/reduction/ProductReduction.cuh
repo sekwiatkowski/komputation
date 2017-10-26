@@ -1,10 +1,10 @@
-__inline__ __device__ float warpReduceToSum(float thisValue) {
+__inline__ __device__ float warpReduceToProduct(float thisValue) {
 
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
 
         float otherValue = __shfl_down(thisValue, offset, warpSize);
 
-        thisValue += otherValue;
+        thisValue *= otherValue;
 
     }
 
@@ -12,13 +12,13 @@ __inline__ __device__ float warpReduceToSum(float thisValue) {
 
 }
 
-__device__ void reduceToSum(float thisValue, int warpId, int laneId, float* shared) {
+__device__ void reduceToProduct(float thisValue, int warpId, int laneId, float* shared) {
 
-    float warpSum = warpReduceToSum(thisValue);
+    float warpProduct = warpReduceToProduct(thisValue);
 
     if(laneId == 0) {
 
-        shared[warpId] = warpSum;
+        shared[warpId] = warpProduct;
 
     }
 
@@ -28,7 +28,7 @@ __device__ void reduceToSum(float thisValue, int warpId, int laneId, float* shar
 
     if (warpId == 0) {
 
-        warpReduceToSum(thisValue);
+        warpReduceToProduct(thisValue);
 
     }
 

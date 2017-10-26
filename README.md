@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.10.3</version>
+    <version>0.10.5</version>
 </dependency>
 ```
 
@@ -62,23 +62,23 @@ Komputation is available through Maven Central:
   - [Normalization](./src/main/kotlin/com/komputation/layers/forward/NormalizationLayer.kt)
   - [Transposition](./src/main/kotlin/com/komputation/layers/forward/TranspositionLayer.kt)
 
-## Demos
+## CPU demos
 
 - Boolean functions:
   - [AND](./src/main/kotlin/com/komputation/cpu/demos/and/AndSigmoid.kt)
   - [Negation](./src/main/kotlin/com/komputation/cpu/demos/negation/Negation.kt)
   - [XOR](./src/main/kotlin/com/komputation/cpu/demos/xor/Xor.kt)
 
+- Word embedding toy problem:
+  - [Feed-forward network](./src/main/kotlin/com/komputation/cpu/demos/embeddings/Embeddings.kt)
+  - [CNN with one filter width](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithConvolution.kt)
+  - [CNN with two filter widths](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
+
 - Running total:
   - [Projection](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/RunningTotalProjection.kt)
   - [Multi-input decoder](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
 
 - [Computer vision toy problem](./src/main/kotlin/com/komputation/cpu/demos/lines/Lines.kt)
-
-- Word embedding toy problem:
-  - [Feed-forward network](./src/main/kotlin/com/komputation/cpu/demos/embeddings/Embeddings.kt)
-  - [CNN with one filter width](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithConvolution.kt)
-  - [CNN with two filter widths](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
 
 - Addition problem:
   - [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
@@ -90,13 +90,31 @@ Komputation is available through Maven Central:
   - [RNN with attention](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseAttention.kt)
 
 - MNIST:
-  - [CPU demo](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistBatchDropout.kt)
-  - [GPU/CUDA demo](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistBatchDropout.kt)
+  - [Minimal](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistMinimal.kt)
+  - [Dropout](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistBatchDropout.kt)
+  - [Highway](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistHighway.kt)
 
 - TREC:
-  - [CPU demo](./src/main/kotlin/com/komputation/cpu/demos/trec/TREC.kt)
-  - [CPU demo with two filter widths](./src/main/kotlin/com/komputation/cpu/demos/trec/TRECWithTwoFilterWidths.kt)
-  - [GPU/CUDA demo](./src/main/kotlin/com/komputation/cuda/demos/trec/TREC.kt)
+  - [One filter width](./src/main/kotlin/com/komputation/cpu/demos/trec/TREC.kt)
+  - [Two filter widths](./src/main/kotlin/com/komputation/cpu/demos/trec/TRECWithTwoFilterWidths.kt)
+
+## GPU/CUDA demos
+
+- Boolean functions:
+  - [AND](./src/main/kotlin/com/komputation/cuda/demos/and/AndSigmoid.kt)
+  - [Negation](./src/main/kotlin/com/komputation/cuda/demos/negation/Negation.kt)
+  - [XOR](./src/main/kotlin/com/komputation/cuda/demos/xor/Xor.kt)
+
+- Word embedding toy problem:
+  - [Feed-forward network](./src/main/kotlin/com/komputation/cuda/demos/embeddings/Embeddings.kt)
+  - [CNN with one filter width](./src/main/kotlin/com/komputation/cuda/demos/embeddings/EmbeddingsWithConvolution.kt)
+
+- MNIST:
+  - [Minimal](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistMinimal.kt)
+  - [Dropout](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistBatchDropout.kt)
+
+- TREC:
+  - [One filter width](./src/main/kotlin/com/komputation/cuda/demos/trec/TREC.kt)
 
 ## Sample code
 
@@ -128,6 +146,7 @@ See the [TREC demo](./src/main/kotlin/com/komputation/cuda/demos/trec/TREC.kt) f
 
 ## Loss functions
 
+- [Cross-entropy loss](./src/main/kotlin/com/komputation/loss/CrossEntropyLoss.kt)
 - [Logistic loss](./src/main/kotlin/com/komputation/loss/LogisticLoss.kt)
 - [Squared loss](./src/main/kotlin/com/komputation/loss/SquaredLoss.kt)
 

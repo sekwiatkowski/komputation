@@ -1,8 +1,7 @@
 package com.komputation.cpu.demos.reverse
 
-import com.komputation.cpu.network.Network
 import com.komputation.cpu.layers.forward.units.simpleRecurrentUnit
-import com.komputation.loss.printLoss
+import com.komputation.cpu.network.Network
 import com.komputation.demos.reverse.ReverseData
 import com.komputation.initialization.gaussianInitialization
 import com.komputation.initialization.identityInitialization
@@ -10,7 +9,8 @@ import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.decoder.attentiveDecoder
 import com.komputation.layers.forward.encoder.multiOutputEncoder
-import com.komputation.loss.logisticLoss
+import com.komputation.loss.crossEntropyLoss
+import com.komputation.loss.printLoss
 import com.komputation.matrix.IntMath
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -69,7 +69,7 @@ fun main(args: Array<String>) {
             inputs,
             targets,
             numberIterations,
-            logisticLoss(numberCategories, seriesLength),
+            crossEntropyLoss(numberCategories, seriesLength),
             printLoss
         )
         .run()

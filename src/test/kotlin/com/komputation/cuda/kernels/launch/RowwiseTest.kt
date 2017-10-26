@@ -5,14 +5,15 @@ import org.junit.jupiter.api.Test
 
 class RowwiseTest {
 
-    val maximumNumberThreadsPerBlock = 1024
+    private val maximumNumberThreadsPerBlock = 1024
+    private val warpSize = 32
 
     @Test
     fun test1() {
 
         assertEquals(
-            KernelLaunchConfiguration(1, 1, 1),
-            computeRowwiseLaunchConfiguration(1, 1, maximumNumberThreadsPerBlock)
+            KernelLaunchConfiguration(1, this.warpSize, 1),
+            computeRowwiseLaunchConfiguration(1, 1, this.warpSize, this.maximumNumberThreadsPerBlock)
         )
 
     }
@@ -21,8 +22,8 @@ class RowwiseTest {
     fun test2() {
 
         assertEquals(
-            KernelLaunchConfiguration(1, 2, 1),
-            computeRowwiseLaunchConfiguration(1, 2, maximumNumberThreadsPerBlock)
+            KernelLaunchConfiguration(1, this.warpSize, 1),
+            computeRowwiseLaunchConfiguration(1, 2, this.warpSize, this.maximumNumberThreadsPerBlock)
         )
 
     }
@@ -31,8 +32,8 @@ class RowwiseTest {
     fun test3() {
 
         assertEquals(
-            KernelLaunchConfiguration(1, maximumNumberThreadsPerBlock, 2),
-            computeRowwiseLaunchConfiguration(1, 2048, maximumNumberThreadsPerBlock)
+            KernelLaunchConfiguration(1, this.maximumNumberThreadsPerBlock, 2),
+            computeRowwiseLaunchConfiguration(1, 2048, this.warpSize, this.maximumNumberThreadsPerBlock)
         )
 
     }
@@ -41,8 +42,8 @@ class RowwiseTest {
     fun test4() {
 
         assertEquals(
-            KernelLaunchConfiguration(1, maximumNumberThreadsPerBlock, 2),
-            computeRowwiseLaunchConfiguration(1, 1500, maximumNumberThreadsPerBlock)
+            KernelLaunchConfiguration(1, this.maximumNumberThreadsPerBlock, 2),
+            computeRowwiseLaunchConfiguration(1, 1500, this.warpSize, this.maximumNumberThreadsPerBlock)
         )
 
     }

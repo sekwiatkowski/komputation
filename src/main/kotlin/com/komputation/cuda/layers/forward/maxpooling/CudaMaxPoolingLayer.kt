@@ -1,23 +1,26 @@
 package com.komputation.cuda.layers.forward.maxpooling
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
-import com.komputation.cuda.*
+import com.komputation.cuda.allocateDeviceFloatMemory
+import com.komputation.cuda.allocateDeviceIntMemory
+import com.komputation.cuda.computeDeviceIntArraySize
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
 import com.komputation.cuda.layers.BaseCudaForwardLayer
 import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
+import com.komputation.cuda.setIntArray
 import com.komputation.layers.Resourceful
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
 
 class CudaMaxPoolingLayer internal constructor(
-    name : String?,
-    numberRows : Int,
-    override val maximumInputColumns : Int,
-    private val symbolForUnusedColumns : Float,
+    name: String?,
+    numberRows: Int,
+    override val maximumInputColumns: Int,
+    private val symbolForUnusedColumns: Float,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
-    private val maximumNumberThreadsPerBlock: Int,
-    private val warpSize : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
+    private val warpSize: Int,
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
 
     private val maximumNumberEntries = numberRows * this.maximumInputColumns
     private val pointerToMaximumNumberEntries = Pointer.to(intArrayOf(this.maximumNumberEntries))
@@ -39,7 +42,7 @@ class CudaMaxPoolingLayer internal constructor(
     private val deviceMaxIndices = Pointer()
     private val pointerToMaxIndices = Pointer.to(this.deviceMaxIndices)
 
-    private var forwardConfiguration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.maximumNumberThreadsPerBlock)
+    private var forwardConfiguration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.warpSize, this.maximumNumberThreadsPerBlock)
     private val numberWarps = (this.maximumInputColumns+this.warpSize-1)/this.warpSize
     private val forwardSharedMemoryBytes = computeDeviceIntArraySize(this.numberWarps).toInt()
 

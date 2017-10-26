@@ -2,14 +2,15 @@ package com.komputation.cpu.loss
 
 import com.komputation.matrix.FloatMath
 
-class CpuLogisticLoss(override val numberInputColumns: Int) : CpuLossFunction {
+class CpuCrossEntropyLoss(
+    override val numberInputRows: Int,
+    override val numberInputColumns: Int) : CpuLossFunction {
 
-    override val numberInputRows = 1
-
-    private val numberInputEntries = this.numberInputColumns
+    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
 
     override val backwardResult = FloatArray(this.numberInputEntries)
 
+    // -log(probability of the correct target)
     override fun forward(predictions: FloatArray, targets : FloatArray): Float {
 
         var loss = 0.0f
@@ -18,20 +19,9 @@ class CpuLogisticLoss(override val numberInputColumns: Int) : CpuLossFunction {
 
             val target = targets[index]
 
-            val prediction = predictions[index]
-
             if (target == 1.0f) {
 
-                // -log(probability)
-                loss += -FloatMath.log(prediction)
-
-            }
-            else{
-
-                // -log(1 - probability)
-                val counterProbability = 1.0f.minus(prediction)
-
-                loss += -FloatMath.log(counterProbability)
+                loss += -FloatMath.log(predictions[index])
 
             }
 
@@ -41,20 +31,19 @@ class CpuLogisticLoss(override val numberInputColumns: Int) : CpuLossFunction {
 
     }
 
+    // -1/target probability if target = 1.0, 0.0 otherwise
     override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
 
         for(indexEntry in 0 until this.numberInputEntries) {
 
-            val prediction = predictions[indexEntry]
-
             if (targets[indexEntry] == 1.0f) {
 
-                this.backwardResult[indexEntry] = (-1.0f).div(prediction)
+                this.backwardResult[indexEntry] = -1.0f.div(predictions[indexEntry])
 
             }
             else {
 
-                this.backwardResult[indexEntry] = 1.0f.div(1.0f - prediction)
+                this.backwardResult[indexEntry] = 0f
 
             }
 

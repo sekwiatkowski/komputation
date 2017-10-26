@@ -6,8 +6,8 @@ import com.komputation.initialization.heInitialization
 import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.dense.denseLayer
+import com.komputation.loss.logisticLoss
 import com.komputation.loss.printLoss
-import com.komputation.loss.squaredLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -20,7 +20,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
     val initialization = heInitialization(random)
 
-    val optimization = stochasticGradientDescent(0.03f)
+    val optimization = stochasticGradientDescent(0.1f)
 
     val network = CudaNetwork(
         maximumBatchSize,
@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
         denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
     )
 
-    val training = network.training(BinaryAndData.inputs, BinaryAndData.targets, 10_000, squaredLoss(outputDimension), printLoss)
+    val training = network.training(BinaryAndData.inputs, BinaryAndData.targets, 10_000, logisticLoss(outputDimension), printLoss)
 
     training.run()
 

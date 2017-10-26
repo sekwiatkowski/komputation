@@ -1,7 +1,6 @@
 package com.komputation.cpu.demos.lines
 
 import com.komputation.cpu.network.Network
-import com.komputation.loss.printLoss
 import com.komputation.demos.lines.LinesData
 import com.komputation.initialization.uniformInitialization
 import com.komputation.layers.entry.inputLayer
@@ -9,7 +8,8 @@ import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.activation.reluLayer
 import com.komputation.layers.forward.convolution.convolutionalLayer
 import com.komputation.layers.forward.dense.denseLayer
-import com.komputation.loss.logisticLoss
+import com.komputation.loss.crossEntropyLoss
+import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -42,7 +42,7 @@ fun main(args: Array<String>) {
             LinesData.inputs,
             LinesData.targets,
             30_000,
-            logisticLoss(outputDimension),
+            crossEntropyLoss(outputDimension),
             printLoss)
         .run()
 

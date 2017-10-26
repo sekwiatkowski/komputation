@@ -1,85 +1,47 @@
-#include "reduction/SumReduction.cuh"
+#include "reduction/ProductReduction.cuh"
 
 /*
-    Example:
-
-                  0.2 0.7
-    predictions = 0.3 0.1
-                  0.5 0.2
-
-    targets = 0.0 1.0
-              1.0 0.0
-              0.0 0.0
-
-    number of threads per column = the smallest number equal to the number of rows/categories or greater than the number of rows/categories that is a power of 2 = 4
-    number of blocks = number of columns/steps
-
-    shared data in the first block:
-    [ 0 * 0.2, 1 * 0.3, 0 * 0.5, 0 * 0.0 ]
-    = [ 0, 0.3, 0.0, 0.0 ]
-
-    shared data in the second block:
-    [ 1.0 * 0.7, 0.0 * 0.1, 0.0 * 0.2, 0 * 0.0 ]
-    = [ 0.7, 0.0, 0.0, 0.0 ]
-
-    parallel sum reduction in the first block:
-    [ 0.3, 0.3, 0.0, 0.0 ]
-
-    parallel sum reduction in the second block:
-    [ 0.7, 0.0, 0.0, 0.0 ]
-
-    parallel product reduction of the sums of each block:
-    0.3 * 0.7 = 0.21
-
-    Negative log:
-    -log(0.21) = 0.677780705
-
+    step 1: 0.8
+    step 2: 0.9
+    -logf(0.8) + -logf(0.9) = -logf(0.8 * 0.9)
 */
 
-template <int blockSize>
-__global__ void logisticLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
-{
+__inline__ __device__ float probability(float prediction, float target) {
 
-    int startIndexWithinColumn = threadIdx.x * numberIterations;
+    return target * prediction + (1.0 - target) * (1.0 - prediction);
+
+}
+
+__global__ void logisticLossKernel (int batchSize, int numberColumns, int numberIterations, float* predictions, float* targets, float* results)
+{
 
     extern __shared__ float sharedData[];
 
     int indexInstance = blockIdx.x;
-    int indexColumn = blockIdx.y;
-
-    int startIndexWithinInstance = indexColumn * numberRows + startIndexWithinColumn;
-    int startIndexWithinBatch = indexInstance * numberEntriesPerInstance + startIndexWithinInstance;
-
-    int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
     if(indexInstance < batchSize) {
 
-        float thisValue = 0.0f;
+        float thisValue = 1.0;
 
-        if(startIndexWithinColumn < numberRows) {
+        int startInstance = indexInstance * numberColumns;
+        int startNextInstance = startInstance + numberColumns;
 
-            thisValue = targets[startIndexWithinBatch] * predictions[startIndexWithinBatch];
+        int startWithinBatch = startInstance + threadIdx.x * numberIterations;
 
-            if(numberIterations > 1) {
+        for(int indexEntry = startWithinBatch; indexEntry < startWithinBatch + numberIterations; indexEntry++) {
 
-                for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-
-                    thisValue += targets[indexEntry] * predictions[indexEntry];
-
-                }
-
-            }
+            thisValue *= indexEntry < startNextInstance ? probability(predictions[indexEntry], targets[indexEntry]) : 1.0;
 
         }
 
         int warpId = threadIdx.x / warpSize;
         int laneId = threadIdx.x % warpSize;
 
-        reduceToSum(thisValue, warpId, laneId, sharedData);
+        reduceToProduct(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
 
-            result[indexColumnInBatch] = -logf(sharedData[0]);
+            results[indexInstance] = -logf(sharedData[0]);
 
         }
 
@@ -88,7 +50,7 @@ __global__ void logisticLossKernel (int batchSize, int numberRows, int numberEnt
 
         if(threadIdx.x == 0) {
 
-            result[indexColumnInBatch] = 0.0;
+            results[indexInstance] = 0.0;
 
         }
 
