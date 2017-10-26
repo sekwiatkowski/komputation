@@ -1,9 +1,9 @@
 package com.komputation.optimization.adaptive
 
-import com.komputation.cpu.optimization.CpuOptimizationStrategy
 import com.komputation.cpu.optimization.adaptive.CpuAdagrad
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.optimization.CudaOptimizationStrategy
+import com.komputation.cuda.kernels.OptimizationKernels
+import com.komputation.cuda.optimization.adaptive.CudaAdagrad
 import com.komputation.optimization.OptimizationInstruction
 
 fun adagrad(learningRate: Float, epsilon: Float = 1e-6f) =
@@ -12,20 +12,29 @@ fun adagrad(learningRate: Float, epsilon: Float = 1e-6f) =
 
 class Adagrad(private val learningRate: Float, private val epsilon: Float) : OptimizationInstruction {
 
-    override fun buildForCpu() : CpuOptimizationStrategy {
+    override fun buildForCpu() =
 
-        return { numberRows : Int, numberColumns : Int ->
+        { numberRows : Int, numberColumns : Int ->
 
             CpuAdagrad(this.learningRate, this.epsilon, numberRows * numberColumns)
 
         }
 
-    }
+    override fun buildForCuda(context: CudaContext) =
 
-    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
+        { numberParameters : Int, numberRows: Int, numberColumns: Int ->
 
-        throw NotImplementedError()
+            CudaAdagrad(
+                numberParameters,
+                numberRows * numberColumns,
+                this.learningRate,
+                this.epsilon,
+                { context.createKernel(OptimizationKernels.adagrad()) },
+                context.numberMultiprocessors,
+                context.maximumNumberOfResidentWarpsPerMultiprocessor,
+                context.warpSize,
+                context.maximumNumberOfThreadsPerBlock)
 
-    }
+        }
 
 }

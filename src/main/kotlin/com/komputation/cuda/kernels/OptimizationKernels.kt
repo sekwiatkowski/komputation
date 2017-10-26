@@ -5,16 +5,22 @@ object OptimizationKernels {
     fun stochasticGradientDescent () = KernelInstruction(
         "stochasticGradientDescentKernel",
         "stochasticGradientDescentKernel",
-        "optimization/stochasticgradientdescent/StochasticGradientDescentKernel.cu")
+        "optimization/StochasticGradientDescentKernel.cu")
 
     fun momentum () = KernelInstruction(
         "momentumKernel",
         "momentumKernel",
-        "optimization/momentum/MomentumKernel.cu")
+        "optimization/historical/MomentumKernel.cu")
 
     fun nesterov () = KernelInstruction(
         "nesterovKernel",
         "nesterovKernel",
-        "optimization/nesterov/NesterovKernel.cu")
+        "optimization/historical/NesterovKernel.cu")
+
+    fun adagrad () = KernelInstruction(
+        "adagradKernel",
+        "adagradKernel",
+        "optimization/adaptive/AdagradKernel.cu")
+
 
 }

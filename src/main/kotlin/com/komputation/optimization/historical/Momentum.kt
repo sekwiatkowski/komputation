@@ -1,11 +1,9 @@
 package com.komputation.optimization.historical
 
-import com.komputation.cpu.optimization.CpuOptimizationStrategy
 import com.komputation.cpu.optimization.historical.CpuMomentum
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.OptimizationKernels
-import com.komputation.cuda.optimization.CudaOptimizationStrategy
-import com.komputation.cuda.optimization.history.CudaMomentum
+import com.komputation.cuda.optimization.historical.CudaMomentum
 import com.komputation.optimization.OptimizationInstruction
 
 fun momentum(learningRate: Float, momentum : Float) =
@@ -14,19 +12,17 @@ fun momentum(learningRate: Float, momentum : Float) =
 
 class Momentum(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
 
-    override fun buildForCpu() : CpuOptimizationStrategy {
+    override fun buildForCpu() =
 
-        return { numberRows : Int, numberColumns : Int ->
+        { numberRows : Int, numberColumns : Int ->
 
             CpuMomentum(this.learningRate, this.momentum, numberRows * numberColumns)
 
         }
 
-    }
+    override fun buildForCuda(context: CudaContext) =
 
-    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
-
-        return { numberParameters : Int, numberRows : Int, numberColumns : Int ->
+        { numberParameters : Int, numberRows : Int, numberColumns : Int ->
 
             CudaMomentum(
                 numberParameters,
@@ -40,7 +36,5 @@ class Momentum(private val learningRate: Float, private val momentum : Float) : 
                 context.maximumNumberOfThreadsPerBlock)
 
         }
-
-    }
 
 }

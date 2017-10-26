@@ -1,11 +1,13 @@
-__global__ void stochasticGradientDescentKernel (
+__global__ void momentumKernel (
     int numberIterations,
-    float learningRate,
     int* parameterIndices,
     int* counts,
     int parameterSize,
     float* parameters,
-    float* gradient) {
+    float* gradient,
+    float learningRate,
+    float momentum,
+    float* history,) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
@@ -23,7 +25,10 @@ __global__ void stochasticGradientDescentKernel (
 
             for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-                parameters[indexParameter] -= scalingFactor * learningRate * gradient[indexGradient];
+                float update = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
+
+                history[indexParameter] = update;
+                parameters[indexParameter] += update;
 
             }
 

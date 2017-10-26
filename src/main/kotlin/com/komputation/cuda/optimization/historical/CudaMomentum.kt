@@ -1,12 +1,12 @@
-package com.komputation.cuda.optimization.history
+package com.komputation.cuda.optimization.historical
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
 import com.komputation.layers.Resourceful
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
 
 class CudaMomentum internal constructor(
     private val numberParameters : Int,
@@ -56,14 +56,14 @@ class CudaMomentum internal constructor(
 
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            this.pointerToLearningRate,
-            this.pointerToMomentum,
-            this.pointerToHistory,
             pointerToIndices,
             pointerToCounts,
             this.pointerToParameterSize,
             pointerToParameters,
-            pointerToGradient
+            pointerToGradient,
+            this.pointerToLearningRate,
+            this.pointerToMomentum,
+            this.pointerToHistory
         )
 
         val resultCode = this.kernel!!.launch(

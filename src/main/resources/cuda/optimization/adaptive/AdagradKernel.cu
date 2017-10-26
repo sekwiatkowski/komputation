@@ -1,13 +1,13 @@
-__global__ void momentumKernel (
+__global__ void adagradKernel (
     int numberIterations,
-    float learningRate,
-    float momentum,
-    float* history,
     int* parameterIndices,
     int* counts,
     int parameterSize,
     float* parameters,
-    float* gradient) {
+    float* gradient,
+    float learningRate,
+    float* history,
+    float epsilon) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
@@ -25,10 +25,17 @@ __global__ void momentumKernel (
 
             for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-                float update = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
+                float derivative = gradient[indexGradient];
 
-                history[indexParameter] = update;
-                parameters[indexParameter] += update;
+                float updatedHistory = history[indexParameter] + derivative * derivative;
+
+                history[indexParameter] = updatedHistory;
+
+                float adaptedLearningRate = learningRate / (sqrtf(updatedHistory) + epsilon);
+
+                float update = scalingFactor * adaptedLearningRate * gradient[indexGradient];
+
+                parameters[indexParameter] -= update;
 
             }
 

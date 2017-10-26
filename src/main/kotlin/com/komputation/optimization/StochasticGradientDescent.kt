@@ -1,10 +1,8 @@
 package com.komputation.optimization
 
-import com.komputation.cpu.optimization.CpuOptimizationStrategy
 import com.komputation.cpu.optimization.CpuStochasticGradientDescent
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.OptimizationKernels
-import com.komputation.cuda.optimization.CudaOptimizationStrategy
 import com.komputation.cuda.optimization.CudaStochasticGradientDescent
 
 fun stochasticGradientDescent(learningRate: Float) =
@@ -13,19 +11,17 @@ fun stochasticGradientDescent(learningRate: Float) =
 
 class StochasticGradientDescent(private val learningRate: Float) : OptimizationInstruction {
 
-    override fun buildForCpu() : CpuOptimizationStrategy {
+    override fun buildForCpu() =
 
-        return { _: Int, _: Int ->
+        { _: Int, _: Int ->
 
             CpuStochasticGradientDescent(this.learningRate)
 
         }
 
-    }
+    override fun buildForCuda(context: CudaContext) =
 
-    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
-
-        return { _ : Int, numberRows : Int, numberColumns : Int ->
+        { _ : Int, numberRows : Int, numberColumns : Int ->
 
             CudaStochasticGradientDescent(
                 numberRows * numberColumns,
@@ -37,7 +33,5 @@ class StochasticGradientDescent(private val learningRate: Float) : OptimizationI
                 context.maximumNumberOfThreadsPerBlock)
 
         }
-
-    }
 
 }

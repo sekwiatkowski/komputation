@@ -1,20 +1,11 @@
-/*
-    backup: v_backup = v
-    history update: v = m * v - learning_rate * dx
-    parameter update: x = x - m * v_backup + v + m * v
-*/
-
-__global__ void nesterovKernel (
+__global__ void stochasticGradientDescentKernel (
     int numberIterations,
-    float learningRate,
-    float momentum,
-    float* history,
-    float* backup,
     int* parameterIndices,
     int* counts,
     int parameterSize,
     float* parameters,
-    float* gradient) {
+    float* gradient,
+    float learningRate,) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
@@ -32,17 +23,7 @@ __global__ void nesterovKernel (
 
             for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
 
-                float entryBackup = history[indexParameter];
-
-                backup[indexParameter] = entryBackup;
-
-                float entryUpdate = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
-
-                history[indexParameter] = entryUpdate;
-
-                float removedPreviousLookAhead = parameters[indexParameter] - momentum * entryBackup;
-
-                parameters[indexParameter] = removedPreviousLookAhead + (1.0 + momentum) * entryUpdate;
+                parameters[indexParameter] -= scalingFactor * learningRate * gradient[indexGradient];
 
             }
 
