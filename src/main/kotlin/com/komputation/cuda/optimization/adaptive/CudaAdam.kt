@@ -8,10 +8,12 @@ import com.komputation.layers.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
-class CudaAdadelta internal constructor(
+class CudaAdam internal constructor(
     private val numberParameters : Int,
     private val parameterSize : Int,
-    private val decay: Float,
+    private val learningRate: Float,
+    private val firstMomentDecay: Float,
+    private val secondMomentDecay: Float,
     private val epsilon : Float,
     private val createKernel: () -> Kernel,
     private val numberMultiprocessors : Int,
@@ -20,15 +22,25 @@ class CudaAdadelta internal constructor(
     private val maximumNumberThreads : Int) : BaseCudaUpdateRule(), Resourceful {
 
     private val pointerToParameterSize = Pointer.to(intArrayOf(this.parameterSize))
-    private val pointerToDecay = Pointer.to(floatArrayOf(this.decay))
-    private val pointerToOneMinusDecay = Pointer.to(floatArrayOf(1.0f - this.decay))
+
+    private val pointerToLearningRate = Pointer.to(floatArrayOf(this.learningRate))
+
+    private val pointerToFirstMomentDecay = Pointer.to(floatArrayOf(this.firstMomentDecay))
+    private val pointerToOneMinusFirstMomentDecay = Pointer.to(floatArrayOf(1.0f - this.firstMomentDecay))
+
+    private val pointerToSecondMomentDecay = Pointer.to(floatArrayOf(this.secondMomentDecay))
+    private val pointerToOneMinusSecondMomentDecay = Pointer.to(floatArrayOf(1.0f - this.secondMomentDecay))
+
     private val pointerToEpsilon = Pointer.to(floatArrayOf(this.epsilon))
 
-    private val deviceGradientAccumulation = Pointer()
-    private val pointerToGradientAccumulation = Pointer.to(this.deviceGradientAccumulation)
+    private val step = floatArrayOf(0.0f)
+    private val pointerToStep = Pointer.to(this.step)
 
-    private val deviceUpdateAccumulation = Pointer()
-    private val pointerToUpdateAccumulation = Pointer.to(this.deviceUpdateAccumulation)
+    private val deviceFirstMomentEstimate = Pointer()
+    private val pointerToFirstMomentEstimate = Pointer.to(this.deviceFirstMomentEstimate)
+
+    private val deviceSecondMomentEstimate = Pointer()
+    private val pointerToSecondMomentEstimate = Pointer.to(this.deviceSecondMomentEstimate)
 
     private var kernel : Kernel? = null
     private var numberBlocks = -1
@@ -48,8 +60,8 @@ class CudaAdadelta internal constructor(
         this.numberIterations[0] = launchConfiguration.numberIterations
 
         val totalParameters = this.numberParameters * this.parameterSize
-        allocateDeviceFloatMemory(this.deviceGradientAccumulation, totalParameters)
-        allocateDeviceFloatMemory(this.deviceUpdateAccumulation, totalParameters)
+        allocateDeviceFloatMemory(this.deviceFirstMomentEstimate, totalParameters)
+        allocateDeviceFloatMemory(this.deviceSecondMomentEstimate, totalParameters)
 
     }
 
@@ -60,6 +72,8 @@ class CudaAdadelta internal constructor(
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
 
+        this.step[0] += 1.0f;
+
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
             pointerToIndices,
@@ -67,11 +81,15 @@ class CudaAdadelta internal constructor(
             this.pointerToParameterSize,
             pointerToParameters,
             pointerToGradient,
-            this.pointerToDecay,
-            this.pointerToOneMinusDecay,
+            this.pointerToLearningRate,
+            this.pointerToFirstMomentDecay,
+            this.pointerToOneMinusFirstMomentDecay,
+            this.pointerToSecondMomentDecay,
+            this.pointerToOneMinusSecondMomentDecay,
             this.pointerToEpsilon,
-            this.pointerToGradientAccumulation,
-            this.pointerToUpdateAccumulation
+            this.pointerToStep,
+            this.pointerToFirstMomentEstimate,
+            this.pointerToSecondMomentEstimate
         )
 
         val resultCode = this.kernel!!.launch(
@@ -92,8 +110,8 @@ class CudaAdadelta internal constructor(
 
         this.kernel!!.destroy()
 
-        cudaFree(this.deviceGradientAccumulation)
-        cudaFree(this.deviceUpdateAccumulation)
+        cudaFree(this.deviceFirstMomentEstimate)
+        cudaFree(this.deviceSecondMomentEstimate)
 
     }
 

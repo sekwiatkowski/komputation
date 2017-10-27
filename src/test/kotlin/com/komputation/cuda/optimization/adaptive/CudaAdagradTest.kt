@@ -60,7 +60,7 @@ class CudaAdagradTest {
 
         cudaContext.destroy()
 
-        assertArrayEquals(floatArrayOf(1.8105587f), hostParameter)
+        assertArrayEquals(floatArrayOf(1.8105587f), hostParameter, 1e-6f)
 
     }
 

@@ -6,7 +6,7 @@ import com.komputation.cuda.setUpCudaContext
 import com.komputation.optimization.adaptive.rmsprop
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
 class CudaRMSPropTest {
@@ -56,7 +56,7 @@ class CudaRMSPropTest {
 
         cudaContext.destroy()
 
-        Assertions.assertArrayEquals(floatArrayOf(1.3982452f), hostParameter)
+        assertArrayEquals(floatArrayOf(1.3982452f), hostParameter, 1e-6f)
 
     }
 

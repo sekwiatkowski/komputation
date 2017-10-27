@@ -6,7 +6,7 @@ import com.komputation.cuda.setUpCudaContext
 import com.komputation.optimization.adaptive.adadelta
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
 
 class CudaAdadeltaTest {
@@ -62,7 +62,7 @@ class CudaAdadeltaTest {
 
         cudaContext.destroy()
 
-        Assertions.assertArrayEquals(floatArrayOf(1.9898509f), hostParameter)
+        assertArrayEquals(floatArrayOf(1.9898509f), hostParameter, 1e-6f)
 
     }
 

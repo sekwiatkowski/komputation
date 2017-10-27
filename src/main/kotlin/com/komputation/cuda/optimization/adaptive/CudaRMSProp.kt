@@ -47,8 +47,7 @@ class CudaRMSProp internal constructor(
         this.numberThreads = launchConfiguration.numberThreadsPerBlock
         this.numberIterations[0] = launchConfiguration.numberIterations
 
-        val totalParmeters = this.numberParameters * this.parameterSize
-        allocateDeviceFloatMemory(this.deviceAccumulation, totalParmeters)
+        allocateDeviceFloatMemory(this.deviceAccumulation, this.numberParameters * this.parameterSize)
 
     }
 

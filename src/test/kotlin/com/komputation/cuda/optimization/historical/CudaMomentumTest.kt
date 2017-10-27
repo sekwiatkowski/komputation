@@ -50,7 +50,7 @@ class CudaMomentumTest {
 
         cudaContext.destroy()
 
-        assertArrayEquals(floatArrayOf(1.961f), hostParameter)
+        assertArrayEquals(floatArrayOf(1.961f), hostParameter,1e-6f)
 
     }
 

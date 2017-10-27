@@ -30,6 +30,11 @@ object OptimizationKernels {
     fun rmsprop () = KernelInstruction(
         "rmspropKernel",
         "rmspropKernel",
-        "optimization/adaptive/rmspropKernel.cu")
+        "optimization/adaptive/RmspropKernel.cu")
+
+    fun adam () = KernelInstruction(
+        "adamKernel",
+        "adamKernel",
+        "optimization/adaptive/AdamKernel.cu")
 
 }

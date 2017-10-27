@@ -1,9 +1,9 @@
 package com.komputation.optimization.adaptive
 
-import com.komputation.cpu.optimization.CpuOptimizationStrategy
 import com.komputation.cpu.optimization.adaptive.CpuAdam
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.optimization.CudaOptimizationStrategy
+import com.komputation.cuda.kernels.OptimizationKernels
+import com.komputation.cuda.optimization.adaptive.CudaAdam
 import com.komputation.optimization.OptimizationInstruction
 
 fun adam(learningRate : Float = 0.001f, firstMomentDecay : Float = 0.9f, secondMomentDecay : Float = 0.999f, epsilon : Float = 1e-8f) =
@@ -16,20 +16,31 @@ class Adam(
     private val secondMomentDecay : Float,
     private val epsilon : Float) : OptimizationInstruction {
 
-    override fun buildForCpu() : CpuOptimizationStrategy {
+    override fun buildForCpu() =
 
-        return { numberRows : Int, numberColumns : Int ->
+        { numberRows : Int, numberColumns : Int ->
 
             CpuAdam(this.learningRate, this.firstMomentDecay, this.secondMomentDecay, this.epsilon, numberRows * numberColumns)
 
         }
 
-    }
+    override fun buildForCuda(context: CudaContext) =
 
-    override fun buildForCuda(context: CudaContext): CudaOptimizationStrategy {
+        { numberParameters : Int, numberRows: Int, numberColumns: Int ->
 
-        throw NotImplementedError()
+            CudaAdam(
+                numberParameters,
+                numberRows * numberColumns,
+                this.learningRate,
+                this.firstMomentDecay,
+                this.secondMomentDecay,
+                this.epsilon,
+                { context.createKernel(OptimizationKernels.adam()) },
+                context.numberMultiprocessors,
+                context.maximumNumberOfResidentWarpsPerMultiprocessor,
+                context.warpSize,
+                context.maximumNumberOfThreadsPerBlock)
 
-    }
+        }
 
 }

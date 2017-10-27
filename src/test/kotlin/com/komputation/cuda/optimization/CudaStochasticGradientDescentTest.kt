@@ -1,13 +1,13 @@
 package com.komputation.cuda.optimization
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Test
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.setFloatArray
 import com.komputation.cuda.setUpCudaContext
 import com.komputation.optimization.stochasticGradientDescent
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Test
 
 class CudaStochasticGradientDescentTest {
 
@@ -40,7 +40,7 @@ class CudaStochasticGradientDescentTest {
 
         cudaContext.destroy()
 
-        assertArrayEquals(floatArrayOf(1.99f), hostParameter)
+        assertArrayEquals(floatArrayOf(1.99f), hostParameter, 1e-6f)
 
     }
 
