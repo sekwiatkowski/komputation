@@ -22,5 +22,10 @@ object OptimizationKernels {
         "adagradKernel",
         "optimization/adaptive/AdagradKernel.cu")
 
+    fun adadelta () = KernelInstruction(
+        "adadeltaKernel",
+        "adadeltaKernel",
+        "optimization/adaptive/AdadeltaKernel.cu")
+
 
 }

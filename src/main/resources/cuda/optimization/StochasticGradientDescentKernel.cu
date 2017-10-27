@@ -5,7 +5,7 @@ __global__ void stochasticGradientDescentKernel (
     int parameterSize,
     float* parameters,
     float* gradient,
-    float learningRate,) {
+    float learningRate) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 

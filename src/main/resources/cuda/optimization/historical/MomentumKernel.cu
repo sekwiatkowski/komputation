@@ -7,7 +7,7 @@ __global__ void momentumKernel (
     float* gradient,
     float learningRate,
     float momentum,
-    float* history,) {
+    float* history) {
 
     int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
