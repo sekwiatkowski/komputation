@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.10.5</version>
+    <version>0.10.6</version>
 </dependency>
 ```
 
@@ -39,9 +39,7 @@ Komputation is available through Maven Central:
     - [multi-input](./src/main/kotlin/com/komputation/layers/forward/decoder/MultiInputDecoder.kt)
     - [attentive](./src/main/kotlin/com/komputation/layers/forward/decoder/AttentiveDecoder.kt)
 
-- RNN units:
-  - [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
-  - [Minimal Gated Unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/MinimalGatedUnit.kt)
+- [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
 
 - [Dropout](./src/main/kotlin/com/komputation/layers/forward/dropout/DropoutLayer.kt)
 
@@ -80,9 +78,7 @@ Komputation is available through Maven Central:
 
 - [Computer vision toy problem](./src/main/kotlin/com/komputation/cpu/demos/lines/Lines.kt)
 
-- Addition problem:
-  - [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
-  - [Minimal Gated Unit](./src/main/kotlin/com/komputation/cpu/demos/addition/AdditionProblemMGU.kt)
+- [Addition problem](./src/main/kotlin/com/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
 
 - Reverse function:
   - [Unidirectional RNN](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseUnidirectional.kt)

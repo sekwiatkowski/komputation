@@ -27,5 +27,9 @@ object OptimizationKernels {
         "adadeltaKernel",
         "optimization/adaptive/AdadeltaKernel.cu")
 
+    fun rmsprop () = KernelInstruction(
+        "rmspropKernel",
+        "rmspropKernel",
+        "optimization/adaptive/rmspropKernel.cu")
 
 }
