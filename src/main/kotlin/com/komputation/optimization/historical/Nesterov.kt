@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.historical.CudaNesterov
 import com.komputation.optimization.OptimizationInstruction
 
-fun nesterov(learningRate: Float, momentum : Float) =
-
-    Nesterov(learningRate, momentum)
-
-class Nesterov(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
+class Nesterov internal constructor(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -38,3 +34,7 @@ class Nesterov(private val learningRate: Float, private val momentum : Float) : 
         }
 
 }
+
+fun nesterov(learningRate: Float, momentum : Float) =
+
+    Nesterov(learningRate, momentum)

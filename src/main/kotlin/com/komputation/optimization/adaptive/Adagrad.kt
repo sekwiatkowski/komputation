@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.adaptive.CudaAdagrad
 import com.komputation.optimization.OptimizationInstruction
 
-fun adagrad(learningRate: Float, epsilon: Float = 1e-6f) =
-
-    Adagrad(learningRate, epsilon)
-
-class Adagrad(private val learningRate: Float, private val epsilon: Float) : OptimizationInstruction {
+class Adagrad internal constructor(private val learningRate: Float, private val epsilon: Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -38,3 +34,7 @@ class Adagrad(private val learningRate: Float, private val epsilon: Float) : Opt
         }
 
 }
+
+fun adagrad(learningRate: Float, epsilon: Float = 1e-6f) =
+
+    Adagrad(learningRate, epsilon)

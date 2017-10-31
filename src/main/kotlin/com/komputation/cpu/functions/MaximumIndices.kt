@@ -61,5 +61,4 @@ fun findMaxIndices(input: FloatArray, numberIndices: Int, length: Int, result: I
 
     }
 
-
 }

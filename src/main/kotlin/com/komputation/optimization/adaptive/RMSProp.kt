@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.adaptive.CudaRMSProp
 import com.komputation.optimization.OptimizationInstruction
 
-fun rmsprop(learningRate: Float, decay : Float = 0.9f, epsilon: Float = 1e-6f) =
-
-    RMSProp(learningRate, decay, epsilon)
-
-class RMSProp(private val learningRate: Float, private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
+class RMSProp internal constructor(private val learningRate: Float, private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -39,3 +35,7 @@ class RMSProp(private val learningRate: Float, private val decay : Float, privat
         }
 
 }
+
+fun rmsprop(learningRate: Float, decay : Float = 0.9f, epsilon: Float = 1e-6f) =
+
+    RMSProp(learningRate, decay, epsilon)

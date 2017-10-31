@@ -1,4 +1,4 @@
-__global__ void evaluationKernel (
+__global__ void multiClassTestingKernel (
     int batchStart,
     int numberRows,
     int numberColumns,

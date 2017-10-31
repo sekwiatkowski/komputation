@@ -1,9 +1,10 @@
 package com.komputation.cuda.network
 
-import com.komputation.cuda.CudaEvaluation
-import com.komputation.cuda.kernels.EvaluationKernels
+import com.komputation.cuda.kernels.TestingKernels
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.setUpCudaContext
+import com.komputation.cuda.workflow.CudaBinaryClassificationTester
+import com.komputation.cuda.workflow.CudaMultiClassificationTester
 import com.komputation.cuda.workflow.CudaTester
 import com.komputation.cuda.workflow.CudaTrainer
 import com.komputation.layers.CudaEntryPointInstruction
@@ -114,15 +115,31 @@ class CudaNetwork(
         targets: Array<FloatArray>,
         batchSize: Int,
         numberCategories : Int,
-        length : Int = 1) =
+        length : Int = 1) : CudaTester {
 
-        CudaTester(
+        val classificationTester =
+
+            if (numberCategories == 1) {
+
+                CudaBinaryClassificationTester(inputs.size, numberCategories, { this.cudaContext.createKernel(TestingKernels.binary()) })
+
+            }
+            else {
+
+                CudaMultiClassificationTester(inputs.size, numberCategories, length, { this.cudaContext.createKernel(TestingKernels.multiClass()) })
+
+            }
+
+
+        return CudaTester(
             this.forwardPropagator,
-            CudaEvaluation(inputs.size, numberCategories, length, { this.cudaContext.createKernel(EvaluationKernels.evaluation()) }),
+            classificationTester,
             inputs,
             targets,
             batchSize
         )
+
+    }
 
     fun predict(input : Matrix) : Pointer {
 

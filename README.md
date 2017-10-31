@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.11.0</version>
+    <version>0.11.1</version>
 </dependency>
 ```
 
@@ -37,7 +37,6 @@ Komputation is available through Maven Central:
   - Decoder
     - [single input](./src/main/kotlin/com/komputation/layers/forward/decoder/SingleInputDecoder.kt)
     - [multi-input](./src/main/kotlin/com/komputation/layers/forward/decoder/MultiInputDecoder.kt)
-    - [attentive](./src/main/kotlin/com/komputation/layers/forward/decoder/AttentiveDecoder.kt)
 
 - [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
 
@@ -58,7 +57,6 @@ Komputation is available through Maven Central:
   - [Counter-probability](./src/main/kotlin/com/komputation/layers/forward/CounterProbabilityLayer.kt)
   - [Exponentiation](./src/main/kotlin/com/komputation/layers/forward/activation/ExponentiationLayer.kt)
   - [Normalization](./src/main/kotlin/com/komputation/layers/forward/NormalizationLayer.kt)
-  - [Transposition](./src/main/kotlin/com/komputation/layers/forward/TranspositionLayer.kt)
 
 ## CPU demos
 
@@ -83,7 +81,6 @@ Komputation is available through Maven Central:
 - Reverse function:
   - [Unidirectional RNN](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseUnidirectional.kt)
   - [Bidirectional RNN](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseBidirectional.kt)
-  - [RNN with attention](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseAttention.kt)
 
 - MNIST:
   - [Minimal](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistMinimal.kt)

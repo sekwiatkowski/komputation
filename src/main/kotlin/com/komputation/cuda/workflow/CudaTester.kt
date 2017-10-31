@@ -1,16 +1,15 @@
 package com.komputation.cuda.workflow
 
-import jcuda.Pointer
-import com.komputation.cuda.CudaEvaluation
-import com.komputation.cuda.network.CudaForwardPropagator
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.memory.TargetMemory
+import com.komputation.cuda.network.CudaForwardPropagator
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.partitionIndices
+import jcuda.Pointer
 
 class CudaTester(
     private val forwardPropagator : CudaForwardPropagator,
-    private val evaluation: CudaEvaluation,
+    private val evaluation: CudaClassificationTester,
     private val inputs : Array<Matrix>,
     private val targets: Array<FloatArray>,
     private val maximumBatchSize : Int) {
@@ -47,7 +46,6 @@ class CudaTester(
             val predictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,false)
 
             val pointerToPredictions = Pointer.to(predictions)
-
             val pointerToTargets = this.targetMemory.get(batchId, currentBatchSize, batch, this.targets)
 
             this.evaluation.evaluateBatch(currentBatchSize, pointerToPredictions, pointerToTargets)

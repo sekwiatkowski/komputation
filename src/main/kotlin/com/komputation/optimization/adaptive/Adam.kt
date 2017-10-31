@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.adaptive.CudaAdam
 import com.komputation.optimization.OptimizationInstruction
 
-fun adam(learningRate : Float = 0.001f, firstMomentDecay : Float = 0.9f, secondMomentDecay : Float = 0.999f, epsilon : Float = 1e-8f) =
-
-    Adam(learningRate, firstMomentDecay, secondMomentDecay, epsilon)
-
-class Adam(
+class Adam internal constructor(
     private val learningRate : Float,
     private val firstMomentDecay : Float,
     private val secondMomentDecay : Float,
@@ -44,3 +40,7 @@ class Adam(
         }
 
 }
+
+fun adam(learningRate : Float = 0.001f, firstMomentDecay : Float = 0.9f, secondMomentDecay : Float = 0.999f, epsilon : Float = 1e-8f) =
+
+    Adam(learningRate, firstMomentDecay, secondMomentDecay, epsilon)

@@ -1,11 +1,14 @@
 package com.komputation.cpu.network
 
 import com.komputation.cpu.layers.CpuForwardLayer
+import com.komputation.cpu.workflow.CpuBinaryTester
+import com.komputation.cpu.workflow.CpuMulticlassTester
 import com.komputation.cpu.workflow.CpuTester
 import com.komputation.cpu.workflow.CpuTrainer
 import com.komputation.layers.*
 import com.komputation.loss.CpuLossFunctionInstruction
 import com.komputation.matrix.Matrix
+import com.komputation.matrix.partitionIndices
 import com.komputation.optimization.Optimizable
 
 class Network(
@@ -52,16 +55,24 @@ class Network(
         targets: Array<FloatArray>,
         batchSize: Int,
         numberCategories : Int,
-        length : Int = 1) =
+        length : Int = 1) : CpuTester {
 
-        CpuTester(
-            this.forwardPropagator,
-            inputs,
-            targets,
-            batchSize,
-            numberCategories,
-            length
-        )
+        val batches = partitionIndices(inputs.size, batchSize)
+
+        val tester = if (numberCategories == 1) {
+
+            CpuBinaryTester(length)
+
+        }
+        else {
+
+            CpuMulticlassTester(numberCategories, length)
+
+        }
+
+        return CpuTester(this.forwardPropagator, batches, inputs, targets, tester)
+
+    }
 
     init {
 

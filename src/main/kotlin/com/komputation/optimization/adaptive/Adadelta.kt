@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.adaptive.CudaAdadelta
 import com.komputation.optimization.OptimizationInstruction
 
-fun adadelta(decay : Float = 0.95f, epsilon: Float = 1e-6f) =
-
-    Adadelta(decay, epsilon)
-
-class Adadelta(private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
+class Adadelta internal constructor(private val decay : Float, private val epsilon: Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -38,3 +34,7 @@ class Adadelta(private val decay : Float, private val epsilon: Float) : Optimiza
         }
 
 }
+
+fun adadelta(decay : Float = 0.95f, epsilon: Float = 1e-6f) =
+
+    Adadelta(decay, epsilon)

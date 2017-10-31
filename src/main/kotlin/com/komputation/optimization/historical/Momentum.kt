@@ -6,11 +6,7 @@ import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.historical.CudaMomentum
 import com.komputation.optimization.OptimizationInstruction
 
-fun momentum(learningRate: Float, momentum : Float) =
-
-    Momentum(learningRate, momentum)
-
-class Momentum(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
+class Momentum internal constructor(private val learningRate: Float, private val momentum : Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -38,3 +34,7 @@ class Momentum(private val learningRate: Float, private val momentum : Float) : 
         }
 
 }
+
+fun momentum(learningRate: Float, momentum : Float) =
+
+    Momentum(learningRate, momentum)

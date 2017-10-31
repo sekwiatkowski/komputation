@@ -1,15 +1,16 @@
-package com.komputation.cuda
+package com.komputation.cuda.workflow
 
+import com.komputation.cuda.allocateDeviceIntMemory
+import com.komputation.cuda.getIntArray
+import com.komputation.cuda.kernels.Kernel
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import com.komputation.cuda.kernels.Kernel
-import com.komputation.layers.Resourceful
 
-class CudaEvaluation(
+class CudaMultiClassificationTester(
     private val numberInstances : Int,
     private val numberRows : Int,
     private val numberColumns : Int,
-    private val createKernel: () -> Kernel) : Resourceful {
+    private val createKernel: () -> Kernel) : CudaClassificationTester {
 
     private val deviceCorrectPredictions = Pointer()
     private var kernel : Kernel? = null
@@ -30,7 +31,7 @@ class CudaEvaluation(
 
     }
 
-    fun evaluateBatch(batchSize: Int, pointerToPredictions : Pointer, pointerToTargets : Pointer) {
+    override fun evaluateBatch(batchSize: Int, pointerToPredictions : Pointer, pointerToTargets : Pointer) {
 
         val parameters = Pointer.to(
             Pointer.to(intArrayOf(this.count)),
@@ -53,13 +54,13 @@ class CudaEvaluation(
 
     }
 
-    fun resetCount() {
+    override fun resetCount() {
 
         this.count = 0
 
     }
 
-    fun computeAccuracy() =
+    override fun computeAccuracy() =
 
         getIntArray(this.deviceCorrectPredictions, this.numberInstances).sum().toFloat().div(this.numberInstances.toFloat())
 
@@ -70,4 +71,5 @@ class CudaEvaluation(
         cudaFree(this.deviceCorrectPredictions)
 
     }
+
 }

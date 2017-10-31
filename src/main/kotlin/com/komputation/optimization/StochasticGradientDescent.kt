@@ -5,11 +5,7 @@ import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.OptimizationKernels
 import com.komputation.cuda.optimization.CudaStochasticGradientDescent
 
-fun stochasticGradientDescent(learningRate: Float) =
-
-    StochasticGradientDescent(learningRate)
-
-class StochasticGradientDescent(private val learningRate: Float) : OptimizationInstruction {
+class StochasticGradientDescent internal  constructor(private val learningRate: Float) : OptimizationInstruction {
 
     override fun buildForCpu() =
 
@@ -35,3 +31,7 @@ class StochasticGradientDescent(private val learningRate: Float) : OptimizationI
         }
 
 }
+
+fun stochasticGradientDescent(learningRate: Float) =
+
+    StochasticGradientDescent(learningRate)
