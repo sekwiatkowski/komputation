@@ -5,40 +5,48 @@ import com.komputation.matrix.floatMatrixFromRows
 
 object LinesData {
 
-    val inputs = arrayOf<Matrix>(
+    private val numberRows = 3
+    private val numberColumns = 3
 
+    val inputs = arrayOf<Matrix>(
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(1.0f, 1.0f, 1.0f),
             floatArrayOf(0.0f, 0.0f, 0.0f),
             floatArrayOf(0.0f, 0.0f, 0.0f)
         ),
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(0.0f, 0.0f, 0.0f),
             floatArrayOf(1.0f, 1.0f, 1.0f),
             floatArrayOf(0.0f, 0.0f, 0.0f)
         ),
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(0.0f, 0.0f, 0.0f),
             floatArrayOf(0.0f, 0.0f, 0.0f),
             floatArrayOf(1.0f, 1.0f, 1.0f)
         ),
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(1.0f, 0.0f, 0.0f),
             floatArrayOf(1.0f, 0.0f, 0.0f),
             floatArrayOf(1.0f, 0.0f, 0.0f)
         ),
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(0.0f, 1.0f, 0.0f),
             floatArrayOf(0.0f, 1.0f, 0.0f),
             floatArrayOf(0.0f, 1.0f, 0.0f)
         ),
         floatMatrixFromRows(
-            3,
+            this.numberRows,
+            this.numberColumns,
             floatArrayOf(0.0f, 0.0f, 1.0f),
             floatArrayOf(0.0f, 0.0f, 1.0f),
             floatArrayOf(0.0f, 0.0f, 1.0f)

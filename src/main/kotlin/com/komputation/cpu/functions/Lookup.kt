@@ -9,9 +9,7 @@ package com.komputation.cpu.functions
 
 
 fun lookup(vectors: Array<FloatArray>, dimension: Int, length: Int, ids: IntArray, result: FloatArray) {
-
     for (index in 0 until length) {
-
         val id = ids[index]
 
         val start = index * dimension
@@ -19,7 +17,5 @@ fun lookup(vectors: Array<FloatArray>, dimension: Int, length: Int, ids: IntArra
         val vector = vectors[id]
 
         System.arraycopy(vector, 0, result, start, dimension)
-
     }
-
 }

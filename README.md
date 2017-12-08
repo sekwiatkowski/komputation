@@ -55,12 +55,14 @@ Komputation is available through Maven Central:
 
 - Running total:
   - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)
-  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)
+  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/VariableLengthRunningTotal.kt)
 
 - Word embedding toy problem:
   - [Feed-forward network](./src/main/kotlin/com/komputation/cpu/demos/embeddings/Embeddings.kt)
   - [CNN with one filter width](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithConvolution.kt)
   - [CNN with two filter widths](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
+
+- [Sequence labeling toy problem](./src/main/kotlin/com/komputation/cpu/demos/sequencelabeling/SequenceLabeling.kt)
 
 - [Computer vision toy problem](./src/main/kotlin/com/komputation/cpu/demos/lines/Lines.kt)
 

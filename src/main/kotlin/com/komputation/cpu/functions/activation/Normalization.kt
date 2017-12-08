@@ -1,7 +1,6 @@
 package com.komputation.cpu.functions.activation
 
 fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: FloatArray, result: FloatArray) {
-
     for (indexColumn in 0 until numberColumns) {
 
         val start = indexColumn * numberRows
@@ -27,7 +26,6 @@ fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: Floa
         }
 
     }
-
 }
 
 /*
@@ -58,33 +56,25 @@ fun normalize(numberRows: Int, numberColumns: Int, input: FloatArray, sums: Floa
  */
 
 fun backwardNormalization(numberRows: Int, numberColumns: Int, chainEntries: FloatArray, forwardEntries: FloatArray, denominators: FloatArray, result: FloatArray) {
-
     for (indexColumn in 0 until numberColumns) {
-
         val startColumn = indexColumn * numberRows
 
         var productSum = 0.0f
 
         for (indexRow in 0 until numberRows) {
-
             val indexEntry = startColumn + indexRow
 
             val chainEntry = chainEntries[indexEntry]
             val forwardEntry = forwardEntries[indexEntry]
 
             productSum -= chainEntry * forwardEntry
-
         }
 
         for (indexRow in 0 until numberRows) {
-
             val indexEntry = startColumn + indexRow
             val chainEntry = chainEntries[indexEntry]
 
             result[indexEntry] = (productSum + chainEntry) / denominators[indexColumn]
-
         }
-
     }
-
 }

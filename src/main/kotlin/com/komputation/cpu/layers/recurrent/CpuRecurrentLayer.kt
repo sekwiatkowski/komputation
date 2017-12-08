@@ -65,7 +65,7 @@ class CpuRecurrentLayer(
 
             val addition = this.additions[step].forward(this.stepWeightedInput, weightedPreviousHiddenState)
 
-            val hiddenState = this.activations[step].forward(withinBatch, numberInputColumns, addition, isTraining)
+            val hiddenState = this.activations[step].forward(withinBatch, 1, addition, isTraining)
 
             setColumn(hiddenState, step, this.hiddenDimension, this.forwardResult)
 
