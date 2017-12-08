@@ -24,8 +24,8 @@ fun main(args: Array<String>) {
     val numberIterations = 30
     val batchSize = 64
 
-    val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()))
-    val (testInputs, testTargets) = MnistData.loadMnistTest(File(args.last()))
+    val (trainingInputs, trainingTargets) = MnistData.loadMnistTraining(File(args.first()), true)
+    val (testInputs, testTargets) = MnistData.loadMnistTest(File(args.last()), true)
 
     val inputDimension = 784
     val numberCategories = MnistData.numberCategories

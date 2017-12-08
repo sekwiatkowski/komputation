@@ -40,7 +40,11 @@ abstract class BaseCpuVariableLengthForwardLayer(
         this.lengthIndex = numberInputColumns - this.minimumColumns
 
         this.numberInputColumns = numberInputColumns
-        this.numberOutputColumns = this.numberOutputColumnsOverPossibleLengths[this.lengthIndex]
+        try {
+            this.numberOutputColumns = this.numberOutputColumnsOverPossibleLengths[this.lengthIndex]
+        } catch (e: Exception) {
+            throw e
+        }
 
         this.forwardResult = this.forwardResultsOverPossibleLengths[this.lengthIndex]
 
