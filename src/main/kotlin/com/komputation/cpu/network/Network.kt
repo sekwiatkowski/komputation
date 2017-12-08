@@ -36,9 +36,9 @@ class Network(
         targets: Array<FloatArray>,
         numberIterations : Int,
         loss: CpuLossFunctionInstruction,
-        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): CpuTrainer {
+        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
 
-        return CpuTrainer(
+        CpuTrainer(
             this.forwardPropagator,
             this.backwardPropagator,
             this.optimizables,
@@ -48,7 +48,6 @@ class Network(
             this.maximumBatchSize,
             loss.buildForCpu(),
             afterEachIteration)
-        }
 
     fun test(
         inputs: Array<Matrix>,
@@ -56,56 +55,37 @@ class Network(
         batchSize: Int,
         numberCategories : Int,
         length : Int = 1) : CpuTester {
-
         val batches = partitionIndices(inputs.size, batchSize)
 
         val tester = if (numberCategories == 1) {
-
             CpuBinaryTester(length)
-
         }
         else {
-
             CpuMulticlassTester(numberCategories, length)
-
         }
 
         return CpuTester(this.forwardPropagator, batches, inputs, targets, tester)
-
     }
 
     init {
-
         acquireRecursively(this.entryPoint, this.maximumBatchSize)
 
         for (layer in this.layers) {
-
             acquireRecursively(layer, this.maximumBatchSize)
-
         }
-
     }
 
     fun free() {
-
         for (layer in this.layers) {
-
             releaseRecursively(layer, CpuForwardLayer::class.java)
-
         }
 
         if (this.entryPoint is Resourceful) {
-
             this.entryPoint.release()
-
         }
-
     }
 
-    fun predict(input : Matrix) : FloatArray {
-
-        return this.forwardPropagator.forward(0, input, false).copyOf()
-
-    }
+    fun predict(input : Matrix) =
+        this.forwardPropagator.forward(0, input, false).forwardResult.copyOf()
 
 }

@@ -31,32 +31,24 @@ class CpuDropoutLayer internal constructor(
     private val threshold : Int
 
     init {
-
         val numberIntegers = Math.abs(Int.MIN_VALUE.toFloat()) + Int.MAX_VALUE.toFloat()
 
         val numberDropoutIntegers = (this.dropoutProbability * numberIntegers).toInt()
         this.threshold = Int.MIN_VALUE + numberDropoutIntegers
-
     }
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.entrySeeds = IntArray(maximumBatchSize * this.numberEntries)
 
         seed(this.random, this.entrySeeds, maximumBatchSize * this.numberEntries)
-
     }
 
     override fun release() {
-
         this.entrySeeds = IntArray(0)
-
     }
 
     override fun forward(withinBatch : Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
-
         if (isTraining) {
-
             val offset = withinBatch * this.numberEntries
 
             nextInteger(this.entrySeeds, offset, this.numberEntries)
@@ -64,24 +56,18 @@ class CpuDropoutLayer internal constructor(
             mask(this.numberEntries, this.threshold, offset, this.entrySeeds, this.mask)
 
             dropout(this.numberEntries, input, this.mask, this.forwardResult)
-
         }
         else {
-
             scale(input, this.keepProbability, this.forwardResult, this.numberEntries)
-
         }
 
         return this.forwardResult
-
     }
 
     override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
-
         backwardDropout(chain, this.mask, this.backwardResult, this.numberEntries)
 
         return this.backwardResult
-
     }
 
 }

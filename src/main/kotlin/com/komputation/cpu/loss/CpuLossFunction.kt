@@ -5,7 +5,7 @@ import com.komputation.cpu.layers.CpuBackwardState
 
 interface CpuLossFunction : CpuBackwardState {
 
-    fun forward(predictions: FloatArray, targets : FloatArray): Float
+    fun forward(numberInputColumns : Int, predictions: FloatArray, targets : FloatArray): Float
 
     fun backward(predictions: FloatArray, targets : FloatArray) : FloatArray
 

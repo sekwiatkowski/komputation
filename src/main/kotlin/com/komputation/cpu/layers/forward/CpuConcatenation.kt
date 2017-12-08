@@ -22,21 +22,17 @@ class CpuConcatenation internal constructor(
     private var chainSplit = emptyArray<FloatArray>()
 
     override fun acquire(maximumBatchSize: Int) {
-
         super.acquire(maximumBatchSize)
 
         this.chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
-
     }
 
     override fun release() {
-
     }
 
     override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) = this.width
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-
         for (indexLayer in (0 until this.numberLayers)) {
 
             this.individualResults[indexLayer] = this.layers[indexLayer].forward(withinBatch, numberInputColumns, input, isTraining)
@@ -44,11 +40,9 @@ class CpuConcatenation internal constructor(
         }
 
         stackRows(this.heights, this.numberOutputRows, this.width, result, *this.individualResults)
-
     }
 
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-
         splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
 
         val firstLayer = this.layers[0]
@@ -73,21 +67,16 @@ class CpuConcatenation internal constructor(
             }
 
         }
-
     }
 
     override fun optimize(batchSize : Int) {
-
         for (layer in this.layers) {
 
             if (layer is Optimizable) {
-
                 layer.optimize(batchSize)
-
             }
 
         }
-
     }
 
 }

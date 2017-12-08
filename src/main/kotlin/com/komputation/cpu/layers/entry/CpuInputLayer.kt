@@ -6,23 +6,22 @@ import com.komputation.matrix.Matrix
 
 class CpuInputLayer internal constructor(
     name : String? = null,
-    numberInputRows: Int,
-    numberInputColumns: Int) : BaseCpuEntryPoint(name) {
+    numberInputRows: Int) : BaseCpuEntryPoint(name) {
 
     override val numberOutputRows = numberInputRows
-    override val numberOutputColumns = numberInputColumns
+    override var numberOutputColumns = -1
     override var forwardResult = FloatArray(0)
 
     override fun forward(input: Matrix): FloatArray {
+        input as FloatMatrix
 
-        this.forwardResult = (input as FloatMatrix).entries
+        this.numberOutputColumns = input.numberColumns
+        this.forwardResult = input.entries
 
         return this.forwardResult
-
     }
 
     override fun backward(chain : FloatArray) =
-
         chain
 
 }

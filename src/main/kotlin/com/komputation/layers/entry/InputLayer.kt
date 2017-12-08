@@ -9,19 +9,15 @@ import com.komputation.layers.CudaEntryPointInstruction
 class InputLayer(private val name : String? = null, private val numberRows: Int, private val numberColumns: Int) : CpuEntryPointInstruction, CudaEntryPointInstruction {
 
     override fun buildForCpu() =
-
-        CpuInputLayer(this.name, this.numberRows, this.numberColumns)
+        CpuInputLayer(this.name, this.numberRows)
 
     override fun buildForCuda(context: CudaContext) =
-
         CudaInputLayer(this.name, this.numberRows, this.numberColumns)
 
 }
 
 fun inputLayer(numberRows : Int, numberColumns : Int = 1) =
-
     inputLayer(null, numberRows, numberColumns)
 
 fun inputLayer(name : String? = null, numberRows: Int, numberColumns: Int = 1) =
-
     InputLayer(name, numberRows, numberColumns)

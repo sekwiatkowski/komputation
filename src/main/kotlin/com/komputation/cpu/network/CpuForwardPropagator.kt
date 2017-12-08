@@ -9,8 +9,7 @@ class CpuForwardPropagator(
     private val entryPoint: CpuEntryPoint,
     private val layers : Array<CpuForwardLayer>) {
 
-    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : FloatArray {
-
+    fun forward(withinBatch : Int, input : Matrix, isTraining : Boolean) : CpuForwardState {
         this.entryPoint.forward(input)
 
         var previousLayerState : CpuForwardState = this.entryPoint
@@ -23,8 +22,7 @@ class CpuForwardPropagator(
 
         }
 
-        return previousLayerState.forwardResult
-
+        return previousLayerState
     }
 
 }

@@ -1,5 +1,9 @@
 package com.komputation.cuda.functions
 
+import com.komputation.cuda.allocateDeviceFloatMemory
+import com.komputation.cuda.getFloatArray
+import com.komputation.cuda.setFloatArray
+import com.komputation.cuda.setUpCudaContext
 import jcuda.Pointer
 import jcuda.jcublas.JCublas2.cublasCreate
 import jcuda.jcublas.JCublas2.cublasDestroy
@@ -7,12 +11,6 @@ import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import com.komputation.cuda.allocateDeviceFloatMemory
-import com.komputation.cuda.getFloatArray
-import com.komputation.cuda.setFloatArray
-import com.komputation.cuda.setUpCudaContext
-import com.komputation.matrix.FloatMatrix
-import com.komputation.matrix.floatMatrix
 
 class CublasBackwardProjectionTest {
 
@@ -115,8 +113,8 @@ class CublasBackwardProjectionTest {
     @Test
     fun testBackwardProjectionWrtWeights1() {
 
-        val input = floatMatrix(2.0f)
-        val chain = floatMatrix(3.0f)
+        val input = floatArrayOf(2.0f)
+        val chain = floatArrayOf(3.0f)
         val expected = floatArrayOf(6.0f)
 
         checkBackwardProjectionWrtWeights(1, 1, input, 1, 1, chain, expected)
@@ -132,8 +130,8 @@ class CublasBackwardProjectionTest {
     @Test
     fun testBackwardProjectionWrtWeights2() {
 
-        val input = floatMatrix(2.0f, 3.0f)
-        val chain = floatMatrix(4.0f, 5.0f)
+        val input = floatArrayOf(2.0f, 3.0f)
+        val chain = floatArrayOf(4.0f, 5.0f)
         val expected = floatArrayOf(8.0f, 10.0f, 12.0f, 15.0f)
 
         checkBackwardProjectionWrtWeights(2, 1, input, 2, 1, chain, expected)
@@ -143,18 +141,16 @@ class CublasBackwardProjectionTest {
     private fun checkBackwardProjectionWrtWeights(
         numberInputRows : Int,
         numberInputColumns : Int,
-        input: FloatMatrix,
+        input: FloatArray,
         numberChainRows : Int,
         numberChainColumns : Int,
-        chain : FloatMatrix,
+        chain : FloatArray,
         expected: FloatArray) {
 
         val context = setUpCudaContext()
-        val inputEntries = input.entries
-        val numberInputEntries = inputEntries.size
+        val numberInputEntries = input.size
 
-        val chainEntries = chain.entries
-        val numberChainEntries = chainEntries.size
+        val numberChainEntries = chain.size
 
         val numberWeightEntries = numberChainRows * numberInputRows
 
@@ -162,10 +158,10 @@ class CublasBackwardProjectionTest {
         cublasCreate(cublasHandle)
 
         val deviceInput = Pointer()
-        setFloatArray(inputEntries, numberInputEntries, deviceInput)
+        setFloatArray(input, numberInputEntries, deviceInput)
 
         val deviceChain = Pointer()
-        setFloatArray(chainEntries, numberChainEntries, deviceChain)
+        setFloatArray(chain, numberChainEntries, deviceChain)
 
         val deviceResult = Pointer()
         allocateDeviceFloatMemory(deviceResult, numberWeightEntries)

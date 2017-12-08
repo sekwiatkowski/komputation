@@ -26,15 +26,12 @@ class CpuConvolutionLayer internal constructor(
         get() = this.expansionLayer.backwardResult
 
     fun getWeights() =
-
         this.projectionLayer.getWeights()
 
     fun getBias() =
-
         this.projectionLayer.getBias()
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
-
         this.expansionLayer.forward(withinBatch, numberInputColumns, input, isTraining)
 
         this.projectionLayer.forward(withinBatch, this.expansionLayer.numberOutputColumns, this.expansionLayer.forwardResult, isTraining)
@@ -42,11 +39,9 @@ class CpuConvolutionLayer internal constructor(
         this.maxPoolingLayer.forward(withinBatch, this.projectionLayer.numberOutputColumns, this.projectionLayer.forwardResult, isTraining)
 
         return this.forwardResult
-
     }
 
     override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
-
         this.maxPoolingLayer.backward(withinBatch, chain)
 
         this.projectionLayer.backward(withinBatch, this.maxPoolingLayer.backwardResult)
@@ -54,13 +49,10 @@ class CpuConvolutionLayer internal constructor(
         this.expansionLayer.backward(withinBatch, this.projectionLayer.backwardResult)
 
         return this.backwardResult
-
     }
 
     override fun optimize(batchSize : Int) {
-
         this.projectionLayer.optimize(batchSize)
-
     }
 
 }

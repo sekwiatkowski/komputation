@@ -11,7 +11,6 @@ class CpuTester(
     private val tester : CpuClassificationTester) {
 
     fun run(): Float {
-
         var numberPredictions = 0
         var numberCorrectPredictions = 0
 
@@ -21,25 +20,20 @@ class CpuTester(
 
                 val input = this.inputs[index]
 
-                val predictions = this.forwardPropagator.forward(0, input, false)
+                val forwardPropagation = this.forwardPropagator.forward(0, input, false)
                 val targets = this.targets[index]
 
-                val isCorrect = this.tester.test(predictions, targets)
+                val isCorrect = this.tester.test(forwardPropagation.forwardResult, targets)
 
                 if(isCorrect) {
-
                     numberCorrectPredictions++
-
                 }
 
                 numberPredictions++
-
             }
-
         }
 
         return numberCorrectPredictions.toFloat().div(numberPredictions.toFloat())
-
     }
 
 }

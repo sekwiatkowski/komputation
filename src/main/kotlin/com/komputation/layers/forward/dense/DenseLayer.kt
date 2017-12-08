@@ -1,7 +1,5 @@
 package com.komputation.layers.forward.dense
 
-import jcuda.jcublas.cublasHandle
-import com.komputation.cpu.layers.forward.activation.cpuActivationLayer
 import com.komputation.cpu.layers.forward.dense.CpuDenseLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.layers.CudaForwardLayer
@@ -12,8 +10,10 @@ import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
 import com.komputation.layers.concatenateNames
 import com.komputation.layers.forward.activation.ActivationFunction
+import com.komputation.layers.forward.activation.activationLayer
 import com.komputation.layers.forward.projection.projectionLayer
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 class DenseLayer internal constructor(
     private val name : String?,
@@ -42,7 +42,7 @@ class DenseLayer internal constructor(
 
         val projectionLayer = this.projection.buildForCpu()
 
-        val activationLayer = cpuActivationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1).buildForCpu()
+        val activationLayer = activationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1).buildForCpu()
 
         return CpuDenseLayer(this.name, projectionLayer, activationLayer)
 

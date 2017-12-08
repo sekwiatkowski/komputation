@@ -18,15 +18,12 @@ class CpuExpansionLayer internal constructor(
     private var numberFilterColumnPositionsOverPossibleLengths = IntArray(0)
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.numberFilterColumnPositionsOverPossibleLengths = IntArray(this.numberLengths) { index -> computeNumberFilterColumnPositions(this.lengths[index], this.filterWidth) }
 
         super.acquire(maximumBatchSize)
-
     }
 
     override fun computeNumberOutputColumns(lengthIndex: Int, length : Int) =
-
         this.numberFilterColumnPositionsOverPossibleLengths[lengthIndex] * this.numberFilterRowPositions
 
 
@@ -46,7 +43,6 @@ class CpuExpansionLayer internal constructor(
         i_32 i_33
     */
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-
         expandForConvolution(
             this.numberInputRows,
             input,
@@ -55,12 +51,10 @@ class CpuExpansionLayer internal constructor(
             this.numberFilterRowPositions,
             this.numberFilterColumnPositionsOverPossibleLengths[this.lengthIndex],
             result)
-
     }
 
     // d expansion / d input
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-
         backwardExpansionForConvolution(
             this.numberInputRows,
             result,
@@ -69,7 +63,6 @@ class CpuExpansionLayer internal constructor(
             this.numberFilterColumnPositionsOverPossibleLengths[this.lengthIndex],
             chain,
             this.numberOutputRows)
-
     }
 
 }

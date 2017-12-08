@@ -6,10 +6,10 @@ import com.komputation.matrix.floatMatrix
 object OneHotAndData {
 
     val input = arrayOf<Matrix>(
-        floatMatrix(0.0f, 0.0f),
-        floatMatrix(0.0f, 1.0f),
-        floatMatrix(1.0f, 0.0f),
-        floatMatrix(1.0f, 1.0f)
+        floatMatrix(2, 1, 0.0f, 0.0f),
+        floatMatrix(2, 1, 0.0f, 1.0f),
+        floatMatrix(2, 1, 1.0f, 0.0f),
+        floatMatrix(2, 1, 1.0f, 1.0f)
     )
 
     val targets = arrayOf(

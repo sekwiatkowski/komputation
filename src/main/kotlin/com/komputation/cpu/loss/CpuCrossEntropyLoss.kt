@@ -3,54 +3,33 @@ package com.komputation.cpu.loss
 import com.komputation.matrix.FloatMath
 
 class CpuCrossEntropyLoss(
-    override val numberInputRows: Int,
-    override val numberInputColumns: Int) : CpuLossFunction {
+    numberInputRows: Int,
+    maximumLength: Int,
+    hasFixedLength : Boolean) : BaseCpuLossFunction(numberInputRows, maximumLength, hasFixedLength) {
 
-    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
-
-    override val backwardResult = FloatArray(this.numberInputEntries)
-
-    // -log(probability of the correct target)
-    override fun forward(predictions: FloatArray, targets : FloatArray): Float {
-
+    override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
         var loss = 0.0f
 
-        for (index in 0 until this.numberInputEntries) {
-
+        for (index in 0 until targets.size) {
             val target = targets[index]
 
             if (target == 1.0f) {
-
                 loss += -FloatMath.log(predictions[index])
-
             }
-
         }
 
         return loss
-
     }
 
-    // -1/target probability if target = 1.0, 0.0 otherwise
-    override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
-
-        for(indexEntry in 0 until this.numberInputEntries) {
-
+    override fun computeDifferentation(targets: FloatArray, predictions: FloatArray, result: FloatArray) {
+        for(indexEntry in 0 until targets.size) {
             if (targets[indexEntry] == 1.0f) {
-
-                this.backwardResult[indexEntry] = -1.0f.div(predictions[indexEntry])
-
+                result[indexEntry] = -1.0f.div(predictions[indexEntry])
             }
             else {
-
-                this.backwardResult[indexEntry] = 0f
-
+                result[indexEntry] = 0f
             }
-
         }
-
-        return this.backwardResult
-
     }
 
 }

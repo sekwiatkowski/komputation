@@ -13,19 +13,15 @@ class CpuIdentityLayer internal constructor(name : String? = null, private val n
     override var backwardResult = FloatArray(0)
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
-
         this.forwardResult = input
 
         return this.forwardResult
-
     }
 
     override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
-
         this.backwardResult = chain
 
         return this.backwardResult
-
     }
 
 }

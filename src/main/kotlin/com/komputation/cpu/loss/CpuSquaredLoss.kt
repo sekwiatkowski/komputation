@@ -1,45 +1,31 @@
 package com.komputation.cpu.loss
 
 class CpuSquaredLoss(
-    override val numberInputRows: Int,
-    override val numberInputColumns: Int) : CpuLossFunction {
+    numberInputRows: Int,
+    maximumLength: Int,
+    hasFixedLength : Boolean) : BaseCpuLossFunction(numberInputRows, maximumLength, hasFixedLength) {
 
-    private val numberInputEntries = this.numberInputRows * this.numberInputColumns
-    override val backwardResult = FloatArray(this.numberInputEntries)
+    override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
+        var loss = 0f
 
-    override fun forward(predictions: FloatArray, targets : FloatArray): Float {
-
-        var loss = 0.0f
-
-        for (indexRow in 0 until this.numberInputEntries) {
-
+        for (indexRow in 0 until targets.size) {
             val prediction = predictions[indexRow]
             val target = targets[indexRow]
 
             val difference = prediction - target
 
             loss += 0.5f * (difference * difference)
-
-
         }
 
         return loss
-
     }
 
     // loss = 0.5 (prediction - target)^2 = 0.5 prediction^2 - prediction * target + 0.5 target ^2
     // d loss / d prediction = prediction - target
-
-    override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
-
-        for(indexEntry in 0 until this.numberInputEntries) {
-
-            this.backwardResult[indexEntry] = predictions[indexEntry] - targets[indexEntry]
-
+    override fun computeDifferentation(targets: FloatArray, predictions: FloatArray, result : FloatArray) {
+        for (indexEntry in 0 until targets.size) {
+            result[indexEntry] = predictions[indexEntry] - targets[indexEntry]
         }
-
-        return this.backwardResult
-
     }
 
 }

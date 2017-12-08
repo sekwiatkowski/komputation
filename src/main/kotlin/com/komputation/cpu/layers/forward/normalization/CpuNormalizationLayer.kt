@@ -21,27 +21,21 @@ class CpuNormalizationLayer internal constructor(
     private var sum = FloatArray(0)
 
     override fun acquire(maximumBatchSize: Int) {
-
         super.acquire(maximumBatchSize)
 
         this.sumsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray(this.numberInputRows * this.lengths[index]) }
-
     }
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-
         this.sum = this.sumsOverPossibleLengths[this.lengthIndex]
 
         normalize(this.numberInputRows, numberInputColumns, input, this.sum, this.forwardResult)
-
     }
 
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-
         backwardNormalization(this.numberInputRows, this.numberInputColumns, chain, this.forwardResult, this.sum, this.backwardResult)
-
     }
 
 }

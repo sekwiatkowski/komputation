@@ -1,16 +1,14 @@
 package com.komputation.layers.forward.activation
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.activation.CpuIdentityLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.layers.forward.activation.CudaIdentityLayer
-import com.komputation.layers.CpuActivationLayerInstruction
-import com.komputation.layers.CudaActivationLayerInstruction
+import jcuda.jcublas.cublasHandle
 
 class IdentityLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
-    private val numberColumns : Int) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+    private val numberColumns : Int) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
 

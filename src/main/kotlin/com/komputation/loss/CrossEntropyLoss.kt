@@ -5,14 +5,12 @@ import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.LossKernels
 import com.komputation.cuda.loss.CudaCrossEntropyLoss
 
-class CrossEntropyLoss(private val numberRows: Int, private val numberColumns: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
+class CrossEntropyLoss(private val numberRows: Int, private val numberColumns: Int, private val hasFixedLength : Boolean) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
 
     override fun buildForCpu() =
-
-        CpuCrossEntropyLoss(this.numberRows, this.numberColumns)
+        CpuCrossEntropyLoss(this.numberRows, this.numberColumns, this.hasFixedLength)
 
     override fun buildForCuda(context: CudaContext) =
-
         CudaCrossEntropyLoss(
             this.numberRows,
             this.numberColumns,
@@ -25,6 +23,5 @@ class CrossEntropyLoss(private val numberRows: Int, private val numberColumns: I
 
 }
 
-fun crossEntropyLoss(numberCategories: Int, length: Int = 1) =
-
-    CrossEntropyLoss(numberCategories, length)
+fun crossEntropyLoss(numberCategories: Int, length: Int = 1, hasFixedLength: Boolean = true) =
+    CrossEntropyLoss(numberCategories, length, hasFixedLength)

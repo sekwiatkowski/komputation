@@ -1,18 +1,16 @@
 package com.komputation.layers.forward.activation
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.activation.CpuTanhLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
 import com.komputation.cuda.layers.forward.activation.CudaTanhLayer
-import com.komputation.layers.CpuActivationLayerInstruction
-import com.komputation.layers.CudaActivationLayerInstruction
+import jcuda.jcublas.cublasHandle
 
 class TanhLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,
-    private val hasFixedLength: Boolean) : CpuActivationLayerInstruction, CudaActivationLayerInstruction {
+    private val hasFixedLength: Boolean) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
 

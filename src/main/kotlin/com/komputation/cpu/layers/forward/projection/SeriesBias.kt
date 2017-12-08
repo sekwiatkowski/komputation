@@ -29,34 +29,26 @@ class SeriesBias internal constructor(
     override var backwardResult = FloatArray(0)
 
     fun getBias() =
-
         this.bias
 
     fun forwardStep(withinBatch : Int, step : Int, input : FloatArray, isTraining : Boolean): FloatArray {
-
         this.forwardResult = this.layers[step].forward(withinBatch, 1, input, isTraining)
 
         return this.forwardResult
-
     }
 
     fun backwardStep(withinBatch: Int, step: Int, chain: FloatArray): FloatArray {
-
         this.backwardResult = this.layers[step].backward(withinBatch, chain)
 
         return this.backwardResult
-
     }
 
     fun backwardSeries() {
-
         this.batchAccumulator.accumulate(this.seriesAccumulator.getAccumulation())
         this.seriesAccumulator.reset()
-
     }
 
     fun optimize(batchSize : Int) {
-
         if (this.updateRule != null) {
 
             updateDensely(this.bias, this.batchAccumulator.getAccumulation(), this.numberBiasEntries, batchSize, this.updateRule)
@@ -64,7 +56,6 @@ class SeriesBias internal constructor(
         }
 
         this.batchAccumulator.reset()
-
     }
 
 }
@@ -74,7 +65,6 @@ fun seriesBias(
     numberInputRows: Int,
     initialization: InitializationStrategy,
     optimization: OptimizationInstruction?) =
-
     seriesBias(null, null, numberSteps, numberInputRows, initialization, optimization)
 
 fun seriesBias(
@@ -84,7 +74,6 @@ fun seriesBias(
     inputDimension: Int,
     initialization: InitializationStrategy,
     optimization: OptimizationInstruction?) : SeriesBias {
-
     val bias = initializeColumnVector(initialization, inputDimension)
 
     val seriesAccumulator = DenseAccumulator(inputDimension)
@@ -110,5 +99,4 @@ fun seriesBias(
         seriesAccumulator,
         batchAccumulator,
         updateRule)
-
 }

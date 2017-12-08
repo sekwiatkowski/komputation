@@ -8,7 +8,6 @@ import com.komputation.cpu.optimization.updateDensely
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeWeights
 import com.komputation.layers.concatenateNames
-import com.komputation.layers.forward.activation.identityLayer
 import com.komputation.optimization.OptimizationInstruction
 
 class SeriesWeighting internal constructor(
@@ -21,7 +20,6 @@ class SeriesWeighting internal constructor(
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule?) : CpuLayerState {
-
     private val numberWeightEntries = this.weights.size
 
     override val numberOutputColumns = this.numberInputColumns
@@ -30,19 +28,15 @@ class SeriesWeighting internal constructor(
     override var backwardResult = FloatArray(0)
 
     fun getWeights() =
-
         this.weights
 
     fun forwardStep(withinBatch : Int, step : Int, input: FloatArray, isTraining : Boolean): FloatArray {
-
         this.forwardResult = this.layers[step].forward(withinBatch, this.numberInputColumns, input, isTraining)
 
         return this.forwardResult
-
     }
 
     fun backwardStep(withinBatch : Int, step: Int, chain: FloatArray): FloatArray {
-
         val weightingLayer = this.layers[step]
 
         weightingLayer.backward(withinBatch, chain)
@@ -50,33 +44,26 @@ class SeriesWeighting internal constructor(
         this.backwardResult = weightingLayer.backwardResult
 
         return this.backwardResult
-
     }
 
     fun backwardSeries() {
-
-        this.batchAccumulator.accumulate(this.seriesAccumulator.getAccumulation())
+        val seriesAccumulation = this.seriesAccumulator.getAccumulation()
+        this.batchAccumulator.accumulate(seriesAccumulation)
         this.seriesAccumulator.reset()
-
     }
 
     fun optimize(batchSize : Int) {
-
         if (this.updateRule != null) {
-
-            updateDensely(this.weights, this.batchAccumulator.getAccumulation(), this.numberWeightEntries, batchSize, this.updateRule)
-
+            val accumulation = this.batchAccumulator.getAccumulation()
+            updateDensely(this.weights, accumulation, this.numberWeightEntries, batchSize, this.updateRule)
         }
 
         this.batchAccumulator.reset()
-
     }
-
 }
 
 fun seriesWeighting(
     numberSteps : Int,
-    useIdentityAtFirstStep : Boolean,
     numberInputRows: Int,
     numberInputColumns: Int,
     numberOutputRows: Int,
@@ -85,9 +72,7 @@ fun seriesWeighting(
 
     seriesWeighting(
         null,
-        null,
         numberSteps,
-        useIdentityAtFirstStep,
         numberInputRows,
         numberInputColumns,
         numberOutputRows,
@@ -97,9 +82,7 @@ fun seriesWeighting(
 
 fun seriesWeighting(
     seriesName: String?,
-    stepNamePrefix: String?,
     numberSteps : Int,
-    useIdentityAtFirstStep : Boolean,
     numberInputRows: Int,
     numberInputColumns: Int,
     numberOutputRows: Int,
@@ -115,19 +98,9 @@ fun seriesWeighting(
 
     val weightingLayers = Array<CpuForwardLayer>(numberSteps) { indexStep ->
 
-        val stepName = concatenateNames(stepNamePrefix, indexStep.toString())
+        val stepName = concatenateNames(seriesName, indexStep.toString())
 
-        if (useIdentityAtFirstStep && indexStep == 0) {
-
-            identityLayer(stepName, numberInputRows, numberInputColumns).buildForCpu()
-
-        }
-        else {
-
-            CpuWeightingLayer(stepName, weights, numberInputRows, numberInputColumns, numberInputColumns, numberWeightRows, seriesAccumulator)
-
-        }
-
+        CpuWeightingLayer(stepName, weights, numberInputRows, numberInputColumns, numberInputColumns, numberWeightRows, seriesAccumulator)
     }
 
     val batchAccumulator = DenseAccumulator(numberWeightEntries)

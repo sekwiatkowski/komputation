@@ -1,8 +1,7 @@
 package com.komputation.matrix
 
-fun floatMatrix(vararg entries : Float) =
-
-    FloatMatrix(entries)
+fun floatMatrix(numberRows : Int, numberColumns : Int, vararg entries : Float) =
+    FloatMatrix(entries, numberRows, numberColumns)
 
 fun floatArrayFromRows(vararg rows: FloatArray): FloatArray {
 
@@ -27,9 +26,8 @@ fun floatArrayFromRows(vararg rows: FloatArray): FloatArray {
 
 }
 
-fun floatMatrixFromRows(vararg rows: FloatArray) =
-
-    FloatMatrix(floatArrayFromRows(*rows))
+fun floatMatrixFromRows(numberColumns: Int, vararg rows: FloatArray) =
+    FloatMatrix(floatArrayFromRows(*rows), rows.size, numberColumns)
 
 fun oneHotArray(size: Int, index: Int, value : Float = 1.0f): FloatArray {
 

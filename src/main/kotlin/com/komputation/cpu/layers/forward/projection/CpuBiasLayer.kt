@@ -20,35 +20,26 @@ class CpuBiasLayer internal constructor(
     private val numberBiasEntries = numberRows
 
     fun getBias() =
-
         this.bias
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-
         addBias(input, this.numberInputRows, numberInputColumns, this.bias, result)
-
     }
 
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-
         backwardProjectionWrtBias(this.numberBiasEntries, chain, this.numberOutputRows, this.numberOutputColumns, result)
 
         this.biasAccumulator.accumulate(result)
-
     }
 
     override fun optimize(batchSize : Int) {
-
         if (this.biasUpdateRule != null) {
-
             updateDensely(this.bias, this.biasAccumulator.getAccumulation(), this.numberBiasEntries, batchSize, this.biasUpdateRule)
 
             this.biasAccumulator.reset()
-
         }
-
     }
 
 }

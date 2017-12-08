@@ -30,44 +30,34 @@ class CpuLookupLayer internal constructor(
     private var gradientAccumulator: SparseAccumulator? = null
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.gradientAccumulator = SparseAccumulator(this.vectors.size, maximumBatchSize, this.maximumLength, this.dimension)
-
     }
 
     override fun release() {
-
         this.gradientAccumulator = null
-
     }
 
     override fun forward(input: Matrix): FloatArray {
-
         input as IntMatrix
 
         this.inputEntries = input.entries
-        this.numberOutputColumns = this.inputEntries.size
+        this.numberOutputColumns = input.numberEntries
 
         this.forwardResult = this.forwardResultsOverPossibleLengths[this.numberOutputColumns - this.minimumLength]
 
         lookup(this.vectors, this.dimension, this.numberOutputColumns, this.inputEntries, this.forwardResult)
 
         return this.forwardResult
-
     }
 
     override fun backward(chain : FloatArray): FloatArray {
-
         this.gradientAccumulator!!.accumulate(this.inputEntries, this.numberOutputColumns, chain)
 
         return chain
-
     }
 
     override fun optimize(batchSize : Int) {
-
         if (this.update != null) {
-
             val gradientAccumulator = this.gradientAccumulator!!
 
             val size = gradientAccumulator.getSize()
@@ -76,11 +66,9 @@ class CpuLookupLayer internal constructor(
             val gradients = gradientAccumulator.getSums()
 
             updateSparsely(this.vectors, this.dimension, size, ids, counts, gradients, this.update)
-
         }
 
         this.gradientAccumulator!!.reset()
-
     }
 
 }

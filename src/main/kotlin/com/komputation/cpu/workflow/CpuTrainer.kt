@@ -1,8 +1,8 @@
 package com.komputation.cpu.workflow
 
+import com.komputation.cpu.loss.CpuLossFunction
 import com.komputation.cpu.network.CpuBackwardPropagator
 import com.komputation.cpu.network.CpuForwardPropagator
-import com.komputation.cpu.loss.CpuLossFunction
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.partitionIndices
 import com.komputation.optimization.Optimizable
@@ -21,7 +21,6 @@ class CpuTrainer(
     private val batches = partitionIndices(this.inputs.size, this.maximumBatchSize)
 
     fun run(): Long {
-
         val start = System.currentTimeMillis()
 
         repeat(this.numberIterations) { indexIteration ->
@@ -37,9 +36,12 @@ class CpuTrainer(
                     val input = this.inputs[indexExample]
                     val target = this.targets[indexExample]
 
-                    val prediction = this.forwardPropagator.forward(withinBatch, input, true)
+                    val forwardPropagation = this.forwardPropagator.forward(withinBatch, input, true)
 
-                    val instanceLoss = this.lossFunction.forward(prediction, target)
+                    val length = forwardPropagation.numberOutputColumns
+                    val prediction = forwardPropagation.forwardResult
+
+                    val instanceLoss = this.lossFunction.forward(length, prediction, target)
 
                     val backwardInstanceLoss = this.lossFunction.backward(prediction, target)
 
@@ -52,15 +54,12 @@ class CpuTrainer(
                 iterationLoss += batchLoss
 
                 for (optimizable in this.optimizables) {
-
                     optimizable.optimize(batch.size)
-
                 }
 
             }
 
             this.afterEachIteration?.invoke(indexIteration, iterationLoss)
-
         }
 
         val stop = System.currentTimeMillis()
@@ -68,7 +67,6 @@ class CpuTrainer(
         val time = stop - start
 
         return time
-
     }
 
 }

@@ -30,19 +30,9 @@ Komputation is available through Maven Central:
   - [Convolution](./src/main/kotlin/com/komputation/layers/forward/convolution/ConvolutionLayer.kt)
   - [Max-pooling](./src/main/kotlin/com/komputation/layers/forward/convolution/MaxPoolingLayer.kt)
 
-- Recurrent neural networks (RNNs):
-  - Encoder
-    - [single output](./src/main/kotlin/com/komputation/layers/forward/encoder/SingleOutputEncoder.kt)
-    - [multi-output](./src/main/kotlin/com/komputation/layers/forward/encoder/MultiOutputEncoder.kt)
-  - Decoder
-    - [single input](./src/main/kotlin/com/komputation/layers/forward/decoder/SingleInputDecoder.kt)
-    - [multi-input](./src/main/kotlin/com/komputation/layers/forward/decoder/MultiInputDecoder.kt)
-
 - [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
 
 - [Dropout](./src/main/kotlin/com/komputation/layers/forward/dropout/DropoutLayer.kt)
-
-- [Highway layer](./src/main/kotlin/com/komputation/layers/forward/HighwayLayer.kt)
 
 - Activation functions:
   - [Identity](./src/main/kotlin/com/komputation/layers/forward/activation/IdentityLayer.kt)
@@ -52,9 +42,7 @@ Komputation is available through Maven Central:
   - [Tanh](./src/main/kotlin/com/komputation/layers/forward/activation/TanhLayer.kt)
 
 - Other layers:
-  - [Column repetition](./src/main/kotlin/com/komputation/layers/forward/ColumnRepetitionLayer.kt)
   - [Concatenation](./src/main/kotlin/com/komputation/layers/forward/Concatenation.kt)
-  - [Counter-probability](./src/main/kotlin/com/komputation/layers/forward/CounterProbabilityLayer.kt)
   - [Exponentiation](./src/main/kotlin/com/komputation/layers/forward/activation/ExponentiationLayer.kt)
   - [Normalization](./src/main/kotlin/com/komputation/layers/forward/NormalizationLayer.kt)
 
@@ -65,27 +53,20 @@ Komputation is available through Maven Central:
   - [Negation](./src/main/kotlin/com/komputation/cpu/demos/negation/Negation.kt)
   - [XOR](./src/main/kotlin/com/komputation/cpu/demos/xor/Xor.kt)
 
+- Running total:
+  - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)
+  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)
+
 - Word embedding toy problem:
   - [Feed-forward network](./src/main/kotlin/com/komputation/cpu/demos/embeddings/Embeddings.kt)
   - [CNN with one filter width](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithConvolution.kt)
   - [CNN with two filter widths](./src/main/kotlin/com/komputation/cpu/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
 
-- Running total:
-  - [Projection](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/RunningTotalProjection.kt)
-  - [Multi-input decoder](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/RunningTotalMultiInputDecoder.kt)
-
 - [Computer vision toy problem](./src/main/kotlin/com/komputation/cpu/demos/lines/Lines.kt)
-
-- [Addition problem](./src/main/kotlin/com/komputation/cpu/demos/addition/AdditionProblemRecurrentUnit.kt)
-
-- Reverse function:
-  - [Unidirectional RNN](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseUnidirectional.kt)
-  - [Bidirectional RNN](./src/main/kotlin/com/komputation/cpu/demos/reverse/ReverseBidirectional.kt)
 
 - MNIST:
   - [Minimal](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistMinimal.kt)
   - [Dropout](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistBatchDropout.kt)
-  - [Highway](./src/main/kotlin/com/komputation/cpu/demos/mnist/MnistHighway.kt)
 
 - TREC:
   - [One filter width](./src/main/kotlin/com/komputation/cpu/demos/trec/TREC.kt)

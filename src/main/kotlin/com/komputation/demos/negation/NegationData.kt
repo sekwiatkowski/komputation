@@ -6,8 +6,8 @@ import com.komputation.matrix.floatMatrix
 object NegationData {
 
     val inputs = arrayOf<Matrix>(
-        floatMatrix(0.0f),
-        floatMatrix(1.0f)
+        floatMatrix(1, 1, 0.0f),
+        floatMatrix(1, 1, 1.0f)
     )
 
     val targets = arrayOf(

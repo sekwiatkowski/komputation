@@ -24,15 +24,12 @@ class CpuMaxPoolingLayer internal constructor(
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = 1
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-
         findMaxIndicesInRows(input, this.numberInputRows, numberInputColumns, this.maxRowIndices)
 
         selectEntries(input, this.maxRowIndices, result, this.numberInputRows)
-
     }
 
     override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-
         Arrays.fill(result, 0f)
 
         for (indexRow in 0 until this.numberInputRows) {
@@ -40,7 +37,6 @@ class CpuMaxPoolingLayer internal constructor(
             result[this.maxRowIndices[indexRow]] = chain[indexRow]
 
         }
-
     }
 
 }
