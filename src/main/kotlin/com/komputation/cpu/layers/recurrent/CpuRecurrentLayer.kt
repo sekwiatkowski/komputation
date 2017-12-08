@@ -7,7 +7,6 @@ import com.komputation.cpu.layers.BaseCpuForwardLayer
 import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
-import com.komputation.cpu.layers.forward.projection.SeriesWeighting
 import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
 
@@ -18,7 +17,7 @@ class CpuRecurrentLayer(
     private val hiddenDimension : Int,
     private val inputWeighting : CpuWeightingLayer,
     private val initialState : FloatArray,
-    private val previousHiddenStateWeighting: SeriesWeighting,
+    private val previousHiddenStateWeighting: Series,
     private val additions : Array<CpuAdditionCombination>,
     private val activations : Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
@@ -61,7 +60,7 @@ class CpuRecurrentLayer(
         for (step in 0 until numberInputColumns) {
             getColumn(weightedInput, step, this.hiddenDimension, this.stepWeightedInput)
 
-            val weightedPreviousHiddenState = this.previousHiddenStateWeighting.forwardStep(withinBatch, step, previousHiddenState, isTraining)
+            val weightedPreviousHiddenState = this.previousHiddenStateWeighting.forwardStep(withinBatch, step, 1, previousHiddenState, isTraining)
 
             val addition = this.additions[step].forward(this.stepWeightedInput, weightedPreviousHiddenState)
 

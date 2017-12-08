@@ -1,9 +1,12 @@
 package com.komputation.layers.forward.recurrent
 
 import com.komputation.cpu.layers.combination.CpuAdditionCombination
-import com.komputation.cpu.layers.forward.projection.seriesWeighting
+import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import com.komputation.cpu.layers.recurrent.CpuRecurrentLayer
+import com.komputation.cpu.layers.recurrent.Series
+import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.initialization.InitializationStrategy
+import com.komputation.initialization.initializeWeights
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.concatenateNames
 import com.komputation.layers.forward.activation.ActivationFunction
@@ -27,8 +30,28 @@ class RecurrentLayer internal constructor(
 
         val initialState = FloatArray(this.hiddenDimension)
 
+        val weights = initializeWeights(this.initialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension)
+        val numberWeightEntries = weights.size
+        val updateRule = this.optimization?.buildForCpu()?.invoke(this.hiddenDimension, this.hiddenDimension)
+
         val previousHiddenStateWeightingLayerName= concatenateNames(this.name, "previous-hidden-state-weighting")
-        val previousHiddenStateWeighting = seriesWeighting(previousHiddenStateWeightingLayerName, this.maximumSteps, this.hiddenDimension, 1, this.hiddenDimension, this.initialization, this.optimization)
+        val seriesAccumulator = DenseAccumulator(numberWeightEntries)
+        val previousHiddenStateWeighting = Series(
+            previousHiddenStateWeightingLayerName,
+            weights,
+            Array(this.maximumSteps) { index ->
+                CpuWeightingLayer(
+                    concatenateNames(previousHiddenStateWeightingLayerName, index.toString()),
+                    weights,
+                    this.hiddenDimension,
+                    1,
+                    1,
+                    this.hiddenDimension,
+                    seriesAccumulator)
+            },
+            seriesAccumulator,
+            DenseAccumulator(numberWeightEntries),
+            updateRule)
 
         val additions = Array(this.maximumSteps) { index ->
             val additionName = concatenateNames(this.name, "addition-$index")
