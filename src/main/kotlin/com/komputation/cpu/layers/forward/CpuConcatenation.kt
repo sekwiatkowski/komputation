@@ -32,17 +32,15 @@ class CpuConcatenation internal constructor(
 
     override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) = this.width
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         for (indexLayer in (0 until this.numberLayers)) {
-
             this.individualResults[indexLayer] = this.layers[indexLayer].forward(withinBatch, numberInputColumns, input, isTraining)
-
         }
 
-        stackRows(this.heights, this.numberOutputRows, this.width, result, *this.individualResults)
+        stackRows(this.heights, this.numberOutputRows, this.width, forwardResult, *this.individualResults)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+    override fun computeBackwardResult(withinBatch: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
         splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
 
         val firstLayer = this.layers[0]
@@ -50,10 +48,9 @@ class CpuConcatenation internal constructor(
 
         val firstIndividualBackwardResult = firstLayer.backwardResult
 
-        System.arraycopy(firstIndividualBackwardResult, 0, result, 0, firstIndividualBackwardResult.size)
+        System.arraycopy(firstIndividualBackwardResult, 0, backwardResult, 0, firstIndividualBackwardResult.size)
 
         for (indexNetwork in (1 until this.numberLayers)) {
-
             val layer = this.layers[indexNetwork]
 
             layer.backward(withinBatch, this.chainSplit[indexNetwork])
@@ -62,10 +59,9 @@ class CpuConcatenation internal constructor(
 
             for (index in 0 until individualBackwardResult.size) {
 
-                result[index] += individualBackwardResult[index]
+                backwardResult[index] += individualBackwardResult[index]
 
             }
-
         }
     }
 

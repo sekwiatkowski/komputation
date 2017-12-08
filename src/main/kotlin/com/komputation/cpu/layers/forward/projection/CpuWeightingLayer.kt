@@ -45,18 +45,17 @@ class CpuWeightingLayer internal constructor(
     override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) =
         length
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         val blasInputMatrix = this.blasInputMatricesOverPossibleLengths[this.lengthIndex]
         blasInputMatrix.data = input
 
         val blasOutputMatrix = this.blasOutputMatricesOverPossibleLengths[this.lengthIndex]
+        blasOutputMatrix.data = forwardResult
 
         multiply(this.blasWeightMatrix, blasInputMatrix, blasOutputMatrix)
-
-        this.forwardResult = blasOutputMatrix.data
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
+    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
         backwardProjectionWrtInput(
             this.numberInputRows,
             this.numberInputColumns,

@@ -53,16 +53,16 @@ abstract class BaseCpuVariableLengthForwardLayer(
         return this.forwardResult
     }
 
-    protected abstract fun computeForwardResult(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean, result: FloatArray)
+    protected abstract fun computeForwardResult(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean, forwardResult: FloatArray)
 
     override fun backward(withinBatch : Int, chain : FloatArray) : FloatArray {
         this.backwardResult = this.backwardResultsOverPossibleLengths[this.lengthIndex]
 
-        this.computeBackwardResult(withinBatch, chain, this.backwardResult)
+        this.computeBackwardResult(withinBatch, this.forwardResult, chain, this.backwardResult)
 
         return this.backwardResult
     }
 
-    protected abstract fun computeBackwardResult(withinBatch : Int, chain : FloatArray, result: FloatArray)
+    protected abstract fun computeBackwardResult(withinBatch : Int, forwardResult : FloatArray, chain : FloatArray, backwardResult: FloatArray)
 
 }

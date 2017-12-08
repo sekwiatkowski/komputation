@@ -15,16 +15,16 @@ class CpuDropoutLayer internal constructor(
     private val threshold : Int
     private val dropoutProbability = 1.0 - keepProbability
 
+    private val maximumEntries = this.numberRows * this.maximumColumns
+    private var entrySeeds = IntArray(this.maximumEntries)
+    private var mask = BooleanArray(this.maximumEntries)
+
     init {
         val numberIntegers = Math.abs(Int.MIN_VALUE.toFloat()) + Int.MAX_VALUE.toFloat()
 
         val numberDropoutIntegers = (this.dropoutProbability * numberIntegers).toInt()
         this.threshold = Int.MIN_VALUE + numberDropoutIntegers
     }
-
-    private val maximumEntries = this.numberRows * this.maximumColumns
-    private var entrySeeds = IntArray(this.maximumEntries)
-    private var mask = BooleanArray(this.maximumEntries)
 
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
@@ -43,10 +43,8 @@ class CpuDropoutLayer internal constructor(
     override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) =
         length
 
-    private var numberEntries = -1
-
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-        this.numberEntries = this.numberRows * numberInputColumns
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        val numberEntries = this.numberRows * numberInputColumns
 
         if (isTraining) {
             val offset = withinBatch * this.maximumEntries
@@ -55,15 +53,15 @@ class CpuDropoutLayer internal constructor(
 
             mask(offset, numberEntries, this.entrySeeds, this.threshold, this.mask)
 
-            dropout(numberEntries, input, this.mask, this.forwardResult)
+            dropout(numberEntries, input, this.mask, forwardResult)
         }
         else {
-            scale(input, this.keepProbability, this.forwardResult, numberEntries)
+            scale(input, this.keepProbability, forwardResult, numberEntries)
         }
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-        backwardDropout(chain, this.mask, this.backwardResult, this.numberEntries)
+    override fun computeBackwardResult(withinBatch: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        backwardDropout(chain, this.mask, backwardResult, backwardResult.size)
     }
 
 }

@@ -16,9 +16,9 @@ class ReluLayer internal constructor(
 
         CpuReluLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
-    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle): CudaReluLayer {
+    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) =
 
-        return CudaReluLayer(
+        CudaReluLayer(
             this.name,
             this.numberRows,
             this.numberColumns,
@@ -26,8 +26,6 @@ class ReluLayer internal constructor(
             { context.createKernel(ForwardKernels.backwardRelu()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
-
-    }
 
 }
 

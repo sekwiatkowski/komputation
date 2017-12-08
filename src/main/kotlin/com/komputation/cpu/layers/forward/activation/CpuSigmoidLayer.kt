@@ -15,8 +15,6 @@ class CpuSigmoidLayer internal constructor(
     private var differentiationsOverPossibleLengths = emptyArray<FloatArray>()
     private var differentiation = FloatArray(0)
 
-    private var numberInputEntries = -1
-
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
 
@@ -33,10 +31,8 @@ class CpuSigmoidLayer internal constructor(
         return this.forwardResult
     }
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-        this.numberInputEntries = input.size
-
-        sigmoid(input, result, this.numberInputEntries)
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        sigmoid(input, forwardResult, forwardResult.size)
     }
 
     /*
@@ -49,11 +45,9 @@ class CpuSigmoidLayer internal constructor(
         this.differentiation = this.differentiationsOverPossibleLengths[this.lengthIndex]
 
         if (!this.hasCachedDifferentiation) {
-
-            differentiateSigmoid(this.forwardResult, this.differentiation, this.numberInputEntries)
+            differentiateSigmoid(this.forwardResult, this.differentiation, this.differentiation.size)
 
             this.hasCachedDifferentiation = true
-
         }
 
         super.backward(withinBatch, chain)
@@ -61,8 +55,8 @@ class CpuSigmoidLayer internal constructor(
         return this.backwardResult
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-        hadamard(chain, this.differentiation, result, this.numberInputEntries)
+    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        hadamard(chain, this.differentiation, backwardResult, backwardResult.size)
     }
 
 }

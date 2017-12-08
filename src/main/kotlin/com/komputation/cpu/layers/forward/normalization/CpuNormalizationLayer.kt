@@ -28,14 +28,14 @@ class CpuNormalizationLayer internal constructor(
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         this.sum = this.sumsOverPossibleLengths[this.lengthIndex]
 
-        normalize(this.numberInputRows, numberInputColumns, input, this.sum, this.forwardResult)
+        normalize(this.numberInputRows, numberInputColumns, input, this.sum, forwardResult)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-        backwardNormalization(this.numberInputRows, this.numberInputColumns, chain, this.forwardResult, this.sum, this.backwardResult)
+    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        backwardNormalization(this.numberInputRows, this.numberInputColumns, chain, forwardResult, this.sum, backwardResult)
     }
 
 }

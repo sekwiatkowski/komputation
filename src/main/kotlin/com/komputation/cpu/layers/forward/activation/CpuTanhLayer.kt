@@ -15,8 +15,6 @@ class CpuTanhLayer internal constructor(
     private var differentiationsOverPossibleLengths = emptyArray<FloatArray>()
     private var differentiation = FloatArray(0)
 
-    private var numberInputEntries = -1
-
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
 
@@ -33,17 +31,15 @@ class CpuTanhLayer internal constructor(
         return this.forwardResult
     }
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-        this.numberInputEntries = input.size
-
-        tanh(input, this.forwardResult, this.numberInputEntries)
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        tanh(input, forwardResult, forwardResult.size)
     }
 
     override fun backward(withinBatch : Int, chain : FloatArray): FloatArray {
         this.differentiation = this.differentiationsOverPossibleLengths[this.lengthIndex]
 
         if (!this.hasCachedDifferentiation) {
-            differentiateTanh(this.forwardResult, this.differentiation, this.numberInputEntries)
+            differentiateTanh(this.forwardResult, this.differentiation, this.differentiation.size)
 
             this.hasCachedDifferentiation = true
         }
@@ -53,8 +49,8 @@ class CpuTanhLayer internal constructor(
         return this.backwardResult
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-        hadamard(chain, this.differentiation, this.backwardResult, this.numberInputEntries)
+    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        hadamard(chain, this.differentiation, backwardResult, backwardResult.size)
     }
 
 }

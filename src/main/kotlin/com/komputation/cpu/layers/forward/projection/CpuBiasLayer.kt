@@ -24,14 +24,14 @@ class CpuBiasLayer internal constructor(
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
-        addBias(input, this.numberInputRows, numberInputColumns, this.bias, result)
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        addBias(input, this.numberInputRows, numberInputColumns, this.bias, forwardResult)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
-        backwardProjectionWrtBias(this.numberBiasEntries, chain, this.numberOutputRows, this.numberOutputColumns, result)
+    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        backwardProjectionWrtBias(this.numberBiasEntries, chain, this.numberOutputRows, this.numberOutputColumns, backwardResult)
 
-        this.biasAccumulator.accumulate(result)
+        this.biasAccumulator.accumulate(backwardResult)
     }
 
     override fun optimize(batchSize : Int) {
