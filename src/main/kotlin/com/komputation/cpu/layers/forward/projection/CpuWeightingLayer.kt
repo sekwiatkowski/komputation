@@ -11,13 +11,13 @@ import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
 
 class CpuWeightingLayer internal constructor(
-    name : String? = null,
-    private val weights : FloatArray,
-    numberInputRows : Int,
+    name: String? = null,
+    numberInputRows: Int,
     minimumInputColumns: Int,
     maximumInputColumns: Int,
     numberOutputRows: Int,
-    private val weightAccumulator : DenseAccumulator,
+    private val weights: FloatArray,
+    private val weightAccumulator: DenseAccumulator,
     private val weightUpdateRule: UpdateRule? = null) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, numberOutputRows, minimumInputColumns, maximumInputColumns), Resourceful, Optimizable {
 
     private val numberWeightColumns = this.numberInputRows

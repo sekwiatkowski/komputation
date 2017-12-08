@@ -7,13 +7,13 @@ import com.komputation.cpu.optimization.updateDensely
 
 class Series internal constructor(
     private val name : String?,
-    private val parameter : FloatArray,
+    private val sharedParameter: FloatArray,
     private val steps: Array<CpuForwardLayer>,
     private val seriesAccumulator: DenseAccumulator,
     private val batchAccumulator: DenseAccumulator,
     private val updateRule: UpdateRule? = null) {
 
-    private val numberEntries = parameter.size
+    private val numberEntries = sharedParameter.size
 
     fun forwardStep(withinBatch : Int, step : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean) =
         this.steps[step].forward(withinBatch, numberInputColumns, input, isTraining)
@@ -28,7 +28,7 @@ class Series internal constructor(
 
     fun optimize(batchSize : Int) {
         if (this.updateRule != null) {
-            updateDensely(this.parameter, this.batchAccumulator.getAccumulation(), this.numberEntries, batchSize, this.updateRule)
+            updateDensely(this.sharedParameter, this.batchAccumulator.getAccumulation(), this.numberEntries, batchSize, this.updateRule)
         }
 
         this.batchAccumulator.reset()

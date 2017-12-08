@@ -34,7 +34,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             lookupLayer(embeddings, numberSteps, true, embeddingDimension, optimization),
-            recurrentLayer(numberSteps, true, embeddingDimension, 3, initialization, ActivationFunction.ReLU, optimization),
+            recurrentLayer(numberSteps, true, embeddingDimension, 3, initialization, null, ActivationFunction.ReLU, optimization),
             softmaxLayer(numberCategories, numberSteps)
         )
         .training(

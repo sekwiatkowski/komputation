@@ -19,6 +19,7 @@ class CpuRecurrentLayer(
     private val initialState : FloatArray,
     private val previousHiddenStateWeighting: Series,
     private val additions : Array<CpuAdditionCombination>,
+    private val bias: Series?,
     private val activations : Array<CpuActivationLayer>) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
 
     override var forwardResult = FloatArray(0)
@@ -66,9 +67,15 @@ class CpuRecurrentLayer(
 
             val hiddenState = this.activations[step].forward(withinBatch, 1, addition, isTraining)
 
-            setColumn(hiddenState, step, this.hiddenDimension, this.forwardResult)
+            val finalHiddenState =
+                if(this.bias != null)
+                    this.bias.forwardStep(withinBatch, step, 1, hiddenState, isTraining)
+                else
+                    hiddenState
 
-            previousHiddenState = hiddenState
+            setColumn(finalHiddenState, step, this.hiddenDimension, this.forwardResult)
+
+            previousHiddenState = finalHiddenState
         }
 
         return this.forwardResult
@@ -97,8 +104,6 @@ class CpuRecurrentLayer(
     override fun backward(withinBatch: Int, chain: FloatArray) : FloatArray {
         val backwardPreactivation = this.backwardPreactivationOverPossibleLengths[this.numberInputColumns - this.minimumSteps]
 
-        // t = 2:
-        // (d y_3 / dh_3) * (dh_3 / dh_2)
         var previousBackwardPreviousHiddenState : FloatArray? = null
 
         val lastStep = this.numberInputColumns - 1
@@ -111,19 +116,22 @@ class CpuRecurrentLayer(
                 add(this.stepChain, previousBackwardPreviousHiddenState!!, this.stepChain, this.hiddenDimension)
             }
 
-            // dh_t / d(Wx_t + Uh_(t-1)) = df(Wx_t + Uh_(t-1)) / d(Wx_t + Uh_(t-1))
+            // dh_t / d(Wx_t + Uh_(t-1) + b) = df(Wx_t + Uh_(t-1) + b) / d(Wx_t + Uh_(t-1) + b)
             val stepBackwardPreActivation = this.activations[step].backward(withinBatch, this.stepChain)
 
-            // d(Wx_t + Uh_(t-1)) / dWx_t
+            // d(Wx_t + Uh_(t-1) + b) / dWx_t
             setColumn(stepBackwardPreActivation, step, this.hiddenDimension, backwardPreactivation)
 
-            // d(Wx_t + Uh_(t-1)) / dUh_(t-1)
+            // d(Wx_t + Uh_(t-1) + b) / dUh_(t-1)
             val backwardPreviousHiddenState = this.previousHiddenStateWeighting.backwardStep(withinBatch, step, stepBackwardPreActivation)
-
             previousBackwardPreviousHiddenState = backwardPreviousHiddenState
+
+            // d(Wx_t + Uh_(t-1) + b) / db
+            this.bias?.backwardStep(withinBatch, step, backwardPreactivation)
         }
 
         this.previousHiddenStateWeighting.backwardSeries()
+        this.bias?.backwardSeries()
 
         return this.inputWeighting.backward(withinBatch, backwardPreactivation)
     }
@@ -131,6 +139,7 @@ class CpuRecurrentLayer(
     override fun optimize(batchSize: Int) {
         this.inputWeighting.optimize(batchSize)
         this.previousHiddenStateWeighting.optimize(batchSize)
+        this.bias?.optimize(batchSize)
     }
 
 }

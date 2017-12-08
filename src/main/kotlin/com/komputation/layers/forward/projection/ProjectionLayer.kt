@@ -1,6 +1,5 @@
 package com.komputation.layers.forward.projection
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
@@ -17,6 +16,7 @@ import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
 import com.komputation.layers.concatenateNames
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 class ProjectionLayer internal constructor(
     private val name : String?,
@@ -43,7 +43,7 @@ class ProjectionLayer internal constructor(
         val weightAccumulator = DenseAccumulator(this.numberWeightRows * this.numberWeightColumns)
         val weightingUpdateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberWeightRows, this.numberWeightColumns)
 
-        val weightingLayer = CpuWeightingLayer(weightingName, weights, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, weightAccumulator, weightingUpdateRule)
+        val weightingLayer = CpuWeightingLayer(weightingName, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, weights, weightAccumulator, weightingUpdateRule)
 
         val biasName = concatenateNames(name, "bias")
 

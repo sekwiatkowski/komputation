@@ -1,6 +1,5 @@
 package com.komputation.layers.forward.projection
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
@@ -11,6 +10,7 @@ import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
 import com.komputation.layers.concatenateNames
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 class WeightingLayer internal constructor(
     private val name : String?,
@@ -36,7 +36,7 @@ class WeightingLayer internal constructor(
         val accumulator = DenseAccumulator(this.numberWeightRows * this.numberWeightColumns)
         val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberWeightRows, this.numberWeightColumns)
 
-        return CpuWeightingLayer(name, initialWeights, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, accumulator, updateRule)
+        return CpuWeightingLayer(name, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, initialWeights, accumulator, updateRule)
 
     }
 
