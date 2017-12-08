@@ -1,34 +1,19 @@
 package com.komputation.cpu.layers.forward.dropout
 
 import com.komputation.cpu.functions.*
-import com.komputation.cpu.layers.BaseCpuForwardLayer
-import com.komputation.layers.Resourceful
+import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 import java.util.*
 
 class CpuDropoutLayer internal constructor(
     name: String?,
     private val numberRows: Int,
-    private val numberColumns: Int,
+    minimumColumns: Int,
+    maximumColumns: Int,
     private val random: Random,
-    private val keepProbability: Float) : BaseCpuForwardLayer(name), Resourceful {
-
-    private val numberEntries = this.numberRows * this.numberColumns
-
-    private var entrySeeds = IntArray(this.numberEntries)
-
-    private var mask = BooleanArray(this.numberEntries)
-
-    override val numberOutputRows = this.numberRows
-    override val numberOutputColumns = this.numberColumns
-    override val forwardResult = FloatArray(this.numberEntries)
-
-    override val numberInputRows = this.numberRows
-    override val numberInputColumns = this.numberColumns
-    override val backwardResult = FloatArray(this.numberEntries)
-
-    private val dropoutProbability = 1.0 - keepProbability
+    private val keepProbability: Float) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns) {
 
     private val threshold : Int
+    private val dropoutProbability = 1.0 - keepProbability
 
     init {
         val numberIntegers = Math.abs(Int.MIN_VALUE.toFloat()) + Int.MAX_VALUE.toFloat()
@@ -37,37 +22,48 @@ class CpuDropoutLayer internal constructor(
         this.threshold = Int.MIN_VALUE + numberDropoutIntegers
     }
 
-    override fun acquire(maximumBatchSize: Int) {
-        this.entrySeeds = IntArray(maximumBatchSize * this.numberEntries)
+    private val maximumEntries = this.numberRows * this.maximumColumns
+    private var entrySeeds = IntArray(this.maximumEntries)
+    private var mask = BooleanArray(this.maximumEntries)
 
-        seed(this.random, this.entrySeeds, maximumBatchSize * this.numberEntries)
+    override fun acquire(maximumBatchSize: Int) {
+        super.acquire(maximumBatchSize)
+
+        this.entrySeeds = IntArray(maximumBatchSize * this.maximumEntries)
+
+        seed(this.random, this.entrySeeds, maximumBatchSize * this.maximumEntries)
     }
 
     override fun release() {
+        super.release()
+
         this.entrySeeds = IntArray(0)
     }
 
-    override fun forward(withinBatch : Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
+    override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) =
+        length
+
+    private var numberEntries = -1
+
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, result: FloatArray) {
+        this.numberEntries = this.numberRows * numberInputColumns
+
         if (isTraining) {
-            val offset = withinBatch * this.numberEntries
+            val offset = withinBatch * this.maximumEntries
 
-            nextInteger(this.entrySeeds, offset, this.numberEntries)
+            nextInteger(this.entrySeeds, offset, numberEntries)
 
-            mask(this.numberEntries, this.threshold, offset, this.entrySeeds, this.mask)
+            mask(offset, numberEntries, this.entrySeeds, this.threshold, this.mask)
 
-            dropout(this.numberEntries, input, this.mask, this.forwardResult)
+            dropout(numberEntries, input, this.mask, this.forwardResult)
         }
         else {
-            scale(input, this.keepProbability, this.forwardResult, this.numberEntries)
+            scale(input, this.keepProbability, this.forwardResult, numberEntries)
         }
-
-        return this.forwardResult
     }
 
-    override fun backward(withinBatch : Int, chain: FloatArray): FloatArray {
+    override fun computeBackwardResult(withinBatch: Int, chain: FloatArray, result: FloatArray) {
         backwardDropout(chain, this.mask, this.backwardResult, this.numberEntries)
-
-        return this.backwardResult
     }
 
 }

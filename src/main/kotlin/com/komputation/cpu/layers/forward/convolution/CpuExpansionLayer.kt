@@ -18,7 +18,7 @@ class CpuExpansionLayer internal constructor(
     private var numberFilterColumnPositionsOverPossibleLengths = IntArray(0)
 
     override fun acquire(maximumBatchSize: Int) {
-        this.numberFilterColumnPositionsOverPossibleLengths = IntArray(this.numberLengths) { index -> computeNumberFilterColumnPositions(this.lengths[index], this.filterWidth) }
+        this.numberFilterColumnPositionsOverPossibleLengths = IntArray(this.numberPossibleLengths) { index -> computeNumberFilterColumnPositions(this.possibleLengths[index], this.filterWidth) }
 
         super.acquire(maximumBatchSize)
     }

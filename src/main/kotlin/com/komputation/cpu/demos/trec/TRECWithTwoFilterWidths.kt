@@ -17,18 +17,14 @@ import java.io.File
 import java.util.*
 
 fun main(args: Array<String>) {
-
     if (args.size != 2) {
-
         throw Exception("Please specify the path to the Glove word embeddings and the number of dimensions.")
-
     }
 
     val embeddingFilePath = args.first()
     val dimensions = args.last().toInt()
 
     TrecWithTwoFilterWidths().run(embeddingFilePath, dimensions)
-
 }
 
 class TrecWithTwoFilterWidths {
@@ -111,7 +107,7 @@ class TrecWithTwoFilterWidths {
                     .toTypedArray()
             ),
             reluLayer(numberFilterWidths * numberFilters),
-            dropoutLayer(random, keepProbability, numberFilterWidths * numberFilters),
+            dropoutLayer(numberFilterWidths * numberFilters, 1, hasFixedLength, keepProbability, random),
             projectionLayer(filterWidths.size * numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )

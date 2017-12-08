@@ -1,16 +1,16 @@
 package com.komputation.cuda.layers.forward.dropout
 
+import com.komputation.cuda.allocateDeviceFloatMemory
+import com.komputation.cuda.getFloatArray
+import com.komputation.cuda.setFloatArray
+import com.komputation.cuda.setUpCudaContext
+import com.komputation.layers.forward.dropout.dropoutLayer
 import jcuda.Pointer
 import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda
 import jcuda.runtime.JCuda.cudaFree
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import com.komputation.cuda.allocateDeviceFloatMemory
-import com.komputation.cuda.getFloatArray
-import com.komputation.cuda.setFloatArray
-import com.komputation.cuda.setUpCudaContext
-import com.komputation.layers.forward.dropout.dropoutLayer
 import java.util.*
 
 class CudaDropoutLayerTest {
@@ -36,7 +36,7 @@ class CudaDropoutLayerTest {
         val random = Random()
         val input = FloatArray(numberEntries) { random.nextFloat() }
 
-        val cpuLayer = dropoutLayer(Random(1), keepProbability, numberRows, numberColumns).buildForCpu()
+        val cpuLayer = dropoutLayer(numberRows, numberColumns, true, keepProbability, Random(1)).buildForCpu()
 
         cpuLayer.acquire(1)
 
@@ -44,7 +44,7 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(Random(1), keepProbability, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, keepProbability, Random(1)).buildForCuda(cudaContext, cublasHandle())
         cudaLayer.acquire(1)
 
         val deviceInput = Pointer()
@@ -94,7 +94,7 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(Random(1), if (keep) 1.0f else 0.0f, numberRows, numberColumns).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, if (keep) 1.0f else 0.0f, Random(1)).buildForCuda(cudaContext, cublasHandle())
 
         cudaLayer.acquire(1)
 

@@ -10,8 +10,7 @@ class ReluLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
     private val numberColumns : Int,
-    private val hasFixedLength:
-    Boolean) : ActivationLayerInstruction {
+    private val hasFixedLength: Boolean) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
 
@@ -33,9 +32,7 @@ class ReluLayer internal constructor(
 }
 
 fun reluLayer(numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
-
     reluLayer(null, numberRows, numberColumns, hasFixedLength)
 
 fun reluLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
-
     ReluLayer(name, numberRows, numberColumns, hasFixedLength)

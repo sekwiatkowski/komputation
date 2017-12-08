@@ -37,7 +37,7 @@ class RecurrentLayer internal constructor(
 
         val activations = Array(this.maximumSteps) { index ->
             val activationName = concatenateNames(this.name, "activation-$index")
-            activationLayer(activationName, this.activation, this.hiddenDimension, 1).buildForCpu()
+            activationLayer(activationName, this.activation, this.hiddenDimension, 1, this.hasFixedLength).buildForCpu()
         }
 
         return CpuRecurrentLayer(this.name, if(this.hasFixedLength) this.maximumSteps else 1, this.maximumSteps, this.hiddenDimension, inputWeightingLayer, initialState, previousHiddenStateWeighting, additions, activations)

@@ -59,7 +59,7 @@ fun main(args: Array<String>) {
         batchSize,
         inputLayer(inputDimension),
         hiddenLayer,
-        dropoutLayer(random, keepProbability, hiddenDimension),
+        dropoutLayer(hiddenDimension, 1, true, keepProbability, random),
         outputLayer
     )
 

@@ -13,12 +13,10 @@ class TanhLayer internal constructor(
     private val hasFixedLength: Boolean) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
-
         CpuTanhLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaTanhLayer {
-
-        return CudaTanhLayer(
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+        CudaTanhLayer(
             this.name,
             this.numberRows,
             this.numberColumns,
@@ -27,14 +25,10 @@ class TanhLayer internal constructor(
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 
-    }
-
 }
 
 fun tanhLayer(numberRows : Int, numberColumns: Int = 1, isFixedLength: Boolean = true) =
-
     tanhLayer(null, numberRows, numberColumns, isFixedLength)
 
 fun tanhLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1, isFixedLength: Boolean = true) =
-
     TanhLayer(name, numberRows, numberColumns, isFixedLength)

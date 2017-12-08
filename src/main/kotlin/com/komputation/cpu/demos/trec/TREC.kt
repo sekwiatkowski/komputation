@@ -40,7 +40,6 @@ class Trec {
         val optimization = nesterov(0.01f, 0.9f)
 
         val batchSize = 32
-        val hasFixedLength = false
         val numberIterations = 7
 
         val numberFilters = 100
@@ -94,10 +93,10 @@ class Trec {
 
         val network = Network(
             batchSize,
-            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
-            convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
+            lookupLayer(embeddings, maximumDocumentLength, false, embeddingDimension, optimization),
+            convolutionalLayer(embeddingDimension, maximumDocumentLength, false, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
             reluLayer(numberFilters),
-            dropoutLayer(random, keepProbability, numberFilters),
+            dropoutLayer(numberFilters, 1, true, keepProbability, random),
             projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )

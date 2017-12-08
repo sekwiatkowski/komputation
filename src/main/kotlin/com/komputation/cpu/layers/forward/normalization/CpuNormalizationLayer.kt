@@ -23,7 +23,7 @@ class CpuNormalizationLayer internal constructor(
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
 
-        this.sumsOverPossibleLengths = Array(this.numberLengths) { index -> FloatArray(this.numberInputRows * this.lengths[index]) }
+        this.sumsOverPossibleLengths = Array(this.numberPossibleLengths) { index -> FloatArray(this.numberInputRows * this.possibleLengths[index]) }
     }
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length

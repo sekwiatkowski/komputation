@@ -15,7 +15,7 @@ fun nextInteger(seeds : IntArray, offset : Int, length: Int) {
     }
 }
 
-fun mask(length: Int, limit: Int, offset: Int, seeds: IntArray, result: BooleanArray) {
+fun mask(offset: Int, length: Int, seeds: IntArray, limit: Int, result: BooleanArray) {
     var offsetIndex = offset
     var index = 0
 

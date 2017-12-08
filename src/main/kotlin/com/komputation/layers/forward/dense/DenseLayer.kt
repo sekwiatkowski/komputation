@@ -39,25 +39,20 @@ class DenseLayer internal constructor(
         this.optimization)
 
     override fun buildForCpu(): CpuDenseLayer {
-
         val projectionLayer = this.projection.buildForCpu()
 
-        val activationLayer = activationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1).buildForCpu()
+        val activationLayer = activationLayer(this.activationName, this.activationFunction, this.numberOutputRows, 1, true).buildForCpu()
 
         return CpuDenseLayer(this.name, projectionLayer, activationLayer)
-
     }
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaForwardLayer {
-
         val projectionLayer = this.projection.buildForCuda(context, cublasHandle)
 
         val activationLayer = cudaActivationLayer(this.activationName, this.activationFunction, this.numberOutputRows).buildForCuda(context, cublasHandle)
 
         return CudaDenseLayer(this.name, projectionLayer, activationLayer)
-
     }
-
 
 }
 

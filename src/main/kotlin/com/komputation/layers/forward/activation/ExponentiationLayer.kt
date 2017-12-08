@@ -1,12 +1,12 @@
 package com.komputation.layers.forward.activation
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.activation.CpuExponentiationLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
 import com.komputation.cuda.layers.forward.activation.CudaExponentiationLayer
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
+import jcuda.jcublas.cublasHandle
 
 class ExponentiationLayer internal constructor(
     private val name : String?,
@@ -15,12 +15,10 @@ class ExponentiationLayer internal constructor(
     private val hasFixedLength: Boolean) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
-
         CpuExponentiationLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaExponentiationLayer {
-
-        val exponentiationLayer = CudaExponentiationLayer(
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+        CudaExponentiationLayer(
             this.name,
             this.numberRows,
             this.numberColumns,
@@ -29,17 +27,12 @@ class ExponentiationLayer internal constructor(
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 
-        return exponentiationLayer
-
-    }
-
 }
 
 fun exponentiationLayer(
     numberRows : Int,
     numberColumns: Int = 1,
     hasFixedLength: Boolean = true) =
-
     exponentiationLayer(
         null,
         numberRows,
@@ -52,7 +45,6 @@ fun exponentiationLayer(
     numberRows : Int,
     numberColumns: Int = 1,
     hasFixedLength: Boolean = true) =
-
     ExponentiationLayer(
         name,
         numberRows,

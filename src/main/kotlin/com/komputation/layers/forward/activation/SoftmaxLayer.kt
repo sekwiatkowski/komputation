@@ -17,19 +17,15 @@ class SoftmaxLayer internal constructor(
     private val normalizationLayer = normalizationLayer(concatenateNames(this.name, "normalization"), this.numberRows, this.numberColumns, this.hasFixedLength)
 
     override fun buildForCpu() =
-
         CpuSoftmaxLayer(this.name, this.exponentiationLayer.buildForCpu(), this.normalizationLayer.buildForCpu())
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
-
         CudaSoftmaxLayer(this.name, this.exponentiationLayer.buildForCuda(context, cublasHandle), this.normalizationLayer.buildForCuda(context, cublasHandle))
 
 }
 
 fun softmaxLayer(numberCategories: Int, numberSteps: Int = 1, hasFixedLength: Boolean = true) =
-
     softmaxLayer(null, numberCategories, numberSteps, hasFixedLength)
 
 fun softmaxLayer(name : String? = null, numberCategories: Int, numberSteps: Int = 1, hasFixedLength: Boolean = true) =
-
     SoftmaxLayer(name, numberCategories, numberSteps, hasFixedLength)

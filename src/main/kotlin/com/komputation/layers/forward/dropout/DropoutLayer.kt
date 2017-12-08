@@ -1,31 +1,30 @@
 package com.komputation.layers.forward.dropout
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.dropout.CpuDropoutLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
 import com.komputation.cuda.layers.forward.dropout.CudaDropoutLayer
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
+import jcuda.jcublas.cublasHandle
 import java.util.*
 
 class DropoutLayer internal constructor(
     private val name : String?,
     private val numberRows : Int,
-    private val numberColumns : Int,
+    private val maximumColumns : Int,
+    private val hasFixedLength : Boolean,
     private val random : Random,
     private val keepProbability : Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
+        CpuDropoutLayer(this.name, this.numberRows, if(this.hasFixedLength) this.maximumColumns else 1, this.maximumColumns, this.random, this.keepProbability)
 
-        CpuDropoutLayer(this.name, this.numberRows, this.numberColumns, this.random, this.keepProbability)
-
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaDropoutLayer {
-
-        return CudaDropoutLayer(
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+        CudaDropoutLayer(
             this.name,
             this.numberRows,
-            this.numberColumns,
+            this.maximumColumns,
             this.random,
             this.keepProbability,
             { context.createKernel(ForwardKernels.dropoutTraining()) },
@@ -34,14 +33,10 @@ class DropoutLayer internal constructor(
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 
-    }
-
 }
 
-fun dropoutLayer(random: Random, keepProbability: Float, numberRows: Int, numberColumns: Int = 1) =
+fun dropoutLayer(numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, keepProbability: Float, random: Random) =
+    dropoutLayer(null, numberRows, numberColumns, hasFixedLength, keepProbability, random)
 
-    dropoutLayer(null, numberColumns, keepProbability, random, numberRows)
-
-fun dropoutLayer(name: String?, numberColumns: Int, keepProbability: Float, random: Random, numberRows: Int) =
-
-    DropoutLayer(name, numberRows, numberColumns, random, keepProbability)
+fun dropoutLayer(name: String?, numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, keepProbability: Float, random: Random) =
+    DropoutLayer(name, numberRows, numberColumns, hasFixedLength, random, keepProbability)

@@ -15,11 +15,8 @@ class CpuForwardPropagator(
         var previousLayerState : CpuForwardState = this.entryPoint
 
         for (layer in this.layers) {
-
             layer.forward(withinBatch, previousLayerState.numberOutputColumns, previousLayerState.forwardResult, isTraining)
-
             previousLayerState = layer
-
         }
 
         return previousLayerState

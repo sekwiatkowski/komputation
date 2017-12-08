@@ -11,14 +11,11 @@ class IdentityLayer internal constructor(
     private val numberColumns : Int) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
-
-        CpuIdentityLayer(this.name, this.numberRows, this.numberColumns)
+        CpuIdentityLayer(this.name, this.numberRows)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
-
         CudaIdentityLayer(this.name, this.numberRows, this.numberColumns)
 }
 
 fun identityLayer(name : String? = null, numberRows : Int, numberColumns : Int = 1) =
-
     IdentityLayer(name, numberRows, numberColumns)

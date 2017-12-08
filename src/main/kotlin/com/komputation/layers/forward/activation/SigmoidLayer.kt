@@ -13,7 +13,6 @@ class SigmoidLayer internal constructor(
     private val hasFixedLength: Boolean) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
-
         CpuSigmoidLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
@@ -32,9 +31,7 @@ class SigmoidLayer internal constructor(
 }
 
 fun sigmoidLayer(numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
-
     sigmoidLayer(null, numberRows, numberColumns, hasFixedLength)
 
 fun sigmoidLayer(name : String? = null, numberRows : Int, numberColumns: Int = 1, hasFixedLength: Boolean = true) =
-
     SigmoidLayer(name, numberRows, numberColumns, hasFixedLength)
