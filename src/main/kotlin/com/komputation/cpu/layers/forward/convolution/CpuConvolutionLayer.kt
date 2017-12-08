@@ -1,6 +1,6 @@
 package com.komputation.cpu.layers.forward.convolution
 
-import com.komputation.cpu.layers.BaseCpuForwardLayer
+import com.komputation.cpu.layers.BaseCpuHigherOrderLayer
 import com.komputation.cpu.layers.forward.maxpooling.CpuMaxPoolingLayer
 import com.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import com.komputation.optimization.Optimizable
@@ -9,21 +9,7 @@ class CpuConvolutionLayer internal constructor(
     name : String? = null,
     private val expansionLayer: CpuExpansionLayer,
     private val projectionLayer: CpuProjectionLayer,
-    private val maxPoolingLayer: CpuMaxPoolingLayer) : BaseCpuForwardLayer(name), Optimizable {
-
-    override val numberOutputRows
-        get() = this.maxPoolingLayer.numberOutputRows
-    override val numberOutputColumns
-        get() = this.maxPoolingLayer.numberOutputColumns
-    override val forwardResult
-        get() = this.maxPoolingLayer.forwardResult
-
-    override val numberInputRows: Int
-        get() = this.expansionLayer.numberInputRows
-    override val numberInputColumns
-        get() = this.expansionLayer.numberInputColumns
-    override val backwardResult
-        get() = this.expansionLayer.backwardResult
+    private val maxPoolingLayer: CpuMaxPoolingLayer) : BaseCpuHigherOrderLayer(name, expansionLayer, maxPoolingLayer), Optimizable {
 
     fun getWeights() =
         this.projectionLayer.getWeights()

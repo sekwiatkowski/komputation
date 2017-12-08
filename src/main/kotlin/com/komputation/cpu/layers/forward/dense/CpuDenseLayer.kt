@@ -1,6 +1,6 @@
 package com.komputation.cpu.layers.forward.dense
 
-import com.komputation.cpu.layers.BaseCpuForwardLayer
+import com.komputation.cpu.layers.BaseCpuHigherOrderLayer
 import com.komputation.cpu.layers.forward.activation.CpuActivationLayer
 import com.komputation.cpu.layers.forward.projection.CpuProjectionLayer
 import com.komputation.layers.Resourceful
@@ -9,21 +9,7 @@ import com.komputation.optimization.Optimizable
 class CpuDenseLayer internal constructor(
     name : String?,
     private val projection : CpuProjectionLayer,
-    private val activation: CpuActivationLayer) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
-
-    override val numberOutputRows
-        get() = this.activation.numberOutputRows
-    override val numberOutputColumns
-        get() = this.activation.numberOutputColumns
-    override val forwardResult
-        get() = this.activation.forwardResult
-
-    override val numberInputRows
-        get() = this.projection.numberInputRows
-    override val numberInputColumns
-        get() = this.projection.numberInputColumns
-    override val backwardResult
-        get() = this.projection.backwardResult
+    private val activation: CpuActivationLayer) : BaseCpuHigherOrderLayer(name, projection, activation), Resourceful, Optimizable {
 
     override fun acquire(maximumBatchSize: Int) {
         this.projection.acquire(maximumBatchSize)

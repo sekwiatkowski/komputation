@@ -1,27 +1,13 @@
 package com.komputation.cpu.layers.forward.projection
 
-import com.komputation.cpu.layers.BaseCpuForwardLayer
+import com.komputation.cpu.layers.BaseCpuHigherOrderLayer
 import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
 
 class CpuProjectionLayer internal constructor(
     name : String? = null,
     private val weightingLayer: CpuWeightingLayer,
-    private val biasLayer : CpuBiasLayer) : BaseCpuForwardLayer(name), Resourceful, Optimizable {
-
-    override val numberOutputRows
-        get() = this.biasLayer.numberOutputRows
-    override val numberOutputColumns
-        get() = this.biasLayer.numberOutputColumns
-    override val forwardResult
-        get() = this.biasLayer.forwardResult
-
-    override val numberInputRows
-        get() = this.weightingLayer.numberInputRows
-    override val numberInputColumns
-        get() = this.weightingLayer.numberInputColumns
-    override val backwardResult
-        get() = this.weightingLayer.backwardResult
+    private val biasLayer : CpuBiasLayer) : BaseCpuHigherOrderLayer(name, weightingLayer, biasLayer), Resourceful, Optimizable {
 
     fun getWeights() =
         this.weightingLayer.getWeights()

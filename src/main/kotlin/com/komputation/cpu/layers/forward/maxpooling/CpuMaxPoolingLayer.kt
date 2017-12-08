@@ -14,11 +14,9 @@ class CpuMaxPoolingLayer internal constructor(
     private var maxRowIndices = IntArray(0)
 
     override fun acquire(maximumBatchSize: Int) {
-
         super.acquire(maximumBatchSize)
 
         this.maxRowIndices = IntArray(this.numberInputRows)
-
     }
 
     override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = 1
