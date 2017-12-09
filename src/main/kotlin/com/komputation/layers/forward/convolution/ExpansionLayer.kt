@@ -1,12 +1,12 @@
 package com.komputation.layers.forward.convolution
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.convolution.CpuExpansionLayer
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
 import com.komputation.cuda.layers.forward.convolution.CudaExpansionLayer
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
+import jcuda.jcublas.cublasHandle
 
 
 class ExpansionLayer internal constructor(
@@ -23,7 +23,6 @@ class ExpansionLayer internal constructor(
     private val filterLength = this.filterWidth * this.filterHeight
 
     override fun buildForCpu() =
-
         CpuExpansionLayer(
             this.name,
             this.numberInputRows,
@@ -35,7 +34,6 @@ class ExpansionLayer internal constructor(
             this.filterHeight)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
-
         CudaExpansionLayer(
             this.name,
             this.numberInputRows,
@@ -57,7 +55,6 @@ fun expansionLayer(
     numberFilterRowPositions: Int,
     filterWidth: Int,
     filterHeight: Int) =
-
     expansionLayer(null, numberInputRows, numberInputColumns, hasFixedLength, numberFilterRowPositions, filterWidth, filterHeight)
 
 fun expansionLayer(
@@ -68,5 +65,4 @@ fun expansionLayer(
     numberFilterRowPositions: Int,
     filterWidth: Int,
     filterHeight: Int) =
-
     ExpansionLayer(name, numberInputRows, numberInputColumns, hasFixedLength, numberFilterRowPositions, filterWidth, filterHeight)

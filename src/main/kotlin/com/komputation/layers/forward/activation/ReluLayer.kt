@@ -13,11 +13,9 @@ class ReluLayer internal constructor(
     private val hasFixedLength: Boolean) : ActivationLayerInstruction {
 
     override fun buildForCpu() =
-
         CpuReluLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
     override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) =
-
         CudaReluLayer(
             this.name,
             this.numberRows,

@@ -9,7 +9,7 @@ package com.komputation.cpu.functions
         3 4
         5 6
         7 8
- */
+*/
 fun stackRows(heights : IntArray, totalNumberRows : Int, numberColumns : Int, stacked : FloatArray, vararg arrays: FloatArray) {
     var startAtRow = 0
 

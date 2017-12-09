@@ -3,6 +3,7 @@ package com.komputation.layers.forward.recurrent
 import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
+import com.komputation.cpu.layers.recurrent.AllSteps
 import com.komputation.cpu.layers.recurrent.CpuRecurrentLayer
 import com.komputation.cpu.layers.recurrent.ParameterizedSeries
 import com.komputation.cpu.layers.recurrent.Series
@@ -29,6 +30,8 @@ class RecurrentLayer internal constructor(
     private val optimization: OptimizationInstruction? = null) : CpuForwardLayerInstruction {
 
     override fun buildForCpu(): CpuRecurrentLayer {
+        val minimumSteps = if (this.hasFixedLength) this.maximumSteps else 1
+
         val inputWeightingLayerName = concatenateNames(this.name, "input-weighting")
         val inputWeightingLayer = weightingLayer(inputWeightingLayerName, this.inputDimension, this.maximumSteps, this.hasFixedLength, this.hiddenDimension, this.weightInitialization, this.optimization).buildForCpu()
 
@@ -96,7 +99,7 @@ class RecurrentLayer internal constructor(
 
         val recurrentLayer = CpuRecurrentLayer(
             this.name,
-            if (this.hasFixedLength) this.maximumSteps else 1,
+            minimumSteps,
             this.maximumSteps,
             this.hiddenDimension,
             inputWeightingLayer,
@@ -104,7 +107,8 @@ class RecurrentLayer internal constructor(
             previousHiddenStateWeighting,
             additions,
             bias,
-            activation)
+            activation,
+            AllSteps(activation, this.hiddenDimension, minimumSteps, this.maximumSteps))
 
         return recurrentLayer
     }

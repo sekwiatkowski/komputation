@@ -30,25 +30,21 @@ class WeightingLayer internal constructor(
     private val maximumNumberEntries = this.numberInputRows * this.maximumInputColumns
 
     override fun buildForCpu(): CpuWeightingLayer {
-
         val name = concatenateNames(name, "weighting")
         val initialWeights = initializeWeights(this.weightInitializationStrategy, this.numberWeightRows, this.numberWeightColumns, this.maximumNumberEntries)
         val accumulator = DenseAccumulator(this.numberWeightRows * this.numberWeightColumns)
         val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberWeightRows, this.numberWeightColumns)
 
         return CpuWeightingLayer(name, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, this.numberWeightRows, initialWeights, accumulator, updateRule)
-
     }
 
     override fun buildForCuda(context: CudaContext, cublasHandle : cublasHandle): CublasWeightingLayer {
-
         val name = concatenateNames(this.name, "weighting")
 
         val initialWeights = initializeWeights(this.weightInitializationStrategy, this.numberWeightRows, this.numberWeightColumns, this.maximumNumberEntries)
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberWeightRows, this.numberWeightColumns)
 
         return CublasWeightingLayer(name, cublasHandle, this.numberInputRows, this.maximumInputColumns, this.numberOutputRows, initialWeights, updateRule)
-
     }
 
 }

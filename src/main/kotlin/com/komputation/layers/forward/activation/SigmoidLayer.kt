@@ -15,9 +15,8 @@ class SigmoidLayer internal constructor(
     override fun buildForCpu() =
         CpuSigmoidLayer(this.name, this.numberRows, if(this.hasFixedLength) this.numberColumns else 1, this.numberColumns)
 
-    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) : CudaSigmoidLayer {
-
-        return CudaSigmoidLayer(
+    override fun buildForCuda(context : CudaContext, cublasHandle: cublasHandle) =
+        CudaSigmoidLayer(
             this.name,
             this.numberRows,
             this.numberColumns,
@@ -25,8 +24,6 @@ class SigmoidLayer internal constructor(
             { context.createKernel(ForwardKernels.backwardSigmoid()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
-
-    }
 
 }
 

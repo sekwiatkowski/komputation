@@ -6,25 +6,23 @@ import com.komputation.cpu.functions.expandForConvolution
 import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 
 class CpuExpansionLayer internal constructor(
-    name : String? = null,
-    numberInputRows : Int,
-    minimumColumns : Int,
-    maximumColumns : Int,
+    name: String? = null,
+    numberInputRows: Int,
+    minimumColumns: Int,
+    maximumColumns: Int,
     private val numberFilterRowPositions: Int,
     filterLength: Int,
     private val filterWidth: Int,
     private val filterHeight: Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, filterLength, minimumColumns, maximumColumns) {
 
-    private var numberFilterColumnPositionsOverPossibleLengths = IntArray(0)
+    private var numberFilterColumnPositions = -1
 
-    override fun acquire(maximumBatchSize: Int) {
-        this.numberFilterColumnPositionsOverPossibleLengths = IntArray(this.numberPossibleLengths) { index -> computeNumberFilterColumnPositions(this.possibleLengths[index], this.filterWidth) }
-
-        super.acquire(maximumBatchSize)
+    override fun prepare(numberInputColumns: Int) {
+        this.numberFilterColumnPositions * computeNumberFilterColumnPositions(numberInputColumns, this.filterWidth)
     }
 
-    override fun computeNumberOutputColumns(lengthIndex: Int, length : Int) =
-        this.numberFilterColumnPositionsOverPossibleLengths[lengthIndex] * this.numberFilterRowPositions
+    override fun computeNumberOutputColumns(inputLength: Int) =
+        this.numberFilterColumnPositions * this.numberFilterRowPositions
 
     /*
         Ex.:
@@ -48,18 +46,18 @@ class CpuExpansionLayer internal constructor(
             this.filterWidth,
             this.filterHeight,
             this.numberFilterRowPositions,
-            this.numberFilterColumnPositionsOverPossibleLengths[this.lengthIndex],
+            this.numberFilterColumnPositions,
             forwardResult)
     }
 
     // d expansion / d input
-    override fun computeBackwardResult(withinBatch: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns : Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
         backwardExpansionForConvolution(
             this.numberInputRows,
             backwardResult,
             this.filterHeight,
             this.numberFilterRowPositions,
-            this.numberFilterColumnPositionsOverPossibleLengths[this.lengthIndex],
+            this.numberFilterColumnPositions,
             chain,
             this.numberOutputRows)
     }

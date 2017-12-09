@@ -3,6 +3,7 @@ package com.komputation.cpu.layers.forward.normalization
 import com.komputation.cpu.functions.activation.backwardNormalization
 import com.komputation.cpu.functions.activation.normalize
 import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import com.komputation.cpu.layers.VariableLengthFloatArray
 import com.komputation.cpu.layers.forward.activation.CpuActivationLayer
 
 /*
@@ -17,25 +18,19 @@ class CpuNormalizationLayer internal constructor(
     minimumColumns : Int,
     maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private var sumsOverPossibleLengths = emptyArray<FloatArray>()
+    private var sumStore = VariableLengthFloatArray(numberRows, minimumColumns, this.possibleLengths, { inputLength -> computeNumberOutputColumns(inputLength) })
     private var sum = FloatArray(0)
 
-    override fun acquire(maximumBatchSize: Int) {
-        super.acquire(maximumBatchSize)
-
-        this.sumsOverPossibleLengths = Array(this.numberPossibleLengths) { index -> FloatArray(this.numberInputRows * this.possibleLengths[index]) }
-    }
-
-    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = length
+    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
-        this.sum = this.sumsOverPossibleLengths[this.lengthIndex]
+        this.sum = this.sumStore.get(numberInputColumns)
 
         normalize(this.numberInputRows, numberInputColumns, input, this.sum, forwardResult)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
-        backwardNormalization(this.numberInputRows, this.numberInputColumns, chain, forwardResult, this.sum, backwardResult)
+    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns : Int, forwardResult : FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        backwardNormalization(this.numberInputRows, numberInputColumns, chain, forwardResult, this.sum, backwardResult)
     }
 
 }

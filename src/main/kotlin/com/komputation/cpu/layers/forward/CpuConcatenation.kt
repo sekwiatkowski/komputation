@@ -4,7 +4,6 @@ import com.komputation.cpu.functions.splitRows
 import com.komputation.cpu.functions.stackRows
 import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 import com.komputation.cpu.layers.CpuForwardLayer
-import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
 
 class CpuConcatenation internal constructor(
@@ -14,23 +13,14 @@ class CpuConcatenation internal constructor(
     maximumColumns : Int,
     private val heights: IntArray,
     private val width : Int,
-    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns), Resourceful, Optimizable {
+    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns), Optimizable {
 
     private val numberLayers = layers.size
     private val individualResults = Array(this.numberLayers) { FloatArray(0) }
 
-    private var chainSplit = emptyArray<FloatArray>()
+    private val chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
 
-    override fun acquire(maximumBatchSize: Int) {
-        super.acquire(maximumBatchSize)
-
-        this.chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
-    }
-
-    override fun release() {
-    }
-
-    override fun computeNumberOutputColumns(lengthIndex: Int, length: Int) = this.width
+    override fun computeNumberOutputColumns(inputLength: Int) = this.width
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         for (indexLayer in (0 until this.numberLayers)) {
@@ -40,8 +30,8 @@ class CpuConcatenation internal constructor(
         stackRows(this.heights, this.numberOutputRows, this.width, forwardResult, *this.individualResults)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
-        splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
+    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns : Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        splitRows(this.numberOutputRows, numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
 
         val firstLayer = this.layers[0]
         firstLayer.backward(withinBatch, this.chainSplit[0])

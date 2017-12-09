@@ -63,7 +63,6 @@ fun denseLayer(
     biasInitializationStrategy: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimizationStrategy: OptimizationInstruction? = null) =
-
     denseLayer(
         null,
         inputDimension,
@@ -83,7 +82,6 @@ fun denseLayer(
     biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-
     denseLayer(
         name,
         inputDimension,
@@ -102,7 +100,6 @@ fun denseLayer(
     biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-
     denseLayer(
         null,
         numberInputRows,
@@ -122,7 +119,6 @@ fun denseLayer(
     biasInitialization: InitializationStrategy,
     activationFunction: ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-
     DenseLayer(
         name,
         numberInputRows,

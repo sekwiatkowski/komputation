@@ -37,7 +37,6 @@ class ProjectionLayer internal constructor(
     private val maximumNumberEntries = this.numberInputRows * this.maximumInputColumns
 
     override fun buildForCpu(): CpuProjectionLayer {
-
         val weightingName = concatenateNames(name, "weighting")
         val weights = initializeWeights(this.weightInitializationStrategy, this.numberWeightRows, this.numberWeightColumns, this.maximumNumberEntries)
         val weightAccumulator = DenseAccumulator(this.numberWeightRows * this.numberWeightColumns)
@@ -54,11 +53,9 @@ class ProjectionLayer internal constructor(
         val biasLayer = CpuBiasLayer(biasName, this.numberWeightRows, this.minimumInputColumns, this.maximumInputColumns, bias, biasAccumulator, biasUpdateRule)
 
         return CpuProjectionLayer(this.name, weightingLayer, biasLayer)
-
     }
 
     override fun buildForCuda(context: CudaContext, cublasHandle : cublasHandle): CublasProjectionLayer {
-
         val initialWeights = initializeWeights(this.weightInitializationStrategy, this.numberWeightRows, this.numberWeightColumns, this.maximumNumberEntries)
         val weightUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberWeightRows, this.numberWeightColumns)
 

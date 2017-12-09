@@ -29,4 +29,6 @@ open class Series internal constructor(
     fun backwardStep(withinBatch: Int, step: Int, chain: FloatArray) =
         this.steps[step].backward(withinBatch, chain)
 
+    fun getForwardResult(step : Int) =
+        this.steps[step].forwardResult
 }

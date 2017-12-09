@@ -11,15 +11,9 @@ class CpuMaxPoolingLayer internal constructor(
     minimumInputColumns : Int,
     maximumInputColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, numberInputRows, minimumInputColumns, maximumInputColumns) {
 
-    private var maxRowIndices = IntArray(0)
+    private val maxRowIndices = IntArray(this.numberInputRows)
 
-    override fun acquire(maximumBatchSize: Int) {
-        super.acquire(maximumBatchSize)
-
-        this.maxRowIndices = IntArray(this.numberInputRows)
-    }
-
-    override fun computeNumberOutputColumns(lengthIndex : Int, length: Int) = 1
+    override fun computeNumberOutputColumns(inputLength: Int) = 1
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         findMaxIndicesInRows(input, this.numberInputRows, numberInputColumns, this.maxRowIndices)
@@ -27,7 +21,7 @@ class CpuMaxPoolingLayer internal constructor(
         selectEntries(input, this.maxRowIndices, forwardResult, this.numberInputRows)
     }
 
-    override fun computeBackwardResult(withinBatch: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns : Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
         Arrays.fill(backwardResult, 0f)
 
         for (indexRow in 0 until this.numberInputRows) {

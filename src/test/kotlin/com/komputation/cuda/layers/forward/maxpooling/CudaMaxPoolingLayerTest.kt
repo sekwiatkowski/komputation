@@ -1,16 +1,16 @@
 package com.komputation.cuda.layers.forward.maxpooling
 
-import jcuda.Pointer
-import jcuda.jcublas.cublasHandle
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.setFloatArray
 import com.komputation.cuda.setIntArray
 import com.komputation.cuda.setUpCudaContext
 import com.komputation.layers.forward.convolution.MaxPoolingLayer
 import com.komputation.layers.forward.convolution.maxPoolingLayer
+import jcuda.Pointer
+import jcuda.jcublas.cublasHandle
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.util.*
 
 class CudaMaxPoolingLayerTest {
@@ -283,7 +283,6 @@ class CudaMaxPoolingLayerTest {
 
             }
 
-            cpuLayer.acquire(1)
             cudaLayer.acquire(1)
 
             val cpuResult = cpuLayer.forward(0, numberColumns, input, false)
@@ -302,7 +301,6 @@ class CudaMaxPoolingLayerTest {
 
             }
 
-            cpuLayer.release()
             cudaLayer.release()
 
             cudaContext.destroy()

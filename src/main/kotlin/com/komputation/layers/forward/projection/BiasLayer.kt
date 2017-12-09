@@ -1,6 +1,5 @@
 package com.komputation.layers.forward.projection
 
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
@@ -11,6 +10,7 @@ import com.komputation.initialization.initializeColumnVector
 import com.komputation.layers.CpuForwardLayerInstruction
 import com.komputation.layers.CudaForwardLayerInstruction
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 class BiasLayer internal constructor(
     private val name : String?,
@@ -24,7 +24,6 @@ class BiasLayer internal constructor(
     private val maximumInputColumns = this.numberInputColumns
 
     override fun buildForCpu(): CpuBiasLayer {
-
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val accumulator = DenseAccumulator(bias.size)
         val updateRule = this.optimizationStrategy?.buildForCpu()?.invoke(this.numberInputRows, 1)
@@ -32,11 +31,9 @@ class BiasLayer internal constructor(
         val layer = CpuBiasLayer(this.name, this.numberInputRows, this.minimumInputColumns, this.maximumInputColumns, bias, accumulator, updateRule)
 
         return layer
-
     }
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CublasBiasLayer {
-
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberInputRows, 1)
 
@@ -52,7 +49,6 @@ class BiasLayer internal constructor(
             context.maximumNumberOfThreadsPerBlock)
 
         return layer
-
     }
 
 }
@@ -63,7 +59,6 @@ fun biasLayer(
     hasFixedLength : Boolean,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
-
     biasLayer(null, numberInputRows, numberInputColumns, hasFixedLength, initializationStrategy, optimizationStrategy)
 
 fun biasLayer(
@@ -73,5 +68,4 @@ fun biasLayer(
     hasFixedLength : Boolean,
     initializationStrategy: InitializationStrategy,
     optimizationStrategy : OptimizationInstruction? = null) =
-
     BiasLayer(name, numberInputRows, numberInputColumns, hasFixedLength, initializationStrategy, optimizationStrategy)

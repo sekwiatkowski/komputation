@@ -16,11 +16,9 @@ class MaxPoolingLayer internal constructor (
     private val symbolForUnusedColumns : Float) : CpuForwardLayerInstruction, CudaForwardLayerInstruction {
 
     override fun buildForCpu() =
-
         CpuMaxPoolingLayer(this.name, this.numberRows, this.minimumColumns, this.maximumColumns)
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
-
         CudaMaxPoolingLayer(
             this.name,
             this.numberRows,
@@ -34,9 +32,7 @@ class MaxPoolingLayer internal constructor (
 }
 
 fun maxPoolingLayer(numberRows : Int, numberColumns: Int) =
-
     maxPoolingLayer(null, numberRows, numberColumns)
 
 fun maxPoolingLayer(name : String? = null, numberRows : Int, numberColumns: Int) =
-
     MaxPoolingLayer(name, numberRows, numberColumns, numberColumns, Float.NaN)
