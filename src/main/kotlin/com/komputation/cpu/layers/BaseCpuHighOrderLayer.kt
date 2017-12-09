@@ -2,8 +2,8 @@ package com.komputation.cpu.layers
 
 abstract class BaseCpuHigherOrderLayer(
     val name : String?,
-    private val firstLayer : CpuForwardLayer,
-    private val lastLayer : CpuForwardLayer) : CpuForwardLayer {
+    private val firstLayer : CpuBackwardState,
+    private val lastLayer : CpuForwardState) : CpuForwardLayer {
 
     override val numberOutputRows
         get() = this.lastLayer.numberOutputRows

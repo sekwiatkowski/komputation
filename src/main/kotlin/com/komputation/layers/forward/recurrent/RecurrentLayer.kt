@@ -4,6 +4,7 @@ import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import com.komputation.cpu.layers.recurrent.CpuRecurrentLayer
+import com.komputation.cpu.layers.recurrent.ParameterizedSeries
 import com.komputation.cpu.layers.recurrent.Series
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.initialization.InitializationStrategy
@@ -37,9 +38,8 @@ class RecurrentLayer internal constructor(
         val previousHiddenStateWeightingName= concatenateNames(this.name, "previous-hidden-state-weighting")
 
         val weightSeriesAccumulator = DenseAccumulator(weights.size)
-        val previousHiddenStateWeighting = Series(
+        val previousHiddenStateWeighting = ParameterizedSeries(
             previousHiddenStateWeightingName,
-            weights,
             Array(this.maximumSteps) { index ->
                 CpuWeightingLayer(
                     concatenateNames(previousHiddenStateWeightingName, index.toString()),
@@ -50,6 +50,7 @@ class RecurrentLayer internal constructor(
                     weights,
                     weightSeriesAccumulator)
             },
+            weights,
             weightSeriesAccumulator,
             DenseAccumulator(weights.size),
             this.optimization?.buildForCpu()?.invoke(this.hiddenDimension, this.hiddenDimension))
@@ -60,9 +61,8 @@ class RecurrentLayer internal constructor(
                 val bias = initializeColumnVector(this.biasInitialization, this.hiddenDimension)
 
                 val biasAccumulator = DenseAccumulator(bias.size)
-                Series(
+                ParameterizedSeries(
                     biasName,
-                    bias,
                     Array(this.maximumSteps) { index ->
                         CpuBiasLayer(
                             concatenateNames(biasName, index.toString()),
@@ -72,6 +72,7 @@ class RecurrentLayer internal constructor(
                             bias,
                             biasAccumulator)
                     },
+                    bias,
                     biasAccumulator,
                     DenseAccumulator(bias.size),
                     this.optimization?.buildForCpu()?.invoke(this.hiddenDimension, 1))
@@ -85,10 +86,13 @@ class RecurrentLayer internal constructor(
             CpuAdditionCombination(additionName, this.hiddenDimension, 1)
         }
 
-        val activations = Array(this.maximumSteps) { index ->
-            val activationName = concatenateNames(this.name, "activation-$index")
-            activationLayer(activationName, this.activation, this.hiddenDimension, 1, this.hasFixedLength).buildForCpu()
-        }
+        val activation = Series(
+            concatenateNames(this.name, "activation"),
+            Array(this.maximumSteps) { index ->
+                val activationName = concatenateNames(this.name, "activation-$index")
+                activationLayer(activationName, this.activation, this.hiddenDimension, 1, this.hasFixedLength).buildForCpu()
+            }
+        )
 
         val recurrentLayer = CpuRecurrentLayer(
             this.name,
@@ -100,7 +104,7 @@ class RecurrentLayer internal constructor(
             previousHiddenStateWeighting,
             additions,
             bias,
-            activations)
+            activation)
 
         return recurrentLayer
     }

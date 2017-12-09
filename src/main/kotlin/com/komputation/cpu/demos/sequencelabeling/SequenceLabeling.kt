@@ -18,7 +18,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = uniformInitialization(random, -0.01f, 0.01f)
-    val optimization = stochasticGradientDescent(0.001f)
+    val optimization = stochasticGradientDescent(0.1f)
 
     val embeddingDimension = 3
 
@@ -40,7 +40,7 @@ fun main(args: Array<String>) {
         .training(
             input,
             targets,
-            10_000,
+            100,
             crossEntropyLoss(numberCategories, numberSteps),
             printLoss
         )

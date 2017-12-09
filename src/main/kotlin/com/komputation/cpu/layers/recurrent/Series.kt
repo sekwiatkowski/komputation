@@ -1,37 +1,32 @@
 package com.komputation.cpu.layers.recurrent
 
 import com.komputation.cpu.layers.CpuForwardLayer
-import com.komputation.cpu.optimization.DenseAccumulator
-import com.komputation.cpu.optimization.UpdateRule
-import com.komputation.cpu.optimization.updateDensely
+import com.komputation.layers.Resourceful
 
-class Series internal constructor(
+open class Series internal constructor(
     private val name : String?,
-    private val sharedParameter: FloatArray,
-    private val steps: Array<CpuForwardLayer>,
-    private val seriesAccumulator: DenseAccumulator,
-    private val batchAccumulator: DenseAccumulator,
-    private val updateRule: UpdateRule? = null) {
+    private val steps: Array<CpuForwardLayer>) : Resourceful {
 
-    private val numberEntries = sharedParameter.size
+    override fun acquire(maximumBatchSize: Int) {
+        this.steps
+            .filterIsInstance<Resourceful>()
+            .forEach { step ->
+                step.acquire(maximumBatchSize)
+            }
+    }
+
+    override fun release() {
+        this.steps
+            .filterIsInstance<Resourceful>()
+            .forEach { step ->
+                step.release()
+            }
+    }
 
     fun forwardStep(withinBatch : Int, step : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean) =
         this.steps[step].forward(withinBatch, numberInputColumns, input, isTraining)
 
     fun backwardStep(withinBatch: Int, step: Int, chain: FloatArray) =
         this.steps[step].backward(withinBatch, chain)
-
-    fun backwardSeries() {
-        this.batchAccumulator.accumulate(this.seriesAccumulator.getAccumulation())
-        this.seriesAccumulator.reset()
-    }
-
-    fun optimize(batchSize : Int) {
-        if (this.updateRule != null) {
-            updateDensely(this.sharedParameter, this.batchAccumulator.getAccumulation(), this.numberEntries, batchSize, this.updateRule)
-        }
-
-        this.batchAccumulator.reset()
-    }
 
 }

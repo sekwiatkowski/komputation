@@ -58,20 +58,16 @@ class CpuConcatenation internal constructor(
             val individualBackwardResult = layer.backwardResult
 
             for (index in 0 until individualBackwardResult.size) {
-
                 backwardResult[index] += individualBackwardResult[index]
-
             }
         }
     }
 
     override fun optimize(batchSize : Int) {
         for (layer in this.layers) {
-
             if (layer is Optimizable) {
                 layer.optimize(batchSize)
             }
-
         }
     }
 
