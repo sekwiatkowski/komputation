@@ -30,7 +30,10 @@ Komputation is available through Maven Central:
   - [Convolution](./src/main/kotlin/com/komputation/layers/forward/convolution/ConvolutionLayer.kt)
   - [Max-pooling](./src/main/kotlin/com/komputation/layers/forward/convolution/MaxPoolingLayer.kt)
 
-- [Simple recurrent unit](./src/main/kotlin/com/komputation/cpu/layers/forward/units/SimpleRecurrentUnit.kt)
+- Recurrent neural networks:
+  - [Recurrent layer](./src/main/kotlin/com/komputation/layers/recurrent/RecurrentLayer.kt)
+    - [All steps](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/AllSteps.kt)
+    - [Last step](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/LastStep.kt)
 
 - [Dropout](./src/main/kotlin/com/komputation/layers/forward/dropout/DropoutLayer.kt)
 
@@ -52,6 +55,10 @@ Komputation is available through Maven Central:
   - [AND](./src/main/kotlin/com/komputation/cpu/demos/and/AndSigmoid.kt)
   - [Negation](./src/main/kotlin/com/komputation/cpu/demos/negation/Negation.kt)
   - [XOR](./src/main/kotlin/com/komputation/cpu/demos/xor/Xor.kt)
+
+- Total:
+  - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/total/FixedLengthRunningTotal.kt)
+  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/total/VariableLengthRunningTotal.kt)
 
 - Running total:
   - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)

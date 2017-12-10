@@ -1,7 +1,7 @@
-package com.komputation.cpu.demos.runningtotal
+package com.komputation.cpu.demos.total
 
 import com.komputation.cpu.network.Network
-import com.komputation.demos.runningtotal.RunningTotalData
+import com.komputation.demos.total.TotalData
 import com.komputation.initialization.zeroInitialization
 import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
@@ -17,26 +17,23 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = zeroInitialization()
-    val optimization = stochasticGradientDescent(0.001f)
+    val optimization = stochasticGradientDescent(0.01f)
 
-    val minimumLength = 2
-    val maximumLength = 5
+    val steps = 2
 
-    val input = RunningTotalData.generateVariableLengthInput(random, minimumLength, maximumLength, 0, 10, 10_000)
-    val targets = RunningTotalData.generateTargets(input)
-
-    val hasFixedLength = false
+    val input = TotalData.generateFixedLengthInput(random, steps, 0, 10, 10_000)
+    val targets = TotalData.generateTargets(input)
 
     Network(
             1,
-            inputLayer(1, maximumLength),
-            recurrentLayer(maximumLength, hasFixedLength, 1, 1, ResultExtraction.AllSteps, initialization, null, ActivationFunction.Identity, optimization)
+            inputLayer(1, steps),
+            recurrentLayer(steps, true, 1, 1, ResultExtraction.LastStep, initialization, initialization, ActivationFunction.Identity, optimization)
         )
         .training(
             input,
             targets,
             2,
-            squaredLoss(1, maximumLength, hasFixedLength),
+            squaredLoss(1, 1, true),
             printLoss
         )
         .run()

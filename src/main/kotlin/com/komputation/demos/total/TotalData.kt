@@ -1,11 +1,11 @@
-package com.komputation.demos.runningtotal
+package com.komputation.demos.total
 
 import com.komputation.matrix.FloatMatrix
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
 import java.util.*
 
-object RunningTotalData {
+object TotalData {
 
     fun generateFixedLengthInput(random: Random, length: Int, from : Int, to : Int, numberExamples : Int): Array<Matrix> {
         val inputRange = to - from
@@ -34,12 +34,7 @@ object RunningTotalData {
         Array(input.size) { indexTarget ->
             val vector = (input[indexTarget] as FloatMatrix).entries
 
-            var runningSum = 0f
-
-            FloatArray(vector.size) { indexEntry ->
-                runningSum += vector[indexEntry]
-                runningSum
-            }
+            floatArrayOf(vector.sum())
         }
 
 }

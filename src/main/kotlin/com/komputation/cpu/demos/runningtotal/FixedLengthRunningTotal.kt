@@ -5,7 +5,8 @@ import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.zeroInitialization
 import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.recurrent.recurrentLayer
+import com.komputation.layers.recurrent.ResultExtraction
+import com.komputation.layers.recurrent.recurrentLayer
 import com.komputation.loss.printLoss
 import com.komputation.loss.squaredLoss
 import com.komputation.optimization.stochasticGradientDescent
@@ -28,7 +29,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             inputLayer(1, steps),
-            recurrentLayer(steps, hasFixedLength, 1, 1, initialization, null, ActivationFunction.Identity, optimization)
+            recurrentLayer(steps, hasFixedLength, 1, 1, ResultExtraction.AllSteps, initialization, null, ActivationFunction.Identity, optimization)
         )
         .training(
             input,

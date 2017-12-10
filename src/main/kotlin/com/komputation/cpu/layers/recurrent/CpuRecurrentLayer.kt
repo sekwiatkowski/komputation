@@ -1,6 +1,5 @@
 package com.komputation.cpu.layers.recurrent
 
-import com.komputation.cpu.functions.add
 import com.komputation.cpu.functions.getColumn
 import com.komputation.cpu.functions.setColumn
 import com.komputation.cpu.layers.BaseCpuHigherOrderLayer
@@ -9,6 +8,9 @@ import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.computeNumberPossibleLengths
 import com.komputation.cpu.layers.computePossibleLengths
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
+import com.komputation.cpu.layers.recurrent.extraction.ResultExtractionStrategy
+import com.komputation.cpu.layers.recurrent.series.ParameterizedSeries
+import com.komputation.cpu.layers.recurrent.series.Series
 import com.komputation.optimization.Optimizable
 
 class CpuRecurrentLayer(
@@ -22,10 +24,10 @@ class CpuRecurrentLayer(
     private val additions : Array<CpuAdditionCombination>,
     private val bias: ParameterizedSeries?,
     private val activation: Series,
-    private val resultExtraction: AllSteps) : BaseCpuHigherOrderLayer(name, inputWeighting, resultExtraction), Optimizable {
+    private val resultExtraction: ResultExtractionStrategy) : BaseCpuHigherOrderLayer(name, inputWeighting, resultExtraction), Optimizable {
 
     private val stepWeightedInput = FloatArray(this.hiddenDimension)
-    private val stepChain = FloatArray(this.hiddenDimension)
+
 
     override fun forward(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
         val weightedInput = this.inputWeighting.forward(withinBatch, numberInputColumns, input, isTraining)
@@ -85,14 +87,11 @@ class CpuRecurrentLayer(
         val lastStep = this.numberInputColumns - 1
 
         for (step in lastStep downTo 0) {
-            getColumn(chain, step, this.hiddenDimension, this.stepChain)
 
-            if(step < lastStep) {
-                add(this.stepChain, previousBackwardPreviousHiddenState!!, this.stepChain, this.hiddenDimension)
-            }
+            val stepChain = this.resultExtraction.backwardStep(step, chain, previousBackwardPreviousHiddenState)
 
             // dh_t / d(Wx_t + Uh_(t-1) + b) = df(Wx_t + Uh_(t-1) + b) / d(Wx_t + Uh_(t-1) + b)
-            val stepBackwardPreActivation = this.activation.backwardStep(withinBatch, step, this.stepChain)
+            val stepBackwardPreActivation = this.activation.backwardStep(withinBatch, step, stepChain)
 
             // d(Wx_t + Uh_(t-1) + b) / dUh_(t-1)
             val backwardPreviousHiddenState = this.previousHiddenStateWeighting.backwardStep(withinBatch, step, stepBackwardPreActivation)

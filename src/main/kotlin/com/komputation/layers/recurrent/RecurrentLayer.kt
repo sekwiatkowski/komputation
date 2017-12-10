@@ -1,12 +1,13 @@
-package com.komputation.layers.forward.recurrent
+package com.komputation.layers.recurrent
 
 import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
-import com.komputation.cpu.layers.recurrent.AllSteps
 import com.komputation.cpu.layers.recurrent.CpuRecurrentLayer
-import com.komputation.cpu.layers.recurrent.ParameterizedSeries
-import com.komputation.cpu.layers.recurrent.Series
+import com.komputation.cpu.layers.recurrent.extraction.AllSteps
+import com.komputation.cpu.layers.recurrent.extraction.LastStep
+import com.komputation.cpu.layers.recurrent.series.ParameterizedSeries
+import com.komputation.cpu.layers.recurrent.series.Series
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeColumnVector
@@ -18,12 +19,18 @@ import com.komputation.layers.forward.activation.activationLayer
 import com.komputation.layers.forward.projection.weightingLayer
 import com.komputation.optimization.OptimizationInstruction
 
+enum class ResultExtraction {
+    AllSteps,
+    LastStep
+}
+
 class RecurrentLayer internal constructor(
     private val name : String?,
     private val maximumSteps : Int,
     private val hasFixedLength : Boolean,
     private val inputDimension : Int,
     private val hiddenDimension : Int,
+    private val resultExtraction : ResultExtraction,
     private val weightInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
     private val activation : ActivationFunction,
@@ -97,6 +104,11 @@ class RecurrentLayer internal constructor(
             }
         )
 
+        val resultExtraction = when(this.resultExtraction) {
+            ResultExtraction.AllSteps -> AllSteps(activation, this.hiddenDimension, minimumSteps, this.maximumSteps)
+            ResultExtraction.LastStep -> LastStep(activation, this.hiddenDimension)
+        }
+
         val recurrentLayer = CpuRecurrentLayer(
             this.name,
             minimumSteps,
@@ -108,7 +120,7 @@ class RecurrentLayer internal constructor(
             additions,
             bias,
             activation,
-            AllSteps(activation, this.hiddenDimension, minimumSteps, this.maximumSteps))
+            resultExtraction)
 
         return recurrentLayer
     }
@@ -119,11 +131,12 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension : Int,
     hiddenDimension: Int,
+    resultExtraction : ResultExtraction,
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activation : ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, weightInitialization, biasInitialization, activation, optimization)
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
 
 fun recurrentLayer(
     name : String? = null,
@@ -131,8 +144,9 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension: Int,
     hiddenDimension: Int,
+    resultExtraction : ResultExtraction,
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activation : ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, weightInitialization, biasInitialization, activation, optimization)
+    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, resultExtraction, weightInitialization, biasInitialization, activation, optimization)

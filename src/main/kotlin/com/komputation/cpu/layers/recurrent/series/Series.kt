@@ -1,4 +1,4 @@
-package com.komputation.cpu.layers.recurrent
+package com.komputation.cpu.layers.recurrent.series
 
 import com.komputation.cpu.layers.CpuForwardLayer
 import com.komputation.layers.Resourceful

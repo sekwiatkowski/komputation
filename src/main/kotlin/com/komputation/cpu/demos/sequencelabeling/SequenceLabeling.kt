@@ -7,7 +7,8 @@ import com.komputation.initialization.uniformInitialization
 import com.komputation.layers.entry.lookupLayer
 import com.komputation.layers.forward.activation.ActivationFunction
 import com.komputation.layers.forward.activation.softmaxLayer
-import com.komputation.layers.forward.recurrent.recurrentLayer
+import com.komputation.layers.recurrent.ResultExtraction
+import com.komputation.layers.recurrent.recurrentLayer
 import com.komputation.loss.crossEntropyLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
@@ -34,7 +35,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             lookupLayer(embeddings, numberSteps, true, embeddingDimension, optimization),
-            recurrentLayer(numberSteps, true, embeddingDimension, 3, initialization, null, ActivationFunction.ReLU, optimization),
+            recurrentLayer(numberSteps, true, embeddingDimension, 3, ResultExtraction.AllSteps, initialization, null, ActivationFunction.ReLU, optimization),
             softmaxLayer(numberCategories, numberSteps)
         )
         .training(
