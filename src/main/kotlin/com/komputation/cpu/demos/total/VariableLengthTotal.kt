@@ -1,5 +1,6 @@
 package com.komputation.cpu.demos.total
 
+import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
 import com.komputation.demos.total.TotalData
 import com.komputation.initialization.zeroInitialization
@@ -30,7 +31,7 @@ fun main(args: Array<String>) {
     val network = Network(
         1,
         inputLayer(1, maximumLength),
-        recurrentLayer(maximumLength, hasFixedLength, 1, 1, ResultExtraction.LastStep, initialization, null, ActivationFunction.Identity, optimization)
+        recurrentLayer(maximumLength, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.LastStep, initialization, null, ActivationFunction.Identity, optimization)
     )
     network
         .training(

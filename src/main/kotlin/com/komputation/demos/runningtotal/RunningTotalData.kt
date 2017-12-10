@@ -42,4 +42,21 @@ object RunningTotalData {
             }
         }
 
+    fun generateReversedTargets(input : Array<Matrix>) =
+        Array(input.size) { indexTarget ->
+            val inputEntries = (input[indexTarget] as FloatMatrix).entries
+            val reversedInputEntries = inputEntries.reversedArray()
+
+            var runningSum = 0f
+
+            val target = FloatArray(reversedInputEntries.size) { indexEntry ->
+                runningSum += reversedInputEntries[indexEntry]
+                runningSum
+            }
+
+            val reversedTarget = target.reversedArray()
+
+            reversedTarget
+        }
+
 }

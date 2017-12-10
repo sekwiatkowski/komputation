@@ -10,21 +10,15 @@ class CpuBackwardPropagator(
     private val numberLayers = this.layers.size
 
     fun backward(withinBatch: Int, lossGradient: FloatArray) : FloatArray {
-
         var chain = lossGradient
 
         for(indexLayer in this.numberLayers - 1 downTo 0) {
-
-            val layer = this.layers[indexLayer]
-
-            chain = layer.backward(withinBatch, chain)
-
+            chain = this.layers[indexLayer].backward(withinBatch, chain)
         }
 
         val result = this.entryPoint.backward(chain)
 
         return result
-
     }
 
 

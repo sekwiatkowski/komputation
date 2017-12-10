@@ -1,8 +1,8 @@
-package com.komputation.cpu.demos.total
+package com.komputation.cpu.demos.runningtotal.forward
 
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
-import com.komputation.demos.total.TotalData
+import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.zeroInitialization
 import com.komputation.layers.entry.inputLayer
 import com.komputation.layers.forward.activation.ActivationFunction
@@ -18,23 +18,25 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = zeroInitialization()
-    val optimization = stochasticGradientDescent(0.01f)
+    val optimization = stochasticGradientDescent(0.001f)
 
     val steps = 2
 
-    val input = TotalData.generateFixedLengthInput(random, steps, 0, 10, 10_000)
-    val targets = TotalData.generateTargets(input)
+    val input = RunningTotalData.generateFixedLengthInput(random, steps, 0, 10, 10_000)
+    val targets = RunningTotalData.generateTargets(input)
+
+    val hasFixedLength = true
 
     Network(
             1,
             inputLayer(1, steps),
-            recurrentLayer(steps, true, 1, 1, Direction.Forward, ResultExtraction.LastStep, initialization, initialization, ActivationFunction.Identity, optimization)
+            recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, initialization, null, ActivationFunction.Identity, optimization)
         )
         .training(
             input,
             targets,
             2,
-            squaredLoss(1, 1, true),
+            squaredLoss(1, steps, hasFixedLength),
             printLoss
         )
         .run()

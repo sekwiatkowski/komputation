@@ -1,5 +1,6 @@
 package com.komputation.cpu.demos.increment
 
+import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
 import com.komputation.demos.increment.IncrementData
 import com.komputation.initialization.zeroInitialization
@@ -29,7 +30,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             inputLayer(1, steps),
-            recurrentLayer(steps, hasFixedLength, 1, 1, ResultExtraction.AllSteps, initialization, initialization, ActivationFunction.Identity, optimization)
+            recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, initialization, initialization, ActivationFunction.Identity, optimization)
         )
         .training(
             input,

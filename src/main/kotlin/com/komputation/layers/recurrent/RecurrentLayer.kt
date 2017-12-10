@@ -4,6 +4,7 @@ import com.komputation.cpu.layers.combination.CpuAdditionCombination
 import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import com.komputation.cpu.layers.recurrent.CpuRecurrentLayer
+import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.layers.recurrent.extraction.AllSteps
 import com.komputation.cpu.layers.recurrent.extraction.LastStep
 import com.komputation.cpu.layers.recurrent.series.ParameterizedSeries
@@ -30,6 +31,7 @@ class RecurrentLayer internal constructor(
     private val hasFixedLength : Boolean,
     private val inputDimension : Int,
     private val hiddenDimension : Int,
+    private val direction: Direction,
     private val resultExtraction : ResultExtraction,
     private val weightInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
@@ -106,7 +108,7 @@ class RecurrentLayer internal constructor(
 
         val resultExtraction = when(this.resultExtraction) {
             ResultExtraction.AllSteps -> AllSteps(activation, this.hiddenDimension, minimumSteps, this.maximumSteps)
-            ResultExtraction.LastStep -> LastStep(activation, this.hiddenDimension)
+            ResultExtraction.LastStep -> LastStep(activation, this.hiddenDimension, this.direction == Direction.Backward)
         }
 
         val recurrentLayer = CpuRecurrentLayer(
@@ -115,12 +117,13 @@ class RecurrentLayer internal constructor(
             this.maximumSteps,
             this.hiddenDimension,
             inputWeightingLayer,
+            direction,
+            resultExtraction,
             initialState,
             previousHiddenStateWeighting,
             additions,
             bias,
-            activation,
-            resultExtraction)
+            activation)
 
         return recurrentLayer
     }
@@ -131,12 +134,13 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension : Int,
     hiddenDimension: Int,
+    direction : Direction,
     resultExtraction : ResultExtraction,
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activation : ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, direction, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
 
 fun recurrentLayer(
     name : String? = null,
@@ -144,9 +148,10 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension: Int,
     hiddenDimension: Int,
+    direction : Direction,
     resultExtraction : ResultExtraction,
     weightInitialization: InitializationStrategy,
     biasInitialization: InitializationStrategy?,
     activation : ActivationFunction,
     optimization: OptimizationInstruction? = null) =
-    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
+    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, direction, resultExtraction, weightInitialization, biasInitialization, activation, optimization)

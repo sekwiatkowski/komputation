@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.11.1</version>
+    <version>0.11.2</version>
 </dependency>
 ```
 
@@ -61,8 +61,12 @@ Komputation is available through Maven Central:
   - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/total/VariableLengthRunningTotal.kt)
 
 - Running total:
-  - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/FixedLengthRunningTotal.kt)
-  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/VariableLengthRunningTotal.kt)
+  - Forward:
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/forward/FixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/forward/VariableLengthRunningTotal.kt)
+  - Backward:
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardFixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardVariableLengthRunningTotal.kt)
 
 - [Increment](./src/main/kotlin/com/komputation/cpu/demos/increment/Increment.kt)
 

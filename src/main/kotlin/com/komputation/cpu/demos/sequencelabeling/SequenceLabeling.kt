@@ -1,5 +1,6 @@
 package com.komputation.cpu.demos.sequencelabeling
 
+import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
 import com.komputation.demos.sequencelabeling.SequenceLabelingData
 import com.komputation.initialization.initializeColumnVector
@@ -35,7 +36,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             lookupLayer(embeddings, numberSteps, true, embeddingDimension, optimization),
-            recurrentLayer(numberSteps, true, embeddingDimension, 3, ResultExtraction.AllSteps, initialization, null, ActivationFunction.ReLU, optimization),
+            recurrentLayer(numberSteps, true, embeddingDimension, 3, Direction.Forward, ResultExtraction.AllSteps, initialization, null, ActivationFunction.ReLU, optimization),
             softmaxLayer(numberCategories, numberSteps)
         )
         .training(

@@ -90,6 +90,7 @@ private fun couldBeResourceful(member : Any, memberClass: Class<*>): Boolean {
     val excluded =
         member is Function<*> ||
         memberClass.isPrimitive ||
+        memberClass.isEnum ||
         (memberClass.componentType != null && memberClass.componentType.isPrimitive) ||
         (memberClass.canonicalName != null && setOf("java", "kotlin", "org.jblas").any { memberClass.canonicalName.startsWith(it) })
 

@@ -1,5 +1,6 @@
-package com.komputation.cpu.demos.runningtotal
+package com.komputation.cpu.demos.runningtotal.backward
 
+import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
 import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.zeroInitialization
@@ -22,14 +23,14 @@ fun main(args: Array<String>) {
     val steps = 2
 
     val input = RunningTotalData.generateFixedLengthInput(random, steps, 0, 10, 10_000)
-    val targets = RunningTotalData.generateTargets(input)
+    val targets = RunningTotalData.generateReversedTargets(input)
 
     val hasFixedLength = true
 
     Network(
             1,
             inputLayer(1, steps),
-            recurrentLayer(steps, hasFixedLength, 1, 1, ResultExtraction.AllSteps, initialization, null, ActivationFunction.Identity, optimization)
+            recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Backward, ResultExtraction.AllSteps, initialization, null, ActivationFunction.Identity, optimization)
         )
         .training(
             input,
