@@ -13,14 +13,12 @@ class CpuConcatenation internal constructor(
     maximumColumns : Int,
     private val heights: IntArray,
     private val width : Int,
-    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns), Optimizable {
+    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns, { width }), Optimizable {
 
     private val numberLayers = layers.size
     private val individualResults = Array(this.numberLayers) { FloatArray(0) }
 
     private val chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
-
-    override fun computeNumberOutputColumns(inputLength: Int) = this.width
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         for (indexLayer in (0 until this.numberLayers)) {

@@ -10,8 +10,6 @@ class CpuExponentiationLayer internal constructor(
     minimumColumns : Int,
     maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
-
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         exponentiate(input, forwardResult, forwardResult.size)
     }

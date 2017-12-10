@@ -1,19 +1,18 @@
 package com.komputation.cpu.layers
-
 class VariableLengthFloatArray(
     private val numberRows : Int,
-    private val minimumLength: Int,
-    private val possibleLengths : IntArray,
-    private val computeOutputLength : (Int) -> Int) {
+    private val possibleLengths : IntArray) {
+
+    private val minimumLength = possibleLengths.min()!!
 
     private var store = Array(this.possibleLengths.size) { index ->
-        val inputLength = this.possibleLengths[index]
-        val outputLength = this.computeOutputLength(inputLength)
-
-        FloatArray(this.numberRows * outputLength)
+        FloatArray(this.numberRows * this.possibleLengths[index])
     }
 
-    fun get(length: Int) =
-        this.store[computeLengthIndex(length, this.minimumLength)]
+    fun get(length: Int): FloatArray {
+        val lengthIndex = computeLengthIndex(length, this.minimumLength)
+        return this.store[lengthIndex]
+    }
 
 }
+

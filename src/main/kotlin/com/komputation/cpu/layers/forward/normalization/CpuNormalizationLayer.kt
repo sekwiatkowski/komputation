@@ -18,10 +18,8 @@ class CpuNormalizationLayer internal constructor(
     minimumColumns : Int,
     maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private var sumStore = VariableLengthFloatArray(numberRows, minimumColumns, this.possibleLengths, { inputLength -> computeNumberOutputColumns(inputLength) })
+    private var sumStore = VariableLengthFloatArray(numberRows, this.possibleInputLengths)
     private var sum = FloatArray(0)
-
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         this.sum = this.sumStore.get(numberInputColumns)

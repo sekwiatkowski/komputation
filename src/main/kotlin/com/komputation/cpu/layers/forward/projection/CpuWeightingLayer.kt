@@ -24,8 +24,8 @@ class CpuWeightingLayer internal constructor(
     private val numberWeightRows = this.numberOutputRows
     private val numberWeightEntries = this.numberWeightRows * this.numberWeightColumns
 
-    private var blasInputMatricesOverPossibleLengths = Array(this.numberPossibleLengths) { index -> org.jblas.FloatMatrix(this.numberInputRows, this.possibleLengths[index]) }
-    private var blasOutputMatricesOverPossibleLengths = Array(this.numberPossibleLengths) { index -> org.jblas.FloatMatrix(this.numberOutputRows, this.possibleLengths[index]) }
+    private var blasInputMatricesOverPossibleLengths = Array(this.numberPossibleLengths) { index -> org.jblas.FloatMatrix(this.numberInputRows, this.possibleInputLengths[index]) }
+    private var blasOutputMatricesOverPossibleLengths = Array(this.numberPossibleLengths) { index -> org.jblas.FloatMatrix(this.numberOutputRows, this.possibleOutputLengths[index]) }
 
     private var blasWeightMatrix = org.jblas.FloatMatrix(this.numberWeightRows, this.numberWeightColumns)
     private val backwardWrtWeights = FloatArray(this.numberWeightEntries)
@@ -38,13 +38,10 @@ class CpuWeightingLayer internal constructor(
         this.weights
 
     private var lengthIndex = -1
-    override fun prepare(numberInputColumns: Int) {
-        this.lengthIndex = computeLengthIndex(numberInputColumns, this.minimumColumns)
-    }
-
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        this.lengthIndex = computeLengthIndex(numberInputColumns, this.minimumColumns)
+
         val blasInputMatrix = this.blasInputMatricesOverPossibleLengths[this.lengthIndex]
         blasInputMatrix.data = input
 

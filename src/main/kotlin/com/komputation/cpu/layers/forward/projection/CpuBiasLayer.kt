@@ -21,8 +21,6 @@ class CpuBiasLayer internal constructor(
 
     fun getBias() = this.bias
 
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
-
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         addBias(input, this.numberInputRows, numberInputColumns, this.bias, forwardResult)
     }

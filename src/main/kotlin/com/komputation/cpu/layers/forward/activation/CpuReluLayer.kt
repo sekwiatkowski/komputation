@@ -4,9 +4,8 @@ import com.komputation.cpu.functions.activation.backwardRelu
 import com.komputation.cpu.functions.activation.relu
 import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 
-class CpuReluLayer internal constructor(name : String? = null, numberRows : Int, minimumColumns : Int, maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
-
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
+class CpuReluLayer internal constructor(name : String? = null, numberRows : Int, minimumColumns : Int, maximumColumns : Int) :
+    BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         relu(input, forwardResult, forwardResult.size)

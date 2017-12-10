@@ -13,16 +13,15 @@ class CpuExpansionLayer internal constructor(
     private val numberFilterRowPositions: Int,
     filterLength: Int,
     private val filterWidth: Int,
-    private val filterHeight: Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, filterLength, minimumColumns, maximumColumns) {
+    private val filterHeight: Int) : BaseCpuVariableLengthForwardLayer(
+    name,
+    numberInputRows,
+    filterLength,
+    minimumColumns,
+    maximumColumns,
+    { inputLength : Int -> computeNumberFilterColumnPositions(inputLength, filterWidth) * numberFilterRowPositions }) {
 
     private var numberFilterColumnPositions = -1
-
-    override fun prepare(numberInputColumns: Int) {
-        this.numberFilterColumnPositions * computeNumberFilterColumnPositions(numberInputColumns, this.filterWidth)
-    }
-
-    override fun computeNumberOutputColumns(inputLength: Int) =
-        this.numberFilterColumnPositions * this.numberFilterRowPositions
 
     /*
         Ex.:
@@ -40,6 +39,8 @@ class CpuExpansionLayer internal constructor(
         i_32 i_33
     */
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+        this.numberFilterColumnPositions = computeNumberFilterColumnPositions(numberInputColumns, this.filterWidth)
+
         expandForConvolution(
             this.numberInputRows,
             input,

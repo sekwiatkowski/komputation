@@ -12,9 +12,7 @@ class CpuSigmoidLayer internal constructor(
     minimumColumns : Int,
     maximumColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    private val differentiationStore = VariableLengthFloatArray(numberRows, minimumColumns, this.possibleLengths, { inputLength -> computeNumberOutputColumns(inputLength) })
-
-    override fun computeNumberOutputColumns(inputLength: Int) = inputLength
+    private val differentiationStore = VariableLengthFloatArray(numberRows, this.possibleOutputLengths)
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         sigmoid(input, forwardResult, forwardResult.size)

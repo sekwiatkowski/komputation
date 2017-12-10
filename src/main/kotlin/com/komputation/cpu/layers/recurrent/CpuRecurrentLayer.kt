@@ -75,7 +75,7 @@ class CpuRecurrentLayer(
     */
     protected val numberPossibleLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)
     protected val possibleLengths = computePossibleLengths(this.minimumSteps, this.numberPossibleLengths)
-    private val backwardStore = VariableLengthFloatArray(this.hiddenDimension, this.minimumSteps, this.possibleLengths, { inputLength -> inputLength })
+    private val backwardStore = VariableLengthFloatArray(this.hiddenDimension, this.possibleLengths)
 
     override fun backward(withinBatch: Int, chain: FloatArray): FloatArray {
         val backwardPreActivation = this.backwardStore.get(this.numberInputColumns)

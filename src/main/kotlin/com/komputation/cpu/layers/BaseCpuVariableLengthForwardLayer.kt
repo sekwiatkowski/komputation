@@ -14,7 +14,8 @@ abstract class BaseCpuVariableLengthForwardLayer(
     final override val numberInputRows : Int,
     final override val numberOutputRows : Int,
     protected val minimumColumns : Int,
-    protected val maximumColumns : Int) : CpuForwardLayer {
+    protected val maximumColumns : Int,
+    private val computeNumberOutputColumns : (Int) -> Int = { inputLength -> inputLength }) : CpuForwardLayer {
 
     override var backwardResult = FloatArray(0)
     override var numberInputColumns = -1
@@ -22,23 +23,18 @@ abstract class BaseCpuVariableLengthForwardLayer(
     override var forwardResult = FloatArray(0)
     override var numberOutputColumns = -1
 
-    protected abstract fun computeNumberOutputColumns(inputLength : Int) : Int
-
     protected val numberPossibleLengths = computeNumberPossibleLengths(this.minimumColumns, this.maximumColumns)
-    protected val possibleLengths = computePossibleLengths(this.minimumColumns, this.numberPossibleLengths)
+    protected val possibleInputLengths = computePossibleLengths(this.minimumColumns, this.numberPossibleLengths)
+    protected val possibleOutputLengths = this.possibleInputLengths.map(this.computeNumberOutputColumns).toIntArray()
 
-    private val forwardStore = VariableLengthFloatArray(this.numberOutputRows, this.minimumColumns, this.possibleLengths, { inputLength -> computeNumberOutputColumns(inputLength) })
-    private val backwardStore = VariableLengthFloatArray(this.numberInputRows, this.minimumColumns, this.possibleLengths, { inputLength -> inputLength })
-
-    open fun prepare(numberInputColumns: Int) { }
+    private val forwardStore = VariableLengthFloatArray(this.numberOutputRows, this.possibleOutputLengths)
+    private val backwardStore = VariableLengthFloatArray(this.numberInputRows, this.possibleInputLengths)
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean) : FloatArray {
-        this.prepare(numberInputColumns)
-
         this.numberInputColumns = numberInputColumns
-        this.numberOutputColumns = computeNumberOutputColumns(numberInputColumns)
+        this.numberOutputColumns = this.possibleOutputLengths[computeLengthIndex(numberInputColumns, this.minimumColumns)]
 
-        this.forwardResult = this.forwardStore.get(numberInputColumns)
+        this.forwardResult = this.forwardStore.get(this.numberOutputColumns)
         this.computeForwardResult(withinBatch, numberInputColumns, input, isTraining, this.forwardResult)
 
         return this.forwardResult

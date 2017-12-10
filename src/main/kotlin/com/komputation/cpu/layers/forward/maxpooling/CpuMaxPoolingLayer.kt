@@ -9,11 +9,9 @@ class CpuMaxPoolingLayer internal constructor(
     name : String? = null,
     numberInputRows : Int,
     minimumInputColumns : Int,
-    maximumInputColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, numberInputRows, minimumInputColumns, maximumInputColumns) {
+    maximumInputColumns : Int) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, numberInputRows, minimumInputColumns, maximumInputColumns, { 1 }) {
 
     private val maxRowIndices = IntArray(this.numberInputRows)
-
-    override fun computeNumberOutputColumns(inputLength: Int) = 1
 
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         findMaxIndicesInRows(input, this.numberInputRows, numberInputColumns, this.maxRowIndices)

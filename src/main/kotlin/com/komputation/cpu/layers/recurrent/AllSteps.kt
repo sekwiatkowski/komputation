@@ -19,7 +19,7 @@ class AllSteps(
     private val numberPossibleLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)
     private val possibleLengths = computePossibleLengths(this.minimumSteps, numberPossibleLengths)
 
-    private val store = VariableLengthFloatArray(numberRows, this.minimumSteps, possibleLengths, { inputLength -> inputLength })
+    private val store = VariableLengthFloatArray(numberRows, this.possibleLengths)
 
     fun extractResult(numberInputColumns : Int): FloatArray {
         this.numberOutputColumns = numberInputColumns

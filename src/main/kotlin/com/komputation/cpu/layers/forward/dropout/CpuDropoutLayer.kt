@@ -37,9 +37,6 @@ class CpuDropoutLayer internal constructor(
         this.entrySeeds = IntArray(0)
     }
 
-    override fun computeNumberOutputColumns(inputLength: Int) =
-        inputLength
-
     override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
         val numberEntries = this.numberRows * numberInputColumns
 
