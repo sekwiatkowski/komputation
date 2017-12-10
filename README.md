@@ -68,7 +68,9 @@ Komputation is available through Maven Central:
     - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardFixedLengthRunningTotal.kt)
     - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardVariableLengthRunningTotal.kt)
 
-- [Increment](./src/main/kotlin/com/komputation/cpu/demos/increment/Increment.kt)
+- Increment:
+  - [One layer](./src/main/kotlin/com/komputation/cpu/demos/increment/Increment.kt)
+  - [Two layers](./src/main/kotlin/com/komputation/cpu/demos/increment/IncrementTwice.kt)
 
 - Word embedding toy problem:
   - [Feed-forward network](./src/main/kotlin/com/komputation/cpu/demos/embeddings/Embeddings.kt)

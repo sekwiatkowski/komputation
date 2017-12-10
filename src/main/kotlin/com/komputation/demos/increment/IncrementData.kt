@@ -17,11 +17,11 @@ object IncrementData {
         }
     }
 
-    fun generateTargets(input : Array<Matrix>) =
+    fun generateTargets(input : Array<Matrix>, increment : Int = 1) =
         Array(input.size) { indexTarget ->
             val vector = (input[indexTarget] as FloatMatrix).entries
 
-            FloatArray(vector.size) { indexEntry -> vector[indexEntry] + 1 }
+            FloatArray(vector.size) { indexEntry -> vector[indexEntry] + increment }
         }
 
 }

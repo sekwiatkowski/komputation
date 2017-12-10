@@ -26,45 +26,46 @@ enum class ResultExtraction {
 }
 
 class RecurrentLayer internal constructor(
-    private val name : String?,
-    private val maximumSteps : Int,
-    private val hasFixedLength : Boolean,
-    private val inputDimension : Int,
-    private val hiddenDimension : Int,
+    private val name: String?,
+    private val maximumSteps: Int,
+    private val hasFixedLength: Boolean,
+    private val inputDimension: Int,
+    private val hiddenDimension: Int,
+    private val activation: ActivationFunction,
     private val direction: Direction,
-    private val resultExtraction : ResultExtraction,
-    private val weightInitialization: InitializationStrategy,
+    private val resultExtraction: ResultExtraction,
+    private val inputWeightingInitialization: InitializationStrategy,
+    private val previousStateWeightingInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
-    private val activation : ActivationFunction,
     private val optimization: OptimizationInstruction? = null) : CpuForwardLayerInstruction {
 
     override fun buildForCpu(): CpuRecurrentLayer {
         val minimumSteps = if (this.hasFixedLength) this.maximumSteps else 1
 
         val inputWeightingLayerName = concatenateNames(this.name, "input-weighting")
-        val inputWeightingLayer = weightingLayer(inputWeightingLayerName, this.inputDimension, this.maximumSteps, this.hasFixedLength, this.hiddenDimension, this.weightInitialization, this.optimization).buildForCpu()
+        val inputWeightingLayer = weightingLayer(inputWeightingLayerName, this.inputDimension, this.maximumSteps, this.hasFixedLength, this.hiddenDimension, this.inputWeightingInitialization, this.optimization).buildForCpu()
 
         val initialState = FloatArray(this.hiddenDimension)
 
-        val weights = initializeWeights(this.weightInitialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension)
-        val previousHiddenStateWeightingName= concatenateNames(this.name, "previous-hidden-state-weighting")
+        val previousStateWeights = initializeWeights(this.previousStateWeightingInitialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension)
+        val previousStateWeightingName= concatenateNames(this.name, "previous-hidden-state-weighting")
 
-        val weightSeriesAccumulator = DenseAccumulator(weights.size)
-        val previousHiddenStateWeighting = ParameterizedSeries(
-            previousHiddenStateWeightingName,
+        val weightSeriesAccumulator = DenseAccumulator(previousStateWeights.size)
+        val previousStateWeighting = ParameterizedSeries(
+            previousStateWeightingName,
             Array(this.maximumSteps) { index ->
                 CpuWeightingLayer(
-                    concatenateNames(previousHiddenStateWeightingName, index.toString()),
+                    concatenateNames(previousStateWeightingName, index.toString()),
                     this.hiddenDimension,
                     1,
                     1,
                     this.hiddenDimension,
-                    weights,
+                    previousStateWeights,
                     weightSeriesAccumulator)
             },
-            weights,
+            previousStateWeights,
             weightSeriesAccumulator,
-            DenseAccumulator(weights.size),
+            DenseAccumulator(previousStateWeights.size),
             this.optimization?.buildForCpu()?.invoke(this.hiddenDimension, this.hiddenDimension))
 
         val bias =
@@ -120,7 +121,7 @@ class RecurrentLayer internal constructor(
             direction,
             resultExtraction,
             initialState,
-            previousHiddenStateWeighting,
+            previousStateWeighting,
             additions,
             bias,
             activation)
@@ -132,26 +133,53 @@ class RecurrentLayer internal constructor(
 fun recurrentLayer(
     maximumSteps: Int,
     hasFixedLength: Boolean,
-    inputDimension : Int,
+    inputDimension: Int,
     hiddenDimension: Int,
-    direction : Direction,
-    resultExtraction : ResultExtraction,
-    weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
-    activation : ActivationFunction,
+    direction: Direction,
+    resultExtraction: ResultExtraction,
+    activation: ActivationFunction,
+    initialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
-    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, direction, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, initialization, optimization)
 
 fun recurrentLayer(
-    name : String? = null,
-    maximumSteps : Int,
+    name: String? = null,
+    maximumSteps: Int,
     hasFixedLength: Boolean,
     inputDimension: Int,
     hiddenDimension: Int,
-    direction : Direction,
-    resultExtraction : ResultExtraction,
-    weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy?,
-    activation : ActivationFunction,
+    activation: ActivationFunction,
+    direction: Direction,
+    resultExtraction: ResultExtraction,
+    initialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
-    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, direction, resultExtraction, weightInitialization, biasInitialization, activation, optimization)
+    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, initialization, initialization, initialization, optimization)
+
+fun recurrentLayer(
+    maximumSteps: Int,
+    hasFixedLength: Boolean,
+    inputDimension: Int,
+    hiddenDimension: Int,
+    direction: Direction,
+    resultExtraction: ResultExtraction,
+    activation: ActivationFunction,
+    inputWeightingInitialization: InitializationStrategy,
+    previousStateWeightingInitialization: InitializationStrategy = inputWeightingInitialization,
+    biasInitialization: InitializationStrategy? = inputWeightingInitialization,
+    optimization: OptimizationInstruction? = null) =
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, inputWeightingInitialization, previousStateWeightingInitialization, biasInitialization, optimization)
+
+fun recurrentLayer(
+    name: String? = null,
+    maximumSteps: Int,
+    hasFixedLength: Boolean,
+    inputDimension: Int,
+    hiddenDimension: Int,
+    activation: ActivationFunction,
+    direction: Direction,
+    resultExtraction: ResultExtraction,
+    inputWeightingInitialization: InitializationStrategy,
+    previousStateWeightingInitialization: InitializationStrategy = inputWeightingInitialization,
+    biasInitialization: InitializationStrategy? = inputWeightingInitialization,
+    optimization: OptimizationInstruction? = null) =
+    RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, inputWeightingInitialization, previousStateWeightingInitialization, biasInitialization, optimization)
