@@ -2,8 +2,8 @@ package com.komputation.cpu.loss
 
 class CpuSquaredLoss(
     numberInputRows: Int,
-    maximumLength: Int,
-    hasFixedLength : Boolean) : BaseCpuLossFunction(numberInputRows, maximumLength, hasFixedLength) {
+    minimumLength: Int,
+    maximumLength : Int) : BaseCpuLossFunction(numberInputRows, minimumLength, maximumLength) {
 
     override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
         var loss = 0f

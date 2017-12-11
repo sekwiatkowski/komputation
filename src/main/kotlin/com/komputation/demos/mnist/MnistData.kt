@@ -19,7 +19,7 @@ object MnistData {
         csvFile
             .bufferedReader()
             .lineSequence()
-            .forEachIndexed { index, line ->
+            .forEach { line ->
 
                 val split = line
                     .split(",")

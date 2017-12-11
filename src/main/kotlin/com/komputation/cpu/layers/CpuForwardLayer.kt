@@ -1,6 +1,6 @@
 package com.komputation.cpu.layers
 
-interface CpuForwardLayer : CpuLayerState {
+interface CpuForwardLayer : CpuVariableLengthForwardState, CpuVariableLengthBackwardState {
 
     fun forward(withinBatch : Int, numberInputColumns : Int, input: FloatArray, isTraining : Boolean) : FloatArray
 

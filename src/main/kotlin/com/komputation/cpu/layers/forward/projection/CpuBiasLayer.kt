@@ -2,7 +2,7 @@ package com.komputation.cpu.layers.forward.projection
 
 import com.komputation.cpu.functions.addBias
 import com.komputation.cpu.functions.backwardProjectionWrtBias
-import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import com.komputation.cpu.layers.BaseCpuForwardLayer
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cpu.optimization.UpdateRule
 import com.komputation.cpu.optimization.updateDensely
@@ -15,13 +15,13 @@ class CpuBiasLayer internal constructor(
     maximumColumns: Int,
     private val bias : FloatArray,
     private val biasAccumulator: DenseAccumulator,
-    private val biasUpdateRule: UpdateRule? = null) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), Optimizable {
+    private val biasUpdateRule: UpdateRule? = null) : BaseCpuForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), Optimizable {
 
     private val numberBiasEntries = numberRows
 
     fun getBias() = this.bias
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, forwardResult: FloatArray, isTraining: Boolean) {
         addBias(input, this.numberInputRows, numberInputColumns, this.bias, forwardResult)
     }
 

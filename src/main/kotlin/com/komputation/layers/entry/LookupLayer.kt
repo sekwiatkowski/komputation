@@ -35,7 +35,7 @@ class LookupLayer(
 
         val minimumLength = if(this.hasFixedLength) this.maximumLength else 1
 
-        return CpuLookupLayer(this.name, this.vectors, minimumLength, this.maximumLength, this.dimension, updateRule)
+        return CpuLookupLayer(this.name, this.vectors, this.dimension, minimumLength, this.maximumLength, updateRule)
 
     }
 

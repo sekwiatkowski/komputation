@@ -1,27 +1,19 @@
 package com.komputation.cpu.layers.forward.activation
 
-import com.komputation.cpu.layers.CpuForwardLayer
+import com.komputation.cpu.layers.BaseCpuForwardLayer
 
 class CpuIdentityLayer internal constructor(
-    private val name : String? = null,
-    override val numberOutputRows: Int) : CpuForwardLayer, CpuActivationLayer {
+    name : String? = null,
+    numberRows: Int,
+    minimumColumns : Int,
+    maximumColumns : Int) : BaseCpuForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns, { inputLength -> inputLength }), CpuActivationLayer {
 
-    override var forwardResult = FloatArray(0)
-    override val numberOutputColumns
-        get() = this.numberInputColumns
-    override var backwardResult = FloatArray(0)
-    override val numberInputRows = this.numberOutputRows
-    override var numberInputColumns = -1
-
-    override fun forward(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
-        this.forwardResult = input
-        this.numberInputColumns = numberInputColumns
-        return this.forwardResult
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, forwardResult: FloatArray, isTraining: Boolean) {
+        System.arraycopy(input, 0, forwardResult, 0, input.size)
     }
 
-    override fun backward(withinBatch: Int, chain: FloatArray): FloatArray {
-        this.backwardResult = chain
-        return this.backwardResult
+    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns: Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
+        System.arraycopy(chain, 0, backwardResult, 0, chain.size)
     }
 
 }

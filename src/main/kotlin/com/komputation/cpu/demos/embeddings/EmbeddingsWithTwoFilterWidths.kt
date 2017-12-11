@@ -1,7 +1,6 @@
 package com.komputation.cpu.demos.embeddings
 
 import com.komputation.cpu.network.Network
-import com.komputation.loss.printLoss
 import com.komputation.demos.embeddings.EmbeddingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
@@ -11,6 +10,7 @@ import com.komputation.layers.forward.activation.reluLayer
 import com.komputation.layers.forward.concatenation
 import com.komputation.layers.forward.convolution.convolutionalLayer
 import com.komputation.layers.forward.dense.denseLayer
+import com.komputation.loss.printLoss
 import com.komputation.loss.squaredLoss
 import com.komputation.optimization.historical.momentum
 import java.util.*
@@ -46,12 +46,7 @@ fun main(args: Array<String>) {
         maximumBatchSize,
         lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
         concatenation(
-            embeddingDimension,
-            2,
-            hasFixedLength,
-            intArrayOf(numberFilters, numberFilters),
-            1,
-            filterWidths
+            *filterWidths
                 .map { filterWidth -> convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy) }
                 .toTypedArray()
         ),

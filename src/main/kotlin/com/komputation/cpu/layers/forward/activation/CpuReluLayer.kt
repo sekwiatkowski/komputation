@@ -2,12 +2,12 @@ package com.komputation.cpu.layers.forward.activation
 
 import com.komputation.cpu.functions.activation.backwardRelu
 import com.komputation.cpu.functions.activation.relu
-import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import com.komputation.cpu.layers.BaseCpuForwardLayer
 
 class CpuReluLayer internal constructor(name : String? = null, numberRows : Int, minimumColumns : Int, maximumColumns : Int) :
-    BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
+    BaseCpuForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), CpuActivationLayer {
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, forwardResult: FloatArray, isTraining: Boolean) {
         relu(input, forwardResult, forwardResult.size)
     }
 

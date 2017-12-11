@@ -11,6 +11,8 @@ class LastStep(
     override val numberOutputRows = numberRows
     override val numberOutputColumns = 1
 
+    override val possibleOutputLengths = intArrayOf(1)
+
     override fun extractResult(numberInputColumns : Int): FloatArray {
         this.forwardResult = this.series.getForwardResult(if(this.isReversed) 0 else numberInputColumns-1)
 

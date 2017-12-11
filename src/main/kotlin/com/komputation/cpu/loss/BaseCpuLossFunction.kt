@@ -1,18 +1,21 @@
 package com.komputation.cpu.loss
 
+import com.komputation.cpu.layers.VariableLengthFloatArray
+import com.komputation.cpu.layers.computeNumberPossibleLengths
+import com.komputation.cpu.layers.computePossibleLengths
+
 abstract class BaseCpuLossFunction(
-    override val numberInputRows: Int,
-    private val maximumLength: Int,
-    private val hasFixedLength : Boolean) : CpuLossFunction {
+    final override val numberInputRows: Int,
+    private val minimumLength : Int,
+    private val maximumLength: Int) : CpuLossFunction {
 
     override var backwardResult = FloatArray(0)
     override var numberInputColumns = -1
 
-    private val minimumLength = if(this.hasFixedLength) maximumLength else 1
-    private val numberPossibleLengths = this.maximumLength - this.minimumLength + 1
-    private val possibleLengths = Array(this.maximumLength) { index -> index + this.minimumLength }
+    private val numberPossibleInputLengths = computeNumberPossibleLengths(this.minimumLength, this.maximumLength)
+    private val possibleInputLengths = computePossibleLengths(this.minimumLength, this.numberPossibleInputLengths)
 
-    private val backwardResultsOverPossibleLengths = Array(this.numberPossibleLengths) { index -> FloatArray(this.possibleLengths[index] * this.numberInputRows) }
+    private val backwardResultsOverPossibleLengths = VariableLengthFloatArray(this.numberInputRows, this.possibleInputLengths)
 
     override fun forward(numberInputColumns : Int, predictions: FloatArray, targets : FloatArray): Float {
         this.numberInputColumns = numberInputColumns
@@ -23,7 +26,7 @@ abstract class BaseCpuLossFunction(
     abstract fun computeLoss(targets: FloatArray, predictions: FloatArray): Float
 
     override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
-        this.backwardResult = this.backwardResultsOverPossibleLengths[this.numberInputColumns - this.minimumLength]
+        this.backwardResult = this.backwardResultsOverPossibleLengths.get(this.numberInputColumns)
 
         computeDifferentation(targets, predictions, backwardResult)
 

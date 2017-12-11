@@ -3,7 +3,7 @@ package com.komputation.cpu.layers.forward.convolution
 import com.komputation.cpu.functions.backwardExpansionForConvolution
 import com.komputation.cpu.functions.computeNumberFilterColumnPositions
 import com.komputation.cpu.functions.expandForConvolution
-import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import com.komputation.cpu.layers.BaseCpuForwardLayer
 
 class CpuExpansionLayer internal constructor(
     name: String? = null,
@@ -13,7 +13,7 @@ class CpuExpansionLayer internal constructor(
     private val numberFilterRowPositions: Int,
     filterLength: Int,
     private val filterWidth: Int,
-    private val filterHeight: Int) : BaseCpuVariableLengthForwardLayer(
+    private val filterHeight: Int) : BaseCpuForwardLayer(
     name,
     numberInputRows,
     filterLength,
@@ -38,7 +38,7 @@ class CpuExpansionLayer internal constructor(
         i_22 i_23
         i_32 i_33
     */
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, forwardResult: FloatArray, isTraining: Boolean) {
         this.numberFilterColumnPositions = computeNumberFilterColumnPositions(numberInputColumns, this.filterWidth)
 
         expandForConvolution(

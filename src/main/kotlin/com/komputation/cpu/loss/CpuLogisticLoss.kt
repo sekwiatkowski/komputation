@@ -3,8 +3,8 @@ package com.komputation.cpu.loss
 import com.komputation.matrix.FloatMath
 
 class CpuLogisticLoss(
-    maximumLength: Int,
-    hasFixedLength : Boolean) : BaseCpuLossFunction(2, maximumLength, hasFixedLength) {
+    minimumLength: Int,
+    maximumLength : Int) : BaseCpuLossFunction(2, minimumLength, maximumLength) {
 
     override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
         var loss = 0.0f

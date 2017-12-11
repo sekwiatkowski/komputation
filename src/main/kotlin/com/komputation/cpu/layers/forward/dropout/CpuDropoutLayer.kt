@@ -1,7 +1,7 @@
 package com.komputation.cpu.layers.forward.dropout
 
 import com.komputation.cpu.functions.*
-import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
+import com.komputation.cpu.layers.BaseCpuForwardLayer
 import com.komputation.layers.Resourceful
 import java.util.*
 
@@ -11,7 +11,7 @@ class CpuDropoutLayer internal constructor(
     minimumColumns: Int,
     maximumColumns: Int,
     private val random: Random,
-    private val keepProbability: Float) : BaseCpuVariableLengthForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), Resourceful {
+    private val keepProbability: Float) : BaseCpuForwardLayer(name, numberRows, numberRows, minimumColumns, maximumColumns), Resourceful {
 
     private val threshold : Int
     private val dropoutProbability = 1.0 - keepProbability
@@ -37,7 +37,7 @@ class CpuDropoutLayer internal constructor(
         this.entrySeeds = IntArray(0)
     }
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
+    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, forwardResult: FloatArray, isTraining: Boolean) {
         val numberEntries = this.numberRows * numberInputColumns
 
         if (isTraining) {

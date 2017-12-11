@@ -18,10 +18,10 @@ class AllSteps(
     override val numberOutputRows = this.hiddenDimension
     override var numberOutputColumns = -1
 
-    private val numberPossibleLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)
-    private val possibleLengths = computePossibleLengths(this.minimumSteps, numberPossibleLengths)
+    private val numberPossibleOutputLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)
+    override val possibleOutputLengths = computePossibleLengths(this.minimumSteps, numberPossibleOutputLengths)
 
-    private val store = VariableLengthFloatArray(this.hiddenDimension, this.possibleLengths)
+    private val store = VariableLengthFloatArray(this.hiddenDimension, this.possibleOutputLengths)
 
     override fun extractResult(numberInputColumns : Int): FloatArray {
         this.numberOutputColumns = numberInputColumns

@@ -1,4 +1,5 @@
 package com.komputation.cpu.layers
+
 class VariableLengthFloatArray(
     private val numberRows : Int,
     private val possibleLengths : IntArray) {

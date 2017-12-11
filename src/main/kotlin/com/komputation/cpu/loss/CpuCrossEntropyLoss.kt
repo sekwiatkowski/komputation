@@ -4,8 +4,8 @@ import com.komputation.matrix.FloatMath
 
 class CpuCrossEntropyLoss(
     numberInputRows: Int,
-    maximumLength: Int,
-    hasFixedLength : Boolean) : BaseCpuLossFunction(numberInputRows, maximumLength, hasFixedLength) {
+    minimumLength: Int,
+    maximumLength : Int) : BaseCpuLossFunction(numberInputRows, minimumLength, maximumLength) {
 
     override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
         var loss = 0.0f

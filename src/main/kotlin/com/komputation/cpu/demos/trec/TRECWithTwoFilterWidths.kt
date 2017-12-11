@@ -95,12 +95,7 @@ class TrecWithTwoFilterWidths {
             batchSize,
             lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
             concatenation(
-                embeddingDimension,
-                maximumDocumentLength,
-                false,
-                IntArray(numberFilterWidths) { numberFilters },
-                1,
-                filterWidths
+                *filterWidths
                     .map { filterWidth ->
                         convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
                     }

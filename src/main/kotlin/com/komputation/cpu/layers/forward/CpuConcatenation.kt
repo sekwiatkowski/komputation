@@ -2,53 +2,90 @@ package com.komputation.cpu.layers.forward
 
 import com.komputation.cpu.functions.splitRows
 import com.komputation.cpu.functions.stackRows
-import com.komputation.cpu.layers.BaseCpuVariableLengthForwardLayer
 import com.komputation.cpu.layers.CpuForwardLayer
+import com.komputation.cpu.layers.VariableLengthFloatArray
+import com.komputation.cpu.layers.computeLengthIndex
 import com.komputation.optimization.Optimizable
 
 class CpuConcatenation internal constructor(
-    name : String? = null,
-    numberInputRows: Int,
-    minimumColumns : Int,
-    maximumColumns : Int,
-    private val heights: IntArray,
-    private val width : Int,
-    private val layers: Array<CpuForwardLayer>) : BaseCpuVariableLengthForwardLayer(name, numberInputRows, heights.sum(), minimumColumns, maximumColumns, { width }), Optimizable {
+    val name : String? = null,
+    private val layers: Array<CpuForwardLayer>) : CpuForwardLayer, Optimizable {
 
-    private val numberLayers = layers.size
+    private val firstLayer = this.layers.first()
+    private val numberLayers = this.layers.size
+
+    // All layers have the same number of input rows.
+    override val numberInputRows = this.firstLayer.numberInputRows
+    // The number of input columns is flexible.
+    override var numberInputColumns = -1
+    // The possible input lengths are the same for all layers.
+    override val possibleInputLengths: IntArray
+        get() = this.firstLayer.possibleInputLengths
+
+    // Layers can have different numbers of output rows.
+    private val numbersOfOutputRows = IntArray(this.numberLayers) { index -> this.layers[index].numberOutputRows }
+    // The number of output rows of the concatenation layer is the sum of the number of output rows of its layers.
+    override val numberOutputRows = this.numbersOfOutputRows.sum()
+    // The number of output columns is flexible.
+    override var numberOutputColumns = -1
+    // The possible output lengths are the same for all layers.
+    override val possibleOutputLengths: IntArray
+        get() = this.firstLayer.possibleOutputLengths
+    private val minimumOutputLength = this.possibleOutputLengths.min()!!
+
+    private val forwardStore = VariableLengthFloatArray(this.numberOutputRows, this.possibleOutputLengths)
+    override var forwardResult = FloatArray(0)
+
+    private val backwardStore = VariableLengthFloatArray(this.numberInputRows, this.possibleInputLengths)
+    override var backwardResult  = FloatArray(0)
+
     private val individualResults = Array(this.numberLayers) { FloatArray(0) }
 
-    private val chainSplit = Array(this.numberLayers) { index -> FloatArray(this.heights[index]) }
+    override fun forward(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
+        this.individualResults[0] = this.firstLayer.forward(withinBatch, numberInputColumns, input, isTraining)
 
-    override fun computeForwardResult(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean, forwardResult: FloatArray) {
-        for (indexLayer in (0 until this.numberLayers)) {
+        this.numberInputColumns = this.firstLayer.numberInputColumns
+        this.numberOutputColumns = this.firstLayer.numberOutputColumns
+        this.forwardResult = this.forwardStore.get(this.numberOutputColumns)
+
+        for (indexLayer in (1 until this.numberLayers)) {
             this.individualResults[indexLayer] = this.layers[indexLayer].forward(withinBatch, numberInputColumns, input, isTraining)
         }
 
-        stackRows(this.heights, this.numberOutputRows, this.width, forwardResult, *this.individualResults)
+        stackRows(this.numbersOfOutputRows, this.numberOutputRows, this.numberOutputColumns, this.forwardResult, *this.individualResults)
+
+        return this.forwardResult
     }
 
-    override fun computeBackwardResult(withinBatch: Int, numberInputColumns: Int, numberOutputColumns : Int, forwardResult: FloatArray, chain: FloatArray, backwardResult: FloatArray) {
-        splitRows(this.numberOutputRows, numberOutputColumns, chain, this.heights, this.numberLayers, this.chainSplit)
+    private val chainSplitsOverPossibleLengths = this.possibleOutputLengths.map { outputLength ->
+        Array(this.numberLayers) { indexLayer -> FloatArray(this.layers[indexLayer].numberOutputRows * outputLength) }
+    }
 
-        val firstLayer = this.layers[0]
-        firstLayer.backward(withinBatch, this.chainSplit[0])
+    /*
+        a b
+        ---
+        c d
+    */
+    override fun backward(withinBatch: Int, chain: FloatArray): FloatArray {
+        this.backwardResult = this.backwardStore.get(this.numberInputColumns)
 
-        val firstIndividualBackwardResult = firstLayer.backwardResult
+        val outputLengthIndex = computeLengthIndex(this.numberOutputColumns, this.minimumOutputLength)
+        val chainSplits = this.chainSplitsOverPossibleLengths[outputLengthIndex]
 
-        System.arraycopy(firstIndividualBackwardResult, 0, backwardResult, 0, firstIndividualBackwardResult.size)
+        splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.numbersOfOutputRows, this.numberLayers, chainSplits)
 
-        for (indexNetwork in (1 until this.numberLayers)) {
-            val layer = this.layers[indexNetwork]
+        val firstIndividualBackwardResult = this.firstLayer.backward(withinBatch, chainSplits[0])
+        System.arraycopy(firstIndividualBackwardResult, 0, this.backwardResult, 0, firstIndividualBackwardResult.size)
 
-            layer.backward(withinBatch, this.chainSplit[indexNetwork])
-
-            val individualBackwardResult = layer.backwardResult
+        for (indexLayer in (1 until this.numberLayers)) {
+            val individualBackwardResult = this.layers[indexLayer].backward(withinBatch, chainSplits[indexLayer])
 
             for (index in 0 until individualBackwardResult.size) {
-                backwardResult[index] += individualBackwardResult[index]
+                this.backwardResult[index] += individualBackwardResult[index]
             }
         }
+
+        return this.backwardResult
     }
 
     override fun optimize(batchSize : Int) {
