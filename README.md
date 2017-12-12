@@ -69,7 +69,7 @@ Komputation is available through Maven Central:
   - Backward:
     - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardFixedLengthRunningTotal.kt)
     - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardVariableLengthRunningTotal.kt)
-  - Backward:
+  - Bidirectional:
     - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardFixedLengthRunningTotal.kt)
     - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardVariableLengthRunningTotal.kt)
 
