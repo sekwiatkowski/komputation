@@ -36,7 +36,7 @@ class CudaDropoutLayerTest {
         val random = Random()
         val input = FloatArray(numberEntries) { random.nextFloat() }
 
-        val cpuLayer = dropoutLayer(numberRows, numberColumns, true, keepProbability, Random(1)).buildForCpu()
+        val cpuLayer = dropoutLayer(numberRows, numberColumns, true, Random(1), keepProbability).buildForCpu()
 
         cpuLayer.acquire(1)
 
@@ -44,7 +44,7 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, keepProbability, Random(1)).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, Random(1), keepProbability).buildForCuda(cudaContext, cublasHandle())
         cudaLayer.acquire(1)
 
         val deviceInput = Pointer()
@@ -94,7 +94,7 @@ class CudaDropoutLayerTest {
 
         val cudaContext = setUpCudaContext()
 
-        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, if (keep) 1.0f else 0.0f, Random(1)).buildForCuda(cudaContext, cublasHandle())
+        val cudaLayer = dropoutLayer(numberRows, numberColumns, true, Random(1), if (keep) 1.0f else 0.0f).buildForCuda(cudaContext, cublasHandle())
 
         cudaLayer.acquire(1)
 

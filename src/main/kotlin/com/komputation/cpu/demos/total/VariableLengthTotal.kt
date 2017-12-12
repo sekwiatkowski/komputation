@@ -31,7 +31,18 @@ fun main(args: Array<String>) {
     val network = Network(
         1,
         inputLayer(1, maximumLength),
-        recurrentLayer(maximumLength, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.LastStep, ActivationFunction.Identity, initialization, initialization, null, optimization)
+        recurrentLayer(
+            maximumLength,
+            hasFixedLength,
+            1,
+            1,
+            ActivationFunction.Identity,
+            ResultExtraction.LastStep,
+            Direction.Forward,
+            initialization,
+            initialization,
+            null,
+            optimization)
     )
     network
         .training(

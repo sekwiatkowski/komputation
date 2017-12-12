@@ -35,8 +35,14 @@ class DropoutLayer internal constructor(
 
 }
 
-fun dropoutLayer(numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, keepProbability: Float, random: Random) =
-    dropoutLayer(null, numberRows, numberColumns, hasFixedLength, keepProbability, random)
+fun dropoutLayer(numberRows: Int, random: Random, keepProbability: Float) =
+    dropoutLayer(null, numberRows, random, keepProbability)
 
-fun dropoutLayer(name: String?, numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, keepProbability: Float, random: Random) =
+fun dropoutLayer(name: String?, numberRows: Int, random: Random, keepProbability: Float) =
+    dropoutLayer(name, numberRows, 1, true, random, keepProbability)
+
+fun dropoutLayer(numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, random: Random, keepProbability: Float) =
+    dropoutLayer(null, numberRows, numberColumns, hasFixedLength, random, keepProbability)
+
+fun dropoutLayer(name: String?, numberRows: Int, numberColumns: Int, hasFixedLength: Boolean, random: Random, keepProbability: Float) =
     DropoutLayer(name, numberRows, numberColumns, hasFixedLength, random, keepProbability)

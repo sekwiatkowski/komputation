@@ -97,7 +97,7 @@ class Trec {
             lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
             convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
             reluLayer(numberFilters),
-            dropoutLayer(numberFilters, maximumDocumentLength, hasFixedLength, keepProbability, random),
+            dropoutLayer(numberFilters, maximumDocumentLength, hasFixedLength, random, keepProbability),
             projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )

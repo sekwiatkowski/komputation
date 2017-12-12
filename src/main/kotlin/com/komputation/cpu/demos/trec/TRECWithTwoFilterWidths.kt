@@ -102,7 +102,7 @@ class TrecWithTwoFilterWidths {
                     .toTypedArray()
             ),
             reluLayer(numberFilterWidths * numberFilters),
-            dropoutLayer(numberFilterWidths * numberFilters, 1, hasFixedLength, keepProbability, random),
+            dropoutLayer(numberFilterWidths * numberFilters, 1, hasFixedLength, random, keepProbability),
             projectionLayer(filterWidths.size * numberFilters, numberCategories, initialization, initialization, optimization),
             softmaxLayer(numberCategories)
         )

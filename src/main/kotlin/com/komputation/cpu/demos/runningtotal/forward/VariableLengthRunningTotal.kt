@@ -31,7 +31,18 @@ fun main(args: Array<String>) {
     Network(
             1,
             inputLayer(1, maximumLength),
-            recurrentLayer(maximumLength, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, ActivationFunction.Identity, initialization, initialization, null, optimization)
+            recurrentLayer(
+                maximumLength,
+                hasFixedLength,
+                1,
+                1,
+                ActivationFunction.Identity,
+                ResultExtraction.AllSteps,
+                Direction.Forward,
+                initialization,
+                initialization,
+                null,
+                optimization)
         )
         .training(
             input,

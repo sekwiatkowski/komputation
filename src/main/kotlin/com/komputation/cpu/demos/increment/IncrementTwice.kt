@@ -29,11 +29,11 @@ fun main(args: Array<String>) {
 
     val hasFixedLength = true
 
-    val network = Network(
+    Network(
         1,
         inputLayer(1, steps),
-        recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, ActivationFunction.Identity, zeroInitialization, zeroInitialization, zeroInitialization, optimization),
-        recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, ActivationFunction.Identity, oneInitialization, zeroInitialization, oneInitialization, null)
+        recurrentLayer(steps, hasFixedLength, 1, 1, ActivationFunction.Identity, ResultExtraction.AllSteps, Direction.Forward, zeroInitialization, zeroInitialization, zeroInitialization, optimization),
+        recurrentLayer(steps, hasFixedLength, 1, 1, ActivationFunction.Identity, ResultExtraction.AllSteps, Direction.Forward, oneInitialization, zeroInitialization, oneInitialization, null)
         ).training(
             input,
             targets,

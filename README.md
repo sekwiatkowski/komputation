@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.11.2</version>
+    <version>0.11.3</version>
 </dependency>
 ```
 
@@ -34,6 +34,8 @@ Komputation is available through Maven Central:
   - [Recurrent layer](./src/main/kotlin/com/komputation/layers/recurrent/RecurrentLayer.kt)
     - [All steps](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/AllSteps.kt)
     - [Last step](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/LastStep.kt)
+  - [Bidirectional recurrent layer](./src/main/kotlin/com/komputation/layers/recurrent/BidirectionalRecurrentLayer.kt)
+
 
 - [Dropout](./src/main/kotlin/com/komputation/layers/forward/dropout/DropoutLayer.kt)
 
@@ -67,6 +69,9 @@ Komputation is available through Maven Central:
   - Backward:
     - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardFixedLengthRunningTotal.kt)
     - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardVariableLengthRunningTotal.kt)
+  - Backward:
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardFixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardVariableLengthRunningTotal.kt)
 
 - Increment:
   - [One layer](./src/main/kotlin/com/komputation/cpu/demos/increment/Increment.kt)
@@ -112,13 +117,13 @@ Komputation is available through Maven Central:
 The following code instantiates a GPU-accelerated convolutional neural network for sentence classification:
 
 ```kotlin
-    val network = CudaNetwork(
+    val network = Network(
         batchSize,
-        lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
-        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization),
+        lookupLayer(embeddings, maximumDocumentLength, hasVariableLength, embeddingDimension, optimization),
+        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasVariableLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
         reluLayer(numberFilters),
-        dropoutLayer(random, keepProbability, numberFilters),
-        projectionLayer(numberFilters, numberCategories, weightInitialization, biasInitialization, optimization),
+        dropoutLayer(numberFilters, random, keepProbability),
+        projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
         softmaxLayer(numberCategories)
     )
 ```

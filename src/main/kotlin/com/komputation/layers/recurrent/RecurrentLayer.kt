@@ -135,12 +135,12 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension: Int,
     hiddenDimension: Int,
-    direction: Direction,
-    resultExtraction: ResultExtraction,
     activation: ActivationFunction,
+    resultExtraction: ResultExtraction,
+    direction: Direction,
     initialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
-    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, initialization, optimization)
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, resultExtraction, direction, initialization, optimization)
 
 fun recurrentLayer(
     name: String? = null,
@@ -149,8 +149,8 @@ fun recurrentLayer(
     inputDimension: Int,
     hiddenDimension: Int,
     activation: ActivationFunction,
-    direction: Direction,
     resultExtraction: ResultExtraction,
+    direction: Direction,
     initialization: InitializationStrategy,
     optimization: OptimizationInstruction? = null) =
     RecurrentLayer(name, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, initialization, initialization, initialization, optimization)
@@ -160,14 +160,14 @@ fun recurrentLayer(
     hasFixedLength: Boolean,
     inputDimension: Int,
     hiddenDimension: Int,
-    direction: Direction,
-    resultExtraction: ResultExtraction,
     activation: ActivationFunction,
+    resultExtraction: ResultExtraction,
+    direction: Direction,
     inputWeightingInitialization: InitializationStrategy,
     previousStateWeightingInitialization: InitializationStrategy = inputWeightingInitialization,
     biasInitialization: InitializationStrategy? = inputWeightingInitialization,
     optimization: OptimizationInstruction? = null) =
-    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, direction, resultExtraction, inputWeightingInitialization, previousStateWeightingInitialization, biasInitialization, optimization)
+    recurrentLayer(null, maximumSteps, hasFixedLength, inputDimension, hiddenDimension, activation, resultExtraction, direction, inputWeightingInitialization, previousStateWeightingInitialization, biasInitialization, optimization)
 
 fun recurrentLayer(
     name: String? = null,
@@ -176,8 +176,8 @@ fun recurrentLayer(
     inputDimension: Int,
     hiddenDimension: Int,
     activation: ActivationFunction,
-    direction: Direction,
     resultExtraction: ResultExtraction,
+    direction: Direction,
     inputWeightingInitialization: InitializationStrategy,
     previousStateWeightingInitialization: InitializationStrategy = inputWeightingInitialization,
     biasInitialization: InitializationStrategy? = inputWeightingInitialization,

@@ -30,7 +30,7 @@ fun main(args: Array<String>) {
     Network(
             1,
             inputLayer(1, steps),
-            recurrentLayer(steps, hasFixedLength, 1, 1, Direction.Forward, ResultExtraction.AllSteps, ActivationFunction.Identity, initialization, optimization)
+            recurrentLayer(steps, hasFixedLength, 1, 1, ActivationFunction.Identity, ResultExtraction.AllSteps, Direction.Forward, initialization, optimization)
         )
         .training(
             input,
