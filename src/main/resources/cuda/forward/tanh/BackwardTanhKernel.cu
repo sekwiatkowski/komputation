@@ -2,9 +2,7 @@
 
 __device__ float backwardTanh (float forward, float chain)
 {
-
     return chain * (1.0 - powf(forward, 2.0));
-
 }
 
 __global__ void backwardTanhKernel (
@@ -27,24 +25,16 @@ __global__ void backwardTanhKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 destination[indexEntry] = backwardTanh(forward[indexEntry], chain[indexEntry]);
-
             }
-
         }
         else {
-
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

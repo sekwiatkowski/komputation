@@ -15,7 +15,6 @@ __global__ void normalizationKernel (
     float* input,
     float* sums,
     float* result) {
-
     extern __shared__ float sharedData[];
 
     int indexInstance = blockIdx.x;
@@ -32,22 +31,16 @@ __global__ void normalizationKernel (
     int firstEntryWithinBatch = startInstance + startColumnWithinInstance + startEntryWithinColumn;
 
     if(firstEntryWithinBatch < startNextInstance) {
-
         int indexColumnInBatch = indexInstance * numberColumns + indexColumn;
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextInstance);
 
         if(indexInstance < batchSize) {
-
             float thisValue = input[firstEntryWithinBatch];
 
             if(numberIterations > 1) {
-
                 for(int index = firstEntryWithinBatch + 1; index < lastEntryWithinBatch; index++) {
-
                     thisValue += input[index];
-
                 }
-
             }
 
             int warpId = threadId / warpSize;
@@ -58,32 +51,21 @@ __global__ void normalizationKernel (
             result[firstEntryWithinBatch] = input[firstEntryWithinBatch] / sharedData[0];
 
             if(numberIterations > 1) {
-
                 for(int indexEntry = firstEntryWithinBatch+1; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                     result[indexEntry] = input[indexEntry] / sharedData[0];
-
                 }
-
             }
 
             if(threadId == 0) {
-
                 sums[indexColumnInBatch] = sharedData[0];
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
             if(threadId == 0) {
-
                 sums[indexColumnInBatch] = 0.0;
-
             }
-
         }
 
     }

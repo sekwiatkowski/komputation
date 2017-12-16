@@ -7,7 +7,6 @@ import jcuda.driver.JCudaDriver.cuModuleLoadData
 import jcuda.nvrtc.JNvrtc
 import jcuda.nvrtc.JNvrtc.*
 import jcuda.nvrtc.nvrtcProgram
-import java.io.File
 
 fun compileKernel(
     program : nvrtcProgram,
@@ -23,9 +22,7 @@ fun compileKernel(
     nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headers, includeNames)
 
     for (nameExpression in nameExpressions) {
-
         JNvrtc.nvrtcAddNameExpression(program, nameExpression)
-
     }
 
     val (major, minor) = computeCapabilities
@@ -39,9 +36,7 @@ fun compileKernel(
     val programLog = programLogArray.single()
 
     if (programLog.isNotEmpty()) {
-
         throw Exception(programLog)
-
     }
 
 }
@@ -50,7 +45,6 @@ fun loadKernel(
     kernel : CUfunction,
     program : nvrtcProgram,
     nameExpression: String) {
-
     val ptxs = arrayOfNulls<String>(1)
     nvrtcGetPTX(program, ptxs)
     val ptx = ptxs.single()
@@ -62,5 +56,4 @@ fun loadKernel(
     nvrtcGetLoweredName(program, nameExpression, loweredName)
 
     cuModuleGetFunction(kernel, module, loweredName[0])
-
 }

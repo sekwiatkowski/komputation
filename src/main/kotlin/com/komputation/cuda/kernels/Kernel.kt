@@ -17,21 +17,16 @@ class Kernel(
     private val kernel = CUfunction()
 
     init {
-
         compileKernel(this.program, this.computeCapabilities, this.sourceCode, this.name, arrayOf(this.nameExpression), this.headers, this.includeNames)
 
         loadKernel(this.kernel, this.program, this.nameExpression)
-
     }
 
     fun launch(pointerToParameters: Pointer, numberBlocksInXDimension : Int, numberBlocksInYDimension : Int, numberThreadsPerBlock : Int, sharedMemoryBytes : Int) =
-
         launchKernel(this.kernel, pointerToParameters, numberBlocksInXDimension, numberBlocksInYDimension, numberThreadsPerBlock, sharedMemoryBytes)
 
     fun destroy() {
-
         nvrtcDestroyProgram(this.program)
-
     }
 
 }

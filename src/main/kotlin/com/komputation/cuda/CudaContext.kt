@@ -1,10 +1,10 @@
 package com.komputation.cuda
 
+import com.komputation.cuda.kernels.KernelFactory
+import com.komputation.cuda.kernels.KernelInstruction
 import jcuda.driver.CUcontext
 import jcuda.driver.CUdevice
 import jcuda.driver.JCudaDriver.*
-import com.komputation.cuda.kernels.KernelFactory
-import com.komputation.cuda.kernels.KernelInstruction
 
 data class CudaContext(
     val context: CUcontext,
@@ -18,19 +18,14 @@ data class CudaContext(
     private val kernelFactory = KernelFactory(this.computeCapabilities)
 
     fun createKernel(instruction: KernelInstruction) =
-
         this.kernelFactory.create(instruction)
 
     fun destroy() {
-
         destroyCudaContext(this.context)
-
     }
-
 }
 
 fun setUpCudaContext(deviceId : Int = 0): CudaContext {
-
     initializeCuda()
 
     val device = getCudaDevice(deviceId)
@@ -47,24 +42,18 @@ fun setUpCudaContext(deviceId : Int = 0): CudaContext {
     val maximumNumberOfThreadsPerBlock = queryMaximumNumberOfThreadsPerBlock(device)
 
     return CudaContext(context, computeCapability, numberOfMultiprocessor, maximumNumberOfResidentWarps, warpSize, maximumNumberOfBlocks, maximumNumberOfThreadsPerBlock)
-
 }
 
 fun initializeCuda() {
-
     cuInit(0)
-
 }
 
 fun createCudaContext(device : CUdevice): CUcontext {
-
     val context = CUcontext()
     cuCtxCreate(context, 0, device)
 
     return context
-
 }
 
 fun destroyCudaContext(context : CUcontext) =
-
     cuCtxDestroy(context)

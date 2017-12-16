@@ -2,9 +2,7 @@
 
 __device__ float backwardSigmoid (float forward, float chain)
 {
-
     return forward * (1.0f - forward) * chain;
-
 }
 
 __global__ void backwardSigmoidKernel (
@@ -27,24 +25,15 @@ __global__ void backwardSigmoidKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 destination[indexEntry] = backwardSigmoid(forward[indexEntry], chain[indexEntry]);
-
             }
-
         }
         else {
-
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
-
 }

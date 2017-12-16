@@ -1,9 +1,7 @@
 #include "symbols/NaN.cuh"
 
 __device__ float tanh (float x) {
-
     return (2.0 / (1.0 + expf(-2.0*x))) - 1.0;
-
 }
 
 __global__ void tanhKernel (
@@ -25,24 +23,16 @@ __global__ void tanhKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 destination[indexEntry] = tanh(source[indexEntry]);
-
             }
-
         }
         else {
-
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

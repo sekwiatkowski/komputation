@@ -1,9 +1,7 @@
 #include "symbols/NaN.cuh"
 
 __device__ float sigmoid (float x) {
-
     return 1.0 / (1.0 + expf (-x));
-
 }
 
 __global__ void sigmoidKernel (
@@ -25,24 +23,16 @@ __global__ void sigmoidKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 destination[indexEntry] = sigmoid(source[indexEntry]);
-
             }
-
         }
         else {
-
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }
