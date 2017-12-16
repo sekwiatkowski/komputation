@@ -2,7 +2,7 @@ package com.komputation.cuda.layers.recurrent
 
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.getFloatArray
-import com.komputation.cuda.kernels.Kernel
+import com.komputation.cuda.kernels.*
 import com.komputation.cuda.layers.BaseCudaForwardLayer
 import com.komputation.cuda.layers.forward.projection.CublasWeightingLayer
 import com.komputation.cuda.setFloatArray
@@ -10,15 +10,13 @@ import com.komputation.cuda.setUpCudaContext
 import com.komputation.layers.Resourceful
 import com.komputation.layers.forward.activation.ActivationFunction
 import jcuda.Pointer
-import jcuda.driver.*
-import jcuda.driver.CUjitInputType.CU_JIT_INPUT_LIBRARY
-import jcuda.driver.CUjitInputType.CU_JIT_INPUT_PTX
-import jcuda.driver.JCudaDriver.*
-import jcuda.nvrtc.JNvrtc.*
+import jcuda.driver.CUfunction
+import jcuda.driver.CUlinkState
+import jcuda.driver.JCudaDriver
+import jcuda.nvrtc.JNvrtc.nvrtcDestroyProgram
 import jcuda.nvrtc.nvrtcProgram
 import jcuda.runtime.JCuda.cudaDeviceSynchronize
 import jcuda.runtime.JCuda.cudaFree
-import java.nio.ByteBuffer
 
 
 class CudaRecurrentLayer(
@@ -123,65 +121,48 @@ fun main(args: Array<String>) {
     JCudaDriver.setExceptionsEnabled(true)
 
     val src = """
-    extern "C"
-    __global__ void child() {
-        printf("child");
-    }
+        extern "C"
+        __global__ void child() {
+            printf("child");
+        }
 
-    extern "C"
-    __global__ void parent() {
-        child<<< 1, 1>>>();
-    }
-"""
+        extern "C"
+        __global__ void parent() {
+            child<<< 1, 1>>>();
+        }
+    """
 
-    val prog = nvrtcProgram()
-
-    nvrtcCreateProgram(prog, src, "dynamic_parallelism.cu", 0, emptyArray(), emptyArray())
-
-    nvrtcCompileProgram(prog, 1, arrayOf("--gpu-architecture=compute_35"))
-
-    val programLogArray = Array(1) { "" }
-    nvrtcGetProgramLog(prog, programLogArray)
-
-    val ptxArray = Array(1) { "" }
-    nvrtcGetPTX(prog, ptxArray)
-
-    nvrtcDestroyProgram(prog)
+    val program = nvrtcProgram()
+    val ptx = compileKernel(
+        program,
+        3 to 5,
+        src,
+        "dynamic_parallelism.cu",
+        emptyArray(),
+        emptyArray(),
+        emptyArray()
+    )
 
     val context = setUpCudaContext()
 
     val linkState = CUlinkState()
-    cuLinkCreate(JITOptions(), linkState)
+    val cubinPointer = link(linkState, ptx, "dynamic_parallelism.ptx", "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\lib\\x64\\cudadevrt.lib")
 
-    cuLinkAddFile(linkState, CU_JIT_INPUT_LIBRARY, "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v8.0\\lib\\x64\\cudadevrt.lib", JITOptions())
+    val kernel = CUfunction()
+    loadKernel(kernel, cubinPointer, "parent")
 
-    val ptx = ptxArray.single()
-    val bytes = ptx.toByteArray()
-    val byteBuffer = ByteBuffer.wrap(bytes)
-    cuLinkAddData(linkState, CU_JIT_INPUT_PTX, Pointer.to(byteBuffer), bytes.size.toLong(),"dynamic_parallelism.ptx", JITOptions())
-
-    val cubinPointer = Pointer()
-    val linkSize = LongArray(1)
-    cuLinkComplete(linkState, cubinPointer, linkSize)
-
-    // https://stackoverflow.com/questions/32535828/jit-in-jcuda-loading-multiple-ptx-modules
-    val module = CUmodule()
-    cuModuleLoadDataEx(module, cubinPointer, 0, IntArray(0), Pointer.to(IntArray(0)))
-
-    val function = CUfunction()
-    cuModuleGetFunction(function, module, "parent")
-
-    cuLaunchKernel(
-        function,
-        1, 1, 1,
-        1, 1, 1,
-        0,
-        null,
+    launchKernel(
+        kernel,
         Pointer(),
-        null
+        1,
+        1,
+        1,
+        0
     )
 
     cudaDeviceSynchronize()
+
+    nvrtcDestroyProgram(program)
 
     context.destroy()
 
