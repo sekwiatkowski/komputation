@@ -13,7 +13,7 @@ import com.komputation.cuda.optimization.BaseCudaUpdateRule
 import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
 
-class CublasBiasLayer internal constructor(
+class CudaBiasLayer internal constructor(
     name: String?,
     private val cublasHandle: cublasHandle,
     numberRows: Int,
@@ -59,7 +59,7 @@ class CublasBiasLayer internal constructor(
     private var numberBatchInputColumns = -1
     private var maximumBatchSize = -1
     private val deviceMaximumInputColumns = Pointer()
-    private val pointerToMaximumInputColumns = Pointer.to(deviceMaximumInputColumns)
+    private val pointerToMaximumInputColumns = Pointer.to(this.deviceMaximumInputColumns)
 
     fun getDeviceBias() =
 

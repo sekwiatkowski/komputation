@@ -9,7 +9,6 @@ import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.KernelLaunchConfiguration
 import com.komputation.cuda.layers.BaseCudaForwardLayer
 import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
-import com.komputation.cuda.network.CudaChangesLengths
 import com.komputation.cuda.setIntArray
 import com.komputation.layers.Resourceful
 
@@ -22,7 +21,7 @@ class CudaExpansionLayer internal constructor(
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize : Int,
-    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer, CudaChangesLengths {
+    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
 
     private val pointerToFilterHeight = Pointer.to(intArrayOf(filterHeight))
     private val pointerToFilterWidth = Pointer.to(intArrayOf(filterWidth))
@@ -76,11 +75,10 @@ class CudaExpansionLayer internal constructor(
     private val numberBackwardIterations = intArrayOf(-1)
     private val pointerToNumberIterations = Pointer.to(this.numberBackwardIterations)
 
-    override val deviceOutputLengths = Pointer()
+    val deviceOutputLengths = Pointer()
     private val pointerToOutputLengths = Pointer.to(this.deviceOutputLengths)
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.maximumBatchSize = maximumBatchSize
 
         this.forwardKernel = this.createForwardKernel()
@@ -100,12 +98,9 @@ class CudaExpansionLayer internal constructor(
         this.numberBackwardBlocksInYDimension = backwardLaunch.numberBlocks
         this.numberBackwardThreads = backwardLaunch.numberThreadsPerBlock
         this.numberBackwardIterations[0] = backwardLaunch.numberIterations
-
-
     }
 
     private fun computeBackwardLaunchConfiguration(numberInputEntries : Int, filterSize : Int, maximumNumberWarpsPerBlock : Int, warpSize: Int): KernelLaunchConfiguration {
-
         val numberBackwardBlocksInYDimension =
             if(numberInputEntries <= maximumNumberWarpsPerBlock)
                 1
@@ -122,11 +117,9 @@ class CudaExpansionLayer internal constructor(
         val numberIterations = (warpSize + filterSize - 1)/ warpSize
 
         return KernelLaunchConfiguration(numberBackwardBlocksInYDimension, numberThreads, numberIterations)
-
     }
 
     override fun release() {
-
         cudaFree(this.deviceMaximumBatchLengths)
 
         this.forwardKernel!!.destroy()
@@ -134,11 +127,9 @@ class CudaExpansionLayer internal constructor(
 
         this.backwardKernel!!.destroy()
         cudaFree(this.deviceBackwardResult)
-
     }
 
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
-
         this.batchSize[0] = batchSize
         this.pointerToCurrentBatchLengths = this.pointerToMaximumBatchLengths
 
@@ -164,11 +155,9 @@ class CudaExpansionLayer internal constructor(
         )
 
         return this.deviceForwardResult
-
     }
 
     override fun forward(batchSize: Int, deviceLengths: Pointer, deviceInput: Pointer, isTraining: Boolean) : Pointer {
-
         this.batchSize[0] = batchSize
         this.pointerToCurrentBatchLengths = Pointer.to(deviceLengths)
 
@@ -194,11 +183,9 @@ class CudaExpansionLayer internal constructor(
         )
 
         return this.deviceForwardResult
-
     }
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
-
         this.backwardKernel!!.launch(
             Pointer.to(
                 this.pointerToBatchSize,
@@ -222,8 +209,6 @@ class CudaExpansionLayer internal constructor(
         )
 
         return this.deviceBackwardResult
-
     }
-
 
 }

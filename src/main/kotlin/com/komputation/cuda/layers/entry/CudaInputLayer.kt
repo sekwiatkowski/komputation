@@ -26,18 +26,14 @@ class CudaInputLayer internal constructor(
     private var numberBatchEntries = -1
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.concatenation = FloatArray(maximumBatchSize* this.numberEntries)
         this.batchInputs = Array(maximumBatchSize) { FloatArray(0) }
         this.numberBatchEntries = maximumBatchSize * numberEntries
-
     }
 
     override fun release() {
-
         this.concatenation = FloatArray(0)
         this.numberBatchEntries = -1
-
     }
 
     override fun forward(
@@ -46,28 +42,22 @@ class CudaInputLayer internal constructor(
         batch: IntArray,
         inputs : Array<Matrix>,
         memory: InputMemory): Pointer {
-
         this.deviceForwardResult = getData(batchId, batch, inputs, memory)
 
         return this.deviceForwardResult
-
     }
 
     private fun getData(batchId : Int, batch : IntArray, inputs: Array<Matrix>, memory: InputMemory): Pointer {
-
         val optionalDeviceForwardPointer = memory.tryToGetData(batchId)
 
         return if (optionalDeviceForwardPointer == null) {
-
             for ((withinBatch, id) in batch.withIndex()) {
-
                 val input = inputs[id] as FloatMatrix
                 val inputEntries = input.entries
 
                 this.batchInputs[withinBatch] = inputEntries
 
                 concatenate(inputEntries, withinBatch * this.numberOutputRows, this.numberOutputRows, this.concatenation)
-
             }
 
             val deviceInput = Pointer()
@@ -76,19 +66,13 @@ class CudaInputLayer internal constructor(
             memory.setData(batchId, deviceInput)
 
             deviceInput
-
         }
         else {
-
             optionalDeviceForwardPointer
-
         }
-
     }
 
     override fun backward(chain: Pointer) =
-
         chain
-
 
 }

@@ -8,7 +8,7 @@ import com.komputation.optimization.Optimizable
 class CublasProjectionLayer internal constructor(
     name: String?,
     private val weightingLayer: CublasWeightingLayer,
-    private val biasLayer: CublasBiasLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
+    private val biasLayer: CudaBiasLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
 
     override val deviceForwardResult
         get() = this.biasLayer.deviceForwardResult

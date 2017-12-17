@@ -6,7 +6,7 @@ import com.komputation.cpu.layers.forward.projection.CpuWeightingLayer
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
-import com.komputation.cuda.layers.forward.projection.CublasBiasLayer
+import com.komputation.cuda.layers.forward.projection.CudaBiasLayer
 import com.komputation.cuda.layers.forward.projection.CublasProjectionLayer
 import com.komputation.cuda.layers.forward.projection.CublasWeightingLayer
 import com.komputation.initialization.InitializationStrategy
@@ -68,7 +68,7 @@ class ProjectionLayer internal constructor(
         val initializedBias = initializeColumnVector(this.biasInitializationStrategy, this.numberOutputRows)
         val biasUpdateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberOutputRows, 1)
 
-        val biasLayer = CublasBiasLayer(
+        val biasLayer = CudaBiasLayer(
             biasName,
             cublasHandle,
             this.numberOutputRows,

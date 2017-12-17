@@ -63,6 +63,10 @@ class CudaRecurrentLayer(
     private val pointerToResult = Pointer.to(this.deviceResult)
 
     override fun forward(batchSize: Int, deviceInput: Pointer, isTraining: Boolean): Pointer {
+
+        
+
+
         TODO("not implemented")
 
         val deviceWeightedInput = this.inputWeighting.forward(batchSize, deviceInput, isTraining)

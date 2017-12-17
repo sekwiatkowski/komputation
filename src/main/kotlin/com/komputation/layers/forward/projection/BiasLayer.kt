@@ -4,7 +4,7 @@ import com.komputation.cpu.layers.forward.projection.CpuBiasLayer
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.ForwardKernels
-import com.komputation.cuda.layers.forward.projection.CublasBiasLayer
+import com.komputation.cuda.layers.forward.projection.CudaBiasLayer
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.layers.CpuForwardLayerInstruction
@@ -33,11 +33,11 @@ class BiasLayer internal constructor(
         return layer
     }
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CublasBiasLayer {
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaBiasLayer {
         val bias = initializeColumnVector(this.initializationStrategy, this.numberInputRows)
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberInputRows, 1)
 
-        val layer = CublasBiasLayer(
+        val layer = CudaBiasLayer(
             this.name,
             cublasHandle,
             this.numberInputRows,

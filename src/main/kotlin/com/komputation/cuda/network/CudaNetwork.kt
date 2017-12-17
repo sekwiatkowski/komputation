@@ -35,59 +35,39 @@ class CudaNetwork(
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed().toTypedArray()
 
     private val forwardPropagator =
-
-        if(this.hasFixedLengthInput)
-            CudaFixedLengthForwardPropagator(this.entryPoint, this.layers)
-        else
-            CudaVariableLengthForwardPropagator(this.entryPoint, this.layers)
+        CudaForwardPropagator(this.entryPoint, this.layers)
 
     private val backwardPropagator =
-
         CudaBackwardPropagator(this.entryPoint, this.layers)
 
     init {
-
         cublasCreate(this.cublasHandle)
 
         acquireRecursively(this.entryPoint, this.maximumBatchSize)
 
         for (layer in this.layers) {
-
             acquireRecursively(layer, this.maximumBatchSize)
-
         }
-
     }
 
     fun getEntryPoint() =
-
         this.entryPoint
 
     fun getLayer(index : Int) =
-
         this.layers[index]
 
-
     fun free() {
-
         cublasDestroy(this.cublasHandle)
 
         for (layer in this.layers) {
-
             if (layer is Resourceful) {
-
                 layer.release()
-
             }
-
         }
 
         if (this.entryPoint is Resourceful) {
-
             this.entryPoint.release()
-
         }
-
     }
 
     fun training(
@@ -96,7 +76,6 @@ class CudaNetwork(
         numberIterations : Int,
         lossFunction : CudaLossFunctionInstruction,
         afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
-
         CudaTrainer(
             this.forwardPropagator,
             this.backwardPropagator,
@@ -118,16 +97,11 @@ class CudaNetwork(
         length : Int = 1) : CudaTester {
 
         val classificationTester =
-
             if (numberCategories == 1) {
-
                 CudaBinaryClassificationTester(inputs.size, numberCategories, { this.cudaContext.createKernel(TestingKernels.binary()) })
-
             }
             else {
-
                 CudaMultiClassificationTester(inputs.size, numberCategories, length, { this.cudaContext.createKernel(TestingKernels.multiClass()) })
-
             }
 
 
@@ -138,17 +112,14 @@ class CudaNetwork(
             targets,
             batchSize
         )
-
     }
 
     fun predict(input : Matrix) : Pointer {
-
         val inputMemory = InputMemory()
         val prediction = this.forwardPropagator.forward(0, 1, intArrayOf(0), arrayOf(input), inputMemory, false)
         inputMemory.free()
 
         return prediction
-
     }
 
 }
