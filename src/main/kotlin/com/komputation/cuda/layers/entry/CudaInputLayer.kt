@@ -11,10 +11,9 @@ import com.komputation.matrix.Matrix
 
 class CudaInputLayer internal constructor(
     name : String?,
-    numberRows: Int,
+    private val numberRows: Int,
     numberColumns : Int) : BaseCudaEntryPoint(name), Resourceful {
 
-    override val numberOutputRows = numberRows
     override val maximumOutputColumns = numberColumns
     override var deviceForwardResult = Pointer()
 
@@ -55,7 +54,7 @@ class CudaInputLayer internal constructor(
 
                 this.batchInputs[withinBatch] = inputEntries
 
-                concatenate(inputEntries, withinBatch * this.numberOutputRows, this.numberOutputRows, this.concatenation)
+                concatenate(inputEntries, withinBatch * this.numberRows, this.numberRows, this.concatenation)
             }
 
             val deviceInput = Pointer()

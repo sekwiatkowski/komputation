@@ -4,11 +4,11 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 import com.komputation.cpu.functions.computeNumberFilterColumnPositions
 import com.komputation.cpu.functions.computeNumberFilterRowPositions
+import com.komputation.cuda.CudaVariableLengthForwardPropagation
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.KernelLaunchConfiguration
 import com.komputation.cuda.layers.BaseCudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import com.komputation.cuda.setIntArray
 import com.komputation.layers.Resourceful
 
@@ -21,7 +21,7 @@ class CudaExpansionLayer internal constructor(
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize : Int,
-    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
+    maximumNumberThreads : Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardPropagation {
 
     private val pointerToFilterHeight = Pointer.to(intArrayOf(filterHeight))
     private val pointerToFilterWidth = Pointer.to(intArrayOf(filterWidth))

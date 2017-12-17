@@ -1,11 +1,11 @@
 package com.komputation.cuda.layers
 
+import com.komputation.cuda.CudaForwardResult
 import jcuda.Pointer
-import com.komputation.cuda.CudaForwardState
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.matrix.Matrix
 
-interface CudaEntryPoint : CudaForwardState {
+interface CudaEntryPoint : CudaForwardResult {
 
     fun forward(
         batchId : Int,

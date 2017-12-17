@@ -3,7 +3,6 @@ package com.komputation.cuda.network
 import jcuda.Pointer
 import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.layers.CudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.matrix.Matrix
 

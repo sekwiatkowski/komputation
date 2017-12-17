@@ -1,8 +1,8 @@
 package com.komputation.cuda.layers.forward.convolution
 
+import com.komputation.cuda.CudaVariableLengthForwardPropagation
 import jcuda.Pointer
 import com.komputation.cuda.layers.BaseCudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import com.komputation.cuda.layers.forward.maxpooling.CudaMaxPoolingLayer
 import com.komputation.cuda.layers.forward.projection.CublasProjectionLayer
 import com.komputation.optimization.Optimizable
@@ -11,7 +11,7 @@ class CudaConvolutionLayer(
     name : String?,
     private val expansionLayer: CudaExpansionLayer,
     private val projectionLayer: CublasProjectionLayer,
-    private val maxPoolingLayer: CudaMaxPoolingLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
+    private val maxPoolingLayer: CudaMaxPoolingLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardPropagation, Optimizable {
 
     override val deviceForwardResult: Pointer
         get() = this.maxPoolingLayer.deviceForwardResult

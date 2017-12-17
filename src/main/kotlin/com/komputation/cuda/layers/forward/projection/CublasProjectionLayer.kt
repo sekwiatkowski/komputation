@@ -1,14 +1,14 @@
 package com.komputation.cuda.layers.forward.projection
 
+import com.komputation.cuda.CudaVariableLengthForwardPropagation
 import jcuda.Pointer
 import com.komputation.cuda.layers.BaseCudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import com.komputation.optimization.Optimizable
 
 class CublasProjectionLayer internal constructor(
     name: String?,
     private val weightingLayer: CublasWeightingLayer,
-    private val biasLayer: CudaBiasLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable {
+    private val biasLayer: CudaBiasLayer) : BaseCudaForwardLayer(name), CudaVariableLengthForwardPropagation, Optimizable {
 
     override val deviceForwardResult
         get() = this.biasLayer.deviceForwardResult

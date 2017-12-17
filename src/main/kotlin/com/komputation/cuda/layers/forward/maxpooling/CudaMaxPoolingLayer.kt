@@ -1,13 +1,9 @@
 package com.komputation.cuda.layers.forward.maxpooling
 
-import com.komputation.cuda.allocateDeviceFloatMemory
-import com.komputation.cuda.allocateDeviceIntMemory
-import com.komputation.cuda.computeDeviceIntArraySize
+import com.komputation.cuda.*
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
 import com.komputation.cuda.layers.BaseCudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
-import com.komputation.cuda.setIntArray
 import com.komputation.layers.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
@@ -20,7 +16,7 @@ class CudaMaxPoolingLayer internal constructor(
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize: Int,
-    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardLayer {
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), Resourceful, CudaVariableLengthForwardPropagation {
 
     private val maximumNumberEntries = numberRows * this.maximumInputColumns
     private val pointerToMaximumNumberEntries = Pointer.to(intArrayOf(this.maximumNumberEntries))

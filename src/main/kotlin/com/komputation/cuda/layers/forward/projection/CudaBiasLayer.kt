@@ -8,7 +8,6 @@ import com.komputation.cuda.functions.cublasBackwardProjectionWrtBias
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import com.komputation.cuda.layers.BaseCudaForwardLayer
-import com.komputation.cuda.layers.CudaVariableLengthForwardLayer
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
 import com.komputation.layers.Resourceful
 import com.komputation.optimization.Optimizable
@@ -22,7 +21,7 @@ class CudaBiasLayer internal constructor(
     private val biasUpdateRule: BaseCudaUpdateRule?,
     private val createKernel: () -> Kernel,
     private val warpSize : Int,
-    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), CudaVariableLengthForwardLayer, Optimizable, Resourceful {
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaForwardLayer(name), CudaVariableLengthForwardPropagation, Optimizable, Resourceful {
 
     private val numberEntries = numberRows * numberColumns
 
