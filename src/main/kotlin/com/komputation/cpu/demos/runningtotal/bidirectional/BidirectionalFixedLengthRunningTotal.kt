@@ -42,8 +42,6 @@ fun main(args: Array<String>) {
             .toFloatArray()
     }
 
-    val hasFixedLength = true
-
     Network(
             1,
             inputLayer(1, steps),
@@ -63,7 +61,7 @@ fun main(args: Array<String>) {
             input,
             sumTargets,
             2,
-            squaredLoss(1, steps, hasFixedLength),
+            squaredLoss(1, steps),
             printLoss
         )
         .run()

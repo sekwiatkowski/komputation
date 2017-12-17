@@ -4,11 +4,8 @@ import com.komputation.cpu.layers.BaseCpuEntryPoint
 import com.komputation.matrix.FloatMatrix
 import com.komputation.matrix.Matrix
 
-class CpuInputLayer internal constructor(
-    name : String? = null,
-    numberInputRows: Int) : BaseCpuEntryPoint(name) {
+class CpuInputLayer internal constructor(name : String? = null) : BaseCpuEntryPoint(name) {
 
-    override val numberOutputRows = numberInputRows
     override var numberOutputColumns = -1
     override var forwardResult = FloatArray(0)
 

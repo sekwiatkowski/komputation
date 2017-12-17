@@ -109,7 +109,7 @@ class RecurrentLayer internal constructor(
 
         val resultExtraction = when(this.resultExtraction) {
             ResultExtraction.AllSteps -> AllSteps(activation, this.hiddenDimension, minimumSteps, this.maximumSteps)
-            ResultExtraction.LastStep -> LastStep(activation, this.hiddenDimension, this.direction == Direction.Backward)
+            ResultExtraction.LastStep -> LastStep(activation, this.direction == Direction.Backward)
         }
 
         val recurrentLayer = CpuRecurrentLayer(

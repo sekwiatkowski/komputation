@@ -9,7 +9,7 @@ class CpuConvolutionLayer internal constructor(
     name : String? = null,
     private val expansionLayer: CpuExpansionLayer,
     private val projectionLayer: CpuProjectionLayer,
-    private val maxPoolingLayer: CpuMaxPoolingLayer) : BaseCpuHigherOrderLayer(name, expansionLayer, maxPoolingLayer), Optimizable {
+    private val maxPoolingLayer: CpuMaxPoolingLayer) : BaseCpuHigherOrderLayer(name, expansionLayer.numberInputRows, maxPoolingLayer.numberOutputRows, expansionLayer, maxPoolingLayer), Optimizable {
 
     override val possibleInputLengths
         get() = this.expansionLayer.possibleInputLengths

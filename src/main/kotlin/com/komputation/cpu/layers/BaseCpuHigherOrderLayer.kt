@@ -2,11 +2,11 @@ package com.komputation.cpu.layers
 
 abstract class BaseCpuHigherOrderLayer(
     val name : String?,
+    override val numberInputRows : Int,
+    override val numberOutputRows : Int,
     private val firstLayer : CpuVariableLengthBackwardState,
     private val lastLayer : CpuVariableLengthForwardState) : CpuForwardLayer {
 
-    override val numberOutputRows
-        get() = this.lastLayer.numberOutputRows
     override val numberOutputColumns
         get() = this.lastLayer.numberOutputColumns
     override val possibleOutputLengths
@@ -14,8 +14,6 @@ abstract class BaseCpuHigherOrderLayer(
     override val forwardResult
         get() = this.lastLayer.forwardResult
 
-    override val numberInputRows
-        get() = this.firstLayer.numberInputRows
     override val numberInputColumns
         get() = this.firstLayer.numberInputColumns
     override val possibleInputLengths

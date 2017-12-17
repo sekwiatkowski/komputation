@@ -22,7 +22,6 @@ class CpuLookupLayer internal constructor(
     private val update: UpdateRule? = null) : BaseCpuEntryPoint(name), Optimizable, Resourceful {
 
     override var forwardResult = FloatArray(0)
-    override val numberOutputRows = this.dimension
     override var numberOutputColumns = -1
 
     private var inputEntries = IntArray(0)

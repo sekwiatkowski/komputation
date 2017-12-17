@@ -5,7 +5,7 @@ import com.komputation.cpu.layers.computeNumberPossibleLengths
 import com.komputation.cpu.layers.computePossibleLengths
 
 abstract class BaseCpuLossFunction(
-    final override val numberInputRows: Int,
+    val numberInputRows: Int,
     private val minimumLength : Int,
     private val maximumLength: Int) : CpuLossFunction {
 

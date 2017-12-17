@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = uniformInitialization(random, -0.01f, 0.01f)
-    val optimization = stochasticGradientDescent(0.001f)
+    val optimization = stochasticGradientDescent(0.0003f)
 
     val minimumLength = 2
     val maximumLength = 5
@@ -43,11 +43,9 @@ fun main(args: Array<String>) {
             .toFloatArray()
     }
 
-    val hasFixedLength = true
-
     Network(
             1,
-            inputLayer(1, minimumLength),
+            inputLayer(1, maximumLength),
             bidirectionalRecurrentLayer(
                 maximumLength,
                 false,
@@ -64,7 +62,7 @@ fun main(args: Array<String>) {
             input,
             sumTargets,
             2,
-            squaredLoss(1, minimumLength, hasFixedLength),
+            squaredLoss(1, minimumLength, maximumLength),
             printLoss
         )
         .run()

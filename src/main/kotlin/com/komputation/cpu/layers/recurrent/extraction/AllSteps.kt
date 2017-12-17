@@ -15,7 +15,7 @@ class AllSteps(
     private val maximumSteps : Int) : ResultExtractionStrategy {
 
     override var forwardResult = FloatArray(0)
-    override val numberOutputRows = this.hiddenDimension
+    private val numberOutputRows = this.hiddenDimension
     override var numberOutputColumns = -1
 
     private val numberPossibleOutputLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)

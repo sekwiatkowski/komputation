@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
             input,
             targets,
             2,
-            squaredLoss(1, steps, hasFixedLength),
+            squaredLoss(1, steps),
             printLoss
         )
         .run()

@@ -5,9 +5,7 @@ import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.LossKernels
 import com.komputation.cuda.loss.CudaSquaredLoss
 
-class SquaredLoss(private val numberRows: Int, private val maximumLength: Int, private val hasFixedLength : Boolean) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
-
-    private val minimumLength = if(this.hasFixedLength) this.maximumLength else 1
+class SquaredLoss(private val numberRows: Int, private val minimumLength: Int, private val maximumLength: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
 
     override fun buildForCpu() =
         CpuSquaredLoss(this.numberRows, this.minimumLength, this.maximumLength)
@@ -25,5 +23,5 @@ class SquaredLoss(private val numberRows: Int, private val maximumLength: Int, p
 
 }
 
-fun squaredLoss(numberCategories: Int, length: Int = 1, hasFixedLength: Boolean = true) =
-    SquaredLoss(numberCategories, length, hasFixedLength)
+fun squaredLoss(numberCategories: Int, minimumLength: Int = 1, maximumLength: Int = minimumLength) =
+    SquaredLoss(numberCategories, minimumLength, maximumLength)

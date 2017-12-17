@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
             input,
             targets,
             2,
-            squaredLoss(1, 1, true),
+            squaredLoss(1, steps),
             printLoss
         )
         .run()

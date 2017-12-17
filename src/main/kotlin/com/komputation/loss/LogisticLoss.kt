@@ -5,9 +5,7 @@ import com.komputation.cuda.CudaContext
 import com.komputation.cuda.kernels.LossKernels
 import com.komputation.cuda.loss.CudaLogisticLoss
 
-class LogisticLoss(private val maximumLength: Int, private val hasFixedLength : Boolean) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
-
-    private val minimumLength = if(this.hasFixedLength) this.maximumLength else 1
+class LogisticLoss(private val minimumLength : Int, private val maximumLength: Int) : CpuLossFunctionInstruction, CudaLossFunctionInstruction {
 
     override fun buildForCpu() =
         CpuLogisticLoss(this.minimumLength, this.maximumLength)
@@ -24,5 +22,5 @@ class LogisticLoss(private val maximumLength: Int, private val hasFixedLength : 
 
 }
 
-fun logisticLoss(length: Int = 1, hasFixedLength: Boolean = true) =
-    LogisticLoss(length, hasFixedLength)
+fun logisticLoss(minimumLength: Int = 1, maximumLength: Int = minimumLength) =
+    LogisticLoss(minimumLength, maximumLength)

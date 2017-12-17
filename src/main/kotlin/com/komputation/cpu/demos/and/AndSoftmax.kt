@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
             OneHotAndData.input,
             OneHotAndData.targets,
             10_000,
-            crossEntropyLoss(outputDimension),
+            crossEntropyLoss(outputDimension, 1),
             printLoss)
         .run()
 

@@ -26,14 +26,12 @@ fun main(args: Array<String>) {
     val input = TotalData.generateVariableLengthInput(random, minimumLength, maximumLength, 0, 10, 10_000)
     val targets = TotalData.generateTargets(input)
 
-    val hasFixedLength = false
-
     val network = Network(
         1,
         inputLayer(1, maximumLength),
         recurrentLayer(
             maximumLength,
-            hasFixedLength,
+            false,
             1,
             1,
             ActivationFunction.Identity,
@@ -49,7 +47,7 @@ fun main(args: Array<String>) {
             input,
             targets,
             2,
-            squaredLoss(1, maximumLength, hasFixedLength),
+            squaredLoss(1, minimumLength, maximumLength),
             printLoss
         )
         .run()
