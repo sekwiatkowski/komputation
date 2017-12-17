@@ -1,8 +1,9 @@
 package com.komputation.cpu.layers.recurrent.extraction
 
-import com.komputation.cpu.layers.CpuVariableLengthForwardState
+import com.komputation.cpu.layers.CpuForwardResult
+import com.komputation.cpu.layers.CpuForwardState
 
-interface ResultExtractionStrategy : CpuVariableLengthForwardState {
+interface ResultExtractionStrategy : CpuForwardState {
 
     fun extractResult(numberInputColumns : Int): FloatArray
 

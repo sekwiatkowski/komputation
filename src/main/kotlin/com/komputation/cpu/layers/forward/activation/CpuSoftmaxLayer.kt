@@ -6,7 +6,7 @@ import com.komputation.cpu.layers.forward.normalization.CpuNormalizationLayer
 class CpuSoftmaxLayer internal constructor(
     name : String? = null,
     private val exponentiationLayer: CpuExponentiationLayer,
-    private val normalizationLayer: CpuNormalizationLayer) : BaseCpuHigherOrderLayer(name, exponentiationLayer.numberInputRows, normalizationLayer.numberOutputRows, exponentiationLayer, normalizationLayer), CpuActivationLayer {
+    private val normalizationLayer: CpuNormalizationLayer) : BaseCpuHigherOrderLayer(name, exponentiationLayer, normalizationLayer), CpuActivationLayer {
 
     override fun forward(withinBatch : Int, numberInputColumns : Int, input : FloatArray, isTraining : Boolean): FloatArray {
         this.exponentiationLayer.forward(withinBatch, numberInputColumns, input, isTraining)

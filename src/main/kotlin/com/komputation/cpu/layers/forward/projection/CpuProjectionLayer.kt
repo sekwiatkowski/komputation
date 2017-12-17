@@ -6,7 +6,7 @@ import com.komputation.optimization.Optimizable
 class CpuProjectionLayer internal constructor(
     name : String? = null,
     private val weightingLayer: CpuWeightingLayer,
-    private val biasLayer : CpuBiasLayer) : BaseCpuHigherOrderLayer(name, weightingLayer.numberInputRows, weightingLayer.numberOutputRows, weightingLayer, biasLayer), Optimizable {
+    private val biasLayer : CpuBiasLayer) : BaseCpuHigherOrderLayer(name, weightingLayer, biasLayer), Optimizable {
 
     fun getWeights() =
         this.weightingLayer.getWeights()

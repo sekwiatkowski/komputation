@@ -4,9 +4,11 @@ import com.komputation.cpu.layers.recurrent.series.Series
 
 class LastStep(
     private val series: Series,
+    numberRows : Int,
     private val isReversed : Boolean) : ResultExtractionStrategy {
 
     override var forwardResult = FloatArray(0)
+    override val numberOutputRows = numberRows
     override val numberOutputColumns = 1
 
     override val possibleOutputLengths = intArrayOf(1)

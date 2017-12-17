@@ -28,7 +28,7 @@ class CpuRecurrentLayer(
     private val previousHiddenStateWeighting: ParameterizedSeries,
     private val additions : Array<CpuAdditionCombination>,
     private val bias: ParameterizedSeries?,
-    private val activation: Series) : BaseCpuHigherOrderLayer(name, inputWeighting.numberInputRows, hiddenDimension, inputWeighting, resultExtraction), Optimizable {
+    private val activation: Series) : BaseCpuHigherOrderLayer(name, inputWeighting, resultExtraction), Optimizable {
 
     private val numberPossibleLengths = computeNumberPossibleLengths(this.minimumSteps, this.maximumSteps)
     private val possibleLengths = computePossibleLengths(this.minimumSteps, this.numberPossibleLengths)

@@ -8,7 +8,7 @@ import com.komputation.optimization.Optimizable
 class CpuDenseLayer internal constructor(
     name : String?,
     private val projection : CpuProjectionLayer,
-    private val activation: CpuActivationLayer) : BaseCpuHigherOrderLayer(name, projection.numberInputRows, activation.numberOutputRows, projection, activation), Optimizable {
+    private val activation: CpuActivationLayer) : BaseCpuHigherOrderLayer(name, projection, activation), Optimizable {
 
     fun getBias() =
         this.projection.getBias()
