@@ -29,7 +29,6 @@ class CudaNetwork(
     private val cublasHandle = cublasHandle()
 
     private val entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
-    private val hasFixedLengthInput = this.entryPoint.hasFixedLength
 
     private val layers = Array(forwardLayerInstructions.size) { index -> forwardLayerInstructions[index].buildForCuda(this.cudaContext, this.cublasHandle) }
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed().toTypedArray()

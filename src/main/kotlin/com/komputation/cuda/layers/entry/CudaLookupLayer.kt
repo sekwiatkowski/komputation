@@ -20,7 +20,7 @@ class CudaLookupLayer internal constructor(
     name : String?,
     private var vectors: FloatArray,
     maximumLength : Int,
-    override val hasFixedLength: Boolean,
+    private val hasFixedLength: Boolean,
     dimension : Int,
     private val updateRule: BaseCudaUpdateRule?,
     private val createForwardKernel: () -> Kernel,
@@ -210,7 +210,6 @@ class CudaLookupLayer internal constructor(
             val deviceLengths = Pointer()
             setIntArray(lengths, maximumBatchSize, deviceLengths)
 
-            memory.setLengths(batchId, deviceLengths)
 
         }
 

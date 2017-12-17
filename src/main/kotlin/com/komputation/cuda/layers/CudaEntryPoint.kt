@@ -16,6 +16,4 @@ interface CudaEntryPoint : CudaForwardState {
 
     fun backward(chain : Pointer) : Pointer
 
-    val hasFixedLength : Boolean
-
 }

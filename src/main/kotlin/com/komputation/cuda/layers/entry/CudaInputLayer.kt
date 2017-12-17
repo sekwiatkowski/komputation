@@ -14,8 +14,6 @@ class CudaInputLayer internal constructor(
     numberRows: Int,
     numberColumns : Int) : BaseCudaEntryPoint(name), Resourceful {
 
-    override val hasFixedLength = true
-
     override val numberOutputRows = numberRows
     override val maximumOutputColumns = numberColumns
     override var deviceForwardResult = Pointer()

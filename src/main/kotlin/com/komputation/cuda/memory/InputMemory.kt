@@ -18,16 +18,6 @@ class InputMemory {
 
     }
 
-    fun getLengths(id : Int) =
-
-        this.deviceLengths[id]!!
-
-    fun setLengths(id : Int, pointer : Pointer) {
-
-        this.deviceLengths[id] = pointer
-
-    }
-
     fun free() {
 
         arrayOf(this.deviceData, this.deviceLengths).forEach { map ->
