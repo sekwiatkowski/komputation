@@ -8,6 +8,6 @@ interface UpdateRule {
 
     }
 
-    fun updateSparsely(start : Int, parameters : FloatArray, gradient : FloatArray, numberEntries: Int)
+    fun updateSparsely(start : Int, parameter: FloatArray, gradient : FloatArray, dimension: Int)
 
 }

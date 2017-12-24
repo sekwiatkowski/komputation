@@ -83,7 +83,11 @@ class CudaGroupSumTest {
             maximumColumns,
             2 * maximumColumns,
             { context.createKernel(HashtableKernels.groupSum()) },
-            { context.createKernel(FillKernels.oneFloatArray()) })
+            { context.createKernel(FillKernels.oneFloatArray()) },
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         groupSum.acquire(1)
 

@@ -12,100 +12,85 @@ class SparseAccumulator(numberVectors : Int, maximumBatchSize : Int, maximumLeng
     private val counts = FloatArray(maximumBatchSize * maximumLength)
     private val sums = Array(maximumBatchSize * maximumLength) { FloatArray(dimension) }
 
-    private var lastNewId = -1
+    private var lastHashTableIndex = -1
 
-    fun accumulate(ids: IntArray, numberIds : Int, gradient: FloatArray) {
+    fun accumulate(parameterIndices: IntArray, numberParameterIndices: Int, gradient: FloatArray) {
 
-        for (indexId in 0 until numberIds) {
+        for (indexGradient in 0 until numberParameterIndices) {
 
-            val currentId = ids[indexId]
+            val parameterIndex = parameterIndices[indexGradient]
 
-            val hashedId = this.hashId(currentId)
+            val hashTableIndex = this.hash(parameterIndex)
 
-            this.addToSum(indexId, hashedId, gradient)
+            this.addToSum(indexGradient, hashTableIndex, gradient)
 
             // Is this the first occurrence of the vector?
-            if (!this.visited[currentId]) {
-
+            if (!this.visited[parameterIndex]) {
                 // Increment the count
-                this.counts[hashedId] += 1.0f
+                this.counts[hashTableIndex] += 1.0f
 
                 // Avoid further increments for the current example.
-                this.visited[currentId] = true
-
+                this.visited[parameterIndex] = true
             }
 
         }
 
         // Reset the visit flag
-        for (currentId in ids) {
-
-            this.visited[currentId] = false
-
+        for (parameterIndex in parameterIndices) {
+            this.visited[parameterIndex] = false
         }
 
     }
 
-    private fun hashId(id: Int): Int {
+    private fun hash(parameterIndex: Int): Int {
+        val existingHashTableIndex = this.hashTable[parameterIndex]
 
-        val existingHash = this.hashTable[id]
+        if (existingHashTableIndex == -1) {
+            val newHashTableIndex = ++this.lastHashTableIndex
 
-        if (existingHash == -1) {
+            this.hashTable[parameterIndex] = newHashTableIndex
+            this.reverseHashTable[newHashTableIndex] = parameterIndex
 
-            val newHash = ++this.lastNewId
-
-            this.hashTable[id] = newHash
-            this.reverseHashTable[newHash] = id
-
-            return newHash
-
+            return newHashTableIndex
         }
         else {
-
-            return existingHash
-
+            return existingHashTableIndex
         }
-
     }
 
-    private fun addToSum(indexId: Int, hashedId: Int, gradient: FloatArray) {
+    private fun addToSum(indexGradient: Int, hashTableIndex: Int, gradient: FloatArray) {
+        val sum = this.sums[hashTableIndex]
 
-        val sum = this.sums[hashedId]
+        val firstGradientEntryIndex = indexGradient * this.dimension
 
-        val start = indexId * this.dimension
         for (indexDimension in 0 until this.dimension) {
-
-            sum[indexDimension] += gradient[start + indexDimension]
-
+            sum[indexDimension] += gradient[firstGradientEntryIndex + indexDimension]
         }
-
     }
 
-    fun getSize() = this.lastNewId + 1
+    fun getSize() = this.lastHashTableIndex + 1
 
-    fun getIds() = this.reverseHashTable
+    fun getParameterIndices() = this.reverseHashTable
 
     fun getCounts() = this.counts
 
     fun getSums() = this.sums
 
     fun reset() {
+        for (hashTableIndex in 0..this.lastHashTableIndex) {
 
-        for (indexId in 0..this.lastNewId) {
+            val parameterIndex = this.reverseHashTable[hashTableIndex]
 
-            val id = this.reverseHashTable[indexId]
+            this.reverseHashTable[hashTableIndex] = -1
+            this.hashTable[parameterIndex] = -1
 
-            this.reverseHashTable[indexId] = -1
-            this.hashTable[id] = -1
+            this.counts[hashTableIndex] = 0f
 
-            this.counts[indexId] = 0.0f
-
-            Arrays.fill(this.sums[indexId], 0.0f)
+            Arrays.fill(this.sums[hashTableIndex], 0.0f)
 
         }
 
-        this.lastNewId = -1
-
+        this.lastHashTableIndex = -1
     }
 
 }

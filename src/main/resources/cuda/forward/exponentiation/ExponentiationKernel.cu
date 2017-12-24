@@ -7,7 +7,6 @@ __global__ void exponentiationKernel (
     int numberIterations,
     float *source,
     float *destination) {
-
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -21,24 +20,15 @@ __global__ void exponentiationKernel (
     int startNextColumn = startColumnWithinBatch + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 destination[indexEntry] = expf(source[indexEntry]);
-
             }
-
         }
         else {
-
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
-
 }

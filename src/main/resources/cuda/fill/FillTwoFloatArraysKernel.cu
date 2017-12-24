@@ -5,10 +5,10 @@ __global__ void fillTwoFloatsArraysKernel(
     float firstConstant,
     float* secondArray,
     float secondConstant) {
+    int start = indexInstance * numberEntries + indexColumn * numberRows + threadIdx.x;
 
-    int index = blockIdx.x * numberEntries + blockIdx.y * numberRows + threadIdx.x;
-
-    firstArray[index] = firstConstant;
-    secondArray[index] = secondConstant;
-
+    for(int index = start; index < fminf(start + numberIterations, numberEntries); index++) {
+        firstArray[indexEntry] = firstConstant;
+        secondArray[indexEntry] = secondConstant;
+    }
 }

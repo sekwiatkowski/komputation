@@ -1,8 +1,8 @@
 __global__ void adamKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float learningRate,
@@ -15,35 +15,47 @@ __global__ void adamKernel (
     float *firstMomentEstimate,
     float *secondMomentEstimate) {
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(startEntry < parameterSize) {
+    if(firstEntryIndex < dimension) {
 
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            int parameterIndex = hashTable[hashTableIndex];
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
 
-                float derivative = gradient[indexGradient];
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-                float updatedFirstMomentEstimate = firstMomentDecay * firstMomentEstimate[indexParameter] + oneMinusFirstMomentDecay * derivative;
-                firstMomentEstimate[indexParameter] = updatedFirstMomentEstimate;
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
+
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
+
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+
+                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
+
+                float updatedFirstMomentEstimate = firstMomentDecay * firstMomentEstimate[parameterEntryIndex] + oneMinusFirstMomentDecay * scaledDerivative;
+                firstMomentEstimate[parameterEntryIndex] = updatedFirstMomentEstimate;
                 float correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0 - powf(firstMomentDecay, step));
 
-                float updatedSecondMomentEstimate = secondMomentDecay * secondMomentEstimate[indexParameter] + oneMinusSecondMomentDecay * derivative * derivative;
-                secondMomentEstimate[indexParameter] = updatedSecondMomentEstimate;
+                float updatedSecondMomentEstimate = secondMomentDecay * secondMomentEstimate[parameterEntryIndex] + oneMinusSecondMomentDecay * scaledDerivative * scaledDerivative;
+                secondMomentEstimate[parameterEntryIndex] = updatedSecondMomentEstimate;
                 float correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0 - pow(secondMomentDecay, step));
 
                 float adaptedLearningRate = learningRate / (sqrtf(correctedSecondMomentEstimate) + epsilon);
 
                 float update = -correctedFirstMomentEstimate * adaptedLearningRate;
 
-                parameters[indexParameter] += update;
+                parameters[parameterEntryIndex] += update;
+
+                parameterEntryIndex++;
+                gradientEntryIndex++;
 
             }
 

@@ -1,17 +1,20 @@
 package com.komputation.cuda.network
 
+import com.komputation.cuda.CudaContext
+import com.komputation.cuda.instructions.CudaContinuationInstruction
 import com.komputation.cuda.kernels.TestingKernels
+import com.komputation.cuda.layers.CudaEntryPoint
+import com.komputation.cuda.layers.CudaContinuation
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.setUpCudaContext
 import com.komputation.cuda.workflow.CudaBinaryClassificationTester
 import com.komputation.cuda.workflow.CudaMultiClassificationTester
 import com.komputation.cuda.workflow.CudaTester
 import com.komputation.cuda.workflow.CudaTrainer
-import com.komputation.layers.CudaEntryPointInstruction
-import com.komputation.layers.CudaForwardLayerInstruction
-import com.komputation.layers.Resourceful
-import com.komputation.layers.acquireRecursively
-import com.komputation.loss.CudaLossFunctionInstruction
+import com.komputation.cuda.instructions.CudaEntryPointInstruction
+import com.komputation.instructions.Resourceful
+import com.komputation.instructions.acquireRecursively
+import com.komputation.cuda.instructions.CudaLossFunctionInstruction
 import com.komputation.matrix.Matrix
 import com.komputation.optimization.Optimizable
 import jcuda.Pointer
@@ -23,14 +26,42 @@ import jcuda.jcublas.cublasHandle
 class CudaNetwork(
     private val maximumBatchSize: Int,
     entryPointInstruction: CudaEntryPointInstruction,
-    vararg forwardLayerInstructions: CudaForwardLayerInstruction) {
+    vararg continuationInstructions: CudaContinuationInstruction) {
 
-    private val cudaContext = setUpCudaContext()
-    private val cublasHandle = cublasHandle()
+    private val cudaContext : CudaContext
+    private val cublasHandle : cublasHandle
 
-    private val entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
+    private val entryPoint : CudaEntryPoint
+    private val layers : Array<CudaContinuation>
 
-    private val layers = Array(forwardLayerInstructions.size) { index -> forwardLayerInstructions[index].buildForCuda(this.cudaContext, this.cublasHandle) }
+    private val numberPredictionRows : Int
+    private val minimumNumberPredictionColumns : Int
+    private val maximumNumberPredictionColumns : Int
+
+    init {
+        this.cudaContext = setUpCudaContext()
+        this.cublasHandle = cublasHandle()
+
+        with(continuationInstructions[0]) {
+            setInputDimensionsFromPreviousInstruction(entryPointInstruction.numberOutputRows, entryPointInstruction.minimumNumberOutputColumns, entryPointInstruction.maximumNumberOutputColumns)
+        }
+
+        (1 until continuationInstructions.size).forEach { index ->
+            val previousLayer = continuationInstructions[index - 1]
+            val nextLayer = continuationInstructions[index]
+
+            nextLayer.setInputDimensionsFromPreviousInstruction(previousLayer.numberOutputRows, previousLayer.minimumNumberOutputColumns, previousLayer.maximumNumberOutputColumns)
+        }
+
+        val lastLayerInstruction = continuationInstructions.last()
+        this.numberPredictionRows = lastLayerInstruction.numberOutputRows
+        this.minimumNumberPredictionColumns = lastLayerInstruction.minimumNumberOutputColumns
+        this.maximumNumberPredictionColumns = lastLayerInstruction.maximumNumberOutputColumns
+
+        this.entryPoint = entryPointInstruction.buildForCuda(this.cudaContext)
+        this.layers = Array(continuationInstructions.size) { index -> continuationInstructions[index].buildForCuda(this.cudaContext, this.cublasHandle) }
+    }
+
     private val optimizables = listOf(this.entryPoint).plus(this.layers).filterIsInstance(Optimizable::class.java).reversed().toTypedArray()
 
     private val forwardPropagator =
@@ -74,8 +105,11 @@ class CudaNetwork(
         targets: Array<FloatArray>,
         numberIterations : Int,
         lossFunction : CudaLossFunctionInstruction,
-        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null) =
-        CudaTrainer(
+        afterEachIteration : ((index : Int, loss : Float) -> Unit)? = null): CudaTrainer {
+
+        lossFunction.setInputDimensionsFromPreviousInstruction(this.numberPredictionRows, this.minimumNumberPredictionColumns, this.maximumNumberPredictionColumns)
+
+        return CudaTrainer(
             this.forwardPropagator,
             this.backwardPropagator,
             this.optimizables,
@@ -86,7 +120,7 @@ class CudaNetwork(
             lossFunction.buildForCuda(this.cudaContext),
             afterEachIteration
         )
-
+    }
 
     fun test(
         inputs: Array<Matrix>,

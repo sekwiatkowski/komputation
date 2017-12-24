@@ -3,8 +3,9 @@ package com.komputation.cpu.loss
 import com.komputation.matrix.FloatMath
 
 class CpuLogisticLoss(
+    numberRows: Int,
     minimumLength: Int,
-    maximumLength : Int) : BaseCpuLossFunction(2, minimumLength, maximumLength) {
+    maximumLength : Int) : BaseCpuLossFunction(numberRows, minimumLength, maximumLength) {
 
     override fun computeLoss(targets: FloatArray, predictions: FloatArray): Float {
         var loss = 0.0f
@@ -31,18 +32,13 @@ class CpuLogisticLoss(
 
     override fun computeDifferentation(targets: FloatArray, predictions: FloatArray, result: FloatArray) {
         for(indexEntry in 0 until targets.size) {
-
             val prediction = predictions[indexEntry]
 
             if (targets[indexEntry] == 1.0f) {
-
                 result[indexEntry] = (-1.0f).div(prediction)
-
             }
             else {
-
                 result[indexEntry] = 1.0f.div(1.0f - prediction)
-
             }
         }
     }

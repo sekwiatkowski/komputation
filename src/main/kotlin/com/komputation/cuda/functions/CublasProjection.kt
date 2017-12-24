@@ -18,7 +18,6 @@ fun cublasOuterProduct(
     deviceSecond: Pointer,
     deviceResult: Pointer,
     resultDimension : Int): Int {
-
     setArrayToZero(deviceResult, resultDimension)
 
     return cublasSger(
@@ -33,7 +32,6 @@ fun cublasOuterProduct(
         deviceResult,
         firstDimension
     )
-
 }
 
 fun cublasMatrixVectorMultiplication(

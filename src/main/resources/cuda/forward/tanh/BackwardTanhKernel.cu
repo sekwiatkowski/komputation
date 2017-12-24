@@ -1,7 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__device__ float backwardTanh (float forward, float chain)
-{
+__inline__ __device__ float backwardTanh (float forward, float chain) {
     return chain * (1.0 - powf(forward, 2.0));
 }
 

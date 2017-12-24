@@ -6,7 +6,7 @@
 
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.11.3</version>
+    <version>0.12.0</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -14,7 +14,7 @@
     <url>http://komputation.com</url>
 
     <properties>
-        <kotlin.version>1.2.0</kotlin.version>
+        <kotlin.version>1.2.10</kotlin.version>
     </properties>
 
     <licenses>

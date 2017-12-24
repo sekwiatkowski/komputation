@@ -28,7 +28,7 @@ abstract class BaseCpuLossFunction(
     override fun backward(predictions: FloatArray, targets : FloatArray): FloatArray {
         this.backwardResult = this.backwardResultsOverPossibleLengths.get(this.numberInputColumns)
 
-        computeDifferentation(targets, predictions, backwardResult)
+        computeDifferentation(targets, predictions, this.backwardResult)
 
         return this.backwardResult
     }

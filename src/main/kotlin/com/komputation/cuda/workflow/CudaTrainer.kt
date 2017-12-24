@@ -29,67 +29,50 @@ class CudaTrainer(
     private val targetMemory = TargetMemory(this.targets.first().size)
 
     init {
-
         this.lossFunction.acquire(this.maximumBatchSize)
-
     }
 
     fun free() {
-
         this.lossFunction.release()
 
         this.inputMemory.free()
         this.targetMemory.free()
-
     }
 
     fun run(): Long {
-
         val trackLoss = this.afterEachIteration != null
 
         val start = System.currentTimeMillis()
 
         repeat(this.numberIterations) { indexIteration ->
-
             var iterationLoss = if(trackLoss) 0f else Float.NaN
 
             for ((batchId, batch) in this.batches.withIndex()) {
-
                 val currentBatchSize = batch.size
 
                 val devicePredictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,true)
-                val pointerToDevicePredictions = Pointer.to(devicePredictions)
+                val pointerToPredictions = Pointer.to(devicePredictions)
 
                 val pointerToTargets = this.targetMemory.get(batchId, currentBatchSize, batch, this.targets)
 
                 if (trackLoss) {
-
-                    this.lossFunction.accumulate(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
-
+                    this.lossFunction.accumulate(pointerToPredictions, pointerToTargets, currentBatchSize)
                 }
 
-                val backwardLoss = this.lossFunction.backward(pointerToDevicePredictions, pointerToTargets, currentBatchSize)
+                val backwardLoss = this.lossFunction.backward(currentBatchSize, pointerToPredictions, pointerToTargets)
 
                 this.backwardPropagator.backward(backwardLoss, currentBatchSize)
 
                 for (optimizable in this.optimizables) {
-
                     optimizable.optimize(currentBatchSize)
-
                 }
 
                 if (trackLoss) {
-
-                    val batchLoss = this.lossFunction.accessAccumulation()
-
-                    iterationLoss += batchLoss
-
+                    iterationLoss += this.lossFunction.accessAccumulation()
                 }
-
             }
 
             this.afterEachIteration?.invoke(indexIteration, iterationLoss)
-
         }
 
         val stop = System.currentTimeMillis()
@@ -97,7 +80,6 @@ class CudaTrainer(
         val time = stop - start
 
         return time
-
     }
 
 }

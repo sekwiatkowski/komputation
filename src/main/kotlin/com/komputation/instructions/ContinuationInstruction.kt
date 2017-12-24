@@ -1,0 +1,7 @@
+package com.komputation.instructions
+
+import com.komputation.cpu.instructions.CpuShareableContinuationInstruction
+
+interface ContinuationInstruction : Instruction, CanSetInputDimensions, HasOutputDimensions
+
+interface ShareableContinuationInstruction : CpuShareableContinuationInstruction

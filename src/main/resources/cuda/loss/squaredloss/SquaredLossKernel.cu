@@ -4,8 +4,7 @@
 // First, the squared differences between predictions and targets are stored in shared memory.
 // In the second step, the squared differences are summed up using a parallel reduction.
 // Finally, the sum is multiplied by 1/2.
-__global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result)
-{
+__global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result) {
 
     int startIndexWithinColumn = threadIdx.x * numberIterations;
 
@@ -20,23 +19,16 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
     int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
     if(indexInstance < batchSize) {
-
         float thisValue = 0.0f;
 
         if(startIndexWithinColumn < numberRows) {
-
             thisValue += powf(predictions[startIndexWithinBatch] - targets[startIndexWithinBatch], 2.0);
 
             if(numberIterations > 1) {
-
                 for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-
                     thisValue += powf(predictions[indexEntry] - targets[indexEntry], 2.0);
-
                 }
-
             }
-
         }
 
         int warpId = threadIdx.x / warpSize;
@@ -45,21 +37,13 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
         reduceToSum(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
-
-            result[indexColumnInBatch] = sharedData[0];
-
+            result[indexColumnInBatch] = 0.5 * sharedData[0];
         }
-
     }
     else {
-
         if(threadIdx.x == 0) {
-
             result[indexColumnInBatch] = 0.0;
-
         }
-
     }
-
 
 }

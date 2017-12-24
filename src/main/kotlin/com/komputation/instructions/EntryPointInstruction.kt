@@ -1,0 +1,3 @@
+package com.komputation.instructions
+
+interface EntryPointInstruction : HasOutputDimensions

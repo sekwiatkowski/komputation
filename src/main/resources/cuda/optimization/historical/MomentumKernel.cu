@@ -1,35 +1,44 @@
 __global__ void momentumKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float learningRate,
     float momentum,
     float* history) {
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
-
-    if(startEntry < parameterSize) {
-
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+    if(firstEntryIndex < dimension) {
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
+            int parameterIndex = hashTable[hashTableIndex];
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            int count = counts[hashTableIndex];
+            float scalingFactor = 1.0 / (float)count;
 
-            float scalingFactor = 1.0 / (float)counts[gradientIndex];
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
 
-                float update = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
 
-                history[indexParameter] = update;
-                parameters[indexParameter] += update;
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+                float derivative = gradient[gradientEntryIndex];
+                float scaledDerivative = scalingFactor * derivative;
 
+                float update = momentum * history[parameterEntryIndex] - learningRate * scaledDerivative;
+
+                history[parameterEntryIndex] = update;
+                parameters[parameterEntryIndex] += update;
+
+                parameterEntryIndex++;
+                gradientEntryIndex++;
             }
 
         }

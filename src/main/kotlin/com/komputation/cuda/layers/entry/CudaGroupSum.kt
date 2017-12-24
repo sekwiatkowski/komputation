@@ -3,19 +3,23 @@ package com.komputation.cuda.layers.entry
 import jcuda.Pointer
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
-import com.komputation.layers.Resourceful
+import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
+import com.komputation.instructions.Resourceful
 import jcuda.runtime.JCuda.cudaFree
 
 class CudaGroupSum(
     private val dimension: Int,
-    private val maximumKeys: Int,
+    private val parametersPerInstance: Int,
     private val hashTableSize : Int,
     private val createGroupSumKernel : () -> Kernel,
-    private val createResetKernel : () -> Kernel) : Resourceful {
+    private val createResetKernel : () -> Kernel,
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps: Int,
+    private val warpSize: Int,
+    private val maximumNumberThreadsPerBlock : Int) : Resourceful {
 
-    private val pointerToNumberRows = Pointer.to(intArrayOf(this.dimension))
-    private val pointerToMaximumKeys = Pointer.to(intArrayOf(this.maximumKeys))
-    private val pointerToNumberGroupSumEntries = Pointer.to(intArrayOf(this.hashTableSize * this.dimension))
+    private val pointerToDimension = Pointer.to(intArrayOf(this.dimension))
+    private val pointerToParametersPerInstance = Pointer.to(intArrayOf(this.parametersPerInstance))
 
     private var groupSumKernel: Kernel? = null
     private var resetKernel: Kernel? = null
@@ -28,60 +32,66 @@ class CudaGroupSum(
     private val pointerToZero = Pointer.to(floatArrayOf(0f))
 
     private var maximumBatchSize = -1
+    private var groupSumSize = intArrayOf(-1)
+    private val pointerToGroupSumSize = Pointer.to(this.groupSumSize)
+
+    private val reset_numberIterations = intArrayOf(-1)
+    private val reset_pointerToNumberIterations = Pointer.to(this.reset_numberIterations)
+    private var reset_numberBlocks = -1
+    private var reset_numberThreadsPerBlock = -1
 
     override fun acquire(maximumBatchSize: Int) {
-
         this.maximumBatchSize = maximumBatchSize
 
-        allocateDeviceFloatMemory(this.deviceGroupSum, this.maximumBatchSize * this.hashTableSize * dimension)
+        this.groupSumSize[0] = this.maximumBatchSize * this.hashTableSize * this.dimension
+        allocateDeviceFloatMemory(this.deviceGroupSum, this.groupSumSize[0])
 
         this.groupSumKernel = this.createGroupSumKernel()
         this.resetKernel = this.createResetKernel()
 
+        val resetConfiguration = computeEntrywiseLaunchConfiguration(this.groupSumSize[0], this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
+        this.reset_numberIterations[0] = resetConfiguration.numberIterations
+        this.reset_numberBlocks = resetConfiguration.numberBlocks
+        this.reset_numberThreadsPerBlock = resetConfiguration.numberThreadsPerBlock
     }
 
     fun reset() {
-
         this.resetKernel!!.launch(
             Pointer.to(
-                this.pointerToNumberRows,
-                this.pointerToNumberGroupSumEntries,
+                this.pointerToGroupSumSize,
+                this.reset_pointerToNumberIterations,
                 this.pointerToGroupSum,
                 this.pointerToZero
             ),
-            this.maximumBatchSize,
-            this.hashTableSize,
-            this.dimension,
+            this.reset_numberBlocks,
+            1,
+            this.reset_numberThreadsPerBlock,
             0)
-
     }
 
     fun sum(pointerToMapping : Pointer, pointerToInput: Pointer) {
-
         this.groupSumKernel!!.launch(
             Pointer.to(
-                this.pointerToNumberRows,
-                this.pointerToMaximumKeys,
+                this.pointerToDimension,
+                this.pointerToParametersPerInstance,
                 pointerToMapping,
                 pointerToInput,
                 this.pointerToGroupSum
             ),
             this.maximumBatchSize,
-            this.maximumKeys,
+            this.parametersPerInstance,
             this.dimension,
             0)
-
     }
 
     override fun release() {
-
         this.maximumBatchSize = -1
+        this.groupSumSize[0] = -1
 
         cudaFree(this.deviceGroupSum)
 
         this.groupSumKernel!!.destroy()
         this.resetKernel!!.destroy()
-
     }
 
 }

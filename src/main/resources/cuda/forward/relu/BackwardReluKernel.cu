@@ -1,6 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__device__ float backwardRelu (float forward, float chain) {
+__inline__ __device__ float backwardRelu (float forward, float chain) {
     if(forward > 0.0) {
         return chain;
     }

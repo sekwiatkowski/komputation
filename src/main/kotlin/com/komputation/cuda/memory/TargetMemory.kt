@@ -9,14 +9,10 @@ class TargetMemory(private val targetSize : Int) {
     private val memory = hashMapOf<Int, Pointer>()
 
     fun get(batchId : Int, batchSize : Int, batch : IntArray, targets : Array<FloatArray>) =
-
         if (this.memory.containsKey(batchId)) {
-
             this.memory[batchId]!!
-
         }
         else {
-
             val batchTargetSize = batchSize * this.targetSize
             val batchTargets = FloatArray(batchTargetSize)
 
@@ -36,17 +32,12 @@ class TargetMemory(private val targetSize : Int) {
             this.memory[batchId] = pointerToDeviceTargets
 
             pointerToDeviceTargets
-
         }
 
     fun free() {
-
         this.memory.values.forEach { pointer ->
-
             cudaFree(pointer)
-
         }
-
     }
 
 }

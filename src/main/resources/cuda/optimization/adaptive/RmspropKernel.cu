@@ -1,8 +1,8 @@
 __global__ void rmspropKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float learningRate,
@@ -11,30 +11,38 @@ __global__ void rmspropKernel (
     float epsilon,
     float* accumulation) {
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(startEntry < parameterSize) {
-
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+    if(firstEntryIndex < dimension) {
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
+            int parameterIndex = hashTable[hashTableIndex];
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-                float derivative = gradient[indexGradient];
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
 
-                float updatedAccumulation = decay * accumulation[indexParameter] + oneMinusDecay * (derivative * derivative);
-                accumulation[indexParameter] = updatedAccumulation;
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
+
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
+
+                float updatedAccumulation = decay * accumulation[parameterEntryIndex] + oneMinusDecay * (scaledDerivative * scaledDerivative);
+                accumulation[parameterEntryIndex] = updatedAccumulation;
 
                 float adaptiveLearningRate = learningRate / sqrtf(updatedAccumulation + epsilon);
-                float update = -adaptiveLearningRate * derivative;
+                float update = -adaptiveLearningRate * scaledDerivative;
 
-                parameters[indexParameter] += update;
+                parameters[parameterEntryIndex] += update;
 
+                parameterEntryIndex++;
+                gradientEntryIndex++;
             }
 
         }

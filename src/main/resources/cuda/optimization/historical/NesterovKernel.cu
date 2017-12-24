@@ -6,48 +6,51 @@
 
 __global__ void nesterovKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float learningRate,
     float momentum,
     float* history,
     float* backup) {
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
-
-    if(startEntry < parameterSize) {
-
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+    if(firstEntryIndex < dimension) {
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
+            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-            float scalingFactor = 1.0 / (float)counts[gradientIndex];
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
 
-                float entryBackup = history[indexParameter];
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+                float entryBackup = history[parameterEntryIndex];
 
-                backup[indexParameter] = entryBackup;
+                backup[parameterEntryIndex] = entryBackup;
 
-                float entryUpdate = momentum * history[indexParameter] - scalingFactor * learningRate * gradient[indexGradient];
+                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
 
-                history[indexParameter] = entryUpdate;
+                float entryUpdate = momentum * history[parameterEntryIndex] - learningRate * scaledDerivative;
 
-                float removedPreviousLookAhead = parameters[indexParameter] - momentum * entryBackup;
+                history[parameterEntryIndex] = entryUpdate;
 
-                parameters[indexParameter] = removedPreviousLookAhead + (1.0 + momentum) * entryUpdate;
+                float removedPreviousLookAhead = parameters[parameterEntryIndex] - momentum * entryBackup;
 
+                parameters[parameterEntryIndex] = removedPreviousLookAhead + (1.0 + momentum) * entryUpdate;
+
+                parameterEntryIndex++;
+                gradientEntryIndex++;
             }
-
         }
-
     }
 
 }

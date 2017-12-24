@@ -1,7 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__device__ float backwardSigmoid (float forward, float chain)
-{
+__inline__ __device__ float backwardSigmoid (float forward, float chain) {
     return forward * (1.0f - forward) * chain;
 }
 

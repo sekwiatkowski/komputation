@@ -3,7 +3,7 @@ package com.komputation.cuda.loss
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.setFloatArray
 import com.komputation.cuda.setUpCudaContext
-import com.komputation.loss.logisticLoss
+import com.komputation.instructions.loss.logisticLoss
 import com.komputation.matrix.FloatMath
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
@@ -96,7 +96,9 @@ class CudaLogisticLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = logisticLoss(numberSteps).buildForCuda(cudaContext)
+        val lossInstruction = logisticLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(1, numberSteps, numberSteps)
+        val loss = lossInstruction.buildForCuda(cudaContext)
 
         loss.acquire(maximumBatchSize)
 
@@ -147,7 +149,7 @@ class CudaLogisticLossTest {
 
         val expected = floatArrayOf(-1.0f/0.9f, 1.0f/0.8f)
 
-        testBackward(predictions, targets, 1, 2, 2, expected)
+        testBackward(predictions, targets, 1, 1, 2, expected)
 
     }
 
@@ -187,11 +189,16 @@ class CudaLogisticLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = logisticLoss(numberSteps).buildForCuda(context)
+        val lossInstruction = logisticLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(1, numberSteps, numberSteps)
+        val loss = lossInstruction.buildForCuda(context)
 
         loss.acquire(maximumBatchSize)
 
-        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets), batchSize)
+        val pointerToPredictions = Pointer.to(devicePredictions)
+        val pointerToTargets = Pointer.to(deviceTargets)
+        loss.accumulate(pointerToPredictions, pointerToTargets, batchSize)
+        val deviceResult = loss.backward(batchSize, pointerToPredictions, Pointer.to(deviceTargets))
         val actual = getFloatArray(deviceResult, size)
 
         loss.release()

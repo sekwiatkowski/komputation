@@ -1,6 +1,6 @@
 package com.komputation.cuda.workflow
 
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 import jcuda.Pointer
 
 interface CudaClassificationTester : Resourceful {

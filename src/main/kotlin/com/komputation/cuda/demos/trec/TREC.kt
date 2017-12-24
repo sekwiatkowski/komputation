@@ -4,30 +4,26 @@ import com.komputation.cuda.network.CudaNetwork
 import com.komputation.demos.trec.NLP
 import com.komputation.demos.trec.TRECData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.lookupLayer
-import com.komputation.layers.forward.activation.reluLayer
-import com.komputation.layers.forward.activation.softmaxLayer
-import com.komputation.layers.forward.convolution.convolutionalLayer
-import com.komputation.layers.forward.dropout.dropoutLayer
-import com.komputation.layers.forward.projection.projectionLayer
-import com.komputation.loss.crossEntropyLoss
+import com.komputation.instructions.entry.lookup
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.relu
+import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
 
 fun main(args: Array<String>) {
-
     if (args.size != 2) {
-
         throw Exception("Please specify the path to the Glove word embeddings and the number of dimensions.")
-
     }
 
     val embeddingFilePath = args.first()
     val dimensions = args.last().toInt()
 
     Trec().run(embeddingFilePath, dimensions)
-
 }
 
 class Trec {
@@ -40,7 +36,6 @@ class Trec {
         val optimization = nesterov(0.01f, 0.9f)
 
         val batchSize = 32
-        val hasFixedLength = false
         val numberIterations = 7
 
         val numberFilters = 100
@@ -82,7 +77,7 @@ class Trec {
         val embeddableTrainingCategories = trainingCategories.slice(embeddableTrainingIndices)
         val embeddableTestCategories = testCategories.slice(embeddableTestIndices)
 
-        val indexedCategories = NLP.indexCategories(embeddableTrainingCategories.toSet())
+        val indexedCategories = NLP.indexCategories(trainingCategories.toSet())
         val numberCategories = indexedCategories.size
 
         val trainingTargets = NLP.createTargets(embeddableTrainingCategories, indexedCategories)
@@ -94,12 +89,11 @@ class Trec {
 
         val network = CudaNetwork(
             batchSize,
-            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
-            convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-            reluLayer(numberFilters),
-            dropoutLayer(numberFilters, maximumDocumentLength, hasFixedLength, random, keepProbability),
-            projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
-            softmaxLayer(numberCategories)
+            lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
+            convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),
+            relu(),
+            dropout(random, keepProbability),
+            dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
         val test = network
@@ -115,8 +109,7 @@ class Trec {
                 trainingRepresentations,
                 trainingTargets,
                 numberIterations,
-                crossEntropyLoss(numberCategories)) { _ : Int, _: Float ->
-
+                crossEntropyLoss()) { _ : Int, _: Float ->
                 println(test.run())
 
             }

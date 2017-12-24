@@ -4,7 +4,7 @@ import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
@@ -19,7 +19,7 @@ class CudaAdadelta internal constructor(
     private val warpSize : Int,
     private val maximumNumberThreads : Int) : BaseCudaUpdateRule(), Resourceful {
 
-    private val pointerToParameterSize = Pointer.to(intArrayOf(this.parameterSize))
+    private val pointerToDimension = Pointer.to(intArrayOf(this.parameterSize))
     private val pointerToDecay = Pointer.to(floatArrayOf(this.decay))
     private val pointerToOneMinusDecay = Pointer.to(floatArrayOf(1.0f - this.decay))
     private val pointerToEpsilon = Pointer.to(floatArrayOf(this.epsilon))
@@ -37,7 +37,6 @@ class CudaAdadelta internal constructor(
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
@@ -50,21 +49,19 @@ class CudaAdadelta internal constructor(
         val totalParameters = this.numberParameters * this.parameterSize
         allocateDeviceFloatMemory(this.deviceGradientAccumulation, totalParameters)
         allocateDeviceFloatMemory(this.deviceUpdateAccumulation, totalParameters)
-
     }
 
     override fun launchKernel(
-        maximumParameters: Int,
-        pointerToIndices: Pointer,
+        hashTableSize: Int,
+        pointerToHashTable: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
-
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            pointerToIndices,
+            pointerToHashTable,
             pointerToCounts,
-            this.pointerToParameterSize,
+            this.pointerToDimension,
             pointerToParameters,
             pointerToGradient,
             this.pointerToDecay,
@@ -76,25 +73,22 @@ class CudaAdadelta internal constructor(
 
         val resultCode = this.kernel!!.launch(
             parameters,
-            maximumParameters,
+            hashTableSize,
             this.numberBlocks,
             this.numberThreads,
             0
         )
 
         return resultCode
-
     }
 
     override fun release() {
-
         super.release()
 
         this.kernel!!.destroy()
 
         cudaFree(this.deviceGradientAccumulation)
         cudaFree(this.deviceUpdateAccumulation)
-
     }
 
 }

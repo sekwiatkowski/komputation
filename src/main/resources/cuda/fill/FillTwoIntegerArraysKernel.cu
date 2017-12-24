@@ -1,14 +1,14 @@
 __global__ void fillTwoIntegerArraysKernel(
-    int numberRows,
     int numberEntries,
+    int numberIterations,
     int* firstArray,
     int firstConstant,
     int* secondArray,
     int secondConstant) {
+    int start = blockIdx.x * blockDim.x * numberIterations + threadIdx.x * numberIterations;
 
-    int index = blockIdx.x * numberEntries + blockIdx.y * numberRows + threadIdx.x;
-
-    firstArray[index] = firstConstant;
-    secondArray[index] = secondConstant;
-
+    for(int index = start; index < fminf(start + numberIterations, numberEntries); index++) {
+        firstArray[index] = firstConstant;
+        secondArray[index] = secondConstant;
+    }
 }

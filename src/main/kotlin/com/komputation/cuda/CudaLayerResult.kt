@@ -4,10 +4,11 @@ import jcuda.Pointer
 
 interface CudaForwardResult {
     val deviceForwardResult: Pointer
-    val maximumOutputColumns : Int
+    val deviceForwardLengths: Pointer
+    val batchMaximumOutputColumns : Int
 }
 
 interface CudaBackwardResult {
     val deviceBackwardResult: Pointer
-    val maximumInputColumns : Int
+    val batchMaximumInputColumns : Int
 }

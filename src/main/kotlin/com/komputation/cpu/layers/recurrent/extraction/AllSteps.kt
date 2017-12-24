@@ -6,10 +6,9 @@ import com.komputation.cpu.functions.setColumn
 import com.komputation.cpu.layers.VariableLengthFloatArray
 import com.komputation.cpu.layers.computeNumberPossibleLengths
 import com.komputation.cpu.layers.computePossibleLengths
-import com.komputation.cpu.layers.recurrent.series.Series
+import com.komputation.cpu.layers.recurrent.series.CpuSeries
 
 class AllSteps(
-    private val series: Series,
     private val hiddenDimension: Int,
     private val minimumSteps : Int,
     private val maximumSteps : Int) : ResultExtractionStrategy {
@@ -23,12 +22,12 @@ class AllSteps(
 
     private val store = VariableLengthFloatArray(this.hiddenDimension, this.possibleOutputLengths)
 
-    override fun extractResult(numberInputColumns : Int): FloatArray {
+    override fun extractResult(series : CpuSeries, numberInputColumns : Int): FloatArray {
         this.numberOutputColumns = numberInputColumns
         this.forwardResult = this.store.get(numberInputColumns)
 
         for (index in 0 until numberInputColumns) {
-            setColumn(this.series.getForwardResult(index), index, this.numberOutputRows, this.forwardResult)
+            setColumn(series.getForwardResult(index), index, this.numberOutputRows, this.forwardResult)
         }
 
         return this.forwardResult

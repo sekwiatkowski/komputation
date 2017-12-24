@@ -4,14 +4,14 @@ import com.komputation.cpu.network.Network
 import com.komputation.demos.trec.NLP
 import com.komputation.demos.trec.TRECData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.lookupLayer
-import com.komputation.layers.forward.activation.reluLayer
-import com.komputation.layers.forward.activation.softmaxLayer
-import com.komputation.layers.forward.concatenation
-import com.komputation.layers.forward.convolution.convolutionalLayer
-import com.komputation.layers.forward.dropout.dropoutLayer
-import com.komputation.layers.forward.projection.projectionLayer
-import com.komputation.loss.crossEntropyLoss
+import com.komputation.instructions.entry.lookup
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.relu
+import com.komputation.instructions.continuation.concatenation.concatenation
+import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
 import java.util.*
@@ -37,7 +37,6 @@ class TrecWithTwoFilterWidths {
         val optimization = nesterov(0.001f, 0.85f)
 
         val batchSize = 1
-        val hasFixedLength = false
         val numberIterations = 20
 
         val numberFilters = 100
@@ -45,7 +44,6 @@ class TrecWithTwoFilterWidths {
         val maximumFilterWidth = filterWidths.max()!!
 
         val filterHeight = embeddingDimension
-        val numberFilterWidths = filterWidths.size
 
         val keepProbability = 0.8f
 
@@ -93,18 +91,17 @@ class TrecWithTwoFilterWidths {
 
         val network = Network(
             batchSize,
-            lookupLayer(embeddings, maximumDocumentLength, hasFixedLength, embeddingDimension, optimization),
+            lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
             concatenation(
                 *filterWidths
                     .map { filterWidth ->
-                        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasFixedLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization)
+                        convolution(numberFilters, filterWidth, filterHeight, initialization, optimization)
                     }
                     .toTypedArray()
             ),
-            reluLayer(numberFilterWidths * numberFilters),
-            dropoutLayer(numberFilterWidths * numberFilters, 1, hasFixedLength, random, keepProbability),
-            projectionLayer(filterWidths.size * numberFilters, numberCategories, initialization, initialization, optimization),
-            softmaxLayer(numberCategories)
+            relu(),
+            dropout(random, keepProbability),
+            dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
         val test = network
@@ -119,10 +116,8 @@ class TrecWithTwoFilterWidths {
             trainingRepresentations,
             trainingTargets,
             numberIterations,
-            crossEntropyLoss(numberCategories)) { _ : Int, _ : Float ->
-
+            crossEntropyLoss()) { _ : Int, _ : Float ->
                 println(test.run())
-
             }
             .run()
 

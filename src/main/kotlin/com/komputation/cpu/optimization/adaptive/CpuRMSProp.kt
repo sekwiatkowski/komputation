@@ -9,10 +9,8 @@ class CpuRMSProp(private val learningRate : Float, private val decay : Float, pr
 
     private val accumulation = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
-
-        for(index in 0 until numberEntries) {
-
+    override fun updateSparsely(start : Int, parameter: FloatArray, gradient: FloatArray, dimension: Int) {
+        for(index in 0 until dimension) {
             val derivative = gradient[index]
 
             val historyIndex = start + index
@@ -24,10 +22,8 @@ class CpuRMSProp(private val learningRate : Float, private val decay : Float, pr
 
             val update = -adaptiveLearningRate * derivative
 
-            parameters[index] += update
-
+            parameter[index] += update
         }
-
     }
 
 }

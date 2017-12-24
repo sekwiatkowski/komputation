@@ -1,8 +1,9 @@
 package com.komputation.cpu.layers.combination
 
 import com.komputation.cpu.functions.add
-import com.komputation.cpu.layers.CombinationLayer
-import com.komputation.layers.Resourceful
+import com.komputation.cpu.layers.CpuCombination
+import com.komputation.cpu.layers.VariableLengthFloatArray
+import com.komputation.cpu.layers.computePossibleLengths
 
 /*
    Ex:
@@ -16,20 +17,17 @@ import com.komputation.layers.Resourceful
 class CpuAdditionCombination internal constructor(
     name : String? = null,
     private val numberRows : Int,
-    private val numberColumns : Int) : CombinationLayer(name), Resourceful {
-    private val numberEntries = this.numberRows * this.numberColumns
-    private var forwardResult = FloatArray(0)
+    private val minimumColumns : Int,
+    private val maximumColumns : Int) : CpuCombination(name) {
 
-    override fun acquire(maximumBatchSize: Int) {
-        this.forwardResult = FloatArray(this.numberEntries)
-    }
+    private val possibleLengths = computePossibleLengths(this.minimumColumns, this.maximumColumns)
+    private val forwardResultStore = VariableLengthFloatArray(this.numberRows, this.possibleLengths)
 
-    override fun release() {
-    }
+    override fun forward(first: FloatArray, second: FloatArray, numberInputColumns : Int): FloatArray {
+        val forwardResult = this.forwardResultStore.get(numberInputColumns)
+        add(first, second, forwardResult, forwardResult.size)
 
-    override fun forward(first: FloatArray, second: FloatArray): FloatArray {
-        add(first, second, this.forwardResult, this.numberEntries)
-        return this.forwardResult
+        return forwardResult
     }
 
     // d (x + y) / d x = 1

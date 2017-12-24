@@ -5,12 +5,12 @@ import com.komputation.cpu.network.Network
 import com.komputation.demos.sequencelabeling.SequenceLabelingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.lookupLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.activation.softmaxLayer
-import com.komputation.layers.recurrent.ResultExtraction
-import com.komputation.layers.recurrent.recurrentLayer
-import com.komputation.loss.crossEntropyLoss
+import com.komputation.instructions.entry.lookup
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.softmax
+import com.komputation.instructions.recurrent.ResultExtraction
+import com.komputation.instructions.recurrent.recurrent
+import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -35,26 +35,23 @@ fun main(args: Array<String>) {
 
     Network(
             1,
-            lookupLayer(embeddings, numberSteps, true, embeddingDimension, optimization),
-            recurrentLayer(
-                numberSteps,
-                true,
-                embeddingDimension,
-                3,
-                ActivationFunction.ReLU,
+            lookup(embeddings, numberSteps, numberSteps, embeddingDimension, optimization),
+            recurrent(
+                numberCategories,
+                Activation.ReLU,
                 ResultExtraction.AllSteps,
-                Direction.Forward,
+                Direction.LeftToRight,
                 initialization,
                 initialization,
                 null,
                 optimization),
-            softmaxLayer(numberCategories, numberSteps)
+            softmax()
         )
         .training(
             input,
             targets,
             100,
-            crossEntropyLoss(numberCategories, numberSteps),
+            crossEntropyLoss(),
             printLoss
         )
         .run()

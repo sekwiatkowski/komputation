@@ -1,0 +1,6 @@
+package com.komputation.instructions.continuation
+
+import com.komputation.cpu.instructions.CpuActivationInstruction
+import com.komputation.cuda.instructions.CudaActivationInstruction
+
+interface ActivationInstruction : CpuActivationInstruction, CudaActivationInstruction

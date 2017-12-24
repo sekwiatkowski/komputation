@@ -4,7 +4,7 @@ import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
@@ -19,7 +19,7 @@ class CudaMomentum internal constructor(
     private val warpSize : Int,
     private val maximumNumberThreads : Int) : BaseCudaUpdateRule(), Resourceful {
 
-    private val pointerToParameterSize = Pointer.to(intArrayOf(this.parameterSize))
+    private val pointerToDimension = Pointer.to(intArrayOf(this.parameterSize))
     private val pointerToLearningRate = Pointer.to(floatArrayOf(this.learningRate))
     private val pointerToMomentum = Pointer.to(floatArrayOf(this.momentum))
 
@@ -33,7 +33,6 @@ class CudaMomentum internal constructor(
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
@@ -44,21 +43,19 @@ class CudaMomentum internal constructor(
         this.numberIterations[0] = launchConfiguration.numberIterations
 
         allocateDeviceFloatMemory(this.deviceHistory, this.numberParameters * this.parameterSize)
-
     }
 
     override fun launchKernel(
-        maximumParameters: Int,
-        pointerToIndices: Pointer,
+        hashTableSize: Int,
+        pointerToHashTable: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
-
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            pointerToIndices,
+            pointerToHashTable,
             pointerToCounts,
-            this.pointerToParameterSize,
+            this.pointerToDimension,
             pointerToParameters,
             pointerToGradient,
             this.pointerToLearningRate,
@@ -68,24 +65,21 @@ class CudaMomentum internal constructor(
 
         val resultCode = this.kernel!!.launch(
             parameters,
-            maximumParameters,
+            hashTableSize,
             this.numberBlocks,
             this.numberThreads,
             0
         )
 
         return resultCode
-
     }
 
     override fun release() {
-
         super.release()
 
         this.kernel!!.destroy()
 
         cudaFree(this.deviceHistory)
-
     }
 
 }

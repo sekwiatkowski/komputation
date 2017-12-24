@@ -1,11 +1,11 @@
 package com.komputation.cpu.network
 
 import com.komputation.cpu.layers.CpuEntryPoint
-import com.komputation.cpu.layers.CpuForwardLayer
+import com.komputation.cpu.layers.CpuContinuation
 
 class CpuBackwardPropagator(
     private val entryPoint: CpuEntryPoint,
-    private val layers : Array<CpuForwardLayer>) {
+    private val layers : Array<CpuContinuation>) {
 
     private val numberLayers = this.layers.size
 

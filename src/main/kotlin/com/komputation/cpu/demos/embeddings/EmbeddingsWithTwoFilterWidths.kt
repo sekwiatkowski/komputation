@@ -4,14 +4,14 @@ import com.komputation.cpu.network.Network
 import com.komputation.demos.embeddings.EmbeddingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.lookupLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.activation.reluLayer
-import com.komputation.layers.forward.concatenation
-import com.komputation.layers.forward.convolution.convolutionalLayer
-import com.komputation.layers.forward.dense.denseLayer
+import com.komputation.instructions.entry.lookup
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.relu
+import com.komputation.instructions.continuation.concatenation.concatenation
+import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.dense.dense
 import com.komputation.loss.printLoss
-import com.komputation.loss.squaredLoss
+import com.komputation.instructions.loss.squaredLoss
 import com.komputation.optimization.historical.momentum
 import java.util.*
 
@@ -32,32 +32,28 @@ fun main(args: Array<String>) {
 
     val numberFilters = 2
     val filterWidths = arrayOf(1, 2)
-    val numberFilterWidths = filterWidths.size
     val filterHeight = embeddingDimension
-    val totalNumberFilters = numberFilterWidths * numberFilters
 
     val numberClasses = EmbeddingData.numberClasses
     val input = EmbeddingData.inputs
     val targets = EmbeddingData.targets
 
-    val hasFixedLength = true
-
     Network(
         maximumBatchSize,
-        lookupLayer(embeddings, 2, hasFixedLength, embeddingDimension, optimizationStrategy),
+        lookup(embeddings, 2, 2, embeddingDimension, optimizationStrategy),
         concatenation(
             *filterWidths
-                .map { filterWidth -> convolutionalLayer(embeddingDimension, 2, hasFixedLength, numberFilters, filterWidth, filterHeight, initializationStrategy, initializationStrategy, optimizationStrategy) }
+                .map { filterWidth -> convolution(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy) }
                 .toTypedArray()
         ),
-        reluLayer(totalNumberFilters),
-        denseLayer(totalNumberFilters, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+        relu(),
+        dense(numberClasses, Activation.Softmax, initializationStrategy, optimizationStrategy)
     )
         .training(
             input,
             targets,
             10_000,
-            squaredLoss(numberClasses),
+            squaredLoss(),
             printLoss)
         .run()
 

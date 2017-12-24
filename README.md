@@ -12,66 +12,63 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.11.3</version>
+    <version>0.12.0</version>
 </dependency>
 ```
 
 ## Layers
 
 - Entry points:
-  - [Input](./src/main/kotlin/com/komputation/layers/entry/InputLayer.kt)
-  - [Lookup](./src/main/kotlin/com/komputation/layers/entry/LookupLayer.kt)
+  - [Input](./src/main/kotlin/com/komputation/instructions/entry/Input.kt)
+  - [Lookup](./src/main/kotlin/com/komputation/instructions/entry/Lookup.kt)
 
 - Standard feed-forward networks:
-  - [Projection](./src/main/kotlin/com/komputation/layers/forward/projection/ProjectionLayer.kt)
-  - [Dense](./src/main/kotlin/com/komputation/layers/forward/dense/DenseLayer.kt)
+  - [Projection](./src/main/kotlin/com/komputation/instructions/continuation/projection/Projection.kt)
+  - [Dense](./src/main/kotlin/com/komputation/instructions/continuation/dense/Dense.kt)
 
 - Convolutional neural networks (CNNs):
-  - [Convolution](./src/main/kotlin/com/komputation/layers/forward/convolution/ConvolutionLayer.kt)
-  - [Max-pooling](./src/main/kotlin/com/komputation/layers/forward/convolution/MaxPoolingLayer.kt)
+  - [Convolution](./src/main/kotlin/com/komputation/instructions/continuation/convolution/Convolution.kt)
+  - [Max-pooling](./src/main/kotlin/com/komputation/instructions/continuation/convolution/MaxPooling.kt)
 
 - Recurrent neural networks:
-  - [Recurrent layer](./src/main/kotlin/com/komputation/layers/recurrent/RecurrentLayer.kt)
-    - [All steps](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/AllSteps.kt)
-    - [Last step](./src/main/kotlin/com/komputation/cpu/layers/recurrent/extraction/LastStep.kt)
-  - [Bidirectional recurrent layer](./src/main/kotlin/com/komputation/layers/recurrent/BidirectionalRecurrentLayer.kt)
+  - [Recurrent layer](./src/main/kotlin/com/komputation/instructions/recurrent/Recurrent.kt)
+  - [Bidirectional recurrent layer](./src/main/kotlin/com/komputation/instructions/recurrent/BidirectionalRecurrent.kt)
 
-
-- [Dropout](./src/main/kotlin/com/komputation/layers/forward/dropout/DropoutLayer.kt)
+- [Dropout](./src/main/kotlin/com/komputation/instructions/continuation/dropout/Dropout.kt)
 
 - Activation functions:
-  - [Identity](./src/main/kotlin/com/komputation/layers/forward/activation/IdentityLayer.kt)
-  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/com/komputation/layers/forward/activation/ReluLayer.kt)
-  - [Sigmoid](./src/main/kotlin/com/komputation/layers/forward/activation/SigmoidLayer.kt)
-  - [Softmax](./src/main/kotlin/com/komputation/layers/forward/activation/SoftmaxLayer.kt)
-  - [Tanh](./src/main/kotlin/com/komputation/layers/forward/activation/TanhLayer.kt)
+  - [Identity](./src/main/kotlin/com/komputation/instructions/continuation/activation/Identity.kt)
+  - [Rectified Linear Units (ReLUs)](./src/main/kotlin/com/komputation/instructions/continuation/activation/Relu.kt)
+  - [Sigmoid](./src/main/kotlin/com/komputation/instructions/continuation/activation/Sigmoid.kt)
+  - [Softmax](./src/main/kotlin/com/komputation/instructions/continuation/activation/Softmax.kt)
+  - [Tanh](./src/main/kotlin/com/komputation/instructions/continuation/activation/Tanh.kt)
 
 - Other layers:
-  - [Concatenation](./src/main/kotlin/com/komputation/layers/forward/Concatenation.kt)
-  - [Exponentiation](./src/main/kotlin/com/komputation/layers/forward/activation/ExponentiationLayer.kt)
-  - [Normalization](./src/main/kotlin/com/komputation/layers/forward/NormalizationLayer.kt)
+  - [Concatenation](./src/main/kotlin/com/komputation/instructions/continuation/concatenation/Concatenation.kt)
+  - [Exponentiation](./src/main/kotlin/com/komputation/instructions/continuation/activation/ExponentiationLayer.kt)
+  - [Normalization](./src/main/kotlin/com/komputation/instructions/continuation/NormalizationLayer.kt)
 
 ## CPU demos
 
 - Boolean functions:
   - [AND](./src/main/kotlin/com/komputation/cpu/demos/and/AndSigmoid.kt)
-  - [Negation](./src/main/kotlin/com/komputation/cpu/demos/negation/Negation.kt)
+  - [NOT](./src/main/kotlin/com/komputation/cpu/demos/not/Not.kt)
   - [XOR](./src/main/kotlin/com/komputation/cpu/demos/xor/Xor.kt)
 
 - Total:
-  - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/total/FixedLengthRunningTotal.kt)
-  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/total/VariableLengthRunningTotal.kt)
+  - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/total/FixedLengthTotal.kt)
+  - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/total/VariableLengthTotal.kt)
 
 - Running total:
-  - Forward:
-    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/forward/FixedLengthRunningTotal.kt)
-    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/forward/VariableLengthRunningTotal.kt)
-  - Backward:
-    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardFixedLengthRunningTotal.kt)
-    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/backward/BackwardVariableLengthRunningTotal.kt)
+  - Left-to-right:
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/lefttoright/FixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/lefttoright/VariableLengthRunningTotal.kt)
+  - Right-to-left:
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/righttoleft/RightToLeftFixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/righttoleft/RightToLeftVariableLengthRunningTotal.kt)
   - Bidirectional:
-    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardFixedLengthRunningTotal.kt)
-    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BackwardVariableLengthRunningTotal.kt)
+    - [Fixed length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BidirectionalFixedLengthRunningTotal.kt)
+    - [Variable length](./src/main/kotlin/com/komputation/cpu/demos/runningtotal/bidirectional/BidirectionalVariableLengthRunningTotal.kt)
 
 - Increment:
   - [One layer](./src/main/kotlin/com/komputation/cpu/demos/increment/Increment.kt)
@@ -117,14 +114,13 @@ Komputation is available through Maven Central:
 The following code instantiates a GPU-accelerated convolutional neural network for sentence classification:
 
 ```kotlin
-    val network = Network(
+    val network = CudaNetwork(
         batchSize,
-        lookupLayer(embeddings, maximumDocumentLength, hasVariableLength, embeddingDimension, optimization),
-        convolutionalLayer(embeddingDimension, maximumDocumentLength, hasVariableLength, numberFilters, filterWidth, filterHeight, initialization, initialization, optimization),
-        reluLayer(numberFilters),
-        dropoutLayer(numberFilters, random, keepProbability),
-        projectionLayer(numberFilters, numberCategories, initialization, initialization, optimization),
-        softmaxLayer(numberCategories)
+        lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
+        convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),
+        relu(),
+        dropout(random, keepProbability),
+        dense(numberCategories, Activation.Softmax, initialization, optimization)
     )
 ```
 
@@ -142,9 +138,9 @@ See the [TREC demo](./src/main/kotlin/com/komputation/cuda/demos/trec/TREC.kt) f
 
 ## Loss functions
 
-- [Cross-entropy loss](./src/main/kotlin/com/komputation/loss/CrossEntropyLoss.kt)
-- [Logistic loss](./src/main/kotlin/com/komputation/loss/LogisticLoss.kt)
-- [Squared loss](./src/main/kotlin/com/komputation/loss/SquaredLoss.kt)
+- [Cross-entropy loss](./src/main/kotlin/com/komputation/instructions/loss/CrossEntropyLoss.kt)
+- [Logistic loss](./src/main/kotlin/com/komputation/instructions/loss/LogisticLoss.kt)
+- [Squared loss](./src/main/kotlin/com/komputation/instructions/loss/SquaredLoss.kt)
 
 ## Optimization
 

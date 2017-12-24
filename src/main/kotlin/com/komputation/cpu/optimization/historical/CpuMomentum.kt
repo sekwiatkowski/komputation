@@ -18,28 +18,22 @@ class CpuMomentum(private val learningRate: Float, private val momentum: Float, 
 
     private val history = FloatArray(historySize)
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
-
-        for(localIndex in 0 until numberEntries) {
-
+    override fun updateSparsely(start : Int, parameter: FloatArray, gradient: FloatArray, dimension: Int) {
+        for(localIndex in 0 until dimension) {
             val historyIndex = start + localIndex
 
             val derivative = gradient[localIndex]
 
-            parameters[localIndex] += this.updateHistory(derivative, historyIndex)
-
+            parameter[localIndex] += this.updateHistory(derivative, historyIndex)
         }
-
     }
 
     private fun updateHistory(derivative: Float, historyIndex : Int): Float {
-
         val newStateEntry = this.momentum * this.history[historyIndex] - this.learningRate * derivative
 
         this.history[historyIndex] = newStateEntry
 
         return newStateEntry
-
     }
 
 }

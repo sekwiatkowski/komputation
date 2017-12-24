@@ -14,7 +14,6 @@ __global__ void backwardExpansionKernel(
     int convolutionsPerRow,
     float* gradient,
     float* result) {
-
     int indexInstance = blockIdx.x;
     int startInstanceWithinBatch = indexInstance * numberEntries;
     int firstEntryInYBlockWithinInstance = blockIdx.y * numberOfWarpsPerBlocks;
@@ -23,14 +22,12 @@ __global__ void backwardExpansionKernel(
     int indexEntryWithinInstance = firstEntryInYBlockWithinInstance + indexEntryWithinYBlock;
 
     if(indexEntryWithinInstance < numberEntries) {
-
         int length = lengths[indexInstance];
 
         int indexEntryWithinBatch = startInstanceWithinBatch + indexEntryWithinInstance;
         result[indexEntryWithinBatch] = nanf("NaN");
 
         if(indexInstance < batchSize && indexEntryWithinInstance < length * numberRows) {
-
             int laneId = threadIdx.x % warpSize;
 
             int startFilter = laneId * numberIterations;
@@ -42,7 +39,6 @@ __global__ void backwardExpansionKernel(
             float thisValue = 0.0;
 
             for(int indexFilter = startFilter; indexFilter < endFilter; indexFilter++) {
-
                 int indexRowWithinFilter = indexFilter % filterHeight;
                 int indexColumnWithinFilter = indexFilter / filterHeight;
 
@@ -69,25 +65,17 @@ __global__ void backwardExpansionKernel(
 
                 }
                 else {
-
                     thisValueInIteration = 0.0;
-
                 }
 
                 thisValue += thisValueInIteration;
-
             }
 
             float sum = warpReduceToSum(thisValue);
 
             if(laneId == 0) {
-
                 result[indexEntryWithinBatch] = sum;
-
             }
-
         }
-
     }
-
 }

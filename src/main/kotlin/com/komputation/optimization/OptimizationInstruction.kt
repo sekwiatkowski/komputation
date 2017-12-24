@@ -1,3 +1,6 @@
 package com.komputation.optimization
 
+import com.komputation.cpu.instructions.CpuOptimizationInstruction
+import com.komputation.cuda.instructions.CudaOptimizationInstruction
+
 interface OptimizationInstruction : CpuOptimizationInstruction, CudaOptimizationInstruction

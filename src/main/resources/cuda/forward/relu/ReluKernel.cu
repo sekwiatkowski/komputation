@@ -1,6 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__device__ float relu (float x)
+__inline__ __device__ float relu (float x)
 {
     return fmaxf(x, 0.0);
 }

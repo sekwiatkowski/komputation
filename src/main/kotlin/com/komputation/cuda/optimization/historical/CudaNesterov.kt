@@ -5,7 +5,7 @@ import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
@@ -37,7 +37,6 @@ class CudaNesterov internal constructor(
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
@@ -52,19 +51,17 @@ class CudaNesterov internal constructor(
         allocateDeviceFloatMemory(this.deviceHistory, totalNumberEntries)
         
         allocateDeviceFloatMemory(this.deviceBackup, totalNumberEntries)
-
     }
 
     override fun launchKernel(
-        maximumParameters: Int,
-        pointerToIndices : Pointer,
+        hashTableSize: Int,
+        pointerToHashTable: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
-
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            pointerToIndices,
+            pointerToHashTable,
             pointerToCounts,
             this.pointerToParameterSize,
             pointerToParameters,
@@ -77,23 +74,24 @@ class CudaNesterov internal constructor(
 
         return this.kernel!!.launch(
             parameters,
-            maximumParameters,
+            hashTableSize,
             this.numberBlocks,
             this.numberThreads,
             0
         )
-
     }
 
     override fun release() {
-
         super.release()
 
         this.kernel!!.destroy()
 
+        this.numberBlocks = -1
+        this.numberThreads = -1
+        this.numberIterations[0] = -1
+
         cudaFree(this.deviceHistory)
         cudaFree(this.deviceBackup)
-
     }
 
 }

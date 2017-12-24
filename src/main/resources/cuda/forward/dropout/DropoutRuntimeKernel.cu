@@ -20,24 +20,16 @@ __global__ void dropoutRuntimeKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 result[indexEntry] = keepProbability * input[indexEntry];
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

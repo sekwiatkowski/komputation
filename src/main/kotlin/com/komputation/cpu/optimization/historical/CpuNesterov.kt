@@ -12,10 +12,8 @@ class CpuNesterov(private val learningRate: Float, private val momentum: Float, 
     private val history = FloatArray(size)
     private val backup = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
-
-        for(localIndex in 0 until numberEntries) {
-
+    override fun updateSparsely(start : Int, parameter: FloatArray, gradient: FloatArray, dimension: Int) {
+        for(localIndex in 0 until dimension) {
             val historyIndex = start + localIndex
 
             val backup = this.history[historyIndex]
@@ -29,21 +27,18 @@ class CpuNesterov(private val learningRate: Float, private val momentum: Float, 
             this.history[historyIndex] = updatedHistoryEntry
 
             // Remove the look-ahead component from the parameter
-            val removedPreviousLookAhead = parameters[localIndex] - this.momentum * backup
+            val removedPreviousLookAhead = parameter[localIndex] - this.momentum * backup
 
             // Update the parameter and put it into the look-ahead position
             // updatedParameter = removedPreviousLookAhead + (1 + this.momentum) * updatedHistoryEntry
             //                  = removedPreviousLookAhead + updatedHistoryEntry + this.momentum * updatedHistory
             //                  = removedPreviousLookAhead + updatedHistoryEntry + newLookAhead
-            parameters[localIndex] = removedPreviousLookAhead + (1.0f + this.momentum) * updatedHistoryEntry
-
+            parameter[localIndex] = removedPreviousLookAhead + (1.0f + this.momentum) * updatedHistoryEntry
         }
-
     }
 
     // Subtract the scaled gradient (looking ahead)
     private fun computeHistoryUpdate(historyIndex: Int, derivative: Float) =
-
         this.momentum * this.history[historyIndex] - this.learningRate * derivative
 
 }

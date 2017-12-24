@@ -1,7 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__device__  int xorShift(int seed) {
-
+__inline__ __device__  int xorShift(int seed) {
     int updated = seed;
 
     updated ^= updated << 13;
@@ -9,7 +8,6 @@ __device__  int xorShift(int seed) {
     updated ^= updated << 5;
 
     return updated;
-
 }
 
 /*
@@ -35,7 +33,6 @@ __global__ void dropoutTrainingKernel (
     int* seeds,
     float* masks,
     float* result) {
-
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -47,13 +44,10 @@ __global__ void dropoutTrainingKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 int newSeed = xorShift(seeds[indexEntry]);
                 seeds[indexEntry] = newSeed;
 
@@ -61,16 +55,11 @@ __global__ void dropoutTrainingKernel (
                 masks[indexEntry] = mask;
 
                 result[indexEntry] = mask * input[indexEntry];
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

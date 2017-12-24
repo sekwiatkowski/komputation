@@ -114,7 +114,7 @@ class SparseAccumulatorTest {
         expectedSums: Array<FloatArray>) {
 
         val actualSize = accumulator.getSize()
-        val actualIds = accumulator.getIds()
+        val actualIds = accumulator.getParameterIndices()
         val actualCounts = accumulator.getCounts()
         val actualSums = accumulator.getSums()
 

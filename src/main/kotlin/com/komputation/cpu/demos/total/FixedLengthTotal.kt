@@ -4,12 +4,12 @@ import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.Network
 import com.komputation.demos.total.TotalData
 import com.komputation.initialization.zeroInitialization
-import com.komputation.layers.entry.inputLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.recurrent.ResultExtraction
-import com.komputation.layers.recurrent.recurrentLayer
+import com.komputation.instructions.entry.input
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.recurrent.ResultExtraction
+import com.komputation.instructions.recurrent.recurrent
 import com.komputation.loss.printLoss
-import com.komputation.loss.squaredLoss
+import com.komputation.instructions.loss.squaredLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -27,23 +27,22 @@ fun main(args: Array<String>) {
 
     Network(
             1,
-            inputLayer(1, steps),
-            recurrentLayer(
-                steps,
-                true,
+            input(1, steps),
+            recurrent(
                 1,
-                1,
-                ActivationFunction.Identity,
+                Activation.Identity,
                 ResultExtraction.LastStep,
-                Direction.Forward,
+                Direction.LeftToRight,
                 initialization,
+                initialization,
+                null,
                 optimization)
         )
         .training(
             input,
             targets,
             2,
-            squaredLoss(1),
+            squaredLoss(),
             printLoss
         )
         .run()

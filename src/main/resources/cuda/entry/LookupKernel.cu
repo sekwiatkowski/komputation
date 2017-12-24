@@ -12,7 +12,6 @@ __global__ void lookupKernel (
     int startEntryWithinColumn = threadIdx.x * numberIterations;
 
     if(startEntryWithinColumn < dimension) {
-
         int indexInstance = blockIdx.x;
         int indexColumn = blockIdx.y;
 
@@ -26,24 +25,16 @@ __global__ void lookupKernel (
         int indexVectorId = indexInstance * maximumLength + indexColumn;
         int vectorId = vectorIds[indexVectorId];
 
-
         if(indexInstance < maximumBatchSize && vectorId != -1) {
-
             int startWithinLookupTable = vectorId * dimension + startEntryWithinColumn;
 
             for(int indexResult = firstEntryWithinBatch, indexLookupTable = startWithinLookupTable; indexResult < lastEntryWithinBatch; indexResult++, indexLookupTable++) {
-
                 result[indexResult] = vectors[indexLookupTable];
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

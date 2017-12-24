@@ -1,26 +1,22 @@
 __global__ void groupSumKernel(
     int dimension,
-    int maximumKeys,
+    int parametersPerInstance,
     int* mapping,
     float* gradient,
     float* groupSum) {
-
     int indexInstance = blockIdx.x;
-    int indexKey = blockIdx.y;
+    int indexParameterWithinInstance = blockIdx.y;
 
-    int indexMapping = indexInstance * maximumKeys + indexKey;
-    int slot = mapping[indexMapping];
+    int indexParameterWithinBatch = indexInstance * parametersPerInstance + indexParameterWithinInstance;
+
+    int slot = mapping[indexParameterWithinBatch];
 
     if(slot != -1) {
-
         int indexEntry = threadIdx.x;
-        int indexGroupSumEntry = slot * dimension + indexEntry;
 
-        int indexGradientEntry = indexInstance * maximumKeys * dimension + indexKey * dimension + indexEntry;
-        float gradientEntry = gradient[indexGradientEntry];
+        int groupSumEntryIndex = slot * dimension + indexEntry;
+        int gradientEntryIndex = indexParameterWithinBatch * dimension + indexEntry;
 
-        atomicAdd(&groupSum[indexGroupSumEntry], gradientEntry);
-
+        atomicAdd(&groupSum[groupSumEntryIndex], gradient[gradientEntryIndex]);
     }
-
 }

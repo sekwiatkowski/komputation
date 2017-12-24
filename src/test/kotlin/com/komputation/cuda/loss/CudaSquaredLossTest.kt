@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.setFloatArray
 import com.komputation.cuda.setUpCudaContext
-import com.komputation.loss.squaredLoss
+import com.komputation.instructions.loss.squaredLoss
 import com.komputation.matrix.FloatMath
 
 class CudaSquaredLossTest {
@@ -49,7 +49,10 @@ class CudaSquaredLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = squaredLoss(dimension).buildForCuda(cudaContext)
+        val lossInstruction = squaredLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(dimension, 1, 1)
+
+        val loss = lossInstruction.buildForCuda(cudaContext)
 
         loss.acquire(maximumBatchSize)
 
@@ -104,11 +107,14 @@ class CudaSquaredLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = squaredLoss(size).buildForCuda(context)
+        val lossInstruction = squaredLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(size, 1, 1)
+
+        val loss = lossInstruction.buildForCuda(context)
 
         loss.acquire(maximumBatchSize)
 
-        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets), batchSize)
+        val deviceResult = loss.backward(batchSize, Pointer.to(devicePredictions), Pointer.to(deviceTargets))
         val actual = getFloatArray(deviceResult, size)
 
         loss.release()

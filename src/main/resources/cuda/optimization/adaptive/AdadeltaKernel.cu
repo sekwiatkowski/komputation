@@ -1,8 +1,8 @@
 __global__ void adadeltaKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float decay,
@@ -11,42 +11,46 @@ __global__ void adadeltaKernel (
     float* gradientAccumulation,
     float* updateAccumulation) {
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(startEntry < parameterSize) {
-
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+    if(firstEntryIndex < dimension) {
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
+            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
 
-                float derivative = gradient[indexGradient];
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
 
-                float newGradientAccumulation = decay * gradientAccumulation[parameterIndex] + oneMinusDecay * (derivative * derivative);
-                gradientAccumulation[parameterIndex] = newGradientAccumulation;
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
+
+                float newGradientAccumulation = decay * gradientAccumulation[parameterEntryIndex] + oneMinusDecay * (scaledDerivative * scaledDerivative);
+                gradientAccumulation[parameterEntryIndex] = newGradientAccumulation;
 
                 float rootMeanSquaredOfDerivatives = sqrtf(newGradientAccumulation + epsilon);
 
-                float pastUpdateAccumulation = updateAccumulation[parameterIndex];
+                float pastUpdateAccumulation = updateAccumulation[parameterEntryIndex];
                 float rootMeanSquaredOfPastUpdates = sqrtf(pastUpdateAccumulation + epsilon);
 
                 float learningRate = rootMeanSquaredOfPastUpdates / rootMeanSquaredOfDerivatives;
 
-                float update = -learningRate * derivative;
+                float update = -learningRate * scaledDerivative;
 
-                updateAccumulation[parameterIndex] = decay * pastUpdateAccumulation + oneMinusDecay * (update * update);
+                updateAccumulation[parameterEntryIndex] = decay * pastUpdateAccumulation + oneMinusDecay * (update * update);
 
-                parameters[parameterIndex] += update;
+                parameters[parameterEntryIndex] += update;
 
+                parameterEntryIndex++;
+                gradientEntryIndex++;
             }
-
         }
-
     }
 
 }

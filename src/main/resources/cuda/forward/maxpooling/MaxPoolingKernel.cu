@@ -1,29 +1,23 @@
 #include "symbols/NaN.cuh"
 
-__device__ int findNextPowerOfTwo(int input) {
+__inline__ __device__ int findNextPowerOfTwo(int input) {
 
     return (int)powf(2.0, ceilf(log2f((float)input)));
 
 }
 
 __device__ int findMaximum(int thisIndex, float thisValue, int nextPowerOfTwo) {
-
     for (int offset = nextPowerOfTwo / 2; offset > 0; offset /= 2) {
-
         int otherIndex = __shfl_down(thisIndex, offset, nextPowerOfTwo);
         float otherValue = __shfl_down(thisValue, offset, nextPowerOfTwo);
 
         if(otherValue > thisValue) {
-
             thisIndex = otherIndex;
             thisValue = otherValue;
-
         }
-
     }
 
     return thisIndex;
-
 }
 
 __global__ void maxPoolingKernel (
@@ -33,7 +27,6 @@ __global__ void maxPoolingKernel (
     int* maxIndices,
     float* input,
     float* result) {
-
     extern __shared__ int warpMaximumIndices[];
 
     // One instance per block in the X dimension
@@ -49,7 +42,6 @@ __global__ void maxPoolingKernel (
     int resultIndex = resultStartInstance + indexRow;
 
     if(indexInstance < batchSize) {
-
         int length = lengths[indexInstance];
 
         int warpId = indexColumn / warpSize;
@@ -58,7 +50,6 @@ __global__ void maxPoolingKernel (
 
         // Some instances/rows require more warps than others
         if(warpId < numberRequiredWarps) {
-
             int laneId = indexColumn % warpSize;
 
             int thisIndex = indexInstance * numberEntries + indexColumn * numberRows + indexRow;
@@ -70,37 +61,27 @@ __global__ void maxPoolingKernel (
             int warpMaximumIndex = findMaximum(thisIndex, thisValue, width);
 
             if(laneId == 0) {
-
                 warpMaximumIndices[warpId] = warpMaximumIndex;
-
             }
 
             __syncthreads();
 
             if (warpId == 0 && laneId < numberRequiredWarps) {
-
                 int warpMaximumIndex = warpMaximumIndices[laneId];
                 float warpMaximumValue = input[warpMaximumIndex];
 
                 int blockMaximumIndex = findMaximum(warpMaximumIndex, warpMaximumValue, findNextPowerOfTwo(numberRequiredWarps));
 
                 if(laneId == 0) {
-
                     maxIndices[resultIndex] = blockMaximumIndex;
                     result[resultIndex] = input[blockMaximumIndex];
-
                 }
-
             }
-
         }
-
     }
     else {
-
         maxIndices[resultIndex] = nanf("NaN");
         setToNan(result, resultStartInstance, resultStartInstance + 1);
-
     }
 
 }

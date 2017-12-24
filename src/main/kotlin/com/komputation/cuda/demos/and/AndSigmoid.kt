@@ -3,10 +3,10 @@ package com.komputation.cuda.demos.and
 import com.komputation.cuda.network.CudaNetwork
 import com.komputation.demos.and.BinaryAndData
 import com.komputation.initialization.heInitialization
-import com.komputation.layers.entry.inputLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.dense.denseLayer
-import com.komputation.loss.logisticLoss
+import com.komputation.instructions.entry.input
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.loss.logisticLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -24,11 +24,11 @@ fun main(args: Array<String>) {
 
     val network = CudaNetwork(
         maximumBatchSize,
-        inputLayer(inputDimension),
-        denseLayer(inputDimension, outputDimension, initialization, initialization, ActivationFunction.Sigmoid, optimization)
+        input(inputDimension),
+        dense(outputDimension, Activation.Sigmoid, initialization, optimization)
     )
 
-    val training = network.training(BinaryAndData.inputs, BinaryAndData.targets, 10_000, logisticLoss(outputDimension), printLoss)
+    val training = network.training(BinaryAndData.inputs, BinaryAndData.targets, 10_000, logisticLoss(), printLoss)
 
     training.run()
 

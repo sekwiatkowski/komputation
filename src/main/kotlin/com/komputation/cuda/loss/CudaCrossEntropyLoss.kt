@@ -31,8 +31,8 @@ class CudaCrossEntropyLoss internal constructor(
 
     private var maximumBatchSize = -1
 
-    private val forwardBatchSize = intArrayOf(-1)
-    private val pointerToForwardBatchSize = Pointer.to(this.forwardBatchSize)
+    private val batchSize = intArrayOf(-1)
+    private val pointerToBatchSize = Pointer.to(this.batchSize)
 
     private var forwardNumberBlocksInYDimension = -1
     private var forwardNumberThreadsPerBlock = -1
@@ -45,16 +45,12 @@ class CudaCrossEntropyLoss internal constructor(
     private val deviceBackwardResult = Pointer()
     private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    private val backwardBatchSize = intArrayOf(-1)
-    private val pointerToBackwardBatchSize = Pointer.to(this.backwardBatchSize)
-
     private var backwardNumberBlocksInYDimension = -1
     private var backwardNumberThreadsPerBlock = -1
     private val backwardNumberIterations = intArrayOf(-1)
     private val pointerToBackwardNumberIterations = Pointer.to(this.backwardNumberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         this.maximumBatchSize = maximumBatchSize
 
         allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberSteps)
@@ -74,15 +70,13 @@ class CudaCrossEntropyLoss internal constructor(
         this.backwardNumberThreadsPerBlock = backwardLaunchConfiguration.numberThreadsPerBlock
         this.backwardNumberIterations[0] = backwardLaunchConfiguration.numberIterations
         this.backwardKernel = this.createBackwardKernel()
-
     }
 
     override fun accumulate(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize: Int) {
-
-        this.forwardBatchSize[0] = batchSize
+        this.batchSize[0] = batchSize
 
         val parameters = Pointer.to(
-            this.pointerToForwardBatchSize,
+            this.pointerToBatchSize,
             this.pointerToNumberRows,
             this.pointerToNumberEntries,
             this.pointerToForwardNumberIterations,
@@ -98,23 +92,19 @@ class CudaCrossEntropyLoss internal constructor(
             this.forwardNumberThreadsPerBlock,
             this.forwardSharedMemoryBytes)
 
+        this.accessAccumulation()
     }
 
     override fun accessAccumulation(): Float {
-
         val sums = getFloatArray(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
         val loss = sums.sum()
 
         return loss
-
     }
 
-    override fun backward(pointerToPredictions: Pointer, pointerToTargets: Pointer, batchSize : Int): Pointer {
-
-        this.backwardBatchSize[0] = batchSize
-
+    override fun backward(batchSize: Int, pointerToPredictions: Pointer, pointerToTargets: Pointer): Pointer {
         val parameters = Pointer.to(
-            this.pointerToBackwardBatchSize,
+            this.pointerToBatchSize,
             this.pointerToNumberEntries,
             this.pointerToBackwardNumberIterations,
             pointerToPredictions,
@@ -130,11 +120,9 @@ class CudaCrossEntropyLoss internal constructor(
             0)
 
         return this.deviceBackwardResult
-
     }
 
     override fun release() {
-
         this.forwardKernel!!.destroy()
 
         cudaFree(this.deviceForwardResult)
@@ -142,7 +130,6 @@ class CudaCrossEntropyLoss internal constructor(
         this.backwardKernel!!.destroy()
 
         cudaFree(this.deviceBackwardResult)
-
     }
 
 }

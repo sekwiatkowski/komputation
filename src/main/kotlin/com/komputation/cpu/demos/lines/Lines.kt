@@ -3,12 +3,12 @@ package com.komputation.cpu.demos.lines
 import com.komputation.cpu.network.Network
 import com.komputation.demos.lines.LinesData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.inputLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.activation.reluLayer
-import com.komputation.layers.forward.convolution.convolutionalLayer
-import com.komputation.layers.forward.dense.denseLayer
-import com.komputation.loss.crossEntropyLoss
+import com.komputation.instructions.entry.input
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.relu
+import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
@@ -33,16 +33,16 @@ fun main(args: Array<String>) {
 
     Network(
         maximumBatchSize,
-        inputLayer(numberRows, numberColumns),
-        convolutionalLayer(numberRows, numberColumns, true, numberFilters, filterWidth, filterHeight, initialize, initialize, optimization),
-        reluLayer(numberFilters),
-        denseLayer(numberFilters, outputDimension, initialize, initialize, ActivationFunction.Softmax, optimization)
+        input(numberRows, numberColumns),
+        convolution(numberFilters, filterWidth, filterHeight, initialize, optimization),
+        relu(),
+        dense(outputDimension, Activation.Softmax, initialize, optimization)
     )
         .training(
             LinesData.inputs,
             LinesData.targets,
             30_000,
-            crossEntropyLoss(outputDimension),
+            crossEntropyLoss(),
             printLoss)
         .run()
 

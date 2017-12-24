@@ -1,7 +1,7 @@
 package com.komputation.cuda.loss
 
 import jcuda.Pointer
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 
 interface CudaLossFunction : Resourceful {
 
@@ -9,6 +9,6 @@ interface CudaLossFunction : Resourceful {
 
     fun accessAccumulation() : Float
 
-    fun backward(pointerToPredictions: Pointer, pointerToTargets : Pointer, batchSize : Int): Pointer
+    fun backward(batchSize: Int, pointerToPredictions: Pointer, pointerToTargets: Pointer): Pointer
 
 }

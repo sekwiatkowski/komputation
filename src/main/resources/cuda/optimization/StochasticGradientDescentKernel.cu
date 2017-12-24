@@ -1,34 +1,37 @@
 __global__ void stochasticGradientDescentKernel (
     int numberIterations,
-    int* parameterIndices,
+    int* hashTable,
     int* counts,
-    int parameterSize,
+    int dimension,
     float* parameters,
     float* gradient,
     float learningRate) {
+    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    int startEntry = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    if(firstEntryIndex < dimension) {
 
-    if(startEntry < parameterSize) {
-
-        int gradientIndex = blockIdx.x;
-        int parameterIndex = parameterIndices[gradientIndex];
+        int hashTableIndex = blockIdx.x;
+        int parameterIndex = hashTable[hashTableIndex];
 
         if(parameterIndex != -1) {
+            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
 
-            int startParameter = parameterIndex * parameterSize + startEntry;
-            int startGradient = gradientIndex * parameterSize + startEntry;
+            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
+            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
 
-            float scalingFactor = 1.0 / (float)counts[gradientIndex];
+            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
 
-            for(int indexParameter = startParameter, indexGradient = startGradient; indexParameter < startParameter + numberIterations; indexParameter++, indexGradient++) {
+            int parameterEntryIndex = firstParameterEntryIndex;
+            int gradientEntryIndex = firstGradientEntryIndex;
 
-                parameters[indexParameter] -= scalingFactor * learningRate * gradient[indexGradient];
+            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
+                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
 
+                parameters[parameterEntryIndex] -= learningRate * scaledDerivative;
+
+                parameterEntryIndex++;
+                gradientEntryIndex++;
             }
-
         }
-
     }
-
 }

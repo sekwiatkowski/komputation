@@ -11,10 +11,9 @@ class CpuAdadelta(private val decay : Float, private val epsilon : Float, size :
     private val gradientAccumulation = FloatArray(size)
     private val updateAccumulation = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
+    override fun updateSparsely(start : Int, parameter: FloatArray, gradient: FloatArray, dimension: Int) {
 
-        for(localIndex in 0 until numberEntries) {
-
+        for(localIndex in 0 until dimension) {
             val historyIndex = start + localIndex
 
             val derivative = gradient[localIndex]
@@ -32,8 +31,7 @@ class CpuAdadelta(private val decay : Float, private val epsilon : Float, size :
 
             this.updateAccumulation[historyIndex] = this.decay * pastUpdateAccumulation + this.oneMinusDecay * (update * update)
 
-            parameters[localIndex] += update
-
+            parameter[localIndex] += update
         }
 
     }

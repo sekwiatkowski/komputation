@@ -3,13 +3,13 @@ package com.komputation.cpu.demos.runningtotal.bidirectional
 import com.komputation.cpu.network.Network
 import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.inputLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.projection.weightingLayer
-import com.komputation.layers.recurrent.ResultExtraction
-import com.komputation.layers.recurrent.bidirectionalRecurrentLayer
+import com.komputation.instructions.entry.input
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.projection.weighting
+import com.komputation.instructions.recurrent.ResultExtraction
+import com.komputation.instructions.recurrent.bidirectionalRecurrentLayer
 import com.komputation.loss.printLoss
-import com.komputation.loss.squaredLoss
+import com.komputation.instructions.loss.squaredLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -25,7 +25,7 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = uniformInitialization(random, -0.01f, 0.01f)
-    val optimization = stochasticGradientDescent(0.0003f)
+    val optimization = stochasticGradientDescent(0.0005f)
 
     val minimumLength = 2
     val maximumLength = 5
@@ -45,24 +45,21 @@ fun main(args: Array<String>) {
 
     Network(
             1,
-            inputLayer(1, maximumLength),
+            input(1, minimumLength, maximumLength),
             bidirectionalRecurrentLayer(
-                maximumLength,
-                false,
                 1,
-                1,
-                ActivationFunction.Identity,
+                Activation.Identity,
                 ResultExtraction.AllSteps,
                 initialization,
                 optimization
             ),
-            weightingLayer(2, maximumLength, false, 1, initialization, optimization)
+            weighting(1, initialization, optimization)
         )
         .training(
             input,
             sumTargets,
             2,
-            squaredLoss(1, minimumLength, maximumLength),
+            squaredLoss(),
             printLoss
         )
         .run()

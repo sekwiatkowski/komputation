@@ -5,11 +5,11 @@ import com.komputation.cuda.network.CudaNetwork
 import com.komputation.demos.embeddings.EmbeddingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
-import com.komputation.layers.entry.lookupLayer
-import com.komputation.layers.forward.activation.ActivationFunction
-import com.komputation.layers.forward.convolution.maxPoolingLayer
-import com.komputation.layers.forward.dense.denseLayer
-import com.komputation.loss.squaredLoss
+import com.komputation.instructions.entry.lookup
+import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.convolution.maxPooling
+import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.loss.squaredLoss
 import com.komputation.optimization.historical.momentum
 import java.util.*
 
@@ -33,19 +33,17 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
     val numberClasses = EmbeddingData.numberClasses
 
-    val hasFixedLength = true
-
     CudaNetwork(
         maximumBatchSize,
-        lookupLayer(embeddings, length, hasFixedLength, embeddingDimension, optimizationStrategy),
-        maxPoolingLayer(embeddingDimension, length),
-        denseLayer(embeddingDimension, numberClasses, initializationStrategy, initializationStrategy, ActivationFunction.Softmax, optimizationStrategy)
+        lookup(embeddings, length, length, embeddingDimension, optimizationStrategy),
+        maxPooling(),
+        dense(numberClasses, Activation.Softmax, initializationStrategy, optimizationStrategy)
     )
         .training(
             inputs,
             targets,
             1000,
-            squaredLoss(numberClasses),
+            squaredLoss(),
             printLoss)
         .run()
 

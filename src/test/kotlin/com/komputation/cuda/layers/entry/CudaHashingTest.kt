@@ -54,7 +54,11 @@ class CudaHashingTest {
             indices.size,
             2,
             { context.createKernel(HashtableKernels.hash()) },
-            { context.createKernel(FillKernels.twoIntegerArrays()) })
+            { context.createKernel(FillKernels.twoIntegerArrays()) },
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
 
         hashing.acquire(1)
 

@@ -1,11 +1,11 @@
 __global__ void fillOneIntegerArrayKernel(
-    int numberRows,
     int numberEntries,
+    int numberIterations,
     int* array,
     int constant) {
+    int start = blockIdx.x * blockDim.x * numberIterations + threadIdx.x * numberIterations;
 
-    int index = blockIdx.x * numberEntries + blockIdx.y * numberRows + threadIdx.x;
-
-    array[index] = constant;
-
+    for(int index = start; index < fminf(start + numberIterations, numberEntries); index++) {
+        array[index] = constant;
+    }
 }

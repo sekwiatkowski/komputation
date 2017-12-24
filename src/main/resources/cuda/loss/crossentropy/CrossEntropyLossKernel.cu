@@ -52,23 +52,16 @@ __global__ void crossEntropyLossKernel (int batchSize, int numberRows, int numbe
     int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
     if(indexInstance < batchSize) {
-
         float thisValue = 0.0;
 
         if(startIndexWithinColumn < numberRows) {
-
             thisValue = targets[startIndexWithinBatch] * predictions[startIndexWithinBatch];
 
             if(numberIterations > 1) {
-
                 for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-
                     thisValue += targets[indexEntry] * predictions[indexEntry];
-
                 }
-
             }
-
         }
 
         int warpId = threadIdx.x / warpSize;
@@ -77,20 +70,13 @@ __global__ void crossEntropyLossKernel (int batchSize, int numberRows, int numbe
         reduceToSum(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
-
             result[indexColumnInBatch] = -logf(sharedData[0]);
-
         }
-
     }
     else {
-
         if(threadIdx.x == 0) {
-
             result[indexColumnInBatch] = 0.0;
-
         }
-
     }
 
 }

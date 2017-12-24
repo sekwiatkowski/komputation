@@ -7,10 +7,8 @@ class CpuAdagrad(private val learningRate: Float, private val epsilon : Float, s
 
     private val sumOfSquaredDerivatives = FloatArray(size)
 
-    override fun updateSparsely(start : Int, parameters: FloatArray, gradient: FloatArray, numberEntries: Int) {
-
-        for(index in 0 until numberEntries) {
-
+    override fun updateSparsely(start : Int, parameter: FloatArray, gradient: FloatArray, dimension: Int) {
+        for(index in 0 until dimension) {
             val historyIndex = start + index
             val derivative = gradient[index]
 
@@ -20,20 +18,15 @@ class CpuAdagrad(private val learningRate: Float, private val epsilon : Float, s
 
             val update = -adaptiveLearningRate * derivative
 
-            parameters[index] += update
-
+            parameter[index] += update
         }
-
     }
 
     private fun updateHistory(historyIndex: Int, derivative: Float) {
-
         this.sumOfSquaredDerivatives[historyIndex] += derivative * derivative
-
     }
 
     private fun adaptLearningRate(historyIndex: Int) =
-
         this.learningRate / (FloatMath.sqrt(this.sumOfSquaredDerivatives[historyIndex]) + this.epsilon)
 
 }

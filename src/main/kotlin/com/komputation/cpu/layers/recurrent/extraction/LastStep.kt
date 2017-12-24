@@ -1,9 +1,8 @@
 package com.komputation.cpu.layers.recurrent.extraction
 
-import com.komputation.cpu.layers.recurrent.series.Series
+import com.komputation.cpu.layers.recurrent.series.CpuSeries
 
 class LastStep(
-    private val series: Series,
     numberRows : Int,
     private val isReversed : Boolean) : ResultExtractionStrategy {
 
@@ -13,8 +12,8 @@ class LastStep(
 
     override val possibleOutputLengths = intArrayOf(1)
 
-    override fun extractResult(numberInputColumns : Int): FloatArray {
-        this.forwardResult = this.series.getForwardResult(if(this.isReversed) 0 else numberInputColumns-1)
+    override fun extractResult(series : CpuSeries, numberInputColumns : Int): FloatArray {
+        this.forwardResult = series.getForwardResult(if(this.isReversed) 0 else numberInputColumns-1)
 
         return this.forwardResult
     }

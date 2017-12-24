@@ -10,8 +10,8 @@ interface CudaUpdateRule {
         pointerToGradient: Pointer)
 
     fun sparseUpdate(
-        maximumParameters : Int,
-        pointerToIndices: Pointer,
+        hashTableSize: Int,
+        pointerToHashTable: Pointer,
         pointerToCounts: Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer)

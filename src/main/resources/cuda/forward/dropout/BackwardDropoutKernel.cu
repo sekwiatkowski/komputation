@@ -2,8 +2,8 @@
 
 __global__ void backwardDropoutKernel (
     int batchSize,
-    int numberRows,
     int numberEntriesPerInstance,
+    int numberRows,
     int numberIterations,
     float* chain,
     float* mask,
@@ -20,24 +20,16 @@ __global__ void backwardDropoutKernel (
     int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
-
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
-
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                 result[indexEntry] = chain[indexEntry] * mask[indexEntry];
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
 
 }

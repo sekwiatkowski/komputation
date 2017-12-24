@@ -3,7 +3,7 @@ package com.komputation.cuda.loss
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.setFloatArray
 import com.komputation.cuda.setUpCudaContext
-import com.komputation.loss.crossEntropyLoss
+import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.matrix.FloatMath
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
@@ -84,7 +84,9 @@ class CudaCrossEntropyLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = crossEntropyLoss(numberCategories, numberSteps).buildForCuda(cudaContext)
+        val lossInstruction = crossEntropyLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(numberCategories, numberSteps, numberSteps)
+        val loss = lossInstruction.buildForCuda(cudaContext)
 
         loss.acquire(maximumBatchSize)
 
@@ -115,11 +117,13 @@ class CudaCrossEntropyLossTest {
         val deviceTargets = Pointer()
         setFloatArray(targets, size, deviceTargets)
 
-        val loss = crossEntropyLoss(numberCategories, numberSteps).buildForCuda(context)
+        val lossInstruction = crossEntropyLoss()
+        lossInstruction.setInputDimensionsFromPreviousInstruction(numberCategories, numberSteps, numberSteps)
+        val loss = lossInstruction.buildForCuda(context)
 
         loss.acquire(1)
 
-        val deviceResult = loss.backward(Pointer.to(devicePredictions), Pointer.to(deviceTargets), 1)
+        val deviceResult = loss.backward(1, Pointer.to(devicePredictions), Pointer.to(deviceTargets))
         val actual = getFloatArray(deviceResult, size)
 
         loss.release()

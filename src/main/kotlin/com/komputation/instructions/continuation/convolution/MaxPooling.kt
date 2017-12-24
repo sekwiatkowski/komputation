@@ -1,0 +1,49 @@
+package com.komputation.instructions.continuation.convolution
+
+import com.komputation.cpu.instructions.CpuContinuationInstruction
+import com.komputation.cpu.layers.continuation.maxpooling.CpuMaxPooling
+import com.komputation.cuda.CudaContext
+import com.komputation.cuda.instructions.CudaContinuationInstruction
+import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.layers.continuation.maxpooling.CudaMaxPooling
+import jcuda.jcublas.cublasHandle
+
+class MaxPooling internal constructor (
+    private val name : String?,
+    private val symbolForUnusedColumns : Float) : CpuContinuationInstruction, CudaContinuationInstruction {
+
+    private var numberInputRows = -1
+    protected var maximumNumberInputColumns = -1
+    protected var minimumNumberInputColumns = -1
+
+    override fun setInputDimensionsFromPreviousInstruction(numberInputRows: Int, minimumNumberInputColumns: Int, maximumNumberInputColumns: Int) {
+        this.numberInputRows = numberInputRows
+        this.minimumNumberInputColumns = minimumNumberInputColumns
+        this.maximumNumberInputColumns = maximumNumberInputColumns
+    }
+
+    override val numberOutputRows
+        get() = this.numberInputRows
+    override val maximumNumberOutputColumns
+        get() = 1
+    override val minimumNumberOutputColumns
+        get() = 1
+
+    override fun buildForCpu() =
+        CpuMaxPooling(this.name, this.numberInputRows, this.minimumNumberInputColumns, this.maximumNumberInputColumns)
+
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+        CudaMaxPooling(
+            this.name,
+            this.numberInputRows,
+            this.maximumNumberInputColumns,
+            this.symbolForUnusedColumns,
+            { context.createKernel(ForwardKernels.maxPooling()) },
+            { context.createKernel(ForwardKernels.backwardMaxPooling()) },
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
+
+}
+
+fun maxPooling(name : String? = null, symbolForUnusedColumns : Float = Float.NaN) =
+    MaxPooling(name, symbolForUnusedColumns)

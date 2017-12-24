@@ -4,7 +4,7 @@ import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
-import com.komputation.layers.Resourceful
+import com.komputation.instructions.Resourceful
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
@@ -49,7 +49,6 @@ class CudaAdam internal constructor(
     private var pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         super.acquire(maximumBatchSize)
 
         this.kernel = this.createKernel()
@@ -62,21 +61,19 @@ class CudaAdam internal constructor(
         val totalParameters = this.numberParameters * this.parameterSize
         allocateDeviceFloatMemory(this.deviceFirstMomentEstimate, totalParameters)
         allocateDeviceFloatMemory(this.deviceSecondMomentEstimate, totalParameters)
-
     }
 
     override fun launchKernel(
-        maximumParameters: Int,
-        pointerToIndices: Pointer,
+        hashTableSize: Int,
+        pointerToHashTable: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
-
         this.step[0] += 1.0f;
 
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            pointerToIndices,
+            pointerToHashTable,
             pointerToCounts,
             this.pointerToParameterSize,
             pointerToParameters,
@@ -94,25 +91,22 @@ class CudaAdam internal constructor(
 
         val resultCode = this.kernel!!.launch(
             parameters,
-            maximumParameters,
+            hashTableSize,
             this.numberBlocks,
             this.numberThreads,
             0
         )
 
         return resultCode
-
     }
 
     override fun release() {
-
         super.release()
 
         this.kernel!!.destroy()
 
         cudaFree(this.deviceFirstMomentEstimate)
         cudaFree(this.deviceSecondMomentEstimate)
-
     }
 
 }

@@ -69,18 +69,13 @@ fun cublasBackwardProjectionWrtInput(
     numberChainRows: Int,
     numberChainColumns: Int,
     deviceResult: Pointer) =
-
     // X is a vector
     if (numberChainColumns == 1) {
-
         cublasTransposedMatrixVectorMultiplication(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, deviceResult)
-
     }
     // X is a matrix
     else {
-
         cublasTransposedMatrixMatrixMultiplication(cublasHandle, deviceWeights, numberWeightRows, numberWeightColumns, deviceChain, numberChainRows, numberChainColumns, deviceResult)
-
     }
 
 /*
@@ -111,10 +106,8 @@ fun cublasBackwardProjectionWrtWeights(
     numberInputRows : Int,
     deviceResult: Pointer,
     numberResultEntries: Int) =
-
     // X is a vector
     if(numberChainColumns == 1) {
-
         cublasOuterProduct(
             cublasHandle,
             numberChainRows,
@@ -127,7 +120,6 @@ fun cublasBackwardProjectionWrtWeights(
     }
     // X is a matrix
     else {
-
         cublasMatrixTransposedMatrixMultiplication(
             cublasHandle,
             deviceChain,
@@ -136,7 +128,6 @@ fun cublasBackwardProjectionWrtWeights(
             deviceInput,
             numberInputRows,
             deviceResult)
-
     }
 
 fun cublasBackwardProjectionWrtBias(
@@ -146,7 +137,6 @@ fun cublasBackwardProjectionWrtBias(
     numberChainColumns : Int,
     deviceOnes : Pointer,
     deviceResult: Pointer) {
-
     cublasMatrixVectorMultiplication(
         cublasHandle,
         deviceChain,
@@ -154,5 +144,4 @@ fun cublasBackwardProjectionWrtBias(
         numberChainColumns,
         deviceOnes,
         deviceResult)
-
 }

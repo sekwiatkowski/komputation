@@ -9,7 +9,6 @@ __global__ void biasKernel (
     float* input,
     float* bias,
     float* result) {
-
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -20,7 +19,6 @@ __global__ void biasKernel (
     int firstEntryWithinInstance = startColumnWithinInstance + startRowWithinColumn;
 
     if(firstEntryWithinInstance < numberEntriesPerInstance) {
-
         int startColumnWithinBatch = startInstanceWithinBatch + startColumnWithinInstance;
         int firstEntryWithinBatch = startColumnWithinBatch + startRowWithinColumn;
 
@@ -28,32 +26,20 @@ __global__ void biasKernel (
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumnWithinBatch);
 
         if(indexInstance < batchSize) {
-
             int length = lengths[indexInstance];
 
             if(indexColumn < length) {
-
                 for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-
                     int indexColumn = indexEntry % numberRows;
                     result[indexEntry] = input[indexEntry] + bias[indexColumn];
-
                 }
-
             }
             else {
-
                 setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
             }
-
         }
         else {
-
             setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
-
         }
-
     }
-
 }

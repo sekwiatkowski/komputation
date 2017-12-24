@@ -4,7 +4,7 @@ class VariableLengthFloatArray(
     private val numberRows : Int,
     private val possibleLengths : IntArray) {
 
-    private val minimumLength = possibleLengths.min()!!
+    private val minimumLength = this.possibleLengths.min()!!
 
     private var store = Array(this.possibleLengths.size) { index ->
         FloatArray(this.numberRows * this.possibleLengths[index])
