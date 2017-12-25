@@ -6,7 +6,7 @@ import com.komputation.cuda.layers.CudaContinuation
 import jcuda.Pointer
 
 abstract class BaseCudaHigherOrderContinuation(
-    val name : String?,
+    override val name : String?,
     private val firstLayer: CudaBackwardState,
     private val lastLayer: CudaForwardState) : CudaContinuation {
 

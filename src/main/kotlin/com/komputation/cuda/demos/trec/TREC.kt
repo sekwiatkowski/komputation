@@ -8,8 +8,11 @@ import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.relu
 import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.convolution.expansion
+import com.komputation.instructions.continuation.convolution.maxPooling
 import com.komputation.instructions.continuation.dense.dense
 import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.continuation.projection.projection
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
@@ -96,7 +99,7 @@ class Trec {
             dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
-        val test = network
+        val tester = network
             .test(
                 testRepresentations,
                 testTargets,
@@ -104,16 +107,23 @@ class Trec {
                 numberCategories,
                 1)
 
-        network
+        val trainer = network
             .training(
                 trainingRepresentations,
                 trainingTargets,
                 numberIterations,
-                crossEntropyLoss()) { _ : Int, _: Float ->
-                println(test.run())
+                crossEntropyLoss()) { _: Int, _: Float ->
+                println(tester.run())
 
             }
+        val (totalTime, propagationTimes) = trainer
             .run()
+
+        val (forward, backward) = propagationTimes
+
+        trainer.free()
+        tester.free()
+        network.free()
 
     }
 

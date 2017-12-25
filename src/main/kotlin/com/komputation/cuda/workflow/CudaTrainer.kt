@@ -39,7 +39,7 @@ class CudaTrainer(
         this.targetMemory.free()
     }
 
-    fun run(): Long {
+    fun run(): Pair<Long, Pair<List<Pair<String?, Long>>, List<Pair<String?, Long>>>> {
         val trackLoss = this.afterEachIteration != null
 
         val start = System.currentTimeMillis()
@@ -75,11 +75,14 @@ class CudaTrainer(
             this.afterEachIteration?.invoke(indexIteration, iterationLoss)
         }
 
+        val forwardPropagationTimes = this.forwardPropagator.stopTimer()
+        val backwardPropagationTimes = this.backwardPropagator.stopTimer()
+
         val stop = System.currentTimeMillis()
 
-        val time = stop - start
+        val totalTime = stop - start
 
-        return time
+        return totalTime to (forwardPropagationTimes to backwardPropagationTimes)
     }
 
 }

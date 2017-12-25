@@ -8,8 +8,11 @@ import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.relu
 import com.komputation.instructions.continuation.convolution.convolution
+import com.komputation.instructions.continuation.convolution.expansion
+import com.komputation.instructions.continuation.convolution.maxPooling
 import com.komputation.instructions.continuation.dense.dense
 import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.continuation.projection.projection
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
@@ -104,15 +107,18 @@ class Trec {
                 numberCategories,
                 1)
 
-        network
+        val (totalTime, propagationTimes) = network
             .training(
                 trainingRepresentations,
                 trainingTargets,
                 numberIterations,
-                crossEntropyLoss()) { _ : Int, _: Float ->
+                crossEntropyLoss()) { _: Int, _: Float ->
                 println(test.run())
+
             }
             .run()
+
+        val (forward, backward) = propagationTimes
 
     }
 

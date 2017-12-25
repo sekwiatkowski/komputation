@@ -6,7 +6,7 @@ import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
 abstract class BaseCudaContinuation(
-    val name: String?,
+    override val name: String?,
     final override val numberInputRows : Int,
     final override val numberOutputRows : Int,
     final override val maximumInputColumns : Int,

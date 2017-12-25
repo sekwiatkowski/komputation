@@ -20,7 +20,7 @@ class CpuTrainer(
 
     private val batches = partitionIndices(this.inputs.size, this.maximumBatchSize)
 
-    fun run(): Long {
+    fun run(): Pair<Long, Pair<List<Pair<String?, Long>>, List<Pair<String?, Long>>>> {
         val start = System.currentTimeMillis()
 
         repeat(this.numberIterations) { indexIteration ->
@@ -64,9 +64,11 @@ class CpuTrainer(
 
         val stop = System.currentTimeMillis()
 
-        val time = stop - start
+        val totalTime = stop - start
 
-        return time
+        val propagationTimes = this.forwardPropagator.stopTimer() to this.backwardPropagator.stopTimer()
+
+        return totalTime to propagationTimes
     }
 
 }

@@ -33,18 +33,24 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
     val numberClasses = EmbeddingData.numberClasses
 
-    CudaNetwork(
+    val network = CudaNetwork(
         maximumBatchSize,
         lookup(embeddings, length, length, embeddingDimension, optimizationStrategy),
         maxPooling(),
         dense(numberClasses, Activation.Softmax, initializationStrategy, optimizationStrategy)
     )
+
+    val trainer = network
         .training(
             inputs,
             targets,
             1000,
             squaredLoss(),
             printLoss)
-        .run()
+
+    trainer.run()
+
+    trainer.free()
+    network.free()
 
 }

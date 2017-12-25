@@ -53,5 +53,6 @@ fun main(args: Array<String>) {
 
     training.free()
     test.free()
+    network.free()
 
 }

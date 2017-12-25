@@ -3,7 +3,7 @@ package com.komputation.cuda.layers.continuation.activation
 import com.komputation.cuda.layers.continuation.CudaActivation
 import jcuda.Pointer
 
-class CudaIdentity internal constructor(val name : String? = null, numberRows : Int, numberColumns : Int) : CudaActivation {
+class CudaIdentity internal constructor(override val name : String? = null, numberRows : Int, numberColumns : Int) : CudaActivation {
 
     override val batchMaximumOutputColumns: Int
         get() = this.batchMaximumInputColumns

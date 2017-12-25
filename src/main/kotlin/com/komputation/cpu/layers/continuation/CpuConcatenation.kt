@@ -8,7 +8,7 @@ import com.komputation.cpu.layers.computeLengthIndex
 import com.komputation.optimization.Optimizable
 
 class CpuConcatenation internal constructor(
-    val name : String? = null,
+    override val name : String? = null,
     private val layers: Array<CpuContinuation>) : CpuContinuation, Optimizable {
 
     private val firstLayer = this.layers.first()

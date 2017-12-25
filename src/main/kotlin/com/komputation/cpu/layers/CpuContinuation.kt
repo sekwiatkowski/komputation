@@ -1,3 +1,3 @@
 package com.komputation.cpu.layers
 
-interface CpuContinuation : CpuForwardPropagation, CpuBackwardPropagation
+interface CpuContinuation : CpuLayer, CpuForwardPropagation, CpuBackwardPropagation

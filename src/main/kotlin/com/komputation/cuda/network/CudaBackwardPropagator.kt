@@ -5,21 +5,27 @@ import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.layers.CudaContinuation
 
 class CudaBackwardPropagator(
-    private val entryPoint: CudaEntryPoint,
-    private val layers : Array<CudaContinuation>) {
-
-    private val numberLayers = this.layers.size
+    entryPoint: CudaEntryPoint,
+    continuations: Array<CudaContinuation>) : BaseCudaPropagator(entryPoint, continuations) {
 
     fun backward(lossGradient : Pointer, batchSize: Int): Pointer {
         var chain = lossGradient
 
-        for(indexLayer in this.numberLayers - 1 downTo 0) {
-            val layer = this.layers[indexLayer]
+        for(indexLayer in this.numberContinuations - 1 downTo 0) {
+            val continuation = this.continuations[indexLayer]
 
-            chain = layer.backward(batchSize, chain)
+            val startContinuation = System.nanoTime()
+            chain = continuation.backward(batchSize, chain)
+            val stopContinuation = System.nanoTime()
+            this.times[indexLayer+1] += stopContinuation - startContinuation
         }
 
-        return this.entryPoint.backward(chain)
+        val startEntry = System.nanoTime()
+        val backwardInput = this.entryPoint.backward(chain)
+        val stopEntry = System.nanoTime()
+        this.times[0] += stopEntry - startEntry
+
+        return backwardInput
     }
 
 }

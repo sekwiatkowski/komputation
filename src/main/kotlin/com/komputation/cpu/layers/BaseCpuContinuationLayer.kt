@@ -10,7 +10,7 @@ fun computePossibleLengths(minimumLength: Int, numberPossibleLengths : Int) =
     IntArray(numberPossibleLengths) { index -> index + minimumLength }
 
 abstract class BaseCpuContinuationLayer(
-    val name: String?,
+    override val name: String?,
     final override val numberInputRows : Int,
     final override val numberOutputRows : Int,
     protected val minimumColumns : Int,

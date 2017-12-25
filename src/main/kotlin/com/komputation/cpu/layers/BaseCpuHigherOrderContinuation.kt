@@ -1,7 +1,7 @@
 package com.komputation.cpu.layers
 
 abstract class BaseCpuHigherOrderContinuation(
-    val name : String?,
+    override val name : String?,
     private val firstLayer: CpuBackwardState,
     private val lastLayer: CpuForwardState) : CpuContinuation {
 

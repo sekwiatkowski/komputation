@@ -2,7 +2,7 @@ package com.komputation.cpu.layers
 
 import com.komputation.matrix.Matrix
 
-interface CpuEntryPoint : CpuForwardResult {
+interface CpuEntryPoint : CpuLayer, CpuForwardResult {
 
     fun forward(input: Matrix) : FloatArray
 
