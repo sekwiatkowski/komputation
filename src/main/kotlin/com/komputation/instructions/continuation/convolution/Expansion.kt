@@ -6,7 +6,7 @@ import com.komputation.cpu.instructions.CpuContinuationInstruction
 import com.komputation.cpu.layers.continuation.convolution.CpuExpansion
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.convolution.CudaExpansion
 import jcuda.jcublas.cublasHandle
 
@@ -58,8 +58,8 @@ class Expansion internal constructor(
             this.numberFilterRowPositions,
             this.filterHeight,
             this.filterWidth,
-            { context.createKernel(ForwardKernels.expansion()) },
-            { context.createKernel(ForwardKernels.backwardExpansion()) },
+            { context.createKernel(ContinuationKernels.expansion()) },
+            { context.createKernel(ContinuationKernels.backwardExpansion()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

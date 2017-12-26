@@ -36,7 +36,7 @@
 
 */
 
-__global__ void crossEntropyLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result)
+__global__ void crossEntropyLossKernel (int batchSize, int numberRows, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result)
 {
 
     int startIndexWithinColumn = threadIdx.x * numberIterations;

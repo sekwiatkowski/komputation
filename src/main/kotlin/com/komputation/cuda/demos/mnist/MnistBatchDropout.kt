@@ -1,12 +1,12 @@
 package com.komputation.cuda.demos.mnist
 
-import com.komputation.cuda.network.CudaNetwork
+import com.komputation.cuda.network.cudaNetwork
 import com.komputation.demos.mnist.MnistData
 import com.komputation.initialization.heInitialization
-import com.komputation.instructions.entry.input
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.dense.dense
 import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.momentum
 import java.io.File
@@ -35,7 +35,7 @@ fun main(args: Array<String>) {
     val optimizer = momentum(0.01f, 0.9f)
     val keepProbability = 0.85f
 
-    val network = CudaNetwork(
+    val network = cudaNetwork(
         batchSize,
         input(inputDimension),
         dense(hiddenDimension, Activation.ReLU, initialization, initialization, optimizer),

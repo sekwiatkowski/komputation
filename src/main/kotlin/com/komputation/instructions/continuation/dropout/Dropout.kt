@@ -4,7 +4,7 @@ import com.komputation.cpu.instructions.CpuContinuationInstruction
 import com.komputation.cpu.layers.continuation.dropout.CpuDropout
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.dropout.CudaDropout
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
 import jcuda.jcublas.cublasHandle
@@ -25,9 +25,9 @@ class Dropout internal constructor(
             this.maximumNumberInputColumns,
             this.random,
             this.keepProbability,
-            { context.createKernel(ForwardKernels.dropoutTraining()) },
-            { context.createKernel(ForwardKernels.dropoutRuntime()) },
-            { context.createKernel(ForwardKernels.backwardDropout()) },
+            { context.createKernel(ContinuationKernels.dropoutTraining()) },
+            { context.createKernel(ContinuationKernels.dropoutRuntime()) },
+            { context.createKernel(ContinuationKernels.backwardDropout()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

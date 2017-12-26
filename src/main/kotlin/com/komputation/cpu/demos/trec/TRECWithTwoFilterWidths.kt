@@ -1,16 +1,16 @@
 package com.komputation.cpu.demos.trec
 
-import com.komputation.cpu.network.Network
+import com.komputation.cpu.network.network
 import com.komputation.demos.trec.NLP
 import com.komputation.demos.trec.TRECData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.relu
-import com.komputation.instructions.continuation.concatenation.concatenation
 import com.komputation.instructions.continuation.convolution.convolution
 import com.komputation.instructions.continuation.dense.dense
 import com.komputation.instructions.continuation.dropout.dropout
+import com.komputation.instructions.continuation.stack.stack
+import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.optimization.historical.nesterov
 import java.io.File
@@ -89,10 +89,10 @@ class TrecWithTwoFilterWidths {
             .map { token -> embeddingMap[token]!! }
             .toTypedArray()
 
-        val network = Network(
+        val sentenceClassifier = network(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
-            concatenation(
+            stack(
                 *filterWidths
                     .map { filterWidth ->
                         convolution(numberFilters, filterWidth, filterHeight, initialization, optimization)
@@ -104,7 +104,7 @@ class TrecWithTwoFilterWidths {
             dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
-        val test = network
+        val test = sentenceClassifier
             .test(
                 testRepresentations,
                 testTargets,
@@ -112,7 +112,7 @@ class TrecWithTwoFilterWidths {
                 numberCategories,
                 1)
 
-        network.training(
+        sentenceClassifier.training(
             trainingRepresentations,
             trainingTargets,
             numberIterations,

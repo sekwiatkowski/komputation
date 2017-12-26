@@ -1,18 +1,12 @@
 #include "symbols/NaN.cuh"
 
-__inline__ __device__ float backwardSigmoid (float forward, float chain) {
-    return forward * (1.0f - forward) * chain;
-}
-
-__global__ void backwardSigmoidKernel (
+__global__ void exponentiationKernel (
     int batchSize,
     int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
-    float *forward,
-    float *chain,
-    float *destination) {
-
+    float* source,
+    float* destination) {
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -20,15 +14,17 @@ __global__ void backwardSigmoidKernel (
     int startColumnWithinInstance = indexColumn * numberRows;
     int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
-    int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
+    int startColumnWithinBatch = startInstanceWithinBatch + startColumnWithinInstance;
+
+    int firstEntryWithinBatch = startColumnWithinBatch + startRowWithinColumn;
+    int startNextColumn = startColumnWithinBatch + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-                destination[indexEntry] = backwardSigmoid(forward[indexEntry], chain[indexEntry]);
+                destination[indexEntry] = expf(source[indexEntry]);
             }
         }
         else {

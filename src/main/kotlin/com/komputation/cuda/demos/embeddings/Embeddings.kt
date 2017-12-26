@@ -1,15 +1,15 @@
 package com.komputation.cuda.demos.embeddings
 
-import com.komputation.loss.printLoss
-import com.komputation.cuda.network.CudaNetwork
+import com.komputation.cuda.network.cudaNetwork
 import com.komputation.demos.embeddings.EmbeddingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.convolution.maxPooling
 import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.loss.squaredLoss
+import com.komputation.loss.printLoss
 import com.komputation.optimization.historical.momentum
 import java.util.*
 
@@ -33,7 +33,7 @@ fun main(args: Array<String>) {
     val targets = EmbeddingData.targets
     val numberClasses = EmbeddingData.numberClasses
 
-    val network = CudaNetwork(
+    val network = cudaNetwork(
         maximumBatchSize,
         lookup(embeddings, length, length, embeddingDimension, optimizationStrategy),
         maxPooling(),

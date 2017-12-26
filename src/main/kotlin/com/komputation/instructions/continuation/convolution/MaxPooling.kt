@@ -4,7 +4,7 @@ import com.komputation.cpu.instructions.CpuContinuationInstruction
 import com.komputation.cpu.layers.continuation.maxpooling.CpuMaxPooling
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.maxpooling.CudaMaxPooling
 import jcuda.jcublas.cublasHandle
 
@@ -38,8 +38,8 @@ class MaxPooling internal constructor (
             this.numberInputRows,
             this.maximumNumberInputColumns,
             this.symbolForUnusedColumns,
-            { context.createKernel(ForwardKernels.maxPooling()) },
-            { context.createKernel(ForwardKernels.backwardMaxPooling()) },
+            { context.createKernel(ContinuationKernels.maxPooling()) },
+            { context.createKernel(ContinuationKernels.backwardMaxPooling()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

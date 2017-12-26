@@ -7,7 +7,7 @@ import com.komputation.cpu.layers.VariableLengthFloatArray
 import com.komputation.cpu.layers.computeLengthIndex
 import com.komputation.optimization.Optimizable
 
-class CpuConcatenation internal constructor(
+class CpuStack internal constructor(
     override val name : String? = null,
     private val layers: Array<CpuContinuation>) : CpuContinuation, Optimizable {
 
@@ -61,11 +61,6 @@ class CpuConcatenation internal constructor(
         Array(this.numberLayers) { indexLayer -> FloatArray(this.layers[indexLayer].numberOutputRows * outputLength) }
     }
 
-    /*
-        a b
-        ---
-        c d
-    */
     override fun backward(withinBatch: Int, chain: FloatArray): FloatArray {
         this.backwardResult = this.backwardStore.get(this.numberInputColumns)
 

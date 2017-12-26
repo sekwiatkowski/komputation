@@ -1,16 +1,17 @@
 #include "symbols/NaN.cuh"
 
-__inline__ __device__ float sigmoid (float x) {
-    return 1.0 / (1.0 + expf (-x));
+__inline__ __device__ float backwardSigmoid (float forward, float chain) {
+    return forward * (1.0f - forward) * chain;
 }
 
-__global__ void sigmoidKernel (
+__global__ void backwardSigmoidKernel (
     int batchSize,
     int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
-    float *source,
-    float *destination) {
+    float* forward,
+    float* chain,
+    float* destination) {
 
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
@@ -27,12 +28,11 @@ __global__ void sigmoidKernel (
 
         if(indexInstance < batchSize) {
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-                destination[indexEntry] = sigmoid(source[indexEntry]);
+                destination[indexEntry] = backwardSigmoid(forward[indexEntry], chain[indexEntry]);
             }
         }
         else {
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
-
 }

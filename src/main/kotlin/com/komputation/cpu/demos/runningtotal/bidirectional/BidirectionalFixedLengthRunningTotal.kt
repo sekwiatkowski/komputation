@@ -1,15 +1,15 @@
 package com.komputation.cpu.demos.runningtotal.bidirectional
 
-import com.komputation.cpu.network.Network
+import com.komputation.cpu.network.network
 import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.entry.input
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.projection.weighting
-import com.komputation.instructions.recurrent.ResultExtraction
-import com.komputation.instructions.recurrent.bidirectionalRecurrentLayer
-import com.komputation.loss.printLoss
+import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.squaredLoss
+import com.komputation.instructions.recurrent.ResultExtraction
+import com.komputation.instructions.recurrent.bidirectionalRecurrent
+import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
 import java.util.*
 
@@ -42,10 +42,10 @@ fun main(args: Array<String>) {
             .toFloatArray()
     }
 
-    Network(
+    network(
             1,
             input(1, steps),
-            bidirectionalRecurrentLayer(
+            bidirectionalRecurrent(
                 1,
                 Activation.Identity,
                 ResultExtraction.AllSteps,

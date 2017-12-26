@@ -14,7 +14,7 @@ fun computeColumnwiseLaunchConfiguration(
     }
     else {
 
-        val numberIterations = (numberRows + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+        val numberIterations = computeNumberSegments(numberRows, maximumNumberThreadsPerBlock)
 
         return KernelLaunchConfiguration(numberColumns, maximumNumberThreadsPerBlock, numberIterations)
 

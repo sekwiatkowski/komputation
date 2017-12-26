@@ -1,11 +1,11 @@
 package com.komputation.cpu.demos.and
 
-import com.komputation.cpu.network.Network
+import com.komputation.cpu.network.network
 import com.komputation.demos.and.OneHotAndData
 import com.komputation.initialization.heInitialization
-import com.komputation.instructions.entry.input
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.03f)
 
-    Network(
+    network(
         batchSize,
         input(inputDimension),
         dense(outputDimension, Activation.Softmax, initialization, optimization)

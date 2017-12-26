@@ -2,7 +2,7 @@ package com.komputation.instructions.continuation.activation
 
 import com.komputation.cpu.layers.continuation.activation.CpuSigmoid
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.activation.CudaSigmoid
 import com.komputation.instructions.continuation.ActivationInstruction
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
@@ -19,8 +19,8 @@ class Sigmoid internal constructor(
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            { context.createKernel(ForwardKernels.sigmoid()) },
-            { context.createKernel(ForwardKernels.backwardSigmoid()) },
+            { context.createKernel(ContinuationKernels.sigmoid()) },
+            { context.createKernel(ContinuationKernels.backwardSigmoid()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

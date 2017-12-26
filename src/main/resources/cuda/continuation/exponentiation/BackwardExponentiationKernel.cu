@@ -1,17 +1,14 @@
 #include "symbols/NaN.cuh"
 
-__inline__ __device__ float relu (float x)
-{
-    return fmaxf(x, 0.0);
-}
-
-__global__ void reluKernel (
+__global__ void backwardExponentiationKernel (
     int batchSize,
     int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
-    float *source,
-    float *destination) {
+    float* forward,
+    float* chain,
+    float* destination) {
+
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -19,19 +16,22 @@ __global__ void reluKernel (
     int startColumnWithinInstance = indexColumn * numberRows;
     int startRowWithinColumn = threadIdx.x * numberIterations;
 
-    int firstEntryWithinBatch = startInstanceWithinBatch + startColumnWithinInstance + startRowWithinColumn;
-    int startNextColumn = startInstanceWithinBatch + startColumnWithinInstance + numberRows;
+    int startColumnWithinBatch = startInstanceWithinBatch + startColumnWithinInstance;
+
+    int firstEntryWithinBatch = startColumnWithinBatch + startRowWithinColumn;
+    int startNextColumn = startColumnWithinBatch + numberRows;
 
     if(firstEntryWithinBatch < startNextColumn) {
         int lastEntryWithinBatch = min(firstEntryWithinBatch + numberIterations, startNextColumn);
 
         if(indexInstance < batchSize) {
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-                destination[indexEntry] = relu(source[indexEntry]);
+                destination[indexEntry] = chain[indexEntry] * forward[indexEntry];
             }
         }
         else {
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
+
 }

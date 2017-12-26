@@ -2,19 +2,19 @@ package com.komputation.cuda.network
 
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
+import com.komputation.cuda.instructions.CudaEntryPointInstruction
+import com.komputation.cuda.instructions.CudaLossFunctionInstruction
 import com.komputation.cuda.kernels.TestingKernels
-import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.layers.CudaContinuation
+import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.setUpCudaContext
 import com.komputation.cuda.workflow.CudaBinaryClassificationTester
 import com.komputation.cuda.workflow.CudaMultiClassificationTester
 import com.komputation.cuda.workflow.CudaTester
 import com.komputation.cuda.workflow.CudaTrainer
-import com.komputation.cuda.instructions.CudaEntryPointInstruction
 import com.komputation.instructions.Resourceful
 import com.komputation.instructions.acquireRecursively
-import com.komputation.cuda.instructions.CudaLossFunctionInstruction
 import com.komputation.matrix.Matrix
 import com.komputation.optimization.Optimizable
 import jcuda.Pointer
@@ -23,7 +23,7 @@ import jcuda.jcublas.JCublas2.cublasDestroy
 import jcuda.jcublas.cublasHandle
 
 
-class CudaNetwork(
+class CudaNetwork internal constructor(
     private val maximumBatchSize: Int,
     entryPointInstruction: CudaEntryPointInstruction,
     vararg continuationInstructions: CudaContinuationInstruction) {
@@ -156,3 +156,9 @@ class CudaNetwork(
     }
 
 }
+
+fun cudaNetwork(
+    maximumBatchSize: Int,
+    entryPointInstruction: CudaEntryPointInstruction,
+    vararg continuationInstructions: CudaContinuationInstruction) =
+    CudaNetwork(maximumBatchSize, entryPointInstruction, *continuationInstructions)

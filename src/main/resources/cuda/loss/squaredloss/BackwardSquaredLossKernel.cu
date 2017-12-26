@@ -1,6 +1,6 @@
 #include "symbols/NaN.cuh"
 
-__global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result) {
+__global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result) {
 
     // What's the first entry index within the instance that this thread should operate on?
     int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;

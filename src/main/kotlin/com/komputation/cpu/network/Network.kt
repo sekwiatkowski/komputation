@@ -1,20 +1,22 @@
 package com.komputation.cpu.network
 
-import com.komputation.cpu.instructions.CpuEntryPointInstruction
 import com.komputation.cpu.instructions.CpuContinuationInstruction
-import com.komputation.cpu.layers.CpuEntryPoint
+import com.komputation.cpu.instructions.CpuEntryPointInstruction
+import com.komputation.cpu.instructions.CpuLossFunctionInstruction
 import com.komputation.cpu.layers.CpuContinuation
+import com.komputation.cpu.layers.CpuEntryPoint
 import com.komputation.cpu.workflow.CpuBinaryTester
 import com.komputation.cpu.workflow.CpuMulticlassTester
 import com.komputation.cpu.workflow.CpuTester
 import com.komputation.cpu.workflow.CpuTrainer
-import com.komputation.instructions.*
-import com.komputation.cpu.instructions.CpuLossFunctionInstruction
+import com.komputation.instructions.Resourceful
+import com.komputation.instructions.acquireRecursively
+import com.komputation.instructions.releaseRecursively
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.partitionIndices
 import com.komputation.optimization.Optimizable
 
-class Network(
+class Network internal constructor(
     private val maximumBatchSize: Int,
     entryPointInstruction: CpuEntryPointInstruction,
     vararg continuationInstructions: CpuContinuationInstruction) {
@@ -118,3 +120,9 @@ class Network(
         this.forwardPropagator.forward(0, input, false).forwardResult.copyOf()
 
 }
+
+fun network(
+    maximumBatchSize: Int,
+    entryPointInstruction: CpuEntryPointInstruction,
+    vararg continuationInstructions: CpuContinuationInstruction)  =
+    Network(maximumBatchSize, entryPointInstruction, *continuationInstructions)

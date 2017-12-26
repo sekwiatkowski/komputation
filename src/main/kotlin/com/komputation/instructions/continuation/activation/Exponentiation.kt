@@ -2,7 +2,7 @@ package com.komputation.instructions.continuation.activation
 
 import com.komputation.cpu.layers.continuation.activation.CpuExponentiation
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.activation.CudaExponentiation
 import com.komputation.instructions.continuation.ActivationInstruction
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
@@ -18,8 +18,8 @@ class Exponentiation internal constructor(private val name : String?) : BaseEntr
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            { context.createKernel(ForwardKernels.exponentiation()) },
-            { context.createKernel(ForwardKernels.backwardExponentiation()) },
+            { context.createKernel(ContinuationKernels.exponentiation()) },
+            { context.createKernel(ContinuationKernels.backwardExponentiation()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

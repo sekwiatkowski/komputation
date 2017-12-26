@@ -4,7 +4,7 @@ import com.komputation.cpu.instructions.CpuContinuationInstruction
 import com.komputation.cpu.layers.continuation.normalization.CpuNormalization
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.normalization.CudaNormalization
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
 import jcuda.jcublas.cublasHandle
@@ -19,8 +19,8 @@ class NormalizationLayer internal constructor(private val name : String?) : Base
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            { context.createKernel(ForwardKernels.normalization()) },
-            { context.createKernel(ForwardKernels.backwardNormalization()) },
+            { context.createKernel(ContinuationKernels.normalization()) },
+            { context.createKernel(ContinuationKernels.backwardNormalization()) },
             context.maximumNumberOfThreadsPerBlock,
             context.warpSize)
 

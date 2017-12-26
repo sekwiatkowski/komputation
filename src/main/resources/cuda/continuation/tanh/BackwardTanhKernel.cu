@@ -9,9 +9,9 @@ __global__ void backwardTanhKernel (
     int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
-    float *forward,
-    float *chain,
-    float *destination) {
+    float* forward,
+    float* chain,
+    float* destination) {
 
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;

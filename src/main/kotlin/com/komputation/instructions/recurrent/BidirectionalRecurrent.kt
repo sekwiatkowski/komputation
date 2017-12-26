@@ -3,17 +3,17 @@ package com.komputation.instructions.recurrent
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.instructions.continuation.activation.Activation
-import com.komputation.instructions.continuation.concatenation.concatenation
+import com.komputation.instructions.continuation.stack.stack
 import com.komputation.optimization.OptimizationInstruction
 
-fun bidirectionalRecurrentLayer(
+fun bidirectionalRecurrent(
     hiddenDimension : Int,
     activation: Activation,
     resultExtraction: ResultExtraction,
     initialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
 
-    bidirectionalRecurrentLayer(
+    bidirectionalRecurrent(
         hiddenDimension,
         activation,
         resultExtraction,
@@ -22,7 +22,7 @@ fun bidirectionalRecurrentLayer(
         initialization,
         optimization)
 
-fun bidirectionalRecurrentLayer(
+fun bidirectionalRecurrent(
     name : String,
     hiddenDimension : Int,
     activation: Activation,
@@ -30,7 +30,7 @@ fun bidirectionalRecurrentLayer(
     initialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
 
-    bidirectionalRecurrentLayer(
+    bidirectionalRecurrent(
         name,
         hiddenDimension,
         activation,
@@ -40,7 +40,7 @@ fun bidirectionalRecurrentLayer(
         initialization,
         optimization)
 
-fun bidirectionalRecurrentLayer(
+fun bidirectionalRecurrent(
     hiddenDimension : Int,
     activation: Activation,
     resultExtraction: ResultExtraction,
@@ -49,7 +49,7 @@ fun bidirectionalRecurrentLayer(
     biasInitialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
 
-    bidirectionalRecurrentLayer(
+    bidirectionalRecurrent(
         null,
         hiddenDimension,
         activation,
@@ -59,7 +59,7 @@ fun bidirectionalRecurrentLayer(
         biasInitialization,
         optimization)
 
-fun bidirectionalRecurrentLayer(
+fun bidirectionalRecurrent(
     name : String?,
     hiddenDimension : Int,
     activation: Activation,
@@ -69,7 +69,7 @@ fun bidirectionalRecurrentLayer(
     biasInitialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
 
-    concatenation(
+    stack(
         name,
         recurrent(name, hiddenDimension, activation, resultExtraction, Direction.LeftToRight, inputWeightingInitialization, previousStateInitialization, biasInitialization, optimization),
         recurrent(name, hiddenDimension, activation, resultExtraction, Direction.RightToLeft, inputWeightingInitialization, previousStateInitialization, biasInitialization, optimization)

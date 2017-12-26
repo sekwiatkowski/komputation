@@ -8,7 +8,7 @@ fun computeNumberOfThreadsForRows(numberRows : Int, warpSize: Int, maximumNumber
 
         val numberIterations = 1
 
-        val numberWarps = (numberRows + warpSize - 1) / warpSize
+        val numberWarps = computeNumberSegments(numberRows, warpSize)
         val numberThreads = numberWarps * warpSize
 
         return numberIterations to numberThreads
@@ -16,10 +16,10 @@ fun computeNumberOfThreadsForRows(numberRows : Int, warpSize: Int, maximumNumber
     }
     else {
 
-        val numberIterations = (numberRows + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+        val numberIterations = computeNumberSegments(numberRows, maximumNumberThreadsPerBlock)
 
         val iterativeWarpSize = warpSize * numberIterations
-        val numberIterativeWarps = (numberRows + iterativeWarpSize - 1) / iterativeWarpSize
+        val numberIterativeWarps = computeNumberSegments (numberRows, iterativeWarpSize)
         val numberThreads = numberIterativeWarps * warpSize
 
         return numberIterations to numberThreads
@@ -35,12 +35,12 @@ fun computeEntrywiseLaunchConfiguration(
     warpSize : Int,
     maximumNumberThreadsPerBlock : Int): KernelLaunchConfiguration {
 
-    val numberRequiredWarps = (numberElements + warpSize - 1) / warpSize
+    val numberRequiredWarps = computeNumberSegments(numberElements, warpSize)
 
     // No more than one block per multi-processor
     if (numberRequiredWarps <= numberMultiProcessors) {
 
-        val numberBlocks = (numberElements + warpSize - 1) / warpSize
+        val numberBlocks = numberRequiredWarps
 
         return KernelLaunchConfiguration(numberBlocks, warpSize, 1)
 
@@ -51,18 +51,18 @@ fun computeEntrywiseLaunchConfiguration(
         val numberAvailableWarps = numberResidentWarps * numberMultiProcessors
 
         val numberOccupiedWarps = IntMath.min(numberRequiredWarps, numberAvailableWarps)
-        val numberOccupiedWarpsPerMultiprocessor = (numberOccupiedWarps + numberMultiProcessors - 1) / numberMultiProcessors
+        val numberOccupiedWarpsPerMultiprocessor = computeNumberSegments(numberOccupiedWarps, numberMultiProcessors)
 
         val numberRequiredThreadsPerMultiprocessor = numberOccupiedWarpsPerMultiprocessor * warpSize
         val numberThreadsPerBlock = Math.min(numberRequiredThreadsPerMultiprocessor, maximumNumberThreadsPerBlock)
 
-        val numberBlocksPerMultiprocessor = (numberRequiredThreadsPerMultiprocessor + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+        val numberBlocksPerMultiprocessor = computeNumberSegments(numberRequiredThreadsPerMultiprocessor, maximumNumberThreadsPerBlock)
 
         val numberBlocks = numberMultiProcessors * numberBlocksPerMultiprocessor
 
         val numberOccupiedThreads = numberBlocks * maximumNumberThreadsPerBlock
 
-        val numberIterations = (numberElements + numberOccupiedThreads - 1) / numberOccupiedThreads
+        val numberIterations = computeNumberSegments(numberElements, numberOccupiedThreads)
 
         return KernelLaunchConfiguration(numberBlocks, numberThreadsPerBlock, numberIterations)
 

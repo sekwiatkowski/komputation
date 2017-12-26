@@ -44,7 +44,7 @@ Komputation is available through Maven Central:
   - [Tanh](./src/main/kotlin/com/komputation/instructions/continuation/activation/Tanh.kt)
 
 - Other layers:
-  - [Concatenation](./src/main/kotlin/com/komputation/instructions/continuation/concatenation/Concatenation.kt)
+  - [Stack](./src/main/kotlin/com/komputation/instructions/continuation/stack/stack.kt)
   - [Exponentiation](./src/main/kotlin/com/komputation/instructions/continuation/activation/ExponentiationLayer.kt)
   - [Normalization](./src/main/kotlin/com/komputation/instructions/continuation/NormalizationLayer.kt)
 
@@ -114,7 +114,7 @@ Komputation is available through Maven Central:
 The following code instantiates a GPU-accelerated convolutional neural network for sentence classification:
 
 ```kotlin
-    val network = CudaNetwork(
+    val sentenceClassifier = cudaNetwork(
         batchSize,
         lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
         convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),

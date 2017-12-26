@@ -5,7 +5,7 @@ import com.komputation.cpu.layers.continuation.projection.CpuBias
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.projection.CudaBias
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeColumnVector
@@ -39,7 +39,7 @@ class Bias internal constructor(
             this.maximumNumberInputColumns,
             this.initializeBias(),
             updateRule,
-            { context.createKernel(ForwardKernels.bias()) },
+            { context.createKernel(ContinuationKernels.bias()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

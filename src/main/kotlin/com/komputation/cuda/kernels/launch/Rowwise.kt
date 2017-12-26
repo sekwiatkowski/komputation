@@ -8,7 +8,7 @@ fun computeRowwiseLaunchConfiguration(
 
     if (numberColumns <= maximumNumberThreadsPerBlock) {
 
-        val numberWarps = (numberColumns + warpSize - 1) / warpSize
+        val numberWarps = computeNumberSegments(numberColumns, warpSize)
         val numberThreadsPerBlock = numberWarps * warpSize
 
         KernelLaunchConfiguration(numberRows, numberThreadsPerBlock, 1)
@@ -16,7 +16,7 @@ fun computeRowwiseLaunchConfiguration(
     }
     else {
 
-        val numberIterations = (numberColumns + maximumNumberThreadsPerBlock - 1) / maximumNumberThreadsPerBlock
+        val numberIterations = computeNumberSegments(numberColumns, maximumNumberThreadsPerBlock)
 
         KernelLaunchConfiguration(numberRows, maximumNumberThreadsPerBlock, numberIterations)
 

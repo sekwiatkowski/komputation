@@ -1,17 +1,22 @@
 #include "symbols/NaN.cuh"
 
-__inline__ __device__ float tanh (float x) {
-    return (2.0 / (1.0 + expf(-2.0*x))) - 1.0;
+__inline__ __device__ float backwardRelu (float forward, float chain) {
+    if(forward > 0.0) {
+        return chain;
+    }
+    else {
+        return 0.0;
+    }
 }
 
-__global__ void tanhKernel (
+__global__ void backwardReluKernel (
     int batchSize,
     int numberRows,
     int numberEntriesPerInstance,
     int numberIterations,
-    float *source,
-    float *destination) {
-
+    float* forward,
+    float* chain,
+    float* destination) {
     int indexInstance = blockIdx.x;
     int indexColumn = blockIdx.y;
 
@@ -27,12 +32,12 @@ __global__ void tanhKernel (
 
         if(indexInstance < batchSize) {
             for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-                destination[indexEntry] = tanh(source[indexEntry]);
+                destination[indexEntry] = backwardRelu(forward[indexEntry], chain[indexEntry]);
+
             }
         }
         else {
             setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
-
 }

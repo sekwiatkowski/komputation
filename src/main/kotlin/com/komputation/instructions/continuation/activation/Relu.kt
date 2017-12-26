@@ -2,7 +2,7 @@ package com.komputation.instructions.continuation.activation
 
 import com.komputation.cpu.layers.continuation.activation.CpuRelu
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.activation.CudaRelu
 import com.komputation.instructions.continuation.ActivationInstruction
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
@@ -18,8 +18,8 @@ class Relu internal constructor(private val name : String?) : BaseEntrywiseInstr
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            { context.createKernel(ForwardKernels.relu()) },
-            { context.createKernel(ForwardKernels.backwardRelu()) },
+            { context.createKernel(ContinuationKernels.relu()) },
+            { context.createKernel(ContinuationKernels.backwardRelu()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

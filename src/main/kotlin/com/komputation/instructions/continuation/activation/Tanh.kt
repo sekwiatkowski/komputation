@@ -2,7 +2,7 @@ package com.komputation.instructions.continuation.activation
 
 import com.komputation.cpu.layers.continuation.activation.CpuTanh
 import com.komputation.cuda.CudaContext
-import com.komputation.cuda.kernels.ForwardKernels
+import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.activation.CudaTanh
 import com.komputation.instructions.continuation.ActivationInstruction
 import com.komputation.instructions.continuation.BaseEntrywiseInstruction
@@ -18,8 +18,8 @@ class Tanh internal constructor(private val name : String?) : BaseEntrywiseInstr
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            { context.createKernel(ForwardKernels.tanh()) },
-            { context.createKernel(ForwardKernels.backwardTanh()) },
+            { context.createKernel(ContinuationKernels.tanh()) },
+            { context.createKernel(ContinuationKernels.backwardTanh()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

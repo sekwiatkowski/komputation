@@ -1,11 +1,11 @@
 package com.komputation.cuda.demos.not
 
-import com.komputation.cuda.network.CudaNetwork
+import com.komputation.cuda.network.cudaNetwork
 import com.komputation.demos.negation.NotData
 import com.komputation.initialization.heInitialization
-import com.komputation.instructions.entry.input
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.logisticLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
 
     val optimization = stochasticGradientDescent(0.1f)
 
-    val network = CudaNetwork(
+    val network = cudaNetwork(
         batchSize,
         input(inputDimension),
         dense(outputDimension, Activation.Sigmoid, initialization, optimization)

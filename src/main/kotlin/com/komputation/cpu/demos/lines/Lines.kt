@@ -1,13 +1,13 @@
 package com.komputation.cpu.demos.lines
 
-import com.komputation.cpu.network.Network
+import com.komputation.cpu.network.network
 import com.komputation.demos.lines.LinesData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.entry.input
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.relu
 import com.komputation.instructions.continuation.convolution.convolution
 import com.komputation.instructions.continuation.dense.dense
+import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.crossEntropyLoss
 import com.komputation.loss.printLoss
 import com.komputation.optimization.stochasticGradientDescent
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
 
     val maximumBatchSize = 1
 
-    Network(
+    network(
         maximumBatchSize,
         input(numberRows, numberColumns),
         convolution(numberFilters, filterWidth, filterHeight, initialize, optimization),

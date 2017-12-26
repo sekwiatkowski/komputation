@@ -12,8 +12,8 @@ __global__ void adamKernel (
     float oneMinusSecondMomentDecay,
     float epsilon,
     float step,
-    float *firstMomentEstimate,
-    float *secondMomentEstimate) {
+    float* firstMomentEstimate,
+    float* secondMomentEstimate) {
 
     int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 

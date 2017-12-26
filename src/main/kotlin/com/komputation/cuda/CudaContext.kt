@@ -14,7 +14,6 @@ data class CudaContext(
     val warpSize: Int,
     val maximumNumberOfBlocks: Int,
     val maximumNumberOfThreadsPerBlock: Int) {
-
     private val kernelFactory = KernelFactory(this.computeCapabilities)
 
     fun createKernel(instruction: KernelInstruction) =

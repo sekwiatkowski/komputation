@@ -1,7 +1,7 @@
 #include "symbols/NaN.cuh"
 
 // -1/target probability if target = 1.0, 0.0 otherwise
-__global__ void backwardCrossEntropyLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float *predictions, float *targets, float *result) {
+__global__ void backwardCrossEntropyLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result) {
     // What's the first entry index within the instance that this thread should operate on?
     int startIndexWithinInstance = blockIdx.y * (blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
