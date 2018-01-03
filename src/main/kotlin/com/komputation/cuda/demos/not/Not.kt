@@ -1,7 +1,7 @@
 package com.komputation.cuda.demos.not
 
 import com.komputation.cuda.network.cudaNetwork
-import com.komputation.demos.negation.NotData
+import com.komputation.demos.not.NotData
 import com.komputation.initialization.heInitialization
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.dense.dense

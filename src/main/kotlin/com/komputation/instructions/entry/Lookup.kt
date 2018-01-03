@@ -1,16 +1,16 @@
 package com.komputation.instructions.entry
 
 import com.komputation.cpu.functions.copy
+import com.komputation.cpu.instructions.CpuEntryPointInstruction
 import com.komputation.cpu.layers.entry.CpuLookup
 import com.komputation.cuda.CudaContext
+import com.komputation.cuda.instructions.CudaEntryPointInstruction
+import com.komputation.cuda.kernels.ArrayKernels
 import com.komputation.cuda.kernels.EntryKernels
-import com.komputation.cuda.kernels.FillKernels
 import com.komputation.cuda.kernels.HashtableKernels
 import com.komputation.cuda.layers.entry.CudaGroupSum
 import com.komputation.cuda.layers.entry.CudaHashing
 import com.komputation.cuda.layers.entry.CudaLookup
-import com.komputation.cpu.instructions.CpuEntryPointInstruction
-import com.komputation.cuda.instructions.CudaEntryPointInstruction
 import com.komputation.optimization.OptimizationInstruction
 
 class Lookup(
@@ -55,7 +55,7 @@ class Lookup(
             this.maximumLength,
             2,
             { context.createKernel(HashtableKernels.hash()) },
-            { context.createKernel(FillKernels.twoIntegerArrays()) },
+            { context.createKernel(ArrayKernels.fillTwoIntegerArrays()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,
@@ -66,7 +66,7 @@ class Lookup(
             this.maximumLength,
             2 * this.maximumLength,
             { context.createKernel(HashtableKernels.groupSum()) },
-            { context.createKernel(FillKernels.oneFloatArray()) },
+            { context.createKernel(ArrayKernels.fillOneFloatArray()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

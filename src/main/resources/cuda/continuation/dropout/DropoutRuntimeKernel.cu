@@ -28,7 +28,7 @@ __global__ void dropoutRuntimeKernel (
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 

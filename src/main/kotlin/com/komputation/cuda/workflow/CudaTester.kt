@@ -21,29 +21,24 @@ class CudaTester(
     private val targetMemory = TargetMemory(this.targets.first().size)
 
     init {
-
         this.evaluation.acquire(this.maximumBatchSize)
-
     }
 
     fun free() {
-
         this.inputMemory.free()
         this.targetMemory.free()
 
         this.evaluation.release()
-
     }
 
     fun run(): Float {
-
         this.evaluation.resetCount()
 
         for ((batchId, batch) in this.batches.withIndex()) {
 
             val currentBatchSize = batch.size
 
-            val predictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory,false)
+            val predictions = this.forwardPropagator.forward(batchId, currentBatchSize, batch, this.inputs, this.inputMemory, false)
 
             val pointerToPredictions = Pointer.to(predictions)
             val pointerToTargets = this.targetMemory.get(batchId, currentBatchSize, batch, this.targets)
@@ -55,7 +50,6 @@ class CudaTester(
         val accuracy = this.evaluation.computeAccuracy()
 
         return accuracy
-
     }
 
 }

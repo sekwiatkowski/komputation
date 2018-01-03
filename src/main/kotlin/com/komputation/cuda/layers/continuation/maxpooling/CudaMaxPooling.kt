@@ -1,9 +1,11 @@
 package com.komputation.cuda.layers.continuation.maxpooling
 
-import com.komputation.cuda.*
+import com.komputation.cuda.allocateDeviceIntMemory
+import com.komputation.cuda.computeDeviceIntArraySize
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeRowwiseLaunchConfiguration
-import com.komputation.cuda.layers.continuation.BaseCudaChangingNumberColumnsContinuation
+import com.komputation.cuda.layers.continuation.BaseCudaVariableNumberColumnsContinuation
+import com.komputation.cuda.setIntArray
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
@@ -11,11 +13,10 @@ class CudaMaxPooling internal constructor(
     name: String?,
     numberRows: Int,
     maximumInputColumns: Int,
-    private val symbolForUnusedColumns: Float,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize: Int,
-    private val maximumNumberThreadsPerBlock: Int) : BaseCudaChangingNumberColumnsContinuation(name, numberRows, numberRows, maximumInputColumns, { 1 }) {
+    private val maximumNumberThreadsPerBlock: Int) : BaseCudaVariableNumberColumnsContinuation(name, numberRows, numberRows, maximumInputColumns, { 1 }) {
 
     private var forwardKernel: Kernel? = null
     private var backwardKernel: Kernel? = null
@@ -26,8 +27,6 @@ class CudaMaxPooling internal constructor(
     private var forwardConfiguration = computeRowwiseLaunchConfiguration(this.numberInputRows, this.maximumInputColumns, this.warpSize, this.maximumNumberThreadsPerBlock)
     private val numberWarps = (this.maximumInputColumns+this.warpSize-1)/this.warpSize
     private val forwardSharedMemoryBytes = computeDeviceIntArraySize(this.numberWarps).toInt()
-
-    private val pointerToSymbolForUnusedColumns = Pointer.to(floatArrayOf(this.symbolForUnusedColumns))
 
     override val deviceForwardLengths = Pointer()
 
@@ -53,7 +52,9 @@ class CudaMaxPooling internal constructor(
 
     private var pointerToInputLengths = Pointer()
 
+    private var isTraining = false
     override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+        this.isTraining = isTraining
         this.pointerToInputLengths = Pointer.to(deviceInputLengths)
 
         this.forwardKernel!!.launch(
@@ -70,6 +71,7 @@ class CudaMaxPooling internal constructor(
             this.forwardConfiguration.numberThreadsPerBlock,
             this.forwardSharedMemoryBytes
         )
+
     }
 
     override fun computeBackwardResult(batchSize: Int, chain: Pointer) {
@@ -77,7 +79,6 @@ class CudaMaxPooling internal constructor(
             Pointer.to(
                 this.pointerToBatchSize,
                 this.pointerToInputLengths,
-                this.pointerToSymbolForUnusedColumns,
                 this.pointerToMaximumInputEntries,
                 this.pointerToNumberInputRows,
                 this.pointerToMaxIndices,
@@ -89,6 +90,7 @@ class CudaMaxPooling internal constructor(
             this.maximumInputColumns,
             0
         )
+
     }
 
 }

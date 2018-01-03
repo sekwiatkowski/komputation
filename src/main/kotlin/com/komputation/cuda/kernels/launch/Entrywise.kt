@@ -2,28 +2,24 @@ package com.komputation.cuda.kernels.launch
 
 import com.komputation.matrix.IntMath
 
-fun computeNumberOfThreadsForRows(numberRows : Int, warpSize: Int, maximumNumberThreadsPerBlock : Int) : Pair<Int, Int> {
-
-    if (numberRows < maximumNumberThreadsPerBlock) {
-
+fun computeNumberOfThreadsForRows(numberEntries: Int, warpSize: Int, maximumNumberThreadsPerBlock : Int) : Triple<Int, Int, Int> {
+    if (numberEntries < maximumNumberThreadsPerBlock) {
         val numberIterations = 1
 
-        val numberWarps = computeNumberSegments(numberRows, warpSize)
+        val numberWarps = computeNumberSegments(numberEntries, warpSize)
         val numberThreads = numberWarps * warpSize
 
-        return numberIterations to numberThreads
+        return Triple(numberIterations, numberThreads, numberWarps)
 
     }
     else {
-
-        val numberIterations = computeNumberSegments(numberRows, maximumNumberThreadsPerBlock)
+        val numberIterations = computeNumberSegments(numberEntries, maximumNumberThreadsPerBlock)
 
         val iterativeWarpSize = warpSize * numberIterations
-        val numberIterativeWarps = computeNumberSegments (numberRows, iterativeWarpSize)
+        val numberIterativeWarps = computeNumberSegments (numberEntries, iterativeWarpSize)
         val numberThreads = numberIterativeWarps * warpSize
 
-        return numberIterations to numberThreads
-
+        return Triple(numberIterations, numberThreads, numberIterativeWarps)
     }
 
 }

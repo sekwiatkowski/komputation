@@ -28,7 +28,7 @@ class CpuLookup internal constructor(
 
     private val numberLengths = computeNumberPossibleLengths(this.minimumLength, this.maximumLength)
     private val possibleOutputLengths = computePossibleLengths(this.minimumLength, this.numberLengths)
-    private val forwardStore = VariableLengthFloatArray(this.dimension, possibleOutputLengths)
+    private val forwardStore = VariableLengthFloatArray(this.dimension, this.possibleOutputLengths)
 
     private var gradientAccumulator: SparseAccumulator? = null
 
@@ -66,7 +66,6 @@ class CpuLookup internal constructor(
             val size = gradientAccumulator.getSize()
             val ids = gradientAccumulator.getParameterIndices()
             val counts = gradientAccumulator.getCounts()
-
             val gradients = gradientAccumulator.getSums()
 
             updateSparsely(this.vectors, this.dimension, size, ids, counts, gradients, this.update)

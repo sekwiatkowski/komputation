@@ -5,6 +5,7 @@ import com.komputation.cpu.layers.continuation.projection.CpuWeighting
 import com.komputation.cpu.optimization.DenseAccumulator
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
+import com.komputation.cuda.kernels.ArrayKernels
 import com.komputation.cuda.layers.continuation.projection.CublasWeighting
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeWeights
@@ -29,7 +30,20 @@ class Weighting internal constructor(
     override fun buildForCuda(context: CudaContext, cublasHandle : cublasHandle): CublasWeighting {
         val updateRule = this.optimizationStrategy?.buildForCuda(context)?.invoke(1, this.numberWeightRows, this.numberWeightColumns)
 
-        return CublasWeighting(this.name, cublasHandle, this.numberInputRows, this.maximumNumberInputColumns, this.numberOutputRows, this.initialWeights(), updateRule)
+        return CublasWeighting(
+            this.name,
+            cublasHandle,
+            { context.createKernel(ArrayKernels.replaceNaN()) },
+            this.numberInputRows,
+            this.minimumNumberInputColumns,
+            this.maximumNumberInputColumns,
+            this.numberOutputRows,
+            this.initialWeights(),
+            updateRule,
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
+            context.maximumNumberOfThreadsPerBlock)
     }
 
 }

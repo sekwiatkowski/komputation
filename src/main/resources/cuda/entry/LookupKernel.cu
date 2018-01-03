@@ -33,7 +33,7 @@ __global__ void lookupKernel (
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 

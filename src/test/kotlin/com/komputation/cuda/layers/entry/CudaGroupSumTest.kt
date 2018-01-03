@@ -1,11 +1,14 @@
 package com.komputation.cuda.layers.entry
 
+import com.komputation.cuda.getFloatArray
+import com.komputation.cuda.kernels.ArrayKernels
+import com.komputation.cuda.kernels.HashtableKernels
+import com.komputation.cuda.setFloatArray
+import com.komputation.cuda.setIntArray
+import com.komputation.cuda.setUpCudaContext
 import jcuda.Pointer
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Test
-import com.komputation.cuda.*
-import com.komputation.cuda.kernels.FillKernels
-import com.komputation.cuda.kernels.HashtableKernels
 
 class CudaGroupSumTest {
 
@@ -83,7 +86,7 @@ class CudaGroupSumTest {
             maximumColumns,
             2 * maximumColumns,
             { context.createKernel(HashtableKernels.groupSum()) },
-            { context.createKernel(FillKernels.oneFloatArray()) },
+            { context.createKernel(ArrayKernels.fillOneFloatArray()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

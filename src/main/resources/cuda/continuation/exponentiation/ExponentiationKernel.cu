@@ -28,7 +28,7 @@ __global__ void exponentiationKernel (
             }
         }
         else {
-            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 }

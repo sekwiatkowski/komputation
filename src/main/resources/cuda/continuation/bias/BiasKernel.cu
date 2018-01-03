@@ -35,11 +35,11 @@ __global__ void biasKernel (
                 }
             }
             else {
-                setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+                setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 }

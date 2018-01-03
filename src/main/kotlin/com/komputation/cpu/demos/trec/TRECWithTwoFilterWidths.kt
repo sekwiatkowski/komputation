@@ -34,10 +34,10 @@ class TrecWithTwoFilterWidths {
         val random = Random(1)
         val initialization = uniformInitialization(random, -0.1f, 0.1f)
 
-        val optimization = nesterov(0.001f, 0.85f)
+        val optimization = nesterov(0.001f, 0.95f)
 
-        val batchSize = 1
-        val numberIterations = 20
+        val batchSize = 16
+        val numberIterations = 1
 
         val numberFilters = 100
         val filterWidths = intArrayOf(2, 3)
@@ -45,7 +45,7 @@ class TrecWithTwoFilterWidths {
 
         val filterHeight = embeddingDimension
 
-        val keepProbability = 0.8f
+        val keepProbability = 0.67f
 
         val trecDirectory = File(javaClass.classLoader.getResource("trec").toURI())
         val trainingFile = File(trecDirectory, "training.data")
@@ -79,7 +79,7 @@ class TrecWithTwoFilterWidths {
         val embeddableTrainingCategories = trainingCategories.slice(embeddableTrainingIndices)
         val embeddableTestCategories = testCategories.slice(embeddableTestIndices)
 
-        val indexedCategories = NLP.indexCategories(embeddableTrainingCategories.toSet())
+        val indexedCategories = NLP.indexCategories(trainingCategories.toSet())
         val numberCategories = indexedCategories.size
 
         val trainingTargets = NLP.createTargets(embeddableTrainingCategories, indexedCategories)
@@ -92,8 +92,7 @@ class TrecWithTwoFilterWidths {
         val sentenceClassifier = network(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
-            stack(
-                *filterWidths
+            stack(*filterWidths
                     .map { filterWidth ->
                         convolution(numberFilters, filterWidth, filterHeight, initialization, optimization)
                     }
@@ -117,8 +116,8 @@ class TrecWithTwoFilterWidths {
             trainingTargets,
             numberIterations,
             crossEntropyLoss()) { _ : Int, _ : Float ->
-                println(test.run())
-            }
+            println(test.run())
+        }
             .run()
 
     }

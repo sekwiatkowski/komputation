@@ -1,16 +1,16 @@
 package com.komputation.instructions.continuation.convolution
 
 import com.komputation.cpu.instructions.CpuContinuationInstruction
-import jcuda.jcublas.cublasHandle
 import com.komputation.cpu.layers.continuation.convolution.CpuConvolution
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
 import com.komputation.cuda.layers.continuation.convolution.CudaConvolution
 import com.komputation.initialization.InitializationStrategy
-import com.komputation.instructions.*
+import com.komputation.instructions.concatenateNames
 import com.komputation.instructions.continuation.BaseHigherOrderInstruction
 import com.komputation.instructions.continuation.projection.projection
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 class Convolution internal constructor(
     private val name : String?,
@@ -18,7 +18,7 @@ class Convolution internal constructor(
     private val filterWidth: Int,
     private val filterHeight : Int,
     private val weightInitialization: InitializationStrategy,
-    private val biasInitialization: InitializationStrategy,
+    private val biasInitialization: InitializationStrategy?,
     private val optimization: OptimizationInstruction? = null) : BaseHigherOrderInstruction(), CpuContinuationInstruction, CudaContinuationInstruction {
 
     private val expansionLayer = expansion(
@@ -33,9 +33,7 @@ class Convolution internal constructor(
         this.biasInitialization,
         this.optimization)
 
-    private val maxPoolingLayer = MaxPooling(
-        concatenateNames(this.name, "max-pooling"),
-        0f)
+    private val maxPoolingLayer = MaxPooling(concatenateNames(this.name, "max-pooling"))
 
     override fun getLayers() = arrayOf(this.expansionLayer, this.projectionLayer, this.maxPoolingLayer)
 
@@ -69,7 +67,7 @@ fun convolution(
     filterWidth: Int,
     filterHeight : Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy? = weightInitialization,
     optimization: OptimizationInstruction? = null) =
     convolution(null, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)
 
@@ -88,6 +86,6 @@ fun convolution(
     filterWidth: Int,
     filterHeight : Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy? = weightInitialization,
     optimization: OptimizationInstruction? = null) =
     Convolution(name, numberFilters, filterWidth, filterHeight, weightInitialization, biasInitialization, optimization)

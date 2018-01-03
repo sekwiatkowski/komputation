@@ -37,7 +37,7 @@ __global__ void backwardNormalizationKernel (
             int warpId = threadIdx.x / warpSize;
             int laneId = threadIdx.x % warpSize;
 
-            reduceToSum(thisValue, warpId, laneId, sharedData);
+            reduceWarpsToSums(thisValue, warpId, laneId, sharedData);
 
             int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
@@ -46,7 +46,7 @@ __global__ void backwardNormalizationKernel (
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 

@@ -19,6 +19,9 @@ fun copyFloatArrayFromHostToDevice(data: FloatArray, devicePointer: Pointer, siz
 fun copyFloatArrayFromDeviceToHost(devicePointer: Pointer, data: FloatArray, size: Int) =
     cudaMemcpy(Pointer.to(data), devicePointer, computeDeviceFloatArraySize(size), cudaMemcpyDeviceToHost)
 
+fun copyFloatArrayFromDeviceToDevice(deviceSource : Pointer, deviceDestination : Pointer, size: Int) =
+    cudaMemcpy(deviceDestination, deviceSource, computeDeviceFloatArraySize(size), cudaMemcpyDeviceToHost)
+
 fun getFloatArray(devicePointer: Pointer, size: Int): FloatArray {
     val hostVector = FloatArray(size)
 

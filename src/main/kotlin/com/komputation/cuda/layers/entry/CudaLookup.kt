@@ -33,7 +33,7 @@ class CudaLookup internal constructor(
 
     override val numberOutputRows = dimension
     override val maximumOutputColumns = maximumInputLength
-    private val maximumInstanceEntries = this.numberOutputRows * this.maximumOutputColumns
+    override val maximumOutputEntries = this.numberOutputRows * this.maximumOutputColumns
     private var maximumNumberParametersInBatch = -1
     private var maximumBatchEntries = -1
 
@@ -48,7 +48,7 @@ class CudaLookup internal constructor(
 
     private var forwardResult = FloatArray(0)
     override var deviceForwardLengths = Pointer()
-    override var batchMaximumOutputColumns = if(this.hasFixedLength) this.maximumOutputColumns else -1
+    override var largestNumberOutputColumnsInCurrentBatch = if(this.hasFixedLength) this.maximumOutputColumns else -1
 
     private var maximumBatchSize = intArrayOf(-1)
 
@@ -71,7 +71,7 @@ class CudaLookup internal constructor(
         this.maximumBatchSize[0] = maximumBatchSize
         this.maximumNumberParametersInBatch = maximumBatchSize * this.maximumOutputColumns
 
-        this.maximumBatchEntries = maximumBatchSize * this.maximumInstanceEntries
+        this.maximumBatchEntries = maximumBatchSize * this.maximumOutputEntries
         allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchEntries)
 
         this.forwardKernel = this.createForwardKernel()
@@ -120,11 +120,11 @@ class CudaLookup internal constructor(
             this.deviceIndices = memory.getData(batchId)
 
             if (this.hasFixedLength) {
-                this.batchMaximumOutputColumns = this.maximumOutputColumns
+                this.largestNumberOutputColumnsInCurrentBatch = this.maximumOutputColumns
             }
             else {
                 this.deviceForwardLengths = memory.getDeviceLengths(batchId)
-                this.batchMaximumOutputColumns = memory.getHostMaximumLength(batchId)
+                this.largestNumberOutputColumnsInCurrentBatch = memory.getHostMaximumLength(batchId)
             }
         }
         else {
@@ -153,7 +153,7 @@ class CudaLookup internal constructor(
                 setIntArray(this.lengths, this.maximumBatchSize[0], deviceForwardLengths)
                 this.deviceForwardLengths = deviceForwardLengths
 
-                this.batchMaximumOutputColumns = maximumLength
+                this.largestNumberOutputColumnsInCurrentBatch = maximumLength
 
                 memory.set(batchId, deviceIndices, deviceForwardLengths, maximumLength)
             }

@@ -37,7 +37,7 @@ __global__ void backwardReluKernel (
             }
         }
         else {
-            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 }

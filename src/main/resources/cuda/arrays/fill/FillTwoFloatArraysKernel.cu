@@ -7,7 +7,7 @@ __global__ void fillTwoFloatsArraysKernel(
     float secondConstant) {
     int start = indexInstance * numberEntries + indexColumn * numberRows + threadIdx.x;
 
-    for(int index = start; index < fminf(start + numberIterations, numberEntries); index++) {
+    for(int index = start; index < min(start + numberIterations, numberEntries); index++) {
         firstArray[indexEntry] = firstConstant;
         secondArray[indexEntry] = secondConstant;
     }

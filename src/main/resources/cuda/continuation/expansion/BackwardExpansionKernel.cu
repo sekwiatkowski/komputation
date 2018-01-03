@@ -71,7 +71,7 @@ __global__ void backwardExpansionKernel(
                 thisValue += thisValueInIteration;
             }
 
-            float sum = warpReduceToSum(thisValue);
+            float sum = reduceWarpToSum(thisValue);
 
             if(laneId == 0) {
                 result[indexEntryWithinBatch] = sum;

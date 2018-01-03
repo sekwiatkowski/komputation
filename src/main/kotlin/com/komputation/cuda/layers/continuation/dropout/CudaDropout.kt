@@ -1,7 +1,5 @@
 package com.komputation.cuda.layers.continuation.dropout
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
 import com.komputation.cpu.functions.seed
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
@@ -9,6 +7,8 @@ import com.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import com.komputation.cuda.layers.continuation.BaseCudaFixedNumberColumnsContinuation
 import com.komputation.cuda.setIntArray
 import com.komputation.instructions.Resourceful
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
 import java.util.*
 
 class CudaDropout internal constructor(
@@ -51,11 +51,11 @@ class CudaDropout internal constructor(
         this.trainingKernel = this.createTrainingKernel()
         this.runtimeKernel = this.createRuntimeKernel()
 
-        val seeds = IntArray(this.forwardResultSize[0])
-        seed(this.random, seeds, this.forwardResultSize[0])
+        val seeds = IntArray(this.forwardResultSize)
+        seed(this.random, seeds, this.forwardResultSize)
         setIntArray(seeds, seeds.size, this.deviceSeeds)
 
-        allocateDeviceFloatMemory(this.deviceMasks, this.forwardResultSize[0])
+        allocateDeviceFloatMemory(this.deviceMasks, this.forwardResultSize)
 
         this.backwardKernel = this.createBackwardKernel()
 

@@ -28,13 +28,13 @@ fun acquireRecursively(obj: Any, maximumBatchSize: Int) {
     }
 }
 
-fun releaseRecursively(obj: Any, assignableFrom : Class<*>) {
+fun releaseRecursively(obj: Any) {
     if(obj is Resourceful) {
         releaseMethod.invoke(obj)
     }
 
     findMembers(obj).forEach { member ->
-        releaseRecursively(member, assignableFrom)
+        releaseRecursively(member)
     }
 }
 

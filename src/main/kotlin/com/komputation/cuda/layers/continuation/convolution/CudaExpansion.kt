@@ -4,7 +4,7 @@ import com.komputation.cpu.functions.computeNumberFilterColumnPositions
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.KernelLaunchConfiguration
-import com.komputation.cuda.layers.continuation.BaseCudaChangingNumberColumnsContinuation
+import com.komputation.cuda.layers.continuation.BaseCudaVariableNumberColumnsContinuation
 import com.komputation.instructions.Resourceful
 import com.komputation.instructions.continuation.convolution.computeNumberExpandedColumns
 import jcuda.Pointer
@@ -20,7 +20,7 @@ class CudaExpansion internal constructor(
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val warpSize : Int,
-    maximumNumberThreads : Int) : BaseCudaChangingNumberColumnsContinuation(name, numberInputRows, filterHeight * filterWidth, maximumInputColumns, { inputLength : Int -> computeNumberExpandedColumns(inputLength, filterWidth, numberFilterRowPositions) }), Resourceful {
+    maximumNumberThreads : Int) : BaseCudaVariableNumberColumnsContinuation(name, numberInputRows, filterHeight * filterWidth, maximumInputColumns, { inputLength : Int -> computeNumberExpandedColumns(inputLength, filterWidth, numberFilterRowPositions) }), Resourceful {
 
     private val pointerToFilterHeight = Pointer.to(intArrayOf(filterHeight))
     private val pointerToFilterWidth = Pointer.to(intArrayOf(filterWidth))

@@ -32,7 +32,6 @@ class CudaMultiClassificationTester(
     }
 
     override fun evaluateBatch(batchSize: Int, pointerToPredictions : Pointer, pointerToTargets : Pointer) {
-
         val parameters = Pointer.to(
             Pointer.to(intArrayOf(this.count)),
             this.pointerToNumberRows,
@@ -51,25 +50,19 @@ class CudaMultiClassificationTester(
             0)
 
         this.count += batchSize
-
     }
 
     override fun resetCount() {
-
         this.count = 0
-
     }
 
     override fun computeAccuracy() =
-
         getIntArray(this.deviceCorrectPredictions, this.numberInstances).sum().toFloat().div(this.numberInstances.toFloat())
 
     override fun release() {
-
         this.kernel!!.destroy()
 
         cudaFree(this.deviceCorrectPredictions)
-
     }
 
 }

@@ -96,7 +96,7 @@ class Trec {
             dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
-        val tester = network
+        val test = network
             .test(
                 testRepresentations,
                 testTargets,
@@ -104,21 +104,16 @@ class Trec {
                 numberCategories,
                 1)
 
-        val trainer = network
+        network
             .training(
                 trainingRepresentations,
                 trainingTargets,
                 numberIterations,
                 crossEntropyLoss()) { _: Int, _: Float ->
-                println(tester.run())
+                println(test.run())
 
             }
-        trainer
             .run()
-
-        trainer.free()
-        tester.free()
-        network.free()
 
     }
 

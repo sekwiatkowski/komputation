@@ -1,14 +1,14 @@
 package com.komputation.cuda.layers.entry
 
-import jcuda.Pointer
-import org.junit.jupiter.api.Test
 import com.komputation.cuda.getIntArray
+import com.komputation.cuda.kernels.ArrayKernels
+import com.komputation.cuda.kernels.HashtableKernels
 import com.komputation.cuda.setIntArray
 import com.komputation.cuda.setUpCudaContext
-import java.util.*
+import jcuda.Pointer
 import org.junit.jupiter.api.Assertions.assertTrue
-import com.komputation.cuda.kernels.FillKernels
-import com.komputation.cuda.kernels.HashtableKernels
+import org.junit.jupiter.api.Test
+import java.util.*
 
 class CudaHashingTest {
 
@@ -54,7 +54,7 @@ class CudaHashingTest {
             indices.size,
             2,
             { context.createKernel(HashtableKernels.hash()) },
-            { context.createKernel(FillKernels.twoIntegerArrays()) },
+            { context.createKernel(ArrayKernels.fillTwoIntegerArrays()) },
             context.numberMultiprocessors,
             context.maximumNumberOfResidentWarpsPerMultiprocessor,
             context.warpSize,

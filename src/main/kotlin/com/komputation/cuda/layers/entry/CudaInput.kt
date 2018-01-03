@@ -1,6 +1,5 @@
 package com.komputation.cuda.layers.entry
 
-import jcuda.Pointer
 import com.komputation.cpu.functions.copy
 import com.komputation.cuda.layers.BaseCudaEntryPoint
 import com.komputation.cuda.memory.InputMemory
@@ -9,6 +8,7 @@ import com.komputation.cuda.setIntArray
 import com.komputation.instructions.Resourceful
 import com.komputation.matrix.FloatMatrix
 import com.komputation.matrix.Matrix
+import jcuda.Pointer
 import java.util.*
 
 class CudaInput internal constructor(
@@ -18,7 +18,7 @@ class CudaInput internal constructor(
 
     override var deviceForwardResult = Pointer()
     override var deviceForwardLengths = Pointer()
-    override var batchMaximumOutputColumns = -1
+    override var largestNumberOutputColumnsInCurrentBatch = -1
 
     private val maximumInstanceEntries = this.numberRows * this.numberColumns
     private var maximumBatchSize = -1
@@ -72,14 +72,14 @@ class CudaInput internal constructor(
             setIntArray(this.lengths, batchSize, deviceForwardLengths)
             this.deviceForwardLengths = deviceForwardLengths
 
-            this.batchMaximumOutputColumns = maximumLength
+            this.largestNumberOutputColumnsInCurrentBatch = maximumLength
 
             memory.set(batchId, deviceForwardResult, deviceForwardLengths, maximumLength)
         }
         else {
             this.deviceForwardResult = data
             this.deviceForwardLengths = memory.getDeviceLengths(batchId)
-            this.batchMaximumOutputColumns = memory.getHostMaximumLength(batchId)
+            this.largestNumberOutputColumnsInCurrentBatch = memory.getHostMaximumLength(batchId)
         }
 
         return this.deviceForwardResult

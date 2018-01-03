@@ -9,7 +9,6 @@ class Kernel(
     private val computeCapabilities : Pair<Int, Int>,
     private val sourceCode : String,
     private val name : String,
-    private val nameExpression : String,
     private val headers : Array<String>,
     private val includeNames : Array<String>) {
 
@@ -17,9 +16,9 @@ class Kernel(
     private val kernel = CUfunction()
 
     init {
-        val ptx = compileKernel(this.program, this.computeCapabilities, this.sourceCode, this.name, arrayOf(this.nameExpression), this.headers, this.includeNames)
+        val ptx = compileKernel(this.program, this.computeCapabilities, this.sourceCode, this.name, arrayOf(this.name), this.headers, this.includeNames)
 
-        loadKernel(this.kernel, ptx, this.program, this.nameExpression)
+        loadKernel(this.kernel, ptx, this.program, this.name)
     }
 
     fun launch(pointerToParameters: Pointer, numberBlocksInXDimension : Int, numberBlocksInYDimension : Int, numberThreadsPerBlock : Int, sharedMemoryBytes : Int) =

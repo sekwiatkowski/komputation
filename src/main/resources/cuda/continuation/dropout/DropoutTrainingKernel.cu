@@ -58,7 +58,7 @@ __global__ void dropoutTrainingKernel (
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 

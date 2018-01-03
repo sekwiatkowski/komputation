@@ -12,7 +12,7 @@ __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerIn
 
         // Is the instance greater than the current batch size?
         if(blockIdx.x >= batchSize) {
-            setToNan(result, startIndexWithinBatch, numberIterations);
+            setToNaN(result, startIndexWithinBatch, numberIterations);
         }
         else {
             for(int indexEntry = startIndexWithinBatch; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {

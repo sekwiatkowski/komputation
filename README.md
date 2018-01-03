@@ -101,6 +101,7 @@ Komputation is available through Maven Central:
 - Word embedding toy problem:
   - [Feed-forward network](./src/main/kotlin/com/komputation/cuda/demos/embeddings/Embeddings.kt)
   - [CNN with one filter width](./src/main/kotlin/com/komputation/cuda/demos/embeddings/EmbeddingsWithConvolution.kt)
+  - [CNN with two filter widths](./src/main/kotlin/com/komputation/cuda/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
 
 - MNIST:
   - [Minimal](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistMinimal.kt)

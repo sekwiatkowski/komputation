@@ -46,7 +46,7 @@ __global__ void normalizationKernel (
             int warpId = threadId / warpSize;
             int laneId = threadId % warpSize;
 
-            reduceToSum(thisValue, warpId, laneId, sharedData);
+            reduceWarpsToSums(thisValue, warpId, laneId, sharedData);
 
             result[firstEntryWithinBatch] = input[firstEntryWithinBatch] / sharedData[0];
 
@@ -61,7 +61,7 @@ __global__ void normalizationKernel (
             }
         }
         else {
-            setToNan(result, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(result, firstEntryWithinBatch, lastEntryWithinBatch);
 
             if(threadId == 0) {
                 sums[indexColumnInBatch] = 0.0;

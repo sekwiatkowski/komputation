@@ -30,7 +30,7 @@ __global__ void backwardExponentiationKernel (
             }
         }
         else {
-            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 

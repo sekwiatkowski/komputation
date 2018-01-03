@@ -1,11 +1,11 @@
 package com.komputation.instructions.continuation.stack
 
 import com.komputation.cpu.instructions.CpuContinuationInstruction
-import com.komputation.cpu.layers.continuation.CpuStack
+import com.komputation.cpu.layers.continuation.stack.CpuStack
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.kernels.ContinuationKernels
-import com.komputation.cuda.layers.continuation.concatenation.CudaStack
+import com.komputation.cuda.kernels.ArrayKernels
+import com.komputation.cuda.layers.continuation.stack.CudaStack
 import com.komputation.instructions.ContinuationInstruction
 import jcuda.jcublas.cublasHandle
 
@@ -43,8 +43,8 @@ class Stack internal constructor(
             IntArray(this.continuationInstructions.size) { index -> this.continuationInstructions[index].numberOutputRows },
             this.maximumNumberInputColumns,
             this.maximumNumberOutputColumns,
-            { context.createKernel(ContinuationKernels.stack()) },
-            { context.createKernel(ContinuationKernels.backwardStack()) },
+            cublasHandle,
+            { context.createKernel(ArrayKernels.copyBlock()) },
             this.continuationInstructions.map { instruction -> (instruction as CudaContinuationInstruction).buildForCuda(context, cublasHandle) }.toTypedArray(),
             context.maximumNumberOfThreadsPerBlock)
 

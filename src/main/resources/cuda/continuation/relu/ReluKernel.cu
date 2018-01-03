@@ -31,7 +31,7 @@ __global__ void reluKernel (
             }
         }
         else {
-            setToNan(destination, firstEntryWithinBatch, lastEntryWithinBatch);
+            setToNaN(destination, firstEntryWithinBatch, lastEntryWithinBatch);
         }
     }
 }

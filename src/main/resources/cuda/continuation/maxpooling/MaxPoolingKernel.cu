@@ -81,7 +81,7 @@ __global__ void maxPoolingKernel (
     }
     else {
         maxIndices[resultIndex] = nanf("NaN");
-        setToNan(result, resultStartInstance, resultStartInstance + 1);
+        setToNaN(result, resultStartInstance, resultStartInstance + 1);
     }
 
 }

@@ -1,33 +1,29 @@
 package com.komputation.cuda.layers.continuation.activation
 
+import com.komputation.cuda.layers.continuation.BaseCudaContinuation
 import com.komputation.cuda.layers.continuation.CudaActivation
 import jcuda.Pointer
 
-class CudaIdentity internal constructor(override val name : String? = null, numberRows : Int, numberColumns : Int) : CudaActivation {
+class CudaIdentity internal constructor(name : String? = null, numberRows : Int, numberColumns : Int) : BaseCudaContinuation(name, numberRows, numberRows, numberColumns, numberColumns), CudaActivation  {
 
-    override val batchMaximumOutputColumns: Int
-        get() = this.batchMaximumInputColumns
+    override var largestNumberInputColumnsInCurrentBatch = -1
+
     override var deviceForwardResult = Pointer()
-    override val numberInputRows = numberRows
-    override val maximumInputColumns = numberColumns
-
-    override var batchMaximumInputColumns = -1
     override var deviceBackwardResult = Pointer()
-    override val numberOutputRows = numberRows
-    override val maximumOutputColumns = numberColumns
-
     override var deviceForwardLengths = Pointer()
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, batchMaximumInputLength: Int, isTraining: Boolean): Pointer {
+    override val largestNumberOutputColumnsInCurrentBatch = -1
+
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
         this.deviceForwardResult = deviceInput
         this.deviceForwardLengths = deviceInputLengths
-        this.batchMaximumInputColumns = batchMaximumInputLength
+
+        this.largestNumberInputColumnsInCurrentBatch = largestNumberInputColumnsInBatch
 
         return this.deviceForwardResult
     }
 
     override fun backward(batchSize: Int, chain: Pointer) : Pointer {
-
         this.deviceBackwardResult = chain
 
         return this.deviceBackwardResult

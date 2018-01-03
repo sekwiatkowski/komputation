@@ -1,7 +1,6 @@
 package com.komputation.cpu.loss
 
 import com.komputation.matrix.FloatMath
-import kotlin.math.absoluteValue
 
 class CpuCrossEntropyLoss(
     numberInputRows: Int,

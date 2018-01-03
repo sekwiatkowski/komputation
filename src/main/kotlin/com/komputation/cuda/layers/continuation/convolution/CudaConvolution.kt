@@ -18,12 +18,12 @@ class CudaConvolution(
     fun getDeviceBias() =
         this.projection.getDeviceBias()
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean): Pointer {
-        val expanded = this.expansion.forward(batchSize, deviceInput, deviceInputLengths, batchMaximumInputLength, isTraining)
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
+        val expanded = this.expansion.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
 
-        val projected = this.projection.forward(batchSize, expanded, this.expansion.deviceForwardLengths, this.expansion.batchMaximumOutputColumns, isTraining)
+        val projected = this.projection.forward(batchSize, expanded, this.expansion.deviceForwardLengths, this.expansion.largestNumberOutputColumnsInCurrentBatch, isTraining)
 
-        val maxPooled = this.maxPooling.forward(batchSize, projected, this.projection.deviceForwardLengths, this.projection.batchMaximumOutputColumns, isTraining)
+        val maxPooled = this.maxPooling.forward(batchSize, projected, this.projection.deviceForwardLengths, this.projection.largestNumberOutputColumnsInCurrentBatch, isTraining)
 
         return maxPooled
     }

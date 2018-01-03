@@ -5,7 +5,6 @@ import org.apache.commons.io.IOUtils
 class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
     private fun read(relativePath: String) =
-
         IOUtils.toString(this.javaClass.getResourceAsStream("/cuda/$relativePath"), "UTF-8")
 
     fun create(instruction: KernelInstruction): Kernel {
@@ -21,7 +20,7 @@ class KernelFactory(private val capabilities : Pair<Int, Int>) {
 
         val headerFiles = Array(relativeHeaderPaths.size) { index -> read(relativeHeaderPaths[index]) }
 
-        return Kernel(this.capabilities, sourceCode, instruction.name, instruction.nameExpression, headerFiles, includeNames)
+        return Kernel(this.capabilities, sourceCode, instruction.name, headerFiles, includeNames)
 
     }
 

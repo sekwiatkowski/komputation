@@ -1,7 +1,6 @@
 __global__ void backwardMaxPoolingKernel (
     int batchSize,
     int* lengths,
-    float symbolForUnusedColumns,
     int numberEntriesPerInstance,
     int numberRows,
     int* maxIndices,
@@ -32,11 +31,11 @@ __global__ void backwardMaxPoolingKernel (
 
         }
         else {
-            result[indexEntryWithinBatch] = symbolForUnusedColumns;
+            result[indexEntryWithinBatch] = nanf("NaN");
         }
     }
     else {
-        result[indexEntryWithinBatch] = symbolForUnusedColumns;
+        result[indexEntryWithinBatch] = nanf("NaN");
     }
 
 }

@@ -34,7 +34,7 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
         int warpId = threadIdx.x / warpSize;
         int laneId = threadIdx.x % warpSize;
 
-        reduceToSum(thisValue, warpId, laneId, sharedData);
+        reduceWarpsToSums(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
             result[indexColumnInBatch] = 0.5 * sharedData[0];

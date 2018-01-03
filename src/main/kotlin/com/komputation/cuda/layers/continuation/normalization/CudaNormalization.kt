@@ -1,13 +1,13 @@
 package com.komputation.cuda.layers.continuation.normalization
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.computeDeviceFloatArraySize
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import com.komputation.cuda.layers.continuation.BaseCudaFixedNumberColumnsContinuation
 import com.komputation.instructions.Resourceful
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
 
 class CudaNormalization internal constructor(
     name : String? = null,
@@ -34,7 +34,6 @@ class CudaNormalization internal constructor(
     private val pointerToNumberIterations = Pointer.to(this.numberIterations)
 
     override fun acquire(maximumBatchSize : Int) {
-
         super.acquire(maximumBatchSize)
 
         val numberBatchColumns = maximumBatchSize * this.maximumInputColumns

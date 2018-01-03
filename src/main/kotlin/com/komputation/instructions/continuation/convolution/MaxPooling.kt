@@ -8,9 +8,7 @@ import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.maxpooling.CudaMaxPooling
 import jcuda.jcublas.cublasHandle
 
-class MaxPooling internal constructor (
-    private val name : String?,
-    private val symbolForUnusedColumns : Float) : CpuContinuationInstruction, CudaContinuationInstruction {
+class MaxPooling internal constructor (private val name : String?) : CpuContinuationInstruction, CudaContinuationInstruction {
 
     private var numberInputRows = -1
     protected var maximumNumberInputColumns = -1
@@ -37,7 +35,6 @@ class MaxPooling internal constructor (
             this.name,
             this.numberInputRows,
             this.maximumNumberInputColumns,
-            this.symbolForUnusedColumns,
             { context.createKernel(ContinuationKernels.maxPooling()) },
             { context.createKernel(ContinuationKernels.backwardMaxPooling()) },
             context.warpSize,
@@ -45,5 +42,5 @@ class MaxPooling internal constructor (
 
 }
 
-fun maxPooling(name : String? = null, symbolForUnusedColumns : Float = Float.NaN) =
-    MaxPooling(name, symbolForUnusedColumns)
+fun maxPooling(name : String? = null) =
+    MaxPooling(name)

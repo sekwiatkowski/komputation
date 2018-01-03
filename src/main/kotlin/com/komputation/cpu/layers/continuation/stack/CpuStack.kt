@@ -1,4 +1,4 @@
-package com.komputation.cpu.layers.continuation
+package com.komputation.cpu.layers.continuation.stack
 
 import com.komputation.cpu.functions.splitRows
 import com.komputation.cpu.functions.stackRows
@@ -69,7 +69,7 @@ class CpuStack internal constructor(
 
         splitRows(this.numberOutputRows, this.numberOutputColumns, chain, this.numbersOfOutputRows, this.numberLayers, chainSplits)
 
-        val firstIndividualBackwardResult = this.firstLayer.backward(withinBatch, chainSplits[0])
+        val firstIndividualBackwardResult = this.firstLayer.backward(withinBatch, chainSplits.first())
         System.arraycopy(firstIndividualBackwardResult, 0, this.backwardResult, 0, firstIndividualBackwardResult.size)
 
         for (indexLayer in (1 until this.numberLayers)) {

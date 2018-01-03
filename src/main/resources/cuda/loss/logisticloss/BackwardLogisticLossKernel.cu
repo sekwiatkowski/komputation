@@ -19,6 +19,6 @@ __global__ void backwardLogisticLossKernel (int batchSize, int numberColumns, in
         }
     }
     else {
-        setToNan(results, startInstanceWithinBatch, startNextInstanceWithinBatch);
+        setToNaN(results, startInstanceWithinBatch, startNextInstanceWithinBatch);
     }
 }

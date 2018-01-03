@@ -1,12 +1,11 @@
 package com.komputation.cuda.network
 
 import com.komputation.cuda.CudaForwardResult
-import jcuda.Pointer
-import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.layers.CudaContinuation
+import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.matrix.Matrix
-import java.util.*
+import jcuda.Pointer
 
 class CudaForwardPropagator(
     entryPoint: CudaEntryPoint,
@@ -22,7 +21,7 @@ class CudaForwardPropagator(
 
         for ((index, continuation) in this.continuations.withIndex()) {
             val startContinuation = System.nanoTime()
-            continuation.forward(batchSize, currentResult.deviceForwardResult, currentResult.deviceForwardLengths, currentResult.batchMaximumOutputColumns, isTraining)
+            continuation.forward(batchSize, currentResult.deviceForwardResult, currentResult.deviceForwardLengths, currentResult.largestNumberOutputColumnsInCurrentBatch, isTraining)
             val stopContinuation = System.nanoTime()
             this.times[index+1] += stopContinuation - startContinuation
 

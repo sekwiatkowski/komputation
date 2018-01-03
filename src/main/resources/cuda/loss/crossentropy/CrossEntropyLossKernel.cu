@@ -67,7 +67,7 @@ __global__ void crossEntropyLossKernel (int batchSize, int numberRows, int numbe
         int warpId = threadIdx.x / warpSize;
         int laneId = threadIdx.x % warpSize;
 
-        reduceToSum(thisValue, warpId, laneId, sharedData);
+        reduceWarpsToSums(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
             result[indexColumnInBatch] = -logf(sharedData[0]);

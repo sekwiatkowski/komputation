@@ -1,6 +1,3 @@
-#include "symbols/NaN.cuh"
-#include "symbols/Zero.cuh"
-
 __global__ void expansionKernel(
     int batchSize,
     float* input,

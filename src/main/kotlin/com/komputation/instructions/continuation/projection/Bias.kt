@@ -34,12 +34,12 @@ class Bias internal constructor(
 
         val layer = CudaBias(
             this.name,
-            cublasHandle,
             this.numberInputRows,
             this.maximumNumberInputColumns,
             this.initializeBias(),
             updateRule,
             { context.createKernel(ContinuationKernels.bias()) },
+            { context.createKernel(ContinuationKernels.backwardBias()) },
             context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 

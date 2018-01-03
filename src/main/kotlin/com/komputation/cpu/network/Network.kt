@@ -108,7 +108,7 @@ class Network internal constructor(
 
     fun free() {
         for (layer in this.layers) {
-            releaseRecursively(layer, CpuContinuation::class.java)
+            releaseRecursively(layer)
         }
 
         if (this.entryPoint is Resourceful) {

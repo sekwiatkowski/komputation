@@ -10,10 +10,10 @@ class CudaSoftmax internal constructor(
     private val exponentiation: CudaExponentiation,
     private val normalization: CudaNormalization) : BaseCudaHigherOrderContinuation(name, exponentiation, normalization), CudaActivation {
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, batchMaximumInputLength: Int, isTraining: Boolean): Pointer {
-        val exponentiated = this.exponentiation.forward(batchSize, deviceInput, deviceInputLengths, batchMaximumInputLength, isTraining)
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
+        val exponentiated = this.exponentiation.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
 
-        val normalized = this.normalization.forward(batchSize, exponentiated, this.exponentiation.deviceForwardLengths, this.exponentiation.batchMaximumOutputColumns, isTraining)
+        val normalized = this.normalization.forward(batchSize, exponentiated, this.exponentiation.deviceForwardLengths, this.exponentiation.largestNumberOutputColumnsInCurrentBatch, isTraining)
 
         return normalized
     }

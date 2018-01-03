@@ -7,7 +7,7 @@ import com.komputation.cuda.instructions.CudaContinuationInstruction
 import com.komputation.cuda.layers.CudaContinuation
 import com.komputation.cuda.layers.continuation.dense.CudaDense
 import com.komputation.initialization.InitializationStrategy
-import com.komputation.instructions.*
+import com.komputation.instructions.concatenateNames
 import com.komputation.instructions.continuation.BaseHigherOrderInstruction
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.activation
@@ -19,7 +19,7 @@ class Dense internal constructor(
     private val name : String?,
     outputDimension: Int,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy?,
     activation: Activation,
     optimization: OptimizationInstruction?) : BaseHigherOrderInstruction(), CpuContinuationInstruction, CudaContinuationInstruction {
 
@@ -70,7 +70,7 @@ fun dense(
     outputDimension: Int,
     activation: Activation,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy? = weightInitialization,
     optimization: OptimizationInstruction? = null) =
     dense(
         null,
@@ -99,7 +99,7 @@ fun dense(
     numberOutputRows: Int,
     activation: Activation,
     weightInitialization: InitializationStrategy,
-    biasInitialization: InitializationStrategy,
+    biasInitialization: InitializationStrategy? = weightInitialization,
     optimization: OptimizationInstruction? = null) =
     Dense(
         name,

@@ -15,6 +15,7 @@ import com.komputation.cuda.workflow.CudaTester
 import com.komputation.cuda.workflow.CudaTrainer
 import com.komputation.instructions.Resourceful
 import com.komputation.instructions.acquireRecursively
+import com.komputation.instructions.releaseRecursively
 import com.komputation.matrix.Matrix
 import com.komputation.optimization.Optimizable
 import jcuda.Pointer
@@ -90,9 +91,7 @@ class CudaNetwork internal constructor(
         cublasDestroy(this.cublasHandle)
 
         for (layer in this.layers) {
-            if (layer is Resourceful) {
-                layer.release()
-            }
+            releaseRecursively(layer)
         }
 
         if (this.entryPoint is Resourceful) {

@@ -1,4 +1,4 @@
-package com.komputation.demos.negation
+package com.komputation.demos.not
 
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
