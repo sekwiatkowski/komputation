@@ -1,14 +1,14 @@
 package com.komputation.cuda.workflow
 
-import jcuda.Pointer
-import com.komputation.cuda.network.CudaBackwardPropagator
-import com.komputation.cuda.network.CudaForwardPropagator
 import com.komputation.cuda.loss.CudaLossFunction
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.memory.TargetMemory
+import com.komputation.cuda.network.CudaBackwardPropagator
+import com.komputation.cuda.network.CudaForwardPropagator
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.partitionIndices
 import com.komputation.optimization.Optimizable
+import jcuda.Pointer
 
 class CudaTrainer(
     private val forwardPropagator : CudaForwardPropagator,
@@ -61,7 +61,7 @@ class CudaTrainer(
 
                 val backwardLoss = this.lossFunction.backward(currentBatchSize, pointerToPredictions, pointerToTargets)
 
-                this.backwardPropagator.backward(backwardLoss, currentBatchSize)
+                this.backwardPropagator.backward(batchId, currentBatchSize, backwardLoss, this.inputMemory)
 
                 for (optimizable in this.optimizables) {
                     optimizable.optimize(currentBatchSize)

@@ -87,16 +87,16 @@ class Trec {
             .map { token -> embeddingMap[token]!! }
             .toTypedArray()
 
-        val network = cudaNetwork(
+        val sentenceClassifier = cudaNetwork(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
-            convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),
+            convolution(numberFilters, filterWidth, embeddingDimension, initialization, optimization),
             relu(),
             dropout(random, keepProbability),
             dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
-        val test = network
+        val test = sentenceClassifier
             .test(
                 testRepresentations,
                 testTargets,
@@ -104,7 +104,7 @@ class Trec {
                 numberCategories,
                 1)
 
-        network
+        sentenceClassifier
             .training(
                 trainingRepresentations,
                 trainingTargets,

@@ -37,9 +37,9 @@ class TrecWithTwoFilterWidths {
         val optimization = nesterov(0.008f, 0.95f)
 
         val batchSize = 16
-        val numberIterations = 30
+        val numberIterations = 7
 
-        val numberFilters = 100
+        val numberFilters = 45
         val filterWidths = intArrayOf(2, 3)
         val maximumFilterWidth = filterWidths.max()!!
 
@@ -93,11 +93,8 @@ class TrecWithTwoFilterWidths {
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
             stack(
-                *filterWidths
-                    .map { filterWidth ->
-                        convolution(numberFilters, filterWidth, filterHeight, initialization, optimization)
-                    }
-                    .toTypedArray()
+                convolution(numberFilters, 2, filterHeight, initialization, optimization),
+                convolution(numberFilters, 3, filterHeight, initialization, optimization)
             ),
             relu(),
             dropout(random, keepProbability),
@@ -116,7 +113,7 @@ class TrecWithTwoFilterWidths {
             trainingRepresentations,
             trainingTargets,
             numberIterations,
-            crossEntropyLoss()) { _ : Int, loss : Float ->
+            crossEntropyLoss()) { _ : Int, _ : Float ->
             println(test.run())
         }
             .run()

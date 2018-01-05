@@ -31,7 +31,7 @@ object NLP {
 
                         val embedding = split.drop(1).map { it.toFloat() }.toFloatArray()
 
-                        embeddingMap.put(word, embedding)
+                        embeddingMap[word] = embedding
 
                     }
 

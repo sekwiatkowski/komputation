@@ -1,6 +1,6 @@
 __global__ void adagradKernel (
     int numberIterations,
-    int* hashTable,
+    int* parameterIndices,
     int* counts,
     int dimension,
     float* parameters,
@@ -9,39 +9,40 @@ __global__ void adagradKernel (
     float* history,
     float epsilon) {
 
-    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
+    int updateIndex = blockIdx.x;
+    int parameterIndex = parameterIndices[updateIndex];
+    int count = counts[updateIndex];
 
-    if(firstEntryIndex < dimension) {
-        int hashTableIndex = blockIdx.x;
-        int parameterIndex = hashTable[hashTableIndex];
+    if(parameterIndex != -1 && count > 0) {
 
-        if(parameterIndex != -1) {
-            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
+        float scalingFactor = 1.0 / (float)count;
 
-            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
-            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
+        int startEntryIndex = (blockIdx.y * blockDim.x + threadIdx.x) * numberIterations;
 
-            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
+        int firstParameterEntryIndex = parameterIndex * dimension;
+        int startParameterEntryIndex = firstParameterEntryIndex + startEntryIndex;
+        int startGradientEntryIndex = updateIndex * dimension + startEntryIndex;
 
-            int parameterEntryIndex = firstParameterEntryIndex;
-            int gradientEntryIndex = firstGradientEntryIndex;
+        int exclusiveEndParameterEntryIndex = min(startParameterEntryIndex + numberIterations, firstParameterEntryIndex + dimension);
 
-            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
-                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
+        int parameterEntryIndex = startParameterEntryIndex;
+        int gradientEntryIndex = startGradientEntryIndex;
 
-                float updatedHistory = history[parameterEntryIndex] + scaledDerivative * scaledDerivative;
+        while(parameterEntryIndex < exclusiveEndParameterEntryIndex) {
+            float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
 
-                history[parameterEntryIndex] = updatedHistory;
+            float updatedHistory = history[parameterEntryIndex] + scaledDerivative * scaledDerivative;
 
-                float adaptedLearningRate = learningRate / (sqrtf(updatedHistory) + epsilon);
+            history[parameterEntryIndex] = updatedHistory;
 
-                float update = adaptedLearningRate * scalingFactor * gradient[gradientEntryIndex];
+            float adaptedLearningRate = learningRate / (sqrtf(updatedHistory) + epsilon);
 
-                parameters[parameterEntryIndex] -= update;
+            float update = adaptedLearningRate * scalingFactor * gradient[gradientEntryIndex];
 
-                parameterEntryIndex++;
-                gradientEntryIndex++;
-            }
+            parameters[parameterEntryIndex] -= update;
+
+            parameterEntryIndex++;
+            gradientEntryIndex++;
         }
     }
 }

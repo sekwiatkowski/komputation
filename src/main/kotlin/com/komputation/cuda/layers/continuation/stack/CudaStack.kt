@@ -5,12 +5,11 @@ import com.komputation.cuda.copyFloatArrayFromDeviceToDevice
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.KernelLaunchConfiguration
 import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
+import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
 import com.komputation.cuda.layers.CudaContinuation
 import com.komputation.cuda.layers.continuation.BaseCudaContinuation
 import com.komputation.optimization.Optimizable
 import jcuda.Pointer
-import jcuda.jcublas.JCublas2.cublasSaxpy
-import jcuda.jcublas.cublasHandle
 import jcuda.runtime.JCuda.cudaFree
 
 class CudaStack(
@@ -19,10 +18,13 @@ class CudaStack(
     numbersOutputRows : IntArray,
     maximumInputColumns : Int,
     maximumOutputColumns : Int,
-    private val cublasHandle: cublasHandle,
     private val createCopyBlockKernel: () -> Kernel,
+    private val createAddKernel: () -> Kernel,
     private val layers: Array<CudaContinuation>,
-    maximumNumberThreads : Int) : BaseCudaContinuation(
+    private val numberMultiprocessors : Int,
+    private val numberResidentWarps : Int,
+    private val warpSize : Int,
+    private val maximumNumberThreads : Int) : BaseCudaContinuation(
     name,
     numberInputRows,
     numbersOutputRows.sum(),
@@ -32,6 +34,7 @@ class CudaStack(
     override var deviceForwardLengths = Pointer()
 
     private var copyBlockKernel : Kernel? = null
+    private var addKernel : Kernel? = null
 
     private val numberLayers = this.layers.size
     private val firstLayer = this.layers.first()
@@ -43,7 +46,6 @@ class CudaStack(
     private val pointersToOutputNumberIterations: Array<Pointer>
 
     private val pointerToZero = Pointer.to(intArrayOf(0))
-    private val pointerToOne = Pointer.to(floatArrayOf(1f))
 
     private val deviceIndividualChains = Array(this.numberLayers) { Pointer() }
     private val pointersToIndividualChains = Array(this.numberLayers) { index -> Pointer.to(this.deviceIndividualChains[index]) }
@@ -51,6 +53,11 @@ class CudaStack(
     override val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
     override val deviceBackwardResult = Pointer()
+    private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
+
+    private var addKernelLaunchConfiguration : KernelLaunchConfiguration? = null
+    private val addNumberIterations = intArrayOf(1)
+    private val pointerToNumberAddIterations = Pointer.to(this.addNumberIterations)
 
     init {
         val firstRowsInOutput = IntArray(this.numberLayers)
@@ -77,10 +84,14 @@ class CudaStack(
         allocateDeviceFloatMemory(this.deviceBackwardResult, this.backwardResultSize)
 
         this.copyBlockKernel = this.createCopyBlockKernel()
+        this.addKernel = this.createAddKernel()
 
         this.deviceIndividualChains.forEachIndexed { index, pointer ->
             allocateDeviceFloatMemory(pointer, maximumBatchSize * this.layers[index].maximumOutputEntries)
         }
+
+        this.addKernelLaunchConfiguration = computeEntrywiseLaunchConfiguration(this.backwardResultSize, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreads)
+        this.addNumberIterations[0] = this.addKernelLaunchConfiguration!!.numberIterations
     }
 
     override fun release() {
@@ -94,6 +105,7 @@ class CudaStack(
         }
 
         this.copyBlockKernel!!.destroy()
+        this.addKernel!!.destroy()
     }
 
     private val batchSize = IntArray(1)
@@ -139,6 +151,7 @@ class CudaStack(
     }
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
+
         // Break up the chain
         (0 until this.numberLayers).forEach { index ->
             val launchConfiguration = this.outputLaunchConfigurations[index]
@@ -163,13 +176,32 @@ class CudaStack(
 
         // Copy the first individual backward result to the total backward result
         val firstBackwardResult = this.firstLayer.backward(batchSize, this.deviceIndividualChains.first())
-        copyFloatArrayFromDeviceToDevice(firstBackwardResult, this.deviceBackwardResult, this.backwardResultSize)
 
-        // Add the remaining individual backward results to the total backward result
-        for (index in 1 until this.numberLayers) {
-            val individualBackwardResult = this.layers[index].backward(batchSize, this.deviceIndividualChains[index])
+        if (this.numberLayers == 1) {
+            copyFloatArrayFromDeviceToDevice(firstBackwardResult, this.deviceBackwardResult, this.backwardResultSize)
+        }
+        else {
+            // Add the remaining individual backward results to the total backward result
+            var previousBackwardResult = firstBackwardResult
+            for (index in 1 until this.numberLayers) {
+                val currentBackwardResult = this.layers[index].backward(batchSize, this.deviceIndividualChains[index])
 
-            cublasSaxpy(this.cublasHandle, this.forwardResultSize, this.pointerToOne, individualBackwardResult, 1, this.deviceBackwardResult, 1)
+                this.addKernel!!.launch(
+                    Pointer.to(
+                        Pointer.to(previousBackwardResult),
+                        Pointer.to(currentBackwardResult),
+                        this.pointerToBackwardResult,
+                        this.pointerToNumberAddIterations,
+                        this.pointerToBackwardResultSize
+                    ),
+                    this.addKernelLaunchConfiguration!!.numberBlocks,
+                    1,
+                    this.addKernelLaunchConfiguration!!.numberThreadsPerBlock,
+                    0)
+
+                previousBackwardResult = currentBackwardResult
+
+            }
         }
 
         return this.deviceBackwardResult

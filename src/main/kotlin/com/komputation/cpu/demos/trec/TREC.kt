@@ -87,7 +87,7 @@ class Trec {
             .map { token -> embeddingMap[token]!! }
             .toTypedArray()
 
-        val network = network(
+        val sentenceClassifier = network(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
             convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),
@@ -96,7 +96,7 @@ class Trec {
             dense(numberCategories, Activation.Softmax, initialization, optimization)
         )
 
-        val test = network
+        val test = sentenceClassifier
             .test(
                 testRepresentations,
                 testTargets,
@@ -104,7 +104,7 @@ class Trec {
                 numberCategories,
                 1)
 
-        network
+        sentenceClassifier
             .training(
                 trainingRepresentations,
                 trainingTargets,

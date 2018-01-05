@@ -29,4 +29,13 @@ object ArrayKernels {
         "replaceNaNKernel",
         "$subDirectory/nan/ReplaceNaN.cu",
         listOf(KernelHeaders.nan))
+
+    fun add() = KernelInstruction(
+        "addKernel",
+        "$subDirectory/add/AddKernel.cu")
+
+    fun groupSum() = KernelInstruction(
+        "groupSumKernel",
+        "$subDirectory/groupsum/GroupSumKernel.cu")
+
 }

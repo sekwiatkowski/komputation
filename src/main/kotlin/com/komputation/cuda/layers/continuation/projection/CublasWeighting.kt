@@ -26,7 +26,7 @@ class CublasWeighting internal constructor(
     maximumInputColumns: Int,
     numberOutputRows: Int,
     private val initialWeights: FloatArray,
-    private val weightUpdateRule: BaseCudaUpdateRule? = null,
+    private val updateRule: BaseCudaUpdateRule? = null,
     private val numberMultiprocessors : Int,
     private val numberResidentWarps: Int,
     private val warpSize: Int,
@@ -71,7 +71,7 @@ class CublasWeighting internal constructor(
         setFloatArray(this.initialWeights, this.numberWeightEntries, this.deviceWeights)
         allocateDeviceFloatMemory(this.deviceBackwardWrtWeights, this.numberWeightEntries)
 
-        this.weightUpdateRule?.acquire(maximumBatchSize)
+        this.updateRule?.acquire(maximumBatchSize)
 
         if (this.canHaveIncompleteLength) {
             allocateDeviceFloatMemory(this.deviceChainWithoutNaN, this.forwardResultSize)
@@ -227,7 +227,8 @@ class CublasWeighting internal constructor(
     }
 
     override fun optimize(batchSize: Int) {
-        this.weightUpdateRule?.denseUpdate(
+
+        this.updateRule?.denseUpdate(
             batchSize,
             this.pointerToDeviceWeights,
             this.pointerToDeviceBackwardWrtWeights)

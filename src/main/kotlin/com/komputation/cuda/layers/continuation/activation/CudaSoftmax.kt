@@ -19,6 +19,7 @@ class CudaSoftmax internal constructor(
     }
 
     override fun backward(batchSize: Int, chain: Pointer) : Pointer {
+
         val backwardNormalization = this.normalization.backward(batchSize, chain)
 
         val backwardExponentiation = this.exponentiation.backward(batchSize, backwardNormalization)

@@ -5,13 +5,13 @@ import jcuda.Pointer
 interface CudaUpdateRule {
 
     fun denseUpdate(
-        count : Int,
+        numberParameters: Int,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer)
 
     fun sparseUpdate(
-        hashTableSize: Int,
-        pointerToHashTable: Pointer,
+        numberParameters: Int,
+        pointerToParameterIndices: Pointer,
         pointerToCounts: Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer)

@@ -2,9 +2,9 @@ package com.komputation.cuda.layers
 
 import com.komputation.cuda.CudaForwardResult
 import com.komputation.cuda.CudaLayer
-import jcuda.Pointer
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.matrix.Matrix
+import jcuda.Pointer
 
 interface CudaEntryPoint : CudaLayer, CudaForwardResult {
 
@@ -15,6 +15,9 @@ interface CudaEntryPoint : CudaLayer, CudaForwardResult {
         inputs: Array<Matrix>,
         memory : InputMemory) : Pointer
 
-    fun backward(chain : Pointer) : Pointer
+    fun backward(
+        batchId : Int,
+        chain : Pointer,
+        memory : InputMemory) : Pointer
 
 }

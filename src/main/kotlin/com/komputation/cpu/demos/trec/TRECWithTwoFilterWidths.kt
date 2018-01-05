@@ -34,12 +34,12 @@ class TrecWithTwoFilterWidths {
         val random = Random(1)
         val initialization = uniformInitialization(random, -0.1f, 0.1f)
 
-        val optimization = nesterov(0.001f, 0.95f)
+        val optimization = nesterov(0.008f, 0.95f)
 
         val batchSize = 16
-        val numberIterations = 1
+        val numberIterations = 7
 
-        val numberFilters = 100
+        val numberFilters = 45
         val filterWidths = intArrayOf(2, 3)
         val maximumFilterWidth = filterWidths.max()!!
 
@@ -92,11 +92,9 @@ class TrecWithTwoFilterWidths {
         val sentenceClassifier = network(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
-            stack(*filterWidths
-                    .map { filterWidth ->
-                        convolution(numberFilters, filterWidth, filterHeight, initialization, optimization)
-                    }
-                    .toTypedArray()
+            stack(
+                convolution(numberFilters, 2, filterHeight, initialization, optimization),
+                convolution(numberFilters, 3, filterHeight, initialization, optimization)
             ),
             relu(),
             dropout(random, keepProbability),

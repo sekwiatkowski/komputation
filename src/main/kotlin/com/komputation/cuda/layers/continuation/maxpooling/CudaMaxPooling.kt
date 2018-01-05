@@ -90,7 +90,6 @@ class CudaMaxPooling internal constructor(
             this.maximumInputColumns,
             0
         )
-
     }
 
 }

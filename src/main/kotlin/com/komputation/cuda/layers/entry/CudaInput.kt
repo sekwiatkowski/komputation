@@ -13,30 +13,28 @@ import java.util.*
 
 class CudaInput internal constructor(
     name : String?,
-    private val numberRows: Int,
-    private val numberColumns : Int) : BaseCudaEntryPoint(name), Resourceful {
+    numberRows: Int,
+    numberColumns : Int) : BaseCudaEntryPoint(name, numberRows, numberColumns), Resourceful {
 
     override var deviceForwardResult = Pointer()
     override var deviceForwardLengths = Pointer()
     override var largestNumberOutputColumnsInCurrentBatch = -1
 
-    private val maximumInstanceEntries = this.numberRows * this.numberColumns
-    private var maximumBatchSize = -1
-    private var maximumBatchEntries = -1
     private var data = FloatArray(0)
     private var lengths = IntArray(0)
 
     override fun acquire(maximumBatchSize: Int) {
-        this.maximumBatchSize = maximumBatchSize
-        this.maximumBatchEntries = maximumBatchSize * this.maximumInstanceEntries
-        this.data = FloatArray(this.maximumBatchEntries)
-        this.lengths = IntArray(this.maximumBatchEntries)
+        super.acquire(maximumBatchSize)
+
+        this.data = FloatArray(this.maximumBatchOutputEntries)
+        this.lengths = IntArray(this.maximumBatchOutputEntries)
     }
 
     override fun release() {
+        super.release()
+
         this.data = FloatArray(0)
-        this.maximumBatchEntries = -1
-        this.maximumBatchSize = -1
+        this.lengths = IntArray(0)
     }
 
     override fun forward(
@@ -59,13 +57,13 @@ class CudaInput internal constructor(
                 val inputEntries = input.entries
                 val length = input.numberColumns
 
-                copy(inputEntries, withinBatch * this.maximumInstanceEntries, inputEntries.size, this.data)
+                copy(inputEntries, withinBatch * this.maximumOutputEntries, inputEntries.size, this.data)
                 this.lengths[withinBatch] = length
                 maximumLength = Math.max(length, maximumLength)
             }
 
             val deviceForwardResult = Pointer()
-            setFloatArray(this.data, this.maximumBatchEntries, deviceForwardResult)
+            setFloatArray(this.data, this.maximumBatchOutputEntries, deviceForwardResult)
             this.deviceForwardResult = deviceForwardResult
 
             val deviceForwardLengths = Pointer()
@@ -74,18 +72,18 @@ class CudaInput internal constructor(
 
             this.largestNumberOutputColumnsInCurrentBatch = maximumLength
 
-            memory.set(batchId, deviceForwardResult, deviceForwardLengths, maximumLength)
+            memory.setVariableLengthData(batchId, deviceForwardResult, deviceForwardLengths, maximumLength)
         }
         else {
             this.deviceForwardResult = data
             this.deviceForwardLengths = memory.getDeviceLengths(batchId)
-            this.largestNumberOutputColumnsInCurrentBatch = memory.getHostMaximumLength(batchId)
+            this.largestNumberOutputColumnsInCurrentBatch = memory.getMaximumLength(batchId)
         }
 
         return this.deviceForwardResult
     }
 
-    override fun backward(chain: Pointer) =
+    override fun backward(batchId: Int, chain: Pointer, memory: InputMemory) =
         chain
 
 }

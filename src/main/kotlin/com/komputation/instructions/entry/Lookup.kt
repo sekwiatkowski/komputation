@@ -7,9 +7,6 @@ import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaEntryPointInstruction
 import com.komputation.cuda.kernels.ArrayKernels
 import com.komputation.cuda.kernels.EntryKernels
-import com.komputation.cuda.kernels.HashtableKernels
-import com.komputation.cuda.layers.entry.CudaGroupSum
-import com.komputation.cuda.layers.entry.CudaHashing
 import com.komputation.cuda.layers.entry.CudaLookup
 import com.komputation.optimization.OptimizationInstruction
 
@@ -51,27 +48,6 @@ class Lookup(
             copy(vector, index * this.dimension, this.dimension, concatenation)
         }
 
-        val hashing = CudaHashing(
-            this.maximumLength,
-            2,
-            { context.createKernel(HashtableKernels.hash()) },
-            { context.createKernel(ArrayKernels.fillTwoIntegerArrays()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
-            context.warpSize,
-            context.maximumNumberOfThreadsPerBlock)
-
-        val groupSum = CudaGroupSum(
-            this.dimension,
-            this.maximumLength,
-            2 * this.maximumLength,
-            { context.createKernel(HashtableKernels.groupSum()) },
-            { context.createKernel(ArrayKernels.fillOneFloatArray()) },
-            context.numberMultiprocessors,
-            context.maximumNumberOfResidentWarpsPerMultiprocessor,
-            context.warpSize,
-            context.maximumNumberOfThreadsPerBlock)
-
         return CudaLookup(
             this.name,
             concatenation,
@@ -80,8 +56,7 @@ class Lookup(
             this.dimension,
             updateRule,
             { context.createKernel(EntryKernels.lookup())},
-            hashing,
-            groupSum,
+            { context.createKernel(ArrayKernels.groupSum())},
             context.maximumNumberOfThreadsPerBlock)
     }
 

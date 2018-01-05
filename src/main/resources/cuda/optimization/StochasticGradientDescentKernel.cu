@@ -1,37 +1,38 @@
 __global__ void stochasticGradientDescentKernel (
     int numberIterations,
-    int* hashTable,
+    int* parameterIndices,
     int* counts,
     int dimension,
     float* parameters,
     float* gradient,
     float learningRate) {
-    int firstEntryIndex = (blockIdx.y * blockDim.x * numberIterations) + threadIdx.x * numberIterations;
 
-    if(firstEntryIndex < dimension) {
+    int updateIndex = blockIdx.x;
+    int parameterIndex = parameterIndices[updateIndex];
+    int count = counts[updateIndex];
 
-        int hashTableIndex = blockIdx.x;
-        int parameterIndex = hashTable[hashTableIndex];
+    if(parameterIndex != -1 && count > 0) {
 
-        if(parameterIndex != -1) {
-            float scalingFactor = 1.0 / (float)counts[hashTableIndex];
+        float scalingFactor = 1.0 / (float)count;
 
-            int firstParameterEntryIndex = parameterIndex * dimension + firstEntryIndex;
-            int firstGradientEntryIndex = hashTableIndex * dimension + firstEntryIndex;
+        int startEntryIndex = (blockIdx.y * blockDim.x + threadIdx.x) * numberIterations;
 
-            int exclusiveLastParameterEntryIndex = firstParameterEntryIndex + numberIterations;
+        int firstParameterEntryIndex = parameterIndex * dimension;
+        int startParameterEntryIndex = firstParameterEntryIndex + startEntryIndex;
+        int startGradientEntryIndex = updateIndex * dimension + startEntryIndex;
 
-            int parameterEntryIndex = firstParameterEntryIndex;
-            int gradientEntryIndex = firstGradientEntryIndex;
+        int exclusiveEndParameterEntryIndex = min(startParameterEntryIndex + numberIterations, firstParameterEntryIndex + dimension);
 
-            while(parameterEntryIndex < exclusiveLastParameterEntryIndex) {
-                float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
+        int parameterEntryIndex = startParameterEntryIndex;
+        int gradientEntryIndex = startGradientEntryIndex;
 
-                parameters[parameterEntryIndex] -= learningRate * scaledDerivative;
+        while(parameterEntryIndex < exclusiveEndParameterEntryIndex) {
+            float scaledDerivative = scalingFactor * gradient[gradientEntryIndex];
 
-                parameterEntryIndex++;
-                gradientEntryIndex++;
-            }
+            parameters[parameterEntryIndex] -= learningRate * scaledDerivative;
+
+            parameterEntryIndex++;
+            gradientEntryIndex++;
         }
     }
 }

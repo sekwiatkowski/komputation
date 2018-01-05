@@ -1,8 +1,5 @@
 package com.komputation.cuda.layers.entry
 
-import jcuda.Pointer
-import org.junit.jupiter.api.Assertions.assertArrayEquals
-import org.junit.jupiter.api.Test
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.memory.InputMemory
 import com.komputation.cuda.setFloatArray
@@ -10,6 +7,9 @@ import com.komputation.cuda.setUpCudaContext
 import com.komputation.instructions.entry.lookup
 import com.komputation.matrix.Matrix
 import com.komputation.matrix.intMatrix
+import jcuda.Pointer
+import org.junit.jupiter.api.Assertions.assertArrayEquals
+import org.junit.jupiter.api.Test
 
 class CudaLookupLayerTest {
 
@@ -145,12 +145,13 @@ class CudaLookupLayerTest {
 
         lookupLayer.acquire(1)
 
-        lookupLayer.forward(0, 1, intArrayOf(0), arrayOf(intMatrix(0, 1, 0)), InputMemory())
+        val inputMemory = InputMemory()
+        lookupLayer.forward(0, 1, intArrayOf(0), arrayOf(intMatrix(0, 1, 0)), inputMemory)
 
         val deviceChain = Pointer()
         setFloatArray(floatArrayOf(1f, 2f, 3f, 4f, 5f, 6f), 6, deviceChain)
 
-        lookupLayer.backward(deviceChain)
+        lookupLayer.backward(0, deviceChain, inputMemory)
 
         lookupLayer.release()
 

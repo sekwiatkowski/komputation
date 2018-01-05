@@ -1,14 +1,14 @@
 package com.komputation.cuda.functions
 
+import com.komputation.cuda.setArrayToZero
 import jcuda.Pointer
 import jcuda.jcublas.JCublas2.*
 import jcuda.jcublas.cublasHandle
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_N
 import jcuda.jcublas.cublasOperation.CUBLAS_OP_T
-import com.komputation.cuda.setArrayToZero
 
-private val pointerToOne = Pointer.to(floatArrayOf(1.0f))
-private val pointerToZero = Pointer.to(floatArrayOf(0.0f))
+private val pointerToOne = Pointer.to(floatArrayOf(1f))
+private val pointerToZero = Pointer.to(floatArrayOf(0f))
 
 fun cublasOuterProduct(
     cublasHandle: cublasHandle,

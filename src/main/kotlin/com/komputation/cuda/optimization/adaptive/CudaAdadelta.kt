@@ -52,14 +52,14 @@ class CudaAdadelta internal constructor(
     }
 
     override fun launchKernel(
-        hashTableSize: Int,
-        pointerToHashTable: Pointer,
+        numberParameters: Int,
+        pointerToParameterIndices: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int {
         val parameters = Pointer.to(
             this.pointerToNumberIterations,
-            pointerToHashTable,
+            pointerToParameterIndices,
             pointerToCounts,
             this.pointerToDimension,
             pointerToParameters,
@@ -73,7 +73,7 @@ class CudaAdadelta internal constructor(
 
         val resultCode = this.kernel!!.launch(
             parameters,
-            hashTableSize,
+            numberParameters,
             this.numberBlocks,
             this.numberThreads,
             0

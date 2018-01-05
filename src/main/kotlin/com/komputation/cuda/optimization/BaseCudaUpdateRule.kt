@@ -1,8 +1,8 @@
 package com.komputation.cuda.optimization
 
-import jcuda.Pointer
 import com.komputation.cuda.setIntArray
 import com.komputation.instructions.Resourceful
+import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
 abstract class BaseCudaUpdateRule : CudaUpdateRule, Resourceful {
@@ -25,17 +25,17 @@ abstract class BaseCudaUpdateRule : CudaUpdateRule, Resourceful {
     }
 
     override fun denseUpdate(
-        count : Int,
+        numberParameters: Int,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) {
-        val optionalDeviceCount = this.deviceCountMap[count]
+        val optionalDeviceCount = this.deviceCountMap[numberParameters]
 
         val deviceCount = if (optionalDeviceCount == null) {
 
             val deviceCount = Pointer()
-            setIntArray(intArrayOf(count), 1, deviceCount)
+            setIntArray(intArrayOf(numberParameters), 1, deviceCount)
 
-            this.deviceCountMap[count] = deviceCount
+            this.deviceCountMap[numberParameters] = deviceCount
 
             deviceCount
         }
@@ -52,22 +52,22 @@ abstract class BaseCudaUpdateRule : CudaUpdateRule, Resourceful {
     }
 
     override fun sparseUpdate(
-        hashTableSize: Int,
-        pointerToHashTable: Pointer,
+        numberParameters: Int,
+        pointerToParameterIndices: Pointer,
         pointerToCounts: Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) {
         this.launchKernel(
-            hashTableSize,
-            pointerToHashTable,
+            numberParameters,
+            pointerToParameterIndices,
             pointerToCounts,
             pointerToParameters,
             pointerToGradient)
     }
 
     abstract fun launchKernel(
-        hashTableSize: Int,
-        pointerToHashTable: Pointer,
+        numberParameters: Int,
+        pointerToParameterIndices: Pointer,
         pointerToCounts : Pointer,
         pointerToParameters: Pointer,
         pointerToGradient: Pointer) : Int

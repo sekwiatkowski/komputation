@@ -1,14 +1,15 @@
 package com.komputation.cuda.network
 
-import jcuda.Pointer
-import com.komputation.cuda.layers.CudaEntryPoint
 import com.komputation.cuda.layers.CudaContinuation
+import com.komputation.cuda.layers.CudaEntryPoint
+import com.komputation.cuda.memory.InputMemory
+import jcuda.Pointer
 
 class CudaBackwardPropagator(
     entryPoint: CudaEntryPoint,
     continuations: Array<CudaContinuation>) : BaseCudaPropagator(entryPoint, continuations) {
 
-    fun backward(lossGradient : Pointer, batchSize: Int): Pointer {
+    fun backward(batchId: Int, batchSize: Int, lossGradient : Pointer, memory : InputMemory): Pointer {
         var chain = lossGradient
 
         for(indexLayer in this.numberContinuations - 1 downTo 0) {
@@ -21,7 +22,7 @@ class CudaBackwardPropagator(
         }
 
         val startEntry = System.nanoTime()
-        val backwardInput = this.entryPoint.backward(chain)
+        val backwardInput = this.entryPoint.backward(batchId, chain, memory)
         val stopEntry = System.nanoTime()
         this.times[0] += stopEntry - startEntry
 

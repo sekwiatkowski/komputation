@@ -43,9 +43,12 @@ class Stack internal constructor(
             IntArray(this.continuationInstructions.size) { index -> this.continuationInstructions[index].numberOutputRows },
             this.maximumNumberInputColumns,
             this.maximumNumberOutputColumns,
-            cublasHandle,
             { context.createKernel(ArrayKernels.copyBlock()) },
+            { context.createKernel(ArrayKernels.add()) },
             this.continuationInstructions.map { instruction -> (instruction as CudaContinuationInstruction).buildForCuda(context, cublasHandle) }.toTypedArray(),
+            context.numberMultiprocessors,
+            context.maximumNumberOfResidentWarpsPerMultiprocessor,
+            context.warpSize,
             context.maximumNumberOfThreadsPerBlock)
 
 }
