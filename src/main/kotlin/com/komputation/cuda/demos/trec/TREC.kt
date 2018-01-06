@@ -104,7 +104,7 @@ class Trec {
                 numberCategories,
                 1)
 
-        sentenceClassifier
+        val training = sentenceClassifier
             .training(
                 trainingRepresentations,
                 trainingTargets,
@@ -113,7 +113,13 @@ class Trec {
                 println(test.run())
 
             }
+
+        training
             .run()
+
+        test.free()
+        training.free()
+        sentenceClassifier.free()
 
     }
 

@@ -109,14 +109,20 @@ class TrecWithTwoFilterWidths {
                 numberCategories,
                 1)
 
-        sentenceClassifier.training(
+        val training = sentenceClassifier.training(
             trainingRepresentations,
             trainingTargets,
             numberIterations,
-            crossEntropyLoss()) { _ : Int, _ : Float ->
+            crossEntropyLoss()) { _: Int, _: Float ->
             println(test.run())
         }
+        training
             .run()
+
+
+        test.free()
+        training.free()
+        sentenceClassifier.free()
 
     }
 

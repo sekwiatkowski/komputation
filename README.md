@@ -23,6 +23,8 @@ Komputation is available through Maven Central:
   - [Lookup](./src/main/kotlin/com/komputation/instructions/entry/Lookup.kt)
 
 - Standard feed-forward networks:
+  - [Weighting](./src/main/kotlin/com/komputation/instructions/continuation/projection/Weighting.kt)
+  - [Bias](./src/main/kotlin/com/komputation/instructions/continuation/projection/Bias.kt)
   - [Projection](./src/main/kotlin/com/komputation/instructions/continuation/projection/Projection.kt)
   - [Dense](./src/main/kotlin/com/komputation/instructions/continuation/dense/Dense.kt)
 

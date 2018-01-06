@@ -11,9 +11,8 @@ import com.komputation.instructions.combination.addition
 import com.komputation.instructions.concatenateNames
 import com.komputation.instructions.continuation.activation.Activation
 import com.komputation.instructions.continuation.activation.activation
-import com.komputation.instructions.continuation.projection.bias
 import com.komputation.instructions.continuation.projection.SharedWeighting
-import com.komputation.instructions.continuation.projection.weighting
+import com.komputation.instructions.continuation.projection.projection
 import com.komputation.optimization.OptimizationInstruction
 
 enum class ResultExtraction {
@@ -39,8 +38,7 @@ class Recurrent internal constructor(
         this.minimumNumberInputColumns = minimumNumberInputColumns
         this.maximumNumberInputColumns = maximumNumberInputColumns
 
-        this.inputWeightingLayer.setInputDimensionsFromPreviousInstruction(numberInputRows, minimumNumberInputColumns, maximumNumberInputColumns)
-        this.bias?.setInputDimensionsFromPreviousInstruction(numberInputRows, minimumNumberInputColumns, maximumNumberInputColumns)
+        this.inputProjection.setInputDimensionsFromPreviousInstruction(numberInputRows, minimumNumberInputColumns, maximumNumberInputColumns)
 
         this.previousStateWeighting = createPreviousStateWeighting(this.maximumNumberInputColumns)
         this.previousStateWeighting!!.setInputDimensionsFromPreviousInstruction(numberInputRows, 1, 1)
@@ -65,23 +63,12 @@ class Recurrent internal constructor(
 
     override val numberOutputRows = this.hiddenDimension
 
-    private val inputWeightingLayer = weighting(
+    private val inputProjection = projection(
         concatenateNames(this.name, "input-weighting"),
         this.hiddenDimension,
         this.inputWeightingInitialization,
+        this.biasInitialization,
         this.optimization)
-
-    private val bias =
-        if (this.biasInitialization != null) {
-            bias(
-                concatenateNames(this.name, "bias"),
-                this.biasInitialization,
-                this.optimization
-            )
-        }
-        else {
-            null
-        }
 
     private val initialState = FloatArray(this.hiddenDimension)
 
@@ -122,8 +109,7 @@ class Recurrent internal constructor(
             this.minimumNumberInputColumns,
             this.maximumNumberInputColumns,
             this.hiddenDimension,
-            this.inputWeightingLayer.buildForCpu(),
-            this.bias?.buildForCpu(),
+            this.inputProjection.buildForCpu(),
             this.initialState,
             this.previousStateWeighting!!.buildForCpu(),
             this.additions!!.buildForCpu(),

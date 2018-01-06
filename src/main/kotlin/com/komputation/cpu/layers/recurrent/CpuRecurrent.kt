@@ -3,8 +3,7 @@ package com.komputation.cpu.layers.recurrent
 import com.komputation.cpu.functions.getColumn
 import com.komputation.cpu.functions.setColumn
 import com.komputation.cpu.layers.*
-import com.komputation.cpu.layers.continuation.projection.CpuBias
-import com.komputation.cpu.layers.continuation.projection.CpuWeighting
+import com.komputation.cpu.layers.continuation.projection.CpuProjection
 import com.komputation.cpu.layers.recurrent.extraction.ResultExtractionStrategy
 import com.komputation.cpu.layers.recurrent.series.CpuCombinationSeries
 import com.komputation.cpu.layers.recurrent.series.CpuParameterizedSeries
@@ -22,14 +21,13 @@ class CpuRecurrent(
     private val minimumSteps: Int,
     private val maximumSteps: Int,
     private val hiddenDimension: Int,
-    private val inputWeighting: CpuWeighting,
-    private val bias: CpuBias?,
+    private val inputProjection: CpuProjection,
     private val initialState: FloatArray,
     private val previousHiddenStateWeighting: CpuParameterizedSeries,
     private val additions: CpuCombinationSeries,
     private val activation: CpuSeries,
     private val direction: Direction,
-    private val resultExtraction: ResultExtractionStrategy) : BaseCpuHigherOrderContinuation(name, inputWeighting, resultExtraction), Optimizable {
+    private val resultExtraction: ResultExtractionStrategy) : BaseCpuHigherOrderContinuation(name, inputProjection, resultExtraction), Optimizable {
 
     private val stepWeightedInput = FloatArray(this.hiddenDimension)
 
@@ -49,21 +47,14 @@ class CpuRecurrent(
     }
 
     override fun forward(withinBatch: Int, numberInputColumns: Int, input: FloatArray, isTraining: Boolean): FloatArray {
-        val weightedInput = this.inputWeighting.forward(withinBatch, numberInputColumns, input, isTraining)
-
-        val finalInput = if (this.bias != null) {
-            this.bias.forward(withinBatch, numberInputColumns, weightedInput, isTraining)
-        }
-        else {
-            weightedInput
-        }
+        val projectedInput = this.inputProjection.forward(withinBatch, numberInputColumns, input, isTraining)
 
         var previousHiddenState = this.initialState
 
         val steps = this.forwardStepsOverPossibleLengths[computeLengthIndex(this.numberInputColumns, this.minimumSteps)]
 
         for (step in steps) {
-            getColumn(finalInput, step, this.hiddenDimension, this.stepWeightedInput)
+            getColumn(projectedInput, step, this.hiddenDimension, this.stepWeightedInput)
 
             val weightedPreviousHiddenState = this.previousHiddenStateWeighting.forwardStep(withinBatch, step, 1, previousHiddenState, isTraining)
 
@@ -121,16 +112,15 @@ class CpuRecurrent(
 
         this.previousHiddenStateWeighting.backwardSeries()
 
+        // d(Wx_t + Uh_(t-1) + b) / dW
+        // d(Wx_t + Uh_(t-1) + b) / dx_t
         // d(Wx_t + Uh_(t-1) + b) / db
-        this.bias?.backward(withinBatch, backwardPreActivation)
-
-        return this.inputWeighting.backward(withinBatch, backwardPreActivation)
+        return this.inputProjection.backward(withinBatch, backwardPreActivation)
     }
 
     override fun optimize(batchSize: Int) {
-        this.inputWeighting.optimize(batchSize)
+        this.inputProjection.optimize(batchSize)
         this.previousHiddenStateWeighting.optimize(batchSize)
-        this.bias?.optimize(batchSize)
     }
 
 }
