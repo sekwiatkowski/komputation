@@ -14,7 +14,7 @@ class CudaTrainer(
     private val forwardPropagator : CudaForwardPropagator,
     private val backwardPropagator : CudaBackwardPropagator,
     private val optimizables : Array<Optimizable>,
-    private val inputs : Array<Matrix>,
+    private val inputs : Array<out Matrix>,
     private val targets: Array<FloatArray>,
     private val numberIterations : Int,
     private val maximumBatchSize : Int,

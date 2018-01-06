@@ -1,11 +1,10 @@
 package com.komputation.demos.not
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
 
 object NotData {
 
-    val inputs = arrayOf<Matrix>(
+    val inputs = arrayOf(
         floatMatrix(1, 1, 0.0f),
         floatMatrix(1, 1, 1.0f)
     )

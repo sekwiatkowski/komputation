@@ -6,7 +6,7 @@ import com.komputation.matrix.Matrix
 class CpuTester(
     private val forwardPropagator: CpuForwardPropagator,
     private val batches : Array<IntArray>,
-    private val inputs : Array<Matrix>,
+    private val inputs : Array<out Matrix>,
     private val targets: Array<FloatArray>,
     private val tester : CpuClassificationTester) {
 

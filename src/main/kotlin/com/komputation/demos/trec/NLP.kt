@@ -1,6 +1,5 @@
 package com.komputation.demos.trec
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.intMatrix
 import com.komputation.matrix.oneHotArray
 import java.io.File
@@ -61,7 +60,7 @@ object NLP {
 
         documents
             .map { tokens -> tokens.map { vocabulary.indexOf(it) }.toIntArray() }
-            .map { indices -> intMatrix(*indices) as Matrix }
+            .map { indices -> intMatrix(*indices) }
             .toTypedArray()
 
     fun indexCategories(categories: Set<String>) =

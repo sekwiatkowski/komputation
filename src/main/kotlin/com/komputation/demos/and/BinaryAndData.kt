@@ -1,11 +1,10 @@
 package com.komputation.demos.and
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
 
 object BinaryAndData {
 
-    val inputs = arrayOf<Matrix>(
+    val inputs = arrayOf(
         floatMatrix(2, 1, 0.0f, 0.0f),
         floatMatrix(2, 1, 1.0f, 0.0f),
         floatMatrix(2, 1, 0.0f, 1.0f),

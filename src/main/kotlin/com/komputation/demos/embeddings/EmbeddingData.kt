@@ -1,6 +1,5 @@
 package com.komputation.demos.embeddings
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.intMatrix
 import com.komputation.matrix.oneHotArray
 
@@ -60,10 +59,9 @@ object EmbeddingData {
     private val strongModifierIndices = 30..39
 
     private fun generateEmbeddings(modifierIndices: IntRange, polarityIndices: IntRange) =
-
         modifierIndices.zip(polarityIndices).map { (modifier, polarity) -> intMatrix(modifier, polarity) }
 
-    val inputs = listOf<List<Matrix>>(
+    val inputs = listOf(
             generateEmbeddings(strongModifierIndices, negativeIndices),
             generateEmbeddings(weakModifierIndices, negativeIndices),
             generateEmbeddings(weakModifierIndices, positiveIndices),

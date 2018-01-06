@@ -1,16 +1,15 @@
 package com.komputation.demos.mnist
 
 import com.komputation.matrix.FloatMatrix
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.oneHotArray
 import java.io.File
 
 object MnistData {
 
-    val numberCategories = 10
+    const val numberCategories = 10
 
-    private fun loadMnist(csvFile: File, useOneDimension : Boolean): Pair<Array<Matrix>, Array<FloatArray>> {
-        val inputs = arrayListOf<Matrix>()
+    private fun loadMnist(csvFile: File, useOneDimension : Boolean): Pair<Array<FloatMatrix>, Array<FloatArray>> {
+        val inputs = arrayListOf<FloatMatrix>()
         val targets = arrayListOf<FloatArray>()
 
         val numberRows = if(useOneDimension) 784 else 28

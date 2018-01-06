@@ -60,7 +60,7 @@ class Network internal constructor(
         this.layers[index]
 
     fun training(
-        inputs: Array<Matrix>,
+        inputs: Array<out Matrix>,
         targets: Array<FloatArray>,
         numberIterations : Int,
         loss: CpuLossFunctionInstruction,
@@ -81,7 +81,7 @@ class Network internal constructor(
     }
 
     fun test(
-        inputs: Array<Matrix>,
+        inputs: Array<out Matrix>,
         targets: Array<FloatArray>,
         batchSize: Int,
         numberCategories : Int,
@@ -118,6 +118,11 @@ class Network internal constructor(
 
     fun predict(input : Matrix) =
         this.forwardPropagator.forward(0, input, false).forwardResult.copyOf()
+
+    fun predict(input : Array<out Matrix>) =
+        Array(input.size) { index ->
+            this.forwardPropagator.forward(index, input[index], false)
+        }
 
 }
 

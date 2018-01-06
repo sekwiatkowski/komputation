@@ -12,7 +12,7 @@ interface CudaEntryPoint : CudaLayer, CudaForwardResult {
         batchId : Int,
         batchSize : Int,
         batch: IntArray,
-        inputs: Array<Matrix>,
+        inputs: Array<out Matrix>,
         memory : InputMemory) : Pointer
 
     fun backward(

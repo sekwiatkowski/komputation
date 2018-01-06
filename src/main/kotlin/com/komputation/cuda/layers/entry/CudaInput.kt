@@ -41,7 +41,7 @@ class CudaInput internal constructor(
         batchId : Int,
         batchSize : Int,
         batch: IntArray,
-        inputs : Array<Matrix>,
+        inputs : Array<out Matrix>,
         memory: InputMemory): Pointer {
 
         val data = memory.tryToGetData(batchId)

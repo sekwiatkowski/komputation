@@ -10,7 +10,7 @@ import jcuda.Pointer
 class CudaTester(
     private val forwardPropagator : CudaForwardPropagator,
     private val evaluation: CudaClassificationTester,
-    private val inputs : Array<Matrix>,
+    private val inputs : Array<out Matrix>,
     private val targets: Array<FloatArray>,
     private val maximumBatchSize : Int) {
 

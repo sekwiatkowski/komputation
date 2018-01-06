@@ -11,7 +11,7 @@ class CudaForwardPropagator(
     entryPoint: CudaEntryPoint,
     continuations: Array<CudaContinuation>) : BaseCudaPropagator(entryPoint, continuations) {
 
-    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<Matrix>, memory : InputMemory, isTraining: Boolean) : Pointer {
+    fun forward(batchId: Int, batchSize: Int, indices: IntArray, inputs: Array<out Matrix>, memory : InputMemory, isTraining: Boolean) : Pointer {
         val startEntry = System.nanoTime()
         this.entryPoint.forward(batchId, batchSize, indices, inputs, memory)
         val stopEntry = System.nanoTime()

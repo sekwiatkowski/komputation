@@ -1,14 +1,13 @@
 package com.komputation.demos.lines
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrixFromRows
 
 object LinesData {
 
-    private val numberRows = 3
-    private val numberColumns = 3
+    private const val numberRows = 3
+    private const val numberColumns = 3
 
-    val inputs = arrayOf<Matrix>(
+    val inputs = arrayOf(
         floatMatrixFromRows(
             this.numberRows,
             this.numberColumns,

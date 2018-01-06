@@ -1,6 +1,5 @@
 package com.komputation.demos.sequencelabeling
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatArrayFromColumns
 import com.komputation.matrix.intMatrix
 import com.komputation.matrix.oneHotArray
@@ -32,7 +31,7 @@ object SequenceLabelingData {
 
     val input = this.sentences
         .map { sentence ->
-            intMatrix(*sentence.map { token -> this.vocabulary.indexOf(token) }.toIntArray()) as Matrix
+            intMatrix(*sentence.map { token -> this.vocabulary.indexOf(token) }.toIntArray())
         }
         .toTypedArray()
 
@@ -69,6 +68,6 @@ object SequenceLabelingData {
         }
         .toTypedArray()
 
-    val numberCategories = 3
-    val numberSteps = 3
+    const val numberCategories = 3
+    const val numberSteps = 3
 }

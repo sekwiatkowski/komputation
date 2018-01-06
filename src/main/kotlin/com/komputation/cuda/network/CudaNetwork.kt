@@ -100,7 +100,7 @@ class CudaNetwork internal constructor(
     }
 
     fun training(
-        inputs: Array<Matrix>,
+        inputs: Array<out Matrix>,
         targets: Array<FloatArray>,
         numberIterations : Int,
         lossFunction : CudaLossFunctionInstruction,
@@ -122,7 +122,7 @@ class CudaNetwork internal constructor(
     }
 
     fun test(
-        inputs: Array<Matrix>,
+        inputs: Array<out Matrix>,
         targets: Array<FloatArray>,
         batchSize: Int,
         numberCategories : Int,
@@ -149,6 +149,15 @@ class CudaNetwork internal constructor(
     fun predict(input : Matrix) : Pointer {
         val inputMemory = InputMemory()
         val prediction = this.forwardPropagator.forward(0, 1, intArrayOf(0), arrayOf(input), inputMemory, false)
+        inputMemory.free()
+
+        return prediction
+    }
+
+    fun predict(input : Array<out Matrix>) : Pointer {
+        val inputMemory = InputMemory()
+        val batchSize = input.size
+        val prediction = this.forwardPropagator.forward(0, batchSize, IntArray(batchSize) { index -> index }, input, inputMemory, false)
         inputMemory.free()
 
         return prediction

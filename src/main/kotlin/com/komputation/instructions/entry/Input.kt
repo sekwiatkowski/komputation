@@ -1,10 +1,10 @@
 package com.komputation.instructions.entry
 
-import com.komputation.cpu.layers.entry.CpuInputLayer
-import com.komputation.cuda.CudaContext
-import com.komputation.cuda.layers.entry.CudaInput
 import com.komputation.cpu.instructions.CpuEntryPointInstruction
+import com.komputation.cpu.layers.entry.CpuInput
+import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaEntryPointInstruction
+import com.komputation.cuda.layers.entry.CudaInput
 
 class Input(
     private val name : String? = null,
@@ -20,7 +20,7 @@ class Input(
         get() = this.maximumInputColumns
 
     override fun buildForCpu() =
-        CpuInputLayer(this.name)
+        CpuInput(this.name)
 
     override fun buildForCuda(context: CudaContext) =
         CudaInput(this.name, this.numberInputRows, this.maximumInputColumns)

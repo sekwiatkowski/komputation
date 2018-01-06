@@ -1,23 +1,22 @@
 package com.komputation.demos.runningtotal
 
 import com.komputation.matrix.FloatMatrix
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
 import java.util.*
 
 object RunningTotalData {
 
-    fun generateFixedLengthInput(random: Random, length: Int, from : Int, to : Int, numberExamples : Int): Array<Matrix> {
+    fun generateFixedLengthInput(random: Random, length: Int, from : Int, to : Int, numberExamples : Int): Array<FloatMatrix> {
         val inputRange = to - from
 
         return Array(numberExamples) {
             val numbers = FloatArray(length) { (random.nextInt(inputRange) + from).toFloat() }
 
-            floatMatrix(1, length, *numbers) as Matrix
+            floatMatrix(1, length, *numbers)
         }
     }
 
-    fun generateVariableLengthInput(random: Random, minimumLength: Int, maximumLength: Int, from : Int, to : Int, numberExamples : Int): Array<Matrix> {
+    fun generateVariableLengthInput(random: Random, minimumLength: Int, maximumLength: Int, from : Int, to : Int, numberExamples : Int): Array<FloatMatrix> {
         val lengthRange = maximumLength - minimumLength
         val inputRange = to - from
 
@@ -26,13 +25,13 @@ object RunningTotalData {
 
             val input = FloatArray(length) { (random.nextInt(inputRange) + from).toFloat() }
 
-            floatMatrix(1, length, *input) as Matrix
+            floatMatrix(1, length, *input)
         }
     }
 
-    fun generateTargets(input : Array<Matrix>) =
+    fun generateTargets(input : Array<FloatMatrix>) =
         Array(input.size) { indexTarget ->
-            val vector = (input[indexTarget] as FloatMatrix).entries
+            val vector = input[indexTarget].entries
 
             var runningSum = 0f
 
@@ -42,9 +41,9 @@ object RunningTotalData {
             }
         }
 
-    fun generateReversedTargets(input : Array<Matrix>) =
+    fun generateReversedTargets(input : Array<FloatMatrix>) =
         Array(input.size) { indexTarget ->
-            val inputEntries = (input[indexTarget] as FloatMatrix).entries
+            val inputEntries = input[indexTarget].entries
             val reversedInputEntries = inputEntries.reversedArray()
 
             var runningSum = 0f

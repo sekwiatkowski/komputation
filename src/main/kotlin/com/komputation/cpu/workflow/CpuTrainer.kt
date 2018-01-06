@@ -11,7 +11,7 @@ class CpuTrainer(
     private val forwardPropagator : CpuForwardPropagator,
     private val backwardPropagator : CpuBackwardPropagator,
     private val optimizables : Array<Optimizable>,
-    private val inputs : Array<Matrix>,
+    private val inputs : Array<out Matrix>,
     private val targets: Array<FloatArray>,
     private val numberIterations: Int,
     private val maximumBatchSize : Int,

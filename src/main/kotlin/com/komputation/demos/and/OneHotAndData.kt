@@ -1,11 +1,10 @@
 package com.komputation.demos.and
 
-import com.komputation.matrix.Matrix
 import com.komputation.matrix.floatMatrix
 
 object OneHotAndData {
 
-    val input = arrayOf<Matrix>(
+    val input = arrayOf(
         floatMatrix(2, 1, 0.0f, 0.0f),
         floatMatrix(2, 1, 0.0f, 1.0f),
         floatMatrix(2, 1, 1.0f, 0.0f),

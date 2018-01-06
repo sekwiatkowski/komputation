@@ -108,7 +108,7 @@ class CudaLookup internal constructor(
         cudaFree(this.deviceVectors)
     }
 
-    override fun forward(batchId : Int, batchSize : Int, batch: IntArray, inputs : Array<Matrix>, memory: InputMemory) : Pointer {
+    override fun forward(batchId : Int, batchSize : Int, batch: IntArray, inputs : Array<out Matrix>, memory: InputMemory) : Pointer {
         val maximumBatchSize = this.maximumBatchSize
 
         val data = memory.tryToGetData(batchId)

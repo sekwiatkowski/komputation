@@ -5,6 +5,9 @@ import com.komputation.cpu.layers.recurrent.CpuRecurrent
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.layers.recurrent.extraction.AllSteps
 import com.komputation.cpu.layers.recurrent.extraction.LastStep
+import com.komputation.cuda.CudaContext
+import com.komputation.cuda.instructions.CudaContinuationInstruction
+import com.komputation.cuda.layers.continuation.recurrent.CudaRecurrent
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeWeights
 import com.komputation.instructions.combination.addition
@@ -14,6 +17,7 @@ import com.komputation.instructions.continuation.activation.activation
 import com.komputation.instructions.continuation.projection.SharedWeighting
 import com.komputation.instructions.continuation.projection.projection
 import com.komputation.optimization.OptimizationInstruction
+import jcuda.jcublas.cublasHandle
 
 enum class ResultExtraction {
     AllSteps,
@@ -29,7 +33,7 @@ class Recurrent internal constructor(
     private val inputWeightingInitialization: InitializationStrategy,
     private val previousStateWeightingInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
-    private val optimization: OptimizationInstruction? = null) : CpuContinuationInstruction {
+    private val optimization: OptimizationInstruction? = null) : CpuContinuationInstruction, CudaContinuationInstruction {
 
     private var minimumNumberInputColumns = -1
     private var maximumNumberInputColumns = -1
@@ -119,6 +123,14 @@ class Recurrent internal constructor(
                 ResultExtraction.AllSteps -> AllSteps(this.hiddenDimension, this.minimumNumberInputColumns, this.maximumNumberInputColumns)
                 ResultExtraction.LastStep -> LastStep(this.hiddenDimension, this.direction == Direction.RightToLeft)
             })
+
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+        CudaRecurrent(
+            this.name,
+            this.maximumNumberInputColumns,
+            this.hiddenDimension,
+            this.inputProjection.buildForCuda(context, cublasHandle),
+            this.activation)
 
 }
 
