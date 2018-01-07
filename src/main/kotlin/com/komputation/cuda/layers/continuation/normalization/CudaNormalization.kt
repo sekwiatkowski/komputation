@@ -64,7 +64,7 @@ class CudaNormalization internal constructor(
         this.forwardKernel!!.destroy()
     }
 
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean) {
         val parameters = Pointer.to(
             this.pointerToBatchSize,
             this.pointerToNumberInputRows,

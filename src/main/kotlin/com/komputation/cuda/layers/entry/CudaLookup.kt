@@ -47,7 +47,6 @@ class CudaLookup internal constructor(
 
     private var forwardResult = FloatArray(0)
     override var deviceForwardLengths = Pointer()
-    override var largestNumberOutputColumnsInCurrentBatch = if(this.hasFixedLength) this.maximumOutputColumns else -1
 
     private var forwardKernel: Kernel? = null
     private var groupSumKernel: Kernel? = null
@@ -116,18 +115,13 @@ class CudaLookup internal constructor(
         if (data != null) {
             this.deviceIndices = memory.getData(batchId)
 
-            if (this.hasFixedLength) {
-                this.largestNumberOutputColumnsInCurrentBatch = this.maximumOutputColumns
-            }
-            else {
+            if (!this.hasFixedLength) {
                 this.deviceForwardLengths = memory.getDeviceLengths(batchId)
-                this.largestNumberOutputColumnsInCurrentBatch = memory.getMaximumLength(batchId)
             }
         }
         else {
             Arrays.fill(this.indices, 0, this.maximumParametersInBatch, -1)
             Arrays.fill(this.lengths, 0, this.maximumBatchSize, -0)
-            var maximumLength = -1
 
             val occurrences = hashMapOf<Int, ArrayList<Pair<Int, Int>>>()
 
@@ -140,7 +134,6 @@ class CudaLookup internal constructor(
 
                 copy(inputEntries, firstIndexWithinBatch, length, this.indices)
                 this.lengths[withinBatch] = length
-                maximumLength = Math.max(length, maximumLength)
 
                 for ((withinInstance, inputEntry) in inputEntries.withIndex()) {
                     if (!occurrences.containsKey(inputEntry)) {
@@ -163,9 +156,7 @@ class CudaLookup internal constructor(
                 setIntArray(this.lengths, this.maximumBatchSize, deviceForwardLengths)
                 this.deviceForwardLengths = deviceForwardLengths
 
-                this.largestNumberOutputColumnsInCurrentBatch = maximumLength
-
-                memory.setVariableLengthData(batchId, deviceIndices, deviceForwardLengths, maximumLength)
+                memory.setVariableLengthData(batchId, deviceIndices, deviceForwardLengths)
             }
 
             val duplicates = occurrences.filter { (_, indices) -> indices.size > 1 }

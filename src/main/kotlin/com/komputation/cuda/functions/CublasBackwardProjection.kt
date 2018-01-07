@@ -129,19 +129,3 @@ fun cublasBackwardProjectionWrtWeights(
             numberInputRows,
             deviceResult)
     }
-
-fun cublasBackwardProjectionWrtBias(
-    cublasHandle: cublasHandle,
-    deviceChain : Pointer,
-    numberChainRows : Int,
-    numberChainColumns : Int,
-    deviceOnes : Pointer,
-    deviceResult: Pointer) {
-    cublasMatrixVectorMultiplication(
-        cublasHandle,
-        deviceChain,
-        numberChainRows,
-        numberChainColumns,
-        deviceOnes,
-        deviceResult)
-}

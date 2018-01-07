@@ -19,18 +19,6 @@ abstract class BasePrimitiveCudaContinuation(
     final override val deviceBackwardResult = Pointer()
     protected val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
 
-    private val largestNumberInputColumnsInCurrentBatchArray = intArrayOf(-1)
-    protected val pointerToLargestNumberInputColumnsInCurrentBatch = Pointer.to(this.largestNumberInputColumnsInCurrentBatchArray)
-    override var largestNumberInputColumnsInCurrentBatch
-        get() = this.largestNumberInputColumnsInCurrentBatchArray[0]
-        set(value) { this.largestNumberInputColumnsInCurrentBatchArray[0] = value }
-
-    private val largestNumberOutputColumnsInCurrentBatchArray = intArrayOf(-1)
-    protected val pointerToLargestNumberOutputColumnsInCurrentBatch = Pointer.to(this.largestNumberOutputColumnsInCurrentBatchArray)
-    override var largestNumberOutputColumnsInCurrentBatch
-        get() = this.largestNumberOutputColumnsInCurrentBatchArray[0]
-        set(value) { this.largestNumberOutputColumnsInCurrentBatchArray[0] = value }
-
     private val batchSizeArray = intArrayOf(-1)
     protected var batchSize
         get() = this.batchSizeArray[0]
@@ -51,19 +39,18 @@ abstract class BasePrimitiveCudaContinuation(
         cudaFree(this.deviceBackwardResult)
     }
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean): Pointer {
         this.batchSize = batchSize
 
-        this.largestNumberInputColumnsInCurrentBatch = largestNumberInputColumnsInBatch
-        computeOutputLengths(deviceInputLengths, largestNumberInputColumnsInBatch)
-        computeForwardResult(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
+        computeOutputLengths(deviceInputLengths)
+        computeForwardResult(batchSize, deviceInput, deviceInputLengths, isTraining)
 
         return this.deviceForwardResult
     }
 
-    abstract fun computeOutputLengths(deviceInputLengths: Pointer, batchMaximumInputLength: Int)
+    abstract fun computeOutputLengths(deviceInputLengths: Pointer)
 
-    protected abstract fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean)
+    protected abstract fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean)
 
     override fun backward(batchSize: Int, chain: Pointer) : Pointer {
         computeBackwardResult(batchSize, chain)

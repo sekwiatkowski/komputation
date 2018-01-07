@@ -97,7 +97,7 @@ class CudaExpansion internal constructor(
 
     private var pointerToInputLengths = Pointer()
 
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean) {
         this.pointerToInputLengths = Pointer.to(deviceInputLengths)
 
         this.forwardKernel!!.launch(

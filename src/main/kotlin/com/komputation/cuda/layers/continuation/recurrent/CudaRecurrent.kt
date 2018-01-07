@@ -68,7 +68,7 @@ class CudaRecurrent(
     private val pointerToForwardIterations = Pointer.to(intArrayOf(this.forwardLaunchConfiguration.numberIterations))
     private val forwardSharedMemorySize = computeDeviceFloatArraySize(this.hiddenDimension).toInt()
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean): Pointer {
 
         /*
             Project the input:
@@ -78,7 +78,7 @@ class CudaRecurrent(
             w1
             w2
          */
-        val projectedInput = this.inputProjection.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
+        val projectedInput = this.inputProjection.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
 
         this.forwardKernel!!.launch(
             Pointer.to(

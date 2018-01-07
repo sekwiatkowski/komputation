@@ -85,7 +85,7 @@ class CudaDropout internal constructor(
         this.numberThreadsPerBlock = -1
     }
 
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean) {
         val pointerToInput = Pointer.to(deviceInput)
 
         if(isTraining) {

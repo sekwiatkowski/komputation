@@ -107,7 +107,7 @@ class CublasWeighting internal constructor(
 
     private var pointerToInputLengths = Pointer()
 
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean) {
         this.deviceInput = deviceInput
         this.pointerToInputLengths = Pointer.to(deviceInputLengths)
 
@@ -213,6 +213,7 @@ class CublasWeighting internal constructor(
                 this.numberWeightEntries)
         }
         else {
+
             cublasBackwardProjectionWrtWeights(
                 this.cublasHandle,
                 chain,

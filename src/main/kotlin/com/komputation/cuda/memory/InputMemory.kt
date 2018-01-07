@@ -14,7 +14,6 @@ class InputMemory {
     private val deviceData = hashMapOf<Int, Pointer>()
     private val deviceLengths = hashMapOf<Int, Pointer>()
     private val deviceCounts = hashMapOf<Int, Pointer>()
-    private val maximumLength = hashMapOf<Int, Int>()
 
     private val numberDuplicates = hashMapOf<Int, Int>()
     private val deviceDuplicateMemory = hashMapOf<Int, DuplicateMemory>()
@@ -23,10 +22,9 @@ class InputMemory {
         this.deviceData[id] = devicePointer
     }
 
-    fun setVariableLengthData(id : Int, devicePointer: Pointer, deviceLengths: Pointer, hostMaximumLength : Int) {
+    fun setVariableLengthData(id : Int, devicePointer: Pointer, deviceLengths: Pointer) {
         this.deviceData[id] = devicePointer
         this.deviceLengths[id] = deviceLengths
-        this.maximumLength[id] = hostMaximumLength
     }
 
     fun setWithDuplicates(id: Int, numberDuplicates : Int, deviceDuplicateMemory: DuplicateMemory) {
@@ -54,9 +52,6 @@ class InputMemory {
     fun getDeviceCounts(id : Int) =
         this.deviceCounts[id]!!
 
-    fun getMaximumLength(id : Int) =
-        this.maximumLength[id]!!
-
     fun getNumberDuplicates(id: Int) =
         this.numberDuplicates[id]!!
 
@@ -79,8 +74,6 @@ class InputMemory {
         this.deviceData.clear()
         this.deviceLengths.clear()
         this.deviceCounts.clear()
-
-        this.maximumLength.clear()
 
         this.deviceDuplicateMemory.clear()
         this.numberDuplicates.clear()

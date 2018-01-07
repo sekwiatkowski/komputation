@@ -15,10 +15,10 @@ class CublasProjection internal constructor(
     fun getDeviceBias() =
         this.bias?.getDeviceBias()
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
-        val weighted = this.weighting.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean): Pointer {
+        val weighted = this.weighting.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
 
-        this.bias?.forward(batchSize, weighted, this.weighting.deviceForwardLengths, this.weighting.largestNumberOutputColumnsInCurrentBatch, isTraining)
+        this.bias?.forward(batchSize, weighted, this.weighting.deviceForwardLengths, isTraining)
 
         return this.deviceForwardResult
     }

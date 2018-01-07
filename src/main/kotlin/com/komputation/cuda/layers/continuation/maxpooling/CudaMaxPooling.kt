@@ -53,7 +53,7 @@ class CudaMaxPooling internal constructor(
     private var pointerToInputLengths = Pointer()
 
     private var isTraining = false
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, isTraining: Boolean) {
         this.isTraining = isTraining
         this.pointerToInputLengths = Pointer.to(deviceInputLengths)
 

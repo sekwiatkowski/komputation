@@ -7,10 +7,10 @@ abstract class BaseCudaVariableNumberColumnsContinuation(
     numberInputRows : Int,
     numberOutputRows : Int,
     maximumInputColumns : Int,
-    private val computeNumberOutputColumns : (Int) -> Int) : BasePrimitiveCudaContinuation(name, numberInputRows, numberOutputRows, maximumInputColumns, computeNumberOutputColumns(maximumInputColumns)) {
+    computeNumberOutputColumns : (Int) -> Int) : BasePrimitiveCudaContinuation(name, numberInputRows, numberOutputRows, maximumInputColumns, computeNumberOutputColumns(maximumInputColumns)) {
 
-    override fun computeOutputLengths(deviceInputLengths: Pointer, batchMaximumInputLength: Int) {
-        this.largestNumberOutputColumnsInCurrentBatch = this.computeNumberOutputColumns(batchMaximumInputLength)
+    override fun computeOutputLengths(deviceInputLengths: Pointer) {
+
     }
 
 }

@@ -21,7 +21,7 @@ class CudaForwardPropagator(
 
         for ((index, continuation) in this.continuations.withIndex()) {
             val startContinuation = System.nanoTime()
-            continuation.forward(batchSize, currentResult.deviceForwardResult, currentResult.deviceForwardLengths, currentResult.largestNumberOutputColumnsInCurrentBatch, isTraining)
+            continuation.forward(batchSize, currentResult.deviceForwardResult, currentResult.deviceForwardLengths, isTraining)
             val stopContinuation = System.nanoTime()
             this.times[index+1] += stopContinuation - startContinuation
 

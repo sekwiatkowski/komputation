@@ -1,11 +1,11 @@
 package com.komputation.cuda.layers.continuation.activation
 
-import jcuda.Pointer
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeNumberOfThreadsForRows
 import com.komputation.cuda.layers.continuation.BaseCudaFixedNumberColumnsContinuation
 import com.komputation.cuda.layers.continuation.CudaActivation
 import com.komputation.instructions.Resourceful
+import jcuda.Pointer
 
 abstract class BaseCudaEntrywise internal constructor(
     name: String? = null,
@@ -48,7 +48,7 @@ abstract class BaseCudaEntrywise internal constructor(
         this.numberBlocksInXDimension = -1
     }
 
-    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, batchMaximumInputLength: Int, isTraining: Boolean) {
+    override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, isTraining: Boolean) {
         val forwardParameters = Pointer.to(
             this.pointerToBatchSize,
             this.pointerToNumberInputRows,

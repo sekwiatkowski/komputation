@@ -10,9 +10,8 @@ abstract class BaseCudaFixedNumberColumnsContinuation(
 
     override var deviceForwardLengths = Pointer()
 
-    override fun computeOutputLengths(deviceInputLengths : Pointer, batchMaximumInputLength: Int) {
+    override fun computeOutputLengths(deviceInputLengths : Pointer) {
         this.deviceForwardLengths = deviceInputLengths
-        this.largestNumberOutputColumnsInCurrentBatch = batchMaximumInputLength
     }
 
 }

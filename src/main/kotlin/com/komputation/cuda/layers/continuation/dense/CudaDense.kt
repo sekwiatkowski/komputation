@@ -17,10 +17,10 @@ class CudaDense internal constructor(
     fun getDeviceBias() =
         this.projection.getDeviceBias()
 
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
-        val projected = this.projection.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths : Pointer, isTraining: Boolean): Pointer {
+        val projected = this.projection.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
 
-        val activated = this.activation.forward(batchSize, projected, this.projection.deviceForwardLengths, this.projection.largestNumberOutputColumnsInCurrentBatch, isTraining)
+        val activated = this.activation.forward(batchSize, projected, this.projection.deviceForwardLengths, isTraining)
 
         return activated
     }

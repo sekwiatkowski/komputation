@@ -18,7 +18,6 @@ class CudaInput internal constructor(
 
     override var deviceForwardResult = Pointer()
     override var deviceForwardLengths = Pointer()
-    override var largestNumberOutputColumnsInCurrentBatch = -1
 
     private var data = FloatArray(0)
     private var lengths = IntArray(0)
@@ -49,8 +48,6 @@ class CudaInput internal constructor(
         if (data == null) {
             Arrays.fill(this.data, Float.NaN)
 
-            var maximumLength = -1
-
             for ((withinBatch, id) in batch.withIndex()) {
                 val input = inputs[id] as FloatMatrix
 
@@ -59,7 +56,6 @@ class CudaInput internal constructor(
 
                 copy(inputEntries, withinBatch * this.maximumOutputEntries, inputEntries.size, this.data)
                 this.lengths[withinBatch] = length
-                maximumLength = Math.max(length, maximumLength)
             }
 
             val deviceForwardResult = Pointer()
@@ -70,14 +66,11 @@ class CudaInput internal constructor(
             setIntArray(this.lengths, batchSize, deviceForwardLengths)
             this.deviceForwardLengths = deviceForwardLengths
 
-            this.largestNumberOutputColumnsInCurrentBatch = maximumLength
-
-            memory.setVariableLengthData(batchId, deviceForwardResult, deviceForwardLengths, maximumLength)
+            memory.setVariableLengthData(batchId, deviceForwardResult, deviceForwardLengths)
         }
         else {
             this.deviceForwardResult = data
             this.deviceForwardLengths = memory.getDeviceLengths(batchId)
-            this.largestNumberOutputColumnsInCurrentBatch = memory.getMaximumLength(batchId)
         }
 
         return this.deviceForwardResult

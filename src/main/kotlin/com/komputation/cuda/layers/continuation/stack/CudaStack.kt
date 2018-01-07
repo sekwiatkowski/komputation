@@ -111,14 +111,11 @@ class CudaStack(
     private val batchSize = IntArray(1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
 
-    override var largestNumberInputColumnsInCurrentBatch = -1
-    override var largestNumberOutputColumnsInCurrentBatch = -1
-
-    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, largestNumberInputColumnsInBatch: Int, isTraining: Boolean): Pointer {
+    override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean): Pointer {
         this.batchSize[0] = batchSize
 
         for ((index, layer) in (this.layers.withIndex())) {
-            val individualForwardResult = layer.forward(batchSize, deviceInput, deviceInputLengths, largestNumberInputColumnsInBatch, isTraining)
+            val individualForwardResult = layer.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
 
             val launchConfiguration = this.outputLaunchConfigurations[index]
 
@@ -144,8 +141,6 @@ class CudaStack(
         }
 
         this.deviceForwardLengths = this.firstLayer.deviceForwardLengths
-        this.largestNumberInputColumnsInCurrentBatch = this.firstLayer.largestNumberInputColumnsInCurrentBatch
-        this.largestNumberOutputColumnsInCurrentBatch = this.firstLayer.largestNumberOutputColumnsInCurrentBatch
 
         return this.deviceForwardResult
     }

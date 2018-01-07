@@ -13,12 +13,8 @@ abstract class BaseCudaHigherOrderContinuation(
         get() = this.lastLayer.deviceForwardResult
     override val deviceForwardLengths: Pointer
         get() = this.lastLayer.deviceForwardLengths
-    override val largestNumberOutputColumnsInCurrentBatch: Int
-        get() = this.lastLayer.largestNumberOutputColumnsInCurrentBatch
 
     override val deviceBackwardResult: Pointer
         get() = this.firstLayer.deviceBackwardResult
-    override val largestNumberInputColumnsInCurrentBatch: Int
-        get() = this.firstLayer.largestNumberInputColumnsInCurrentBatch
 
 }
