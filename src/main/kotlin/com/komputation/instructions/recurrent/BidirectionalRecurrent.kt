@@ -2,13 +2,13 @@ package com.komputation.instructions.recurrent
 
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.initialization.InitializationStrategy
-import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.RecurrentActivation
 import com.komputation.instructions.continuation.stack.stack
 import com.komputation.optimization.OptimizationInstruction
 
 fun bidirectionalRecurrent(
     hiddenDimension : Int,
-    activation: Activation,
+    activation: RecurrentActivation,
     resultExtraction: ResultExtraction,
     initialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
@@ -25,7 +25,7 @@ fun bidirectionalRecurrent(
 fun bidirectionalRecurrent(
     name : String,
     hiddenDimension : Int,
-    activation: Activation,
+    activation: RecurrentActivation,
     resultExtraction: ResultExtraction,
     initialization: InitializationStrategy,
     optimization : OptimizationInstruction? = null) =
@@ -42,7 +42,7 @@ fun bidirectionalRecurrent(
 
 fun bidirectionalRecurrent(
     hiddenDimension : Int,
-    activation: Activation,
+    activation: RecurrentActivation,
     resultExtraction: ResultExtraction,
     inputWeightingInitialization: InitializationStrategy,
     previousStateInitialization: InitializationStrategy,
@@ -62,7 +62,7 @@ fun bidirectionalRecurrent(
 fun bidirectionalRecurrent(
     name : String?,
     hiddenDimension : Int,
-    activation: Activation,
+    activation: RecurrentActivation,
     resultExtraction: ResultExtraction,
     inputWeightingInitialization: InitializationStrategy,
     previousStateInitialization: InitializationStrategy,

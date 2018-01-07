@@ -5,7 +5,7 @@ import com.komputation.cpu.network.network
 import com.komputation.demos.sequencelabeling.SequenceLabelingData
 import com.komputation.initialization.initializeColumnVector
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.RecurrentActivation
 import com.komputation.instructions.continuation.activation.softmax
 import com.komputation.instructions.entry.lookup
 import com.komputation.instructions.loss.crossEntropyLoss
@@ -38,7 +38,7 @@ fun main(args: Array<String>) {
             lookup(embeddings, numberSteps, numberSteps, embeddingDimension, optimization),
             recurrent(
                 numberCategories,
-                Activation.ReLU,
+                RecurrentActivation.ReLU,
                 ResultExtraction.AllSteps,
                 Direction.LeftToRight,
                 initialization,

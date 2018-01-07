@@ -3,7 +3,7 @@ package com.komputation.cpu.demos.runningtotal.bidirectional
 import com.komputation.cpu.network.network
 import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.RecurrentActivation
 import com.komputation.instructions.continuation.projection.weighting
 import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.squaredLoss
@@ -47,7 +47,7 @@ fun main(args: Array<String>) {
             input(1, steps),
             bidirectionalRecurrent(
                 1,
-                Activation.Identity,
+                RecurrentActivation.Identity,
                 ResultExtraction.AllSteps,
                 initialization,
                 optimization

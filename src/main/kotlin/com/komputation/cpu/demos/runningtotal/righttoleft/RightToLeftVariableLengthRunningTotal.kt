@@ -4,7 +4,7 @@ import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.network.network
 import com.komputation.demos.runningtotal.RunningTotalData
 import com.komputation.initialization.zeroInitialization
-import com.komputation.instructions.continuation.activation.Activation
+import com.komputation.instructions.continuation.activation.RecurrentActivation
 import com.komputation.instructions.entry.input
 import com.komputation.instructions.loss.squaredLoss
 import com.komputation.instructions.recurrent.ResultExtraction
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
             input(1, minimumLength, maximumLength),
             recurrent(
                 1,
-                Activation.Identity,
+                RecurrentActivation.Identity,
                 ResultExtraction.AllSteps,
                 Direction.RightToLeft,
                 initialization,

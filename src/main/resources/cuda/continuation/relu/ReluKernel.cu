@@ -1,9 +1,5 @@
 #include "symbols/NaN.cuh"
-
-__inline__ __device__ float relu (float x)
-{
-    return fmaxf(x, 0.0);
-}
+#include "entrywise/Relu.cuh"
 
 __global__ void reluKernel (
     int batchSize,

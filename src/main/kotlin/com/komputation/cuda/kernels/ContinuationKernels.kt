@@ -52,7 +52,7 @@ object ContinuationKernels {
     fun sigmoid() = KernelInstruction(
         "sigmoidKernel",
         "$subDirectory/sigmoid/SigmoidKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.sigmoid))
 
     fun backwardSigmoid() = KernelInstruction(
         "backwardSigmoidKernel",
@@ -62,7 +62,7 @@ object ContinuationKernels {
     fun relu() = KernelInstruction(
         "reluKernel",
         "$subDirectory/relu/ReluKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.relu))
 
     fun backwardRelu() = KernelInstruction(
         "backwardReluKernel",
@@ -72,7 +72,7 @@ object ContinuationKernels {
     fun tanh() = KernelInstruction(
         "tanhKernel",
         "$subDirectory/tanh/TanhKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.tanh))
 
     fun backwardTanh() = KernelInstruction(
         "backwardTanhKernel",
@@ -96,5 +96,10 @@ object ContinuationKernels {
         "backwardExpansionKernel",
         "$subDirectory/expansion/BackwardExpansionKernel.cu",
         listOf(KernelHeaders.sumReduction))
+
+    fun recurrent() = KernelInstruction(
+        "recurrentKernel",
+        "$subDirectory/recurrent/RecurrentKernel.cu",
+        listOf(KernelHeaders.recurrentActivation, KernelHeaders.resultExtraction, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh))
 
 }

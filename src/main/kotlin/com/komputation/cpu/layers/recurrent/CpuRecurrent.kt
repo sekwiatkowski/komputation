@@ -77,7 +77,7 @@ class CpuRecurrent(
     // left to right:
     // 0 | 1 2 3 4
     //     ^ position of first previous state weighting
-    private val positionOfFristPreviousStateWeighting = when (this.direction) {
+    private val positionOfFirstPreviousStateWeighting = when (this.direction) {
         Direction.LeftToRight -> 1
         Direction.RightToLeft -> 0
     }
@@ -96,8 +96,8 @@ class CpuRecurrent(
             val remainingInputStep = remainingInputSteps[indexRemainingStep]
             getColumn(projectedInput, remainingInputStep, this.hiddenDimension, this.stepWeightedInput)
 
-            val weightedPreviousHiddenState = this.previousStateWeighting.forwardStep(withinBatch, remainingInputStep-this.positionOfFristPreviousStateWeighting, 1, previousHiddenState, isTraining)
-            val preActivation = this.additions.forwardStep(remainingInputStep- positionOfFristPreviousStateWeighting, this.stepWeightedInput, weightedPreviousHiddenState, 1)
+            val weightedPreviousHiddenState = this.previousStateWeighting.forwardStep(withinBatch, remainingInputStep-this.positionOfFirstPreviousStateWeighting, 1, previousHiddenState, isTraining)
+            val preActivation = this.additions.forwardStep(remainingInputStep-this.positionOfFirstPreviousStateWeighting, this.stepWeightedInput, weightedPreviousHiddenState, 1)
 
             previousHiddenState = this.activation.forwardStep(withinBatch, remainingInputStep, 1, preActivation, isTraining)
         }
@@ -145,7 +145,7 @@ class CpuRecurrent(
             val stepBackwardPreActivation = this.activation.backwardStep(withinBatch, initialInputStep, stepChain)
 
             // d(Wx_t + Uh_(t-1) + b) / dUh_(t-1)
-            val backwardPreviousHiddenState = this.previousStateWeighting.backwardStep(withinBatch, initialInputStep-this.positionOfFristPreviousStateWeighting, stepBackwardPreActivation)
+            val backwardPreviousHiddenState = this.previousStateWeighting.backwardStep(withinBatch, initialInputStep-this.positionOfFirstPreviousStateWeighting, stepBackwardPreActivation)
             previousBackwardPreviousHiddenState = backwardPreviousHiddenState
 
             setColumn(stepBackwardPreActivation, initialInputStep, this.hiddenDimension, backwardPreActivation)

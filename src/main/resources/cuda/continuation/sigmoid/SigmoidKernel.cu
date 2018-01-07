@@ -1,8 +1,5 @@
 #include "symbols/NaN.cuh"
-
-__inline__ __device__ float sigmoid (float x) {
-    return 1.0 / (1.0 + expf (-x));
-}
+#include "entrywise/Sigmoid.cuh"
 
 __global__ void sigmoidKernel (
     int batchSize,
