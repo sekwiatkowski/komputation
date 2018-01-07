@@ -1,19 +1,11 @@
 package com.komputation.cuda.layers.continuation.recurrent
 
-import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cuda.layers.continuation.BaseCudaHigherOrderContinuation
 import com.komputation.cuda.layers.continuation.projection.CublasProjection
-import com.komputation.cuda.network.cudaNetwork
-import com.komputation.initialization.uniformInitialization
 import com.komputation.instructions.Resourceful
 import com.komputation.instructions.continuation.activation.Activation
-import com.komputation.instructions.entry.input
-import com.komputation.instructions.recurrent.ResultExtraction
-import com.komputation.instructions.recurrent.recurrent
-import com.komputation.matrix.floatMatrix
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import java.util.*
 
 class CudaRecurrent(
     name : String?,
@@ -58,7 +50,7 @@ class CudaRecurrent(
 
 }
 
-fun main(args: Array<String>) {
+/* fun main(args: Array<String>) {
 
     val random = Random(1)
 
@@ -100,4 +92,4 @@ fun main(args: Array<String>) {
 
     network.free()
 
-}
+} */

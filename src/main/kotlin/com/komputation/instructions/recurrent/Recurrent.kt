@@ -5,9 +5,6 @@ import com.komputation.cpu.layers.recurrent.CpuRecurrent
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cpu.layers.recurrent.extraction.AllSteps
 import com.komputation.cpu.layers.recurrent.extraction.LastStep
-import com.komputation.cuda.CudaContext
-import com.komputation.cuda.instructions.CudaContinuationInstruction
-import com.komputation.cuda.layers.continuation.recurrent.CudaRecurrent
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeWeights
 import com.komputation.instructions.combination.addition
@@ -17,7 +14,6 @@ import com.komputation.instructions.continuation.activation.activation
 import com.komputation.instructions.continuation.projection.SharedWeighting
 import com.komputation.instructions.continuation.projection.projection
 import com.komputation.optimization.OptimizationInstruction
-import jcuda.jcublas.cublasHandle
 
 enum class ResultExtraction {
     AllSteps,
@@ -33,7 +29,8 @@ class Recurrent internal constructor(
     private val inputWeightingInitialization: InitializationStrategy,
     private val previousStateWeightingInitialization: InitializationStrategy,
     private val biasInitialization: InitializationStrategy?,
-    private val optimization: OptimizationInstruction? = null) : CpuContinuationInstruction, CudaContinuationInstruction {
+    private val optimization: OptimizationInstruction? = null,
+    private val optimizeInitialState: Boolean = false) : CpuContinuationInstruction /*, CudaContinuationInstruction */ {
 
     private var minimumNumberInputColumns = -1
     private var maximumNumberInputColumns = -1
@@ -74,15 +71,13 @@ class Recurrent internal constructor(
         this.biasInitialization,
         this.optimization)
 
-    private val initialState = FloatArray(this.hiddenDimension)
-
     private var previousStateWeighting : ParameterizedSeries? = null
     private fun createPreviousStateWeighting(steps : Int) = parameterizedSeries(
         concatenateNames(this.name, "previous-hidden-state-weighting"),
         { initializeWeights(this.previousStateWeightingInitialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension) },
         this.hiddenDimension,
         this.hiddenDimension,
-        Array(steps) { index ->
+        Array(steps-1) { index ->
             SharedWeighting(
                 concatenateNames(this.name, "previous-hidden-state-weighting-$index"),
                 this.hiddenDimension,
@@ -94,7 +89,7 @@ class Recurrent internal constructor(
     private var additions : CombinationSeries? = null
     private fun createAdditions(steps : Int) = combinationSeries(
         concatenateNames(this.name, "addition"),
-        Array(steps) { index ->
+        Array(steps-1) { index ->
             addition(concatenateNames(this.name, "addition-$index"))
         }
     )
@@ -114,7 +109,6 @@ class Recurrent internal constructor(
             this.maximumNumberInputColumns,
             this.hiddenDimension,
             this.inputProjection.buildForCpu(),
-            this.initialState,
             this.previousStateWeighting!!.buildForCpu(),
             this.additions!!.buildForCpu(),
             this.activations!!.buildForCpu(),
@@ -124,13 +118,13 @@ class Recurrent internal constructor(
                 ResultExtraction.LastStep -> LastStep(this.hiddenDimension, this.direction == Direction.RightToLeft)
             })
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
+    /* override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
         CudaRecurrent(
             this.name,
             this.maximumNumberInputColumns,
             this.hiddenDimension,
             this.inputProjection.buildForCuda(context, cublasHandle),
-            this.activation)
+            this.activation) */
 
 }
 
