@@ -2,7 +2,7 @@
 
 # Komputation
 
-Komputation is a neural network framework for the Java Virtual Machine written in the Kotlin programming language.
+Komputation is a neural network framework for the Java Virtual Machine written in Kotlin and CUDA C.
 
 ## Maven
 
@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.12.1</version>
+    <version>0.12.2</version>
 </dependency>
 ```
 
