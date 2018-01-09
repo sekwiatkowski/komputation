@@ -1,13 +1,13 @@
 package com.komputation.cuda.loss
 
-import jcuda.Pointer
-import jcuda.runtime.JCuda.cudaFree
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.computeDeviceFloatArraySize
 import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import com.komputation.cuda.kernels.launch.computeEntrywiseLaunchConfiguration
+import jcuda.Pointer
+import jcuda.runtime.JCuda.cudaFree
 
 class CudaSquaredLoss internal constructor(
     private val targetsPerStep : Int,
@@ -27,13 +27,12 @@ class CudaSquaredLoss internal constructor(
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
     private var maximumBatchSize = -1
-    private var maximumTargets = -1
 
     private val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
 
-    private val deviceBackwardResults = Pointer()
-    private val pointerToBackwardResults = Pointer.to(this.deviceBackwardResults)
+    private val deviceBackwardResult = Pointer()
+    private val pointerToBackwardResults = Pointer.to(this.deviceBackwardResult)
 
     private var forwardKernel : Kernel? = null
     private var forwardNumberBlocks = -1
@@ -50,10 +49,9 @@ class CudaSquaredLoss internal constructor(
 
     override fun acquire(maximumBatchSize: Int) {
         this.maximumBatchSize = maximumBatchSize
-        this.maximumTargets = this.maximumBatchSize * this.targetsPerInstance
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize)
-        allocateDeviceFloatMemory(this.deviceBackwardResults, this.maximumTargets)
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.maximumBatchSize * this.numberSteps * this.targetsPerInstance)
 
         val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.targetsPerStep, this.numberSteps, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocks = forwardLaunchConfiguration.numberBlocks
@@ -73,7 +71,7 @@ class CudaSquaredLoss internal constructor(
     }
 
     override fun release() {
-        cudaFree(this.deviceBackwardResults)
+        cudaFree(this.deviceBackwardResult)
 
         this.backwardKernel!!.destroy()
 
@@ -106,7 +104,7 @@ class CudaSquaredLoss internal constructor(
     }
 
     override fun accessAccumulation(): Float {
-        val sums = getFloatArray(this.deviceForwardResult, this.maximumBatchSize)
+        val sums = getFloatArray(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
 
         var loss = 0.0f
         for(sum in sums) {
@@ -134,7 +132,7 @@ class CudaSquaredLoss internal constructor(
             this.backwardNumberThreadsPerBlock,
             0)
 
-        return this.deviceBackwardResults
+        return this.deviceBackwardResult
     }
 
 }

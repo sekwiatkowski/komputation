@@ -53,7 +53,7 @@ class CudaCrossEntropyLoss internal constructor(
     override fun acquire(maximumBatchSize : Int) {
         this.maximumBatchSize = maximumBatchSize
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, maximumBatchSize * this.numberSteps)
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
 
         val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.numberCategories, this.numberSteps, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocksInYDimension = forwardLaunchConfiguration.numberBlocks
@@ -63,7 +63,7 @@ class CudaCrossEntropyLoss internal constructor(
         val numberForwardWarps = (this.numberCategories / forwardLaunchConfiguration.numberIterations + this.warpSize - 1) / this.warpSize
         this.forwardSharedMemoryBytes = computeDeviceFloatArraySize(numberForwardWarps).toInt()
 
-        allocateDeviceFloatMemory(this.deviceBackwardResult, maximumBatchSize * this.numberEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.maximumBatchSize * this.numberEntries)
 
         val backwardLaunchConfiguration = computeEntrywiseLaunchConfiguration(this.numberEntries, this.numberMultiprocessors, this.numberResidentWarps, this.warpSize, this.maximumNumberThreadsPerBlock)
         this.backwardNumberBlocksInYDimension = backwardLaunchConfiguration.numberBlocks

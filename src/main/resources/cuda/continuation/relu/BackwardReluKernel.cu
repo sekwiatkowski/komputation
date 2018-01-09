@@ -1,13 +1,5 @@
 #include "symbols/NaN.cuh"
-
-__inline__ __device__ float backwardRelu (float forward, float chain) {
-    if(forward > 0.0) {
-        return chain;
-    }
-    else {
-        return 0.0;
-    }
-}
+#include "entrywise/Relu.cuh"
 
 __global__ void backwardReluKernel (
     int batchSize,

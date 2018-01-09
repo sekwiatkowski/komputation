@@ -57,7 +57,7 @@ object ContinuationKernels {
     fun backwardSigmoid() = KernelInstruction(
         "backwardSigmoidKernel",
         "$subDirectory/sigmoid/BackwardSigmoidKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.sigmoid))
 
     fun relu() = KernelInstruction(
         "reluKernel",
@@ -67,7 +67,7 @@ object ContinuationKernels {
     fun backwardRelu() = KernelInstruction(
         "backwardReluKernel",
         "$subDirectory/relu/BackwardReluKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.relu))
 
     fun tanh() = KernelInstruction(
         "tanhKernel",
@@ -77,7 +77,7 @@ object ContinuationKernels {
     fun backwardTanh() = KernelInstruction(
         "backwardTanhKernel",
         "$subDirectory/tanh/BackwardTanhKernel.cu",
-        listOf(KernelHeaders.nan))
+        listOf(KernelHeaders.nan, KernelHeaders.tanh))
 
     fun maxPooling() = KernelInstruction(
         "maxPoolingKernel",
@@ -97,9 +97,24 @@ object ContinuationKernels {
         "$subDirectory/expansion/BackwardExpansionKernel.cu",
         listOf(KernelHeaders.sumReduction))
 
-    fun recurrent() = KernelInstruction(
-        "recurrentKernel",
-        "$subDirectory/recurrent/RecurrentKernel.cu",
-        listOf(KernelHeaders.recurrentActivation, KernelHeaders.resultExtraction, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh))
+    fun recurrentEmitAtEachStep() = KernelInstruction(
+        "recurrentEmitAtEachStepKernel",
+        "$subDirectory/recurrent/RecurrentEmitAtEachStepKernel.cu",
+        listOf(KernelHeaders.recurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively, KernelHeaders.nan))
+
+    fun recurrentEmitAtLastStep() = KernelInstruction(
+        "recurrentEmitAtLastStepKernel",
+        "$subDirectory/recurrent/RecurrentEmitAtLastStepKernel.cu",
+        listOf(KernelHeaders.recurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively, KernelHeaders.nan))
+
+    fun backwardRecurrentEmitAtEachStep() = KernelInstruction(
+        "backwardRecurrentEmitAtEachStepKernel",
+        "$subDirectory/recurrent/BackwardRecurrentEmitAtEachStepKernel.cu",
+        listOf(KernelHeaders.backwardRecurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively))
+
+    fun backwardRecurrentEmitAtLastStep() = KernelInstruction(
+        "backwardRecurrentEmitAtLastStepKernel",
+        "$subDirectory/recurrent/BackwardRecurrentEmitAtLastStepKernel.cu",
+        listOf(KernelHeaders.backwardRecurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively))
 
 }

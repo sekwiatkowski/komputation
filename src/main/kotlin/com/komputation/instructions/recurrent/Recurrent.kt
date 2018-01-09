@@ -7,6 +7,7 @@ import com.komputation.cpu.layers.recurrent.extraction.AllSteps
 import com.komputation.cpu.layers.recurrent.extraction.LastStep
 import com.komputation.cuda.CudaContext
 import com.komputation.cuda.instructions.CudaContinuationInstruction
+import com.komputation.cuda.kernels.ArrayKernels
 import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.recurrent.CudaRecurrent
 import com.komputation.initialization.InitializationStrategy
@@ -20,9 +21,9 @@ import com.komputation.instructions.continuation.projection.projection
 import com.komputation.optimization.OptimizationInstruction
 import jcuda.jcublas.cublasHandle
 
-enum class ResultExtraction(val id : Int) {
-    LastStep(0),
-    AllSteps(1)
+enum class ResultExtraction {
+    LastStep,
+    AllSteps
 }
 
 class Recurrent internal constructor(
@@ -76,9 +77,10 @@ class Recurrent internal constructor(
         this.optimization)
 
     private var previousStateWeighting : ParameterizedSeries? = null
+    private val previousStateWeights = initializeWeights(this.previousStateWeightingInitialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension)
     private fun createPreviousStateWeighting(steps : Int) = parameterizedSeries(
         concatenateNames(this.name, "previous-hidden-state-weighting"),
-        { initializeWeights(this.previousStateWeightingInitialization, this.hiddenDimension, this.hiddenDimension, this.hiddenDimension) },
+        this.previousStateWeights,
         this.hiddenDimension,
         this.hiddenDimension,
         Array(steps-1) { index ->
@@ -122,16 +124,30 @@ class Recurrent internal constructor(
                 ResultExtraction.LastStep -> LastStep(this.hiddenDimension, this.direction == Direction.RightToLeft)
             })
 
-    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle) =
-        CudaRecurrent(
+    override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaRecurrent {
+
+        val createForwardKernel = when (this.resultExtraction) {
+            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.recurrentEmitAtEachStep()) } }
+            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.recurrentEmitAtLastStep()) } }
+        }
+
+        val createBackwardKernel = when (this.resultExtraction) {
+            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.backwardRecurrentEmitAtEachStep()) } }
+            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.backwardRecurrentEmitAtLastStep()) } }
+        }
+
+        return CudaRecurrent(
             this.name,
-            this.maximumNumberInputColumns,
             this.hiddenDimension,
-            this.resultExtraction,
             this.inputProjection.buildForCuda(context, cublasHandle),
+            this.previousStateWeights,
+            this.optimization?.buildForCuda(context)?.invoke(1, this.hiddenDimension, this.hiddenDimension),
             this.activation,
-            { context.createKernel(ContinuationKernels.recurrent()) },
+            createForwardKernel,
+            createBackwardKernel,
+            { context.createKernel(ArrayKernels.sum()) },
             context.maximumNumberOfThreadsPerBlock)
+    }
 
 }
 

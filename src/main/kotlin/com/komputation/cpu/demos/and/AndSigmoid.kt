@@ -23,10 +23,10 @@ fun main(args: Array<String>) {
     val optimization = stochasticGradientDescent(0.1f)
 
     network(
-            batchSize,
-            input(inputDimension),
-            dense(outputDimension, Activation.Sigmoid, initialization, optimization)
-        )
+        batchSize,
+        input(inputDimension),
+        dense(outputDimension, Activation.Sigmoid, initialization, optimization)
+    )
         .training(
             BinaryAndData.inputs,
             BinaryAndData.targets,

@@ -19,7 +19,7 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
     int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
     if(indexInstance < batchSize) {
-        float thisValue = 0.0f;
+        float thisValue = 0.0;
 
         if(startIndexWithinColumn < numberRows) {
             thisValue += powf(predictions[startIndexWithinBatch] - targets[startIndexWithinBatch], 2.0);

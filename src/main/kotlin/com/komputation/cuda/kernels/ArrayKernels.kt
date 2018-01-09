@@ -4,22 +4,6 @@ object ArrayKernels {
 
     private val subDirectory = "arrays"
 
-    fun fillOneIntegerArray() = KernelInstruction(
-        "fillOneIntegerArrayKernel",
-        "$subDirectory/fill/FillOneIntegerArrayKernel.cu")
-
-    fun fillTwoIntegerArrays() = KernelInstruction(
-        "fillTwoIntegerArraysKernel",
-        "$subDirectory/fill/FillTwoIntegerArraysKernel.cu")
-
-    fun fillOneFloatArray() = KernelInstruction(
-        "fillOneFloatArrayKernel",
-        "$subDirectory/fill/FillOneFloatArrayKernel.cu")
-
-    fun fillTwoFloatArrays() = KernelInstruction(
-        "fillTwoFloatArraysKernel",
-        "$subDirectory/fill/FillTwoFloatArraysKernel.cu")
-
     fun copyBlock() = KernelInstruction(
         "copyBlockKernel",
         "$subDirectory/copy/CopyBlockKernel.cu",
@@ -36,6 +20,10 @@ object ArrayKernels {
 
     fun groupSum() = KernelInstruction(
         "groupSumKernel",
-        "$subDirectory/groupsum/GroupSumKernel.cu")
+        "$subDirectory/sum/GroupSumKernel.cu")
+
+    fun sum() = KernelInstruction(
+        "sumKernel",
+        "$subDirectory/sum/SumKernel.cu")
 
 }

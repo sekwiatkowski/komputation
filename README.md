@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.12.2</version>
+    <version>0.12.3</version>
 </dependency>
 ```
 
@@ -104,6 +104,9 @@ Komputation is available through Maven Central:
   - [Feed-forward network](./src/main/kotlin/com/komputation/cuda/demos/embeddings/Embeddings.kt)
   - [CNN with one filter width](./src/main/kotlin/com/komputation/cuda/demos/embeddings/EmbeddingsWithConvolution.kt)
   - [CNN with two filter widths](./src/main/kotlin/com/komputation/cuda/demos/embeddings/EmbeddingsWithTwoFilterWidths.kt)
+
+- Increment:
+  - [One layer](./src/main/kotlin/com/komputation/cuda/demos/increment/Increment.kt)
 
 - MNIST:
   - [Minimal](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistMinimal.kt)

@@ -35,3 +35,7 @@ fun setFloatArray(data: FloatArray, size: Int, pointer : Pointer): Int {
 
     return copyFloatArrayFromHostToDevice(data, pointer, size)
 }
+
+fun printFloatArray(devicePointer: Pointer, size: Int) {
+    println(getFloatArray(devicePointer, size).joinToString(" "))
+}

@@ -26,7 +26,6 @@ class CudaLogisticLoss internal constructor(
     private val pointerToDeviceForwardResult = Pointer.to(this.deviceForwardResult)
 
     private var maximumBatchSize = -1
-    private var maximumTargets = -1
 
     private val batchSize = intArrayOf(-1)
     private val pointerToBatchSize = Pointer.to(this.batchSize)
@@ -49,10 +48,9 @@ class CudaLogisticLoss internal constructor(
 
     override fun acquire(maximumBatchSize : Int) {
         this.maximumBatchSize = maximumBatchSize
-        this.maximumTargets = this.maximumBatchSize * this.numberSteps
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize)
-        allocateDeviceFloatMemory(this.deviceBackwardResult, this.maximumTargets)
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.maximumBatchSize * this.numberSteps)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.maximumBatchSize * this.numberSteps)
 
         val forwardLaunchConfiguration = computeRowwiseLaunchConfiguration(1, this.numberSteps, this.warpSize, this.maximumNumberThreadsPerBlock)
         this.forwardNumberBlocksInYDimension = forwardLaunchConfiguration.numberBlocks

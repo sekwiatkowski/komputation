@@ -16,6 +16,7 @@ abstract class BaseCudaContinuation(
     protected val pointerToMaximumOutputEntries = Pointer.to(intArrayOf(this.maximumOutputEntries))
 
     protected val pointerToNumberInputRows = Pointer.to(intArrayOf(this.numberInputRows))
+    protected val pointerToMaximumInputColumns = Pointer.to(intArrayOf(this.maximumInputColumns))
 
     final override val maximumInputEntries = this.numberInputRows * this.maximumInputColumns
     protected val pointerToMaximumInputEntries = Pointer.to(intArrayOf(this.maximumInputEntries))

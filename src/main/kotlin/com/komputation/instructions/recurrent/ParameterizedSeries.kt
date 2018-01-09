@@ -3,13 +3,13 @@ package com.komputation.instructions.recurrent
 import com.komputation.cpu.instructions.CpuParameterizedSeriesInstruction
 import com.komputation.cpu.layers.recurrent.series.CpuParameterizedSeries
 import com.komputation.cpu.optimization.DenseAccumulator
-import com.komputation.instructions.continuation.BaseHigherOrderInstruction
 import com.komputation.instructions.ShareableContinuationInstruction
+import com.komputation.instructions.continuation.BaseHigherOrderInstruction
 import com.komputation.optimization.OptimizationInstruction
 
 class ParameterizedSeries internal constructor(
     private val name : String?,
-    private val createSharedParameter: () -> FloatArray,
+    private val sharedParameter: FloatArray,
     private val numberParameterRows : Int,
     private val numberParameterColumns : Int,
     private val steps : Array<ShareableContinuationInstruction>,
@@ -18,15 +18,13 @@ class ParameterizedSeries internal constructor(
     override fun getLayers() = steps
 
     override fun buildForCpu(): CpuParameterizedSeries {
-        val sharedParameter = this.createSharedParameter()
-
-        val seriesAccumulator = DenseAccumulator(sharedParameter.size)
-        val batchAccumulator = DenseAccumulator(sharedParameter.size)
+        val seriesAccumulator = DenseAccumulator(this.sharedParameter.size)
+        val batchAccumulator = DenseAccumulator(this.sharedParameter.size)
 
         val series = CpuParameterizedSeries(
             this.name,
-            Array(this.steps.size) { index -> this.steps[index].buildForCpu(sharedParameter, seriesAccumulator) },
-            sharedParameter,
+            Array(this.steps.size) { index -> this.steps[index].buildForCpu(this.sharedParameter, seriesAccumulator) },
+            this.sharedParameter,
             seriesAccumulator,
             batchAccumulator,
             this.optimization?.buildForCpu()?.invoke(this.numberParameterRows, this.numberParameterColumns))
@@ -37,7 +35,7 @@ class ParameterizedSeries internal constructor(
 
 fun parameterizedSeries(
     name : String?,
-    createSharedParameter: () -> FloatArray,
+    sharedParameter: FloatArray,
     numberParameterRows : Int,
     numberParameterColumns : Int,
     steps : Array<ShareableContinuationInstruction>,
@@ -45,7 +43,7 @@ fun parameterizedSeries(
 
     ParameterizedSeries(
         name,
-        createSharedParameter,
+        sharedParameter,
         numberParameterRows,
         numberParameterColumns,
         steps,

@@ -151,7 +151,7 @@ class CpuRecurrent(
             setColumn(stepBackwardPreActivation, initialInputStep, this.hiddenDimension, backwardPreActivation)
         }
 
-        // Last steps
+        // Last step
         val stepChain = this.resultExtraction.backwardStep(lastInputStep, chain, previousBackwardPreviousHiddenState)
         val stepBackwardPreActivation = this.activation.backwardStep(withinBatch, lastInputStep, stepChain)
         setColumn(stepBackwardPreActivation, lastInputStep, this.hiddenDimension, backwardPreActivation)

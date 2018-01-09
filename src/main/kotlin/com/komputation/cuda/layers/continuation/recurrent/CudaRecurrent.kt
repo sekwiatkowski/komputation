@@ -1,74 +1,111 @@
 package com.komputation.cuda.layers.continuation.recurrent
 
-import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cuda.allocateDeviceFloatMemory
 import com.komputation.cuda.computeDeviceFloatArraySize
+import com.komputation.cuda.getFloatArray
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import com.komputation.cuda.layers.continuation.BaseCudaHigherOrderContinuation
 import com.komputation.cuda.layers.continuation.projection.CublasProjection
-import com.komputation.cuda.network.cudaNetwork
-import com.komputation.initialization.uniformInitialization
-import com.komputation.instructions.Resourceful
+import com.komputation.cuda.optimization.BaseCudaUpdateRule
+import com.komputation.cuda.setFloatArray
 import com.komputation.instructions.continuation.activation.RecurrentActivation
-import com.komputation.instructions.entry.input
-import com.komputation.instructions.recurrent.ResultExtraction
-import com.komputation.instructions.recurrent.recurrent
-import com.komputation.matrix.floatMatrix
+import com.komputation.optimization.Optimizable
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
-import java.util.*
 
 class CudaRecurrent(
     name : String?,
-    private val maximumLength : Int,
     private val hiddenDimension : Int,
-    private val resultExtraction: ResultExtraction,
     private val inputProjection : CublasProjection,
+    private var previousStateWeights : FloatArray,
+    private val previousStateUpdateRule: BaseCudaUpdateRule?,
     private val activation : RecurrentActivation,
     private val createForwardKernel: () -> Kernel,
-    private val maximumNumberThreadsPerBlock : Int) : BaseCudaHigherOrderContinuation(name, inputProjection, inputProjection), Resourceful {
+    private val createBackwardKernel: () -> Kernel,
+    private val createSumKernel: () -> Kernel,
+    private val maximumNumberThreadsPerBlock : Int) : BaseCudaHigherOrderContinuation(name, inputProjection, inputProjection), Optimizable {
 
     override val deviceForwardResult = Pointer()
     private val pointerToForwardResult = Pointer.to(this.deviceForwardResult)
-    override val deviceBackwardResult: Pointer
-        get() = this.inputProjection.deviceBackwardResult
+    override val deviceBackwardResult = Pointer()
+    private val pointerToBackwardResult = Pointer.to(this.deviceBackwardResult)
 
     private var forwardKernel : Kernel? = null
+    private var backwardKernel : Kernel? = null
+    private var sumKernel : Kernel? = null
+
+    private val devicePreviousStateWeights = Pointer()
+
+    private val deviceBackwardWeightedPreviousStateWrtWeightsAccumulation = Pointer()
+    private val pointerToBackwardWeightedPreviousStateWrtWeightsAccumulation = Pointer.to(this.deviceBackwardWeightedPreviousStateWrtWeightsAccumulation)
+
+    private val deviceBackwardWeightedPreviousStateWrtWeights = Pointer()
+    private val pointerToBackwardWeightedPreviousStateWrtWeights = Pointer.to(this.deviceBackwardWeightedPreviousStateWrtWeights)
+
+    private val devicePreActivation = Pointer()
+    private val pointerToPreActivation = Pointer.to(this.devicePreActivation)
+
+    private val numberPreviousStateWeightEntries = this.previousStateWeights.size
 
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
 
-        val resultSize = this.maximumBatchSize * when (resultExtraction) {
-            ResultExtraction.LastStep -> this.hiddenDimension
-            ResultExtraction.AllSteps -> this.maximumLength * this.hiddenDimension
-        }
+        allocateDeviceFloatMemory(this.deviceForwardResult, this.forwardResultSize)
+        allocateDeviceFloatMemory(this.devicePreActivation, this.forwardResultSize)
+        allocateDeviceFloatMemory(this.deviceBackwardResult, this.backwardResultSize)
+        allocateDeviceFloatMemory(this.deviceBackwardWeightedPreviousStateWrtWeightsAccumulation, maximumBatchSize * this.numberPreviousStateWeightEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardWeightedPreviousStateWrtWeights, this.numberPreviousStateWeightEntries)
 
-        allocateDeviceFloatMemory(this.deviceForwardResult, computeDeviceFloatArraySize(resultSize).toInt())
+        setFloatArray(this.previousStateWeights, this.numberPreviousStateWeightEntries, devicePreviousStateWeights)
 
         this.forwardKernel = this.createForwardKernel()
+        this.backwardKernel = this.createBackwardKernel()
+        this.sumKernel = this.createSumKernel()
     }
 
     override fun release() {
         super.release()
 
         cudaFree(this.deviceForwardResult)
+        cudaFree(this.deviceBackwardResult)
+        cudaFree(this.devicePreActivation)
+        cudaFree(this.deviceBackwardWeightedPreviousStateWrtWeightsAccumulation)
+        cudaFree(this.deviceBackwardWeightedPreviousStateWrtWeights)
+
+        this.previousStateWeights = getFloatArray(this.devicePreviousStateWeights, this.numberPreviousStateWeightEntries)
 
         this.forwardKernel!!.destroy()
+        this.backwardKernel!!.destroy()
+        this.sumKernel!!.destroy()
     }
 
     private val pointerToActivationFunction = Pointer.to(intArrayOf(this.activation.id))
 
     private val pointerToHiddenDimension = Pointer.to(intArrayOf(this.hiddenDimension))
 
-    private val pointerToResultExtraction = Pointer.to(intArrayOf(this.resultExtraction.id))
+    private val squaredHiddenDimensions = this.hiddenDimension * this.hiddenDimension
+    private val pointerToSquaredHiddenDimension = Pointer.to(intArrayOf(this.squaredHiddenDimensions))
 
-    private val forwardLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.hiddenDimension, 1, this.maximumNumberThreadsPerBlock)
-    private val forwardThreads = forwardLaunchConfiguration.numberThreadsPerBlock
-    private val pointerToForwardIterations = Pointer.to(intArrayOf(this.forwardLaunchConfiguration.numberIterations))
-    private val forwardSharedMemorySize = computeDeviceFloatArraySize(this.hiddenDimension).toInt()
+    private val propagationLaunchConfiguration = computeColumnwiseLaunchConfiguration(this.hiddenDimension, 1, this.maximumNumberThreadsPerBlock)
+    private val propagationNumberThreads = this.propagationLaunchConfiguration.numberThreadsPerBlock
+    private val pointerToPropagationIterations = Pointer.to(intArrayOf(this.propagationLaunchConfiguration.numberIterations))
+    private val propagationSharedMemorySize = computeDeviceFloatArraySize(2 * this.hiddenDimension).toInt()
+
+    private val sumLaunchConfigurations = computeColumnwiseLaunchConfiguration(this.squaredHiddenDimensions, 1, this.maximumNumberThreadsPerBlock)
+    private val sumNumberThreads = this.sumLaunchConfigurations.numberThreadsPerBlock
+    private val pointerToSumIterations = Pointer.to(intArrayOf(this.sumLaunchConfigurations.numberIterations))
+
+    private val pointerToPreviousStateWeights = Pointer.to(this.devicePreviousStateWeights)
+
+    private var pointerToLengths = Pointer()
+
+    private val batchSizeArray = intArrayOf(0)
+    private val pointerToBatchSize = Pointer.to(this.batchSizeArray)
 
     override fun forward(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean): Pointer {
+
+        this.batchSizeArray[0] = batchSize
 
         /*
             Project the input:
@@ -78,73 +115,80 @@ class CudaRecurrent(
             w1
             w2
          */
-        val projectedInput = this.inputProjection.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
+        val deviceProjectedInput = this.inputProjection.forward(batchSize, deviceInput, deviceInputLengths, isTraining)
+
+        this.pointerToLengths = Pointer.to(this.deviceForwardLengths)
 
         this.forwardKernel!!.launch(
             Pointer.to(
                 this.pointerToActivationFunction,
                 this.pointerToMaximumInputEntries,
                 this.pointerToHiddenDimension,
-                this.pointerToForwardIterations,
-                Pointer.to(projectedInput),
-                Pointer.to(this.inputProjection.deviceForwardLengths),
-                this.pointerToResultExtraction,
+                this.pointerToPropagationIterations,
+                Pointer.to(deviceProjectedInput),
+                this.pointerToPreActivation,
+                this.pointerToPreviousStateWeights,
+                this.pointerToLengths,
+                this.pointerToMaximumInputColumns,
                 this.pointerToForwardResult
             ),
             batchSize,
             1,
-            this.forwardThreads,
-            this.forwardSharedMemorySize)
+            this.propagationNumberThreads,
+            this.propagationSharedMemorySize)
 
-        return projectedInput
+        return this.deviceForwardResult
     }
 
     override fun backward(batchSize: Int, chain: Pointer): Pointer {
-        TODO("not implemented")
+
+        this.backwardKernel!!.launch(
+            Pointer.to(
+                this.pointerToActivationFunction,
+                this.pointerToMaximumInputEntries,
+                this.pointerToHiddenDimension,
+                this.pointerToSquaredHiddenDimension,
+                this.pointerToLengths,
+                this.pointerToPropagationIterations,
+                this.pointerToForwardResult,
+                this.pointerToPreActivation,
+                this.pointerToPreviousStateWeights,
+                this.pointerToBackwardWeightedPreviousStateWrtWeightsAccumulation,
+                Pointer.to(chain),
+                this.pointerToBackwardResult
+            ),
+            batchSize,
+            1,
+            this.propagationNumberThreads,
+            this.propagationSharedMemorySize
+        )
+
+        this.sumKernel!!.launch(
+            Pointer.to(
+                this.pointerToBackwardWeightedPreviousStateWrtWeightsAccumulation,
+                this.pointerToBackwardWeightedPreviousStateWrtWeights,
+                this.pointerToBatchSize,
+                this.pointerToSquaredHiddenDimension,
+                this.pointerToSumIterations
+            ),
+            1,
+            1,
+            this.sumNumberThreads,
+            0
+        )
+
+        this.inputProjection.backward(batchSize, this.deviceBackwardResult)
+
+        return this.inputProjection.deviceBackwardResult
+
     }
 
-}
+    override fun optimize(batchSize: Int) {
+        this.inputProjection.optimize(batchSize)
 
-fun main(args: Array<String>) {
-
-    val random = Random(1)
-
-    val network = cudaNetwork(2, input(3, 1, 4), recurrent(2, RecurrentActivation.ReLU, ResultExtraction.AllSteps, Direction.LeftToRight, uniformInitialization(random, -0.1f, 1.0f)))
-
-    val firstInstance = floatMatrix(
-        3, 4,
-        111f,
-        112f,
-        113f,
-        121f,
-        121f,
-        123f,
-        Float.NaN,
-        Float.NaN,
-        Float.NaN,
-        Float.NaN,
-        Float.NaN,
-        Float.NaN
-    )
-
-    val secondInstance = floatMatrix(
-        3, 4,
-        211f,
-        212f,
-        213f,
-        221f,
-        222f,
-        223f,
-        231f,
-        232f,
-        232f,
-        241f,
-        242f,
-        243f
-    )
-
-    network.predict(arrayOf(firstInstance, secondInstance))
-
-    network.free()
-
+        this.previousStateUpdateRule?.denseUpdate(
+            batchSize,
+            this.pointerToPreviousStateWeights,
+            this.pointerToBackwardWeightedPreviousStateWrtWeights)
+    }
 }

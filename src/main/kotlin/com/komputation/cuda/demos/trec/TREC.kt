@@ -90,7 +90,7 @@ class Trec {
         val sentenceClassifier = cudaNetwork(
             batchSize,
             lookup(embeddings, maximumDocumentLength, embeddingDimension, optimization),
-            convolution(numberFilters, filterWidth, embeddingDimension, initialization, optimization),
+            convolution(numberFilters, filterWidth, filterHeight, initialization, optimization),
             relu(),
             dropout(random, keepProbability),
             dense(numberCategories, Activation.Softmax, initialization, optimization)

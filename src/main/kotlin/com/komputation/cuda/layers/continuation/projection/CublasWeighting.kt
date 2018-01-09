@@ -43,10 +43,10 @@ class CublasWeighting internal constructor(
     private var pointerToInputWithoutNaN = Pointer.to(this.deviceInputWithoutNaN)
 
     private val deviceWeights = Pointer()
-    private val pointerToDeviceWeights = Pointer.to(this.deviceWeights)
+    private val pointerToWeights = Pointer.to(this.deviceWeights)
 
     private val deviceBackwardWrtWeights = Pointer()
-    private val pointerToDeviceBackwardWrtWeights = Pointer.to(this.deviceBackwardWrtWeights)
+    private val pointerToBackwardWrtWeights = Pointer.to(this.deviceBackwardWrtWeights)
 
     private var replaceNaNKernel : Kernel? = null
 
@@ -231,8 +231,8 @@ class CublasWeighting internal constructor(
 
         this.updateRule?.denseUpdate(
             batchSize,
-            this.pointerToDeviceWeights,
-            this.pointerToDeviceBackwardWrtWeights)
+            this.pointerToWeights,
+            this.pointerToBackwardWrtWeights)
 
     }
 

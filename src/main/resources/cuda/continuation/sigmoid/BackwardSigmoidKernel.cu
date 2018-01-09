@@ -1,8 +1,5 @@
 #include "symbols/NaN.cuh"
-
-__inline__ __device__ float backwardSigmoid (float forward, float chain) {
-    return forward * (1.0f - forward) * chain;
-}
+#include "entrywise/Sigmoid.cuh"
 
 __global__ void backwardSigmoidKernel (
     int batchSize,
