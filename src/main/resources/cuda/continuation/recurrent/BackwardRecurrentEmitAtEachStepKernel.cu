@@ -1,6 +1,4 @@
 #include "recurrent/BackwardRecurrent.cuh"
-#include "arrays/copy/CopyCooperatively.cuh"
-#include "arrays/add/AddCooperatively.cuh"
 
 // first half of shared memory: differentiation w.r.t. pre-activation
 // second half of shared memory: differentiation w.r.t. previous hidden state
@@ -33,33 +31,20 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
     // There is no accumulator for the first state.
     int firstAccumulatorEntryIndex = firstInstanceEntry + (length-2) * squaredHiddenDimension;
 
-    // df(Wx+Uh+b)/d(Wx+Uh+b)
-    // Differentiate activation w.r.t. pre-activation and write the result into the first half of shared memory
-    backwardRecurrentActivation(preActivation, firstStateEntryIndex, chain, firstStateEntryIndex, sharedData, 0, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
-
-    copyCooperatively(sharedData, 0, backwardResult, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
-
-    __syncthreads();
-
-    // dUh/dh
-    // Differentiate the weighted previous state w.r.t. the previous state and write the result into the second half of shared memory.
-    // shared data is the differentiation w.r.t. the pre-activation
-    backwardMatrixVectorMultiplicationWrtVector(previousStateWeights, sharedData, sharedData, hiddenDimension, startEntryIndex, exclusiveEndEntryIndex, hiddenDimension);
-
-    int previousStateEntryIndex = firstStateEntryIndex - hiddenDimension;
-
-    // dUh/dU
-    // Differentiate the weighted previous state w.r.t. the weights and add to accumulator
-    backwardMatrixVectorMultiplicationWrtMatrix(
+    backwardLastStep(
+        preActivation,
         forwardResult,
-        previousStateEntryIndex,
+        chain,
         sharedData,
-        0,
+        backwardResult,
+        firstStateEntryIndex,
+        previousStateWeights,
         previousStateWeightAccumulation,
         firstAccumulatorEntryIndex,
         startEntryIndex,
         exclusiveEndEntryIndex,
-        hiddenDimension);
+        hiddenDimension,
+        activationFunction);
 
     __syncthreads();
 
@@ -68,32 +53,40 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
         firstStateEntryIndex -= hiddenDimension;
         firstAccumulatorEntryIndex -= squaredHiddenDimension;
 
-        addCooperatively(chain, firstStateEntryIndex, sharedData, hiddenDimension, startEntryIndex, exclusiveEndEntryIndex);
-
-        // Note that the differentiation w.r.t the previous state is in the second half of shared memory.
-        backwardRecurrentActivation(preActivation, firstStateEntryIndex, sharedData, hiddenDimension, sharedData, 0, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
-
-        copyCooperatively(sharedData, 0, backwardResult, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
-
-        __syncthreads();
-
-        // Differentiate weighted previous state w.r.t previous state and write the result into the seconf half of shared memory.
-        backwardMatrixVectorMultiplicationWrtVector(previousStateWeights, sharedData, sharedData, hiddenDimension, startEntryIndex, exclusiveEndEntryIndex, hiddenDimension);
-
-        // Differentiate weighted previous state w.r.t weights and add to accumulator
-        backwardMatrixVectorMultiplicationWrtMatrix(forwardResult, firstStateEntryIndex, sharedData, 0, previousStateWeightAccumulation, firstAccumulatorEntryIndex, startEntryIndex, exclusiveEndEntryIndex, hiddenDimension);
+        backwardStepsInBetween(
+            preActivation,
+            forwardResult,
+            chain,
+            sharedData,
+            backwardResult,
+            firstStateEntryIndex,
+            sharedData,
+            hiddenDimension,
+            previousStateWeights,
+            previousStateWeightAccumulation,
+            firstAccumulatorEntryIndex,
+            startEntryIndex,
+            exclusiveEndEntryIndex,
+            hiddenDimension,
+            activationFunction
+        );
 
         __syncthreads();
 
     }
 
-    firstStateEntryIndex = firstInstanceEntry;
+    backwardFirstStep(
+        preActivation,
+        chain,
+        backwardResult,
+        firstInstanceEntry,
+        sharedData,
+        hiddenDimension,
+        startEntryIndex,
+        exclusiveEndEntryIndex,
+        hiddenDimension,
+        activationFunction
+    );
 
-    addCooperatively(chain, firstStateEntryIndex, sharedData, hiddenDimension, startEntryIndex, exclusiveEndEntryIndex);
-
-    backwardRecurrentActivation(preActivation, firstStateEntryIndex, sharedData, hiddenDimension, backwardResult, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
-
-
-    __syncthreads();
 
 }
