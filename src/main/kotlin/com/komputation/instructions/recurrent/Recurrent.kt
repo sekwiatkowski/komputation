@@ -10,6 +10,7 @@ import com.komputation.cuda.instructions.CudaContinuationInstruction
 import com.komputation.cuda.kernels.ArrayKernels
 import com.komputation.cuda.kernels.ContinuationKernels
 import com.komputation.cuda.layers.continuation.recurrent.CudaRecurrent
+import com.komputation.cuda.layers.continuation.recurrent.CudaRecurrentUnit
 import com.komputation.initialization.InitializationStrategy
 import com.komputation.initialization.initializeWeights
 import com.komputation.instructions.combination.addition
@@ -126,6 +127,8 @@ class Recurrent internal constructor(
 
     override fun buildForCuda(context: CudaContext, cublasHandle: cublasHandle): CudaRecurrent {
 
+        val inputProjection = this.inputProjection.buildForCuda(context, cublasHandle)
+
         val createForwardKernel = when (this.resultExtraction) {
             ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.recurrentEmitAtEachStep()) } }
             ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.recurrentEmitAtLastStep()) } }
@@ -136,10 +139,10 @@ class Recurrent internal constructor(
             ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.backwardRecurrentEmitAtLastStep()) } }
         }
 
-        return CudaRecurrent(
-            this.name,
+        val recurrentUnit = CudaRecurrentUnit(
+            concatenateNames(this.name, "recurrent-unit"),
             this.hiddenDimension,
-            this.inputProjection.buildForCuda(context, cublasHandle),
+            this.maximumNumberInputColumns,
             this.previousStateWeights,
             this.optimization?.buildForCuda(context)?.invoke(1, this.hiddenDimension, this.hiddenDimension),
             this.activation,
@@ -147,6 +150,15 @@ class Recurrent internal constructor(
             createBackwardKernel,
             { context.createKernel(ArrayKernels.sum()) },
             context.maximumNumberOfThreadsPerBlock)
+
+        return CudaRecurrent(
+            this.name,
+            inputProjection,
+            recurrentUnit)
+
+
+
+
     }
 
 }

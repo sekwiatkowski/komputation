@@ -107,6 +107,7 @@ Komputation is available through Maven Central:
 
 - Increment:
   - [One layer](./src/main/kotlin/com/komputation/cuda/demos/increment/Increment.kt)
+  - [Two layers](./src/main/kotlin/com/komputation/cuda/demos/increment/IncrementTwice.kt)
 
 - MNIST:
   - [Minimal](./src/main/kotlin/com/komputation/cuda/demos/mnist/MnistMinimal.kt)
