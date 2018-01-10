@@ -1,5 +1,5 @@
 #include "symbols/NaN.cuh"
-#include "entrywise/Relu.cuh"
+#include "continuation/tanh/Tanh.cuh"
 
 __global__ void backwardTanhKernel (
     int batchSize,

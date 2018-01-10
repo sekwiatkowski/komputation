@@ -1,5 +1,5 @@
 #include "symbols/NaN.cuh"
-#include "entrywise/Relu.cuh"
+#include "continuation/relu/Relu.cuh"
 
 __global__ void reluKernel (
     int batchSize,

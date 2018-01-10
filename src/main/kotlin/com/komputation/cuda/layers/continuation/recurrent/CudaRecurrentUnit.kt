@@ -1,29 +1,28 @@
 package com.komputation.cuda.layers.continuation.recurrent
 
-import com.komputation.cuda.allocateDeviceFloatMemory
-import com.komputation.cuda.computeDeviceFloatArraySize
-import com.komputation.cuda.getFloatArray
+import com.komputation.cuda.*
 import com.komputation.cuda.kernels.Kernel
 import com.komputation.cuda.kernels.launch.computeColumnwiseLaunchConfiguration
 import com.komputation.cuda.layers.continuation.BasePrimitiveCudaContinuation
 import com.komputation.cuda.optimization.BaseCudaUpdateRule
-import com.komputation.cuda.setFloatArray
 import com.komputation.instructions.continuation.activation.RecurrentActivation
+import com.komputation.instructions.recurrent.ResultExtraction
 import com.komputation.optimization.Optimizable
 import jcuda.Pointer
 import jcuda.runtime.JCuda.cudaFree
 
 class CudaRecurrentUnit(
     name : String?,
-    hiddenDimension : Int,
+    private val hiddenDimension : Int,
     maximumLength : Int,
+    private val resultExtraction: ResultExtraction,
     private var previousStateWeights : FloatArray,
     private val previousStateUpdateRule: BaseCudaUpdateRule?,
     private val activation : RecurrentActivation,
     private val createForwardKernel: () -> Kernel,
     private val createBackwardKernel: () -> Kernel,
     private val createSumKernel: () -> Kernel,
-    private val maximumNumberThreadsPerBlock : Int) : BasePrimitiveCudaContinuation(name, hiddenDimension, hiddenDimension, maximumLength, maximumLength), Optimizable {
+    private val maximumNumberThreadsPerBlock : Int) : BasePrimitiveCudaContinuation(name, hiddenDimension, hiddenDimension, maximumLength, if(resultExtraction == ResultExtraction.AllSteps) maximumLength else 1), Optimizable {
 
     private var forwardKernel : Kernel? = null
     private var backwardKernel : Kernel? = null
@@ -58,18 +57,34 @@ class CudaRecurrentUnit(
     private val sumNumberThreads = this.sumLaunchConfigurations.numberThreadsPerBlock
     private val pointerToSumIterations = Pointer.to(intArrayOf(this.sumLaunchConfigurations.numberIterations))
 
-    private var pointerToLengths = Pointer()
+    private var pointerToInputLengths = Pointer()
 
     override var deviceForwardLengths = Pointer()
+
+    private val deviceHiddenStates = when (this.resultExtraction) {
+        ResultExtraction.AllSteps -> this.deviceForwardResult
+        ResultExtraction.LastStep -> Pointer()
+    }
+    private val pointerToHiddenStates = when (this.resultExtraction) {
+        ResultExtraction.AllSteps -> this.pointerToForwardResult
+        ResultExtraction.LastStep -> Pointer.to(this.deviceHiddenStates)
+    }
+
 
     override fun acquire(maximumBatchSize: Int) {
         super.acquire(maximumBatchSize)
 
         allocateDeviceFloatMemory(this.devicePreActivation, this.forwardResultSize)
-        allocateDeviceFloatMemory(this.deviceBackwardWeightedPreviousStateWrtWeightsAccumulation, maximumBatchSize * this.numberPreviousStateWeightEntries)
+        allocateDeviceFloatMemory(this.deviceBackwardWeightedPreviousStateWrtWeightsAccumulation, this.maximumBatchSize * this.numberPreviousStateWeightEntries)
         allocateDeviceFloatMemory(this.deviceBackwardWeightedPreviousStateWrtWeights, this.numberPreviousStateWeightEntries)
 
         setFloatArray(this.previousStateWeights, this.numberPreviousStateWeightEntries, devicePreviousStateWeights)
+
+        if (this.resultExtraction == ResultExtraction.LastStep) {
+            setIntArray(IntArray(this.maximumBatchSize) { 1 }, this.maximumBatchSize, this.deviceForwardLengths)
+            allocateDeviceFloatMemory(this.deviceHiddenStates, this.maximumBatchSize * this.maximumInputColumns * this.numberOutputRows)
+
+        }
 
         this.forwardKernel = this.createForwardKernel()
         this.backwardKernel = this.createBackwardKernel()
@@ -85,6 +100,11 @@ class CudaRecurrentUnit(
 
         this.previousStateWeights = getFloatArray(this.devicePreviousStateWeights, this.numberPreviousStateWeightEntries)
 
+        if (this.resultExtraction == ResultExtraction.LastStep) {
+            cudaFree(this.deviceForwardLengths)
+            cudaFree(this.deviceHiddenStates)
+        }
+
         this.forwardKernel!!.destroy()
         this.backwardKernel!!.destroy()
         this.sumKernel!!.destroy()
@@ -92,21 +112,39 @@ class CudaRecurrentUnit(
 
     override fun computeForwardResult(batchSize: Int, deviceInput: Pointer, deviceInputLengths: Pointer, isTraining: Boolean) {
 
-        this.pointerToLengths = Pointer.to(this.deviceForwardLengths)
+        this.pointerToInputLengths = Pointer.to(deviceInputLengths)
+
+        val parameters =
+            when (this.resultExtraction) {
+                ResultExtraction.AllSteps ->  Pointer.to(
+                    this.pointerToActivationFunction,
+                    this.pointerToMaximumInputEntries,
+                    this.pointerToHiddenDimension,
+                    this.pointerToPropagationIterations,
+                    Pointer.to(deviceInput),
+                    this.pointerToPreActivation,
+                    this.pointerToPreviousStateWeights,
+                    this.pointerToInputLengths,
+                    this.pointerToMaximumInputColumns,
+                    this.pointerToForwardResult
+                )
+                ResultExtraction.LastStep ->  Pointer.to(
+                    this.pointerToActivationFunction,
+                    this.pointerToMaximumInputEntries,
+                    this.pointerToHiddenDimension,
+                    this.pointerToPropagationIterations,
+                    Pointer.to(deviceInput),
+                    this.pointerToPreActivation,
+                    this.pointerToPreviousStateWeights,
+                    this.pointerToInputLengths,
+                    this.pointerToMaximumInputColumns,
+                    this.pointerToHiddenStates,
+                    this.pointerToForwardResult
+                )
+            }
 
         this.forwardKernel!!.launch(
-            Pointer.to(
-                this.pointerToActivationFunction,
-                this.pointerToMaximumInputEntries,
-                this.pointerToHiddenDimension,
-                this.pointerToPropagationIterations,
-                Pointer.to(deviceInput),
-                this.pointerToPreActivation,
-                this.pointerToPreviousStateWeights,
-                this.pointerToLengths,
-                this.pointerToMaximumInputColumns,
-                this.pointerToForwardResult
-            ),
+            parameters,
             batchSize,
             1,
             this.propagationNumberThreads,
@@ -115,7 +153,9 @@ class CudaRecurrentUnit(
     }
 
     override fun computeOutputLengths(deviceInputLengths: Pointer) {
-        this.deviceForwardLengths = deviceInputLengths
+        if (this.resultExtraction.equals(ResultExtraction.AllSteps)) {
+            this.deviceForwardLengths = deviceInputLengths
+        }
     }
 
     override fun computeBackwardResult(batchSize: Int, chain: Pointer) {
@@ -126,9 +166,9 @@ class CudaRecurrentUnit(
                 this.pointerToMaximumInputEntries,
                 this.pointerToHiddenDimension,
                 this.pointerToSquaredHiddenDimension,
-                this.pointerToLengths,
+                this.pointerToInputLengths,
                 this.pointerToPropagationIterations,
-                this.pointerToForwardResult,
+                this.pointerToHiddenStates,
                 this.pointerToPreActivation,
                 this.pointerToPreviousStateWeights,
                 this.pointerToBackwardWeightedPreviousStateWrtWeightsAccumulation,
@@ -158,7 +198,6 @@ class CudaRecurrentUnit(
     }
 
     override fun optimize(batchSize: Int) {
-
         this.previousStateUpdateRule?.denseUpdate(
             batchSize,
             this.pointerToPreviousStateWeights,

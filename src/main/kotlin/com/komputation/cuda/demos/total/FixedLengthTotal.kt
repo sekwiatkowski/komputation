@@ -1,8 +1,8 @@
-package com.komputation.cuda.demos.increment
+package com.komputation.cuda.demos.total
 
 import com.komputation.cpu.layers.recurrent.Direction
 import com.komputation.cuda.network.cudaNetwork
-import com.komputation.demos.increment.IncrementData
+import com.komputation.demos.total.TotalData
 import com.komputation.initialization.zeroInitialization
 import com.komputation.instructions.continuation.activation.RecurrentActivation
 import com.komputation.instructions.entry.input
@@ -18,18 +18,26 @@ fun main(args: Array<String>) {
     val random = Random(1)
 
     val initialization = zeroInitialization()
-    val optimization = stochasticGradientDescent(0.001f)
+    val optimization = stochasticGradientDescent(0.01f)
 
     val steps = 2
 
-    val input = IncrementData.generateInput(random, steps, 0, 10, 10_000)
-    val targets = IncrementData.generateTargets(input)
+    val input = TotalData.generateFixedLengthInput(random, steps, 0, 10, 10_000)
+    val targets = TotalData.generateTargets(input)
 
     cudaNetwork(
-        1,
-        input(1, steps),
-        recurrent(1, RecurrentActivation.Identity, ResultExtraction.AllSteps, Direction.LeftToRight, initialization, optimization)
-    )
+            1,
+            input(1, steps),
+            recurrent(
+                1,
+                RecurrentActivation.Identity,
+                ResultExtraction.LastStep,
+                Direction.LeftToRight,
+                initialization,
+                initialization,
+                null,
+                optimization)
+        )
         .training(
             input,
             targets,

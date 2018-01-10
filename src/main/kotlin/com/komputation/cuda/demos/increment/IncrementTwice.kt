@@ -32,13 +32,13 @@ fun main(args: Array<String>) {
         input(1, steps),
         recurrent(1, RecurrentActivation.Identity, ResultExtraction.AllSteps, Direction.LeftToRight, zeroInitialization, zeroInitialization, zeroInitialization, optimization),
         recurrent(1, RecurrentActivation.Identity, ResultExtraction.AllSteps, Direction.LeftToRight, oneInitialization, zeroInitialization, oneInitialization, null)
-        ).training(
-            input,
-            targets,
-            2,
+    ).training(
+        input,
+        targets,
+        2,
         squaredLoss(),
-            printLoss
-        )
+        printLoss
+    )
         .run()
 
 }

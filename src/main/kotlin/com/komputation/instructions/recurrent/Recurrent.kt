@@ -130,19 +130,20 @@ class Recurrent internal constructor(
         val inputProjection = this.inputProjection.buildForCuda(context, cublasHandle)
 
         val createForwardKernel = when (this.resultExtraction) {
-            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.recurrentEmitAtEachStep()) } }
-            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.recurrentEmitAtLastStep()) } }
+            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.recurrentEachStep()) } }
+            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.recurrentLastStep()) } }
         }
 
         val createBackwardKernel = when (this.resultExtraction) {
-            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.backwardRecurrentEmitAtEachStep()) } }
-            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.backwardRecurrentEmitAtLastStep()) } }
+            ResultExtraction.AllSteps -> { { context.createKernel(ContinuationKernels.backwardRecurrentEachStep()) } }
+            ResultExtraction.LastStep -> { { context.createKernel(ContinuationKernels.backwardRecurrentLastStep()) } }
         }
 
         val recurrentUnit = CudaRecurrentUnit(
             concatenateNames(this.name, "recurrent-unit"),
             this.hiddenDimension,
             this.maximumNumberInputColumns,
+            this.resultExtraction,
             this.previousStateWeights,
             this.optimization?.buildForCuda(context)?.invoke(1, this.hiddenDimension, this.hiddenDimension),
             this.activation,
@@ -155,9 +156,6 @@ class Recurrent internal constructor(
             this.name,
             inputProjection,
             recurrentUnit)
-
-
-
 
     }
 

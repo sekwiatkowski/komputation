@@ -1,7 +1,7 @@
-#include "recurrent/Recurrent.cuh"
+#include "continuation/recurrent/Recurrent.cuh"
 #include "symbols/NaN.cuh"
 
-__global__ void recurrentEmitAtLastStepKernel (
+__global__ void recurrentLastStepKernel (
     int activationFunction,
     int maximumEntriesPerInstance,
     int hiddenDimension,
@@ -11,6 +11,7 @@ __global__ void recurrentEmitAtLastStepKernel (
     float* previousStateWeights,
     int* lengths,
     int maximumLength,
+    float* hiddenStates,
     float* result) {
 
     int instanceIndex = blockIdx.x;
@@ -23,7 +24,7 @@ __global__ void recurrentEmitAtLastStepKernel (
 
     extern __shared__ float sharedData[];
 
-    forwardFirstStep(projectedInput, preActivation, firstInstanceEntryIndex, sharedData, startEntryIndex, exclusiveEndEntryIndex, activationFunction)
+    forwardFirstStep(projectedInput, preActivation, hiddenStates, firstInstanceEntryIndex, sharedData, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
 
     __syncthreads();
 
@@ -33,7 +34,7 @@ __global__ void recurrentEmitAtLastStepKernel (
     for(int step = 1; step < length; step++) {
         firstStateEntryIndex += hiddenDimension;
 
-        forwardOtherStep(projectedInput, preActivation, sharedData, previousStateWeights, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
+        forwardOtherStep(projectedInput, preActivation, hiddenStates, sharedData, previousStateWeights, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex, activationFunction, hiddenDimension);
 
         __syncthreads();
     }

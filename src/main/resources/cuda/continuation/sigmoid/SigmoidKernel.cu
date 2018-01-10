@@ -1,5 +1,5 @@
 #include "symbols/NaN.cuh"
-#include "entrywise/Sigmoid.cuh"
+#include "continuation/sigmoid/Sigmoid.cuh"
 
 __global__ void sigmoidKernel (
     int batchSize,

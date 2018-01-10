@@ -1,15 +1,15 @@
-#include "recurrent/BackwardRecurrent.cuh"
+#include "continuation/recurrent/BackwardRecurrent.cuh"
 
 // first half of shared memory: differentiation w.r.t. pre-activation
 // second half of shared memory: differentiation w.r.t. previous hidden state
-__global__ void backwardRecurrentEmitAtEachStepKernel (
+__global__ void backwardRecurrentEachStepKernel (
     int activationFunction,
     int entriesPerInstance,
     int hiddenDimension,
     int squaredHiddenDimension,
     int* lengths,
     int numberIterations,
-    float* forwardResult,
+    float* hiddenStates,
     float* preActivation,
     float* previousStateWeights,
     float* previousStateWeightAccumulation,
@@ -18,7 +18,7 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
 
     int instanceIndex = blockIdx.x;
 
-    int firstInstanceEntry = instanceIndex * entriesPerInstance;
+    int firstInstanceEntryIndex = instanceIndex * entriesPerInstance;
 
     int startEntryIndex = threadIdx.x * numberIterations;
     int exclusiveEndEntryIndex = min(startEntryIndex + numberIterations, hiddenDimension);
@@ -27,17 +27,20 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
 
     int length = lengths[instanceIndex];
 
-    int firstStateEntryIndex = firstInstanceEntry + (length-1) * hiddenDimension;
+    int firstStateEntryIndex = firstInstanceEntryIndex + (length-1) * hiddenDimension;
+    int firstPreviousStateEntryIndex = firstStateEntryIndex - hiddenDimension;
     // There is no accumulator for the first state.
-    int firstAccumulatorEntryIndex = firstInstanceEntry + (length-2) * squaredHiddenDimension;
+    int firstAccumulatorEntryIndex = firstInstanceEntryIndex + (length-2) * squaredHiddenDimension;
 
     backwardLastStep(
         preActivation,
-        forwardResult,
-        chain,
-        sharedData,
-        backwardResult,
         firstStateEntryIndex,
+        firstPreviousStateEntryIndex,
+        hiddenStates,
+        backwardResult,
+        chain,
+        firstStateEntryIndex,
+        sharedData,
         previousStateWeights,
         previousStateWeightAccumulation,
         firstAccumulatorEntryIndex,
@@ -53,12 +56,20 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
         firstStateEntryIndex -= hiddenDimension;
         firstAccumulatorEntryIndex -= squaredHiddenDimension;
 
+        addCooperatively(
+            chain,
+            firstStateEntryIndex,
+            sharedData,
+            hiddenDimension,
+            startEntryIndex,
+            exclusiveEndEntryIndex);
+
         backwardStepsInBetween(
             preActivation,
-            forwardResult,
+            hiddenStates,
+            backwardResult,
             chain,
             sharedData,
-            backwardResult,
             firstStateEntryIndex,
             sharedData,
             hiddenDimension,
@@ -75,11 +86,18 @@ __global__ void backwardRecurrentEmitAtEachStepKernel (
 
     }
 
+    addCooperatively(
+        chain,
+        firstInstanceEntryIndex,
+        sharedData,
+        hiddenDimension,
+        startEntryIndex,
+        exclusiveEndEntryIndex);
+
     backwardFirstStep(
         preActivation,
-        chain,
         backwardResult,
-        firstInstanceEntry,
+        firstInstanceEntryIndex,
         sharedData,
         hiddenDimension,
         startEntryIndex,

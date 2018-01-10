@@ -37,5 +37,7 @@ fun setFloatArray(data: FloatArray, size: Int, pointer : Pointer): Int {
 }
 
 fun printFloatArray(devicePointer: Pointer, size: Int) {
-    println(getFloatArray(devicePointer, size).joinToString(" "))
+    val floatArray = getFloatArray(devicePointer, size).joinToString(" ")
+
+    println(floatArray)
 }

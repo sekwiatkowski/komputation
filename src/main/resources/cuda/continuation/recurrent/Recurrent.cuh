@@ -1,7 +1,7 @@
-#include "recurrent/RecurrentActivation.cuh"
-#include "entrywise/Relu.cuh"
-#include "entrywise/Sigmoid.cuh"
-#include "entrywise/Tanh.cuh"
+#include "continuation/recurrent/RecurrentActivation.cuh"
+#include "continuation/relu/Relu.cuh"
+#include "continuation/sigmoid/Sigmoid.cuh"
+#include "continuation/tanh/Tanh.cuh"
 #include "arrays/copy/CopyCooperatively.cuh"
 #include "arrays/add/AddCooperatively.cuh"
 
@@ -66,22 +66,30 @@ __device__ void matrixVectorMultiplication(float* matrix, float* vector, int sta
 __device__ void forwardFirstStep(
     float* projectedInput,
     float* preActivation,
+    float* hiddenStates,
     int firstStateEntryIndex,
-    float* result,
+    float* sharedMemory,
     int startEntryIndex,
     int exclusiveEndEntryIndex,
     int activationFunction) {
 
-    copyCooperatively(projectedInput, firstStateEntryIndex, result, 0, startEntryIndex, exclusiveEndEntryIndex);
+    // Copy the current step of the project input into shared memory
+    copyCooperatively(projectedInput, firstStateEntryIndex, sharedMemory, 0, startEntryIndex, exclusiveEndEntryIndex);
 
-    copyCooperatively(result, 0, preActivation, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
+    // Copy the shared memory into the pre-activation array
+    copyCooperatively(sharedMemory, 0, preActivation, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
 
-    forwardRecurrentActivation(result, 0, result, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
+    // Activate the entries in the shared memory
+    forwardRecurrentActivation(sharedMemory, 0, sharedMemory, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
+
+    // Copy the activated entries from shared into the forward result
+    copyCooperatively(sharedMemory, 0, hiddenStates, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
 }
 
 __device__ void forwardOtherStep(
     float* projectedInput,
     float* preActivation,
+    float* hiddenStates,
     float* previousState,
     float* weights,
     int firstStateEntryIndex,
@@ -113,5 +121,7 @@ __device__ void forwardOtherStep(
 
     // Activate the sum
     forwardRecurrentActivation(previousState, 0, previousState, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
+
+    copyCooperatively(previousState, 0, hiddenStates, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
 
 }

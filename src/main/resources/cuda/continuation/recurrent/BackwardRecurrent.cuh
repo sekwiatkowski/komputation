@@ -1,11 +1,21 @@
-#include "recurrent/RecurrentActivation.cuh"
-#include "entrywise/Relu.cuh"
-#include "entrywise/Sigmoid.cuh"
-#include "entrywise/Tanh.cuh"
+#include "continuation/recurrent/RecurrentActivation.cuh"
+#include "continuation/relu/Relu.cuh"
+#include "continuation/sigmoid/Sigmoid.cuh"
+#include "continuation/tanh/Tanh.cuh"
 #include "arrays/copy/CopyCooperatively.cuh"
 #include "arrays/add/AddCooperatively.cuh"
 
-__device__ void backwardRecurrentActivation(float* input, int startInput, float* chain, int startChain, float* result, int startResult, int startEntryIndex, int exclusiveEndEntryIndex, int activationFunction) {
+__device__ void backwardRecurrentActivation(
+    float* input,
+    int startInput,
+    float* chain,
+    int startChain,
+    float* result,
+    int startResult,
+    int startEntryIndex,
+    int exclusiveEndEntryIndex,
+    int activationFunction) {
+
     switch(activationFunction) {
         case IDENTITY:
             for(int entryIndex = startEntryIndex; entryIndex < exclusiveEndEntryIndex; entryIndex++) {
@@ -65,8 +75,6 @@ __device__ void backwardMatrixVectorMultiplicationWrtVector(float* matrix, float
 
     }
 
-
-
 }
 
 /*
@@ -112,11 +120,13 @@ __device__ void backwardMatrixVectorMultiplicationWrtMatrix(
 
 __device__ void backwardLastStep(
     float* preActivation,
-    float* forwardResult,
-    float* chain,
-    float* sharedMemory,
-    float* backwardResult,
     int firstStateEntryIndex,
+    int firstPreviousStateEntryIndex,
+    float* hiddenStates,
+    float* backwardResult,
+    float* chain,
+    int firstResultEntryIndex,
+    float* sharedMemory,
     float* previousStateWeights,
     float* previousStateWeightAccumulation,
     int firstAccumulatorEntryIndex,
@@ -126,31 +136,22 @@ __device__ void backwardLastStep(
     int activationFunction) {
 
     // df(Wx+Uh+b)/d(Wx+Uh+b)
-    // Differentiate activation w.r.t. pre-activation and write the result into the first half of shared memory
+    // Differentiate activation w.r.t. pre-activation and write the result into the first half of shared memory.
     backwardRecurrentActivation(
         preActivation,
         firstStateEntryIndex,
         chain,
-        firstStateEntryIndex,
+        firstResultEntryIndex,
         sharedMemory,
         0,
         startEntryIndex,
         exclusiveEndEntryIndex,
         activationFunction);
 
-    copyCooperatively(
-        sharedMemory,
-        0,
-        backwardResult,
-        firstStateEntryIndex,
-        startEntryIndex,
-        exclusiveEndEntryIndex);
-
     __syncthreads();
 
-    // dUh/dh
+    // dUh_t-1/dh_t-1
     // Differentiate the weighted previous state w.r.t. the previous state and write the result into the second half of shared memory.
-    // shared data is the differentiation w.r.t. the pre-activation
     backwardMatrixVectorMultiplicationWrtVector(
         previousStateWeights,
         sharedMemory,
@@ -160,12 +161,10 @@ __device__ void backwardLastStep(
         exclusiveEndEntryIndex,
         hiddenDimension);
 
-    int firstPreviousStateEntryIndex = firstStateEntryIndex - hiddenDimension;
-
     // dUh/dU
     // Differentiate the weighted previous state w.r.t. the weights and add to accumulator
     backwardMatrixVectorMultiplicationWrtMatrix(
-        forwardResult,
+        hiddenStates,
         firstPreviousStateEntryIndex,
         sharedMemory,
         0,
@@ -175,17 +174,49 @@ __device__ void backwardLastStep(
         exclusiveEndEntryIndex,
         hiddenDimension);
 
+    copyCooperatively(
+        sharedMemory,
+        0,
+        backwardResult,
+        firstStateEntryIndex,
+        startEntryIndex,
+        exclusiveEndEntryIndex);
+
+}
+
+__device__ void backwardFirstStep(
+    float* preActivation,
+    float* backwardResult,
+    int firstStateEntryIndex,
+    float* sumOfChainAndBackwardPreviousState,
+    int firstSumOfChainAndBackwardPreviousState,
+    int startEntryIndex,
+    int exclusiveEndEntryIndex,
+    int hiddenDimension,
+    int activationFunction) {
+
+    backwardRecurrentActivation(
+        preActivation,
+        firstStateEntryIndex,
+        sumOfChainAndBackwardPreviousState,
+        firstSumOfChainAndBackwardPreviousState,
+        backwardResult,
+        firstStateEntryIndex,
+        startEntryIndex,
+        exclusiveEndEntryIndex,
+        activationFunction);
+
 }
 
 __device__ void backwardStepsInBetween(
     float* preActivation,
-    float* forwardResult,
+    float* hiddenStates,
+    float* backwardResult,
     float* chain,
     float* sharedMemory,
-    float* backwardResult,
     int firstStateEntryIndex,
-    float* backwardPreviousState,
-    int firstBackwardPreviousStateEntry,
+    float* sumOfChainAndBackwardPreviousState,
+    int firstSumOfChainAndBackwardPreviousState,
     float* previousStateWeights,
     float* previousStateWeightAccumulation,
     int firstAccumulatorEntryIndex,
@@ -194,31 +225,21 @@ __device__ void backwardStepsInBetween(
     int hiddenDimension,
     int activationFunction) {
 
-    addCooperatively(
-        chain,
-        firstStateEntryIndex,
-        backwardPreviousState,
-        firstBackwardPreviousStateEntry,
-        startEntryIndex,
-        exclusiveEndEntryIndex);
-
     // Note that the differentiation w.r.t the previous state is in the second half of shared memory.
     backwardRecurrentActivation(
         preActivation,
         firstStateEntryIndex,
-        backwardPreviousState,
-        firstBackwardPreviousStateEntry,
+        sumOfChainAndBackwardPreviousState,
+        firstSumOfChainAndBackwardPreviousState,
         sharedMemory,
         0,
         startEntryIndex,
         exclusiveEndEntryIndex,
         activationFunction);
 
-    copyCooperatively(sharedMemory, 0, backwardResult, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
-
     __syncthreads();
 
-    // Differentiate weighted previous state w.r.t previous state and write the result into the seconf half of shared memory.
+    // Differentiate weighted previous state w.r.t previous state and write the result into the second half of shared memory.
     backwardMatrixVectorMultiplicationWrtVector(
         previousStateWeights,
         sharedMemory,
@@ -232,7 +253,7 @@ __device__ void backwardStepsInBetween(
 
     // Differentiate weighted previous state w.r.t weights and add to accumulator
     backwardMatrixVectorMultiplicationWrtMatrix(
-        forwardResult,
+        hiddenStates,
         firstPreviousStateEntryIndex,
         sharedMemory,
         0,
@@ -242,37 +263,6 @@ __device__ void backwardStepsInBetween(
         exclusiveEndEntryIndex,
         hiddenDimension);
 
-}
-
-__device__ void backwardFirstStep(
-    float* preActivation,
-    float* chain,
-    float* backwardResult,
-    int firstStateEntryIndex,
-    float* backwardPreviousState,
-    int firstBackwardPreviousStateEntry,
-    int startEntryIndex,
-    int exclusiveEndEntryIndex,
-    int hiddenDimension,
-    int activationFunction) {
-
-    addCooperatively(
-        chain,
-        firstStateEntryIndex,
-        backwardPreviousState,
-        firstBackwardPreviousStateEntry,
-        startEntryIndex,
-        exclusiveEndEntryIndex);
-
-    backwardRecurrentActivation(
-        preActivation,
-        firstStateEntryIndex,
-        backwardPreviousState,
-        firstBackwardPreviousStateEntry,
-        backwardResult,
-        firstStateEntryIndex,
-        startEntryIndex,
-        exclusiveEndEntryIndex,
-        activationFunction);
+    copyCooperatively(sharedMemory, 0, backwardResult, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
 
 }

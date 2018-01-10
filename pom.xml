@@ -6,7 +6,7 @@
 
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.12.3</version>
+    <version>0.12.4</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>

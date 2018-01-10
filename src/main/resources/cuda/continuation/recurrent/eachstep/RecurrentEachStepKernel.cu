@@ -1,4 +1,4 @@
-#include "recurrent/Recurrent.cuh"
+#include "continuation/recurrent/Recurrent.cuh"
 #include "symbols/NaN.cuh"
 
 /*
@@ -8,7 +8,7 @@
 
     This kernel assumes that the input has already been projected.
 */
-__global__ void recurrentEmitAtEachStepKernel (
+__global__ void recurrentEachStepKernel (
     int activationFunction,
     int maximumEntriesPerInstance,
     int hiddenDimension,
@@ -18,7 +18,7 @@ __global__ void recurrentEmitAtEachStepKernel (
     float* previousStateWeights,
     int *lengths,
     int maximumLength,
-    float* result) {
+    float* hiddenStates) {
 
     int instanceIndex = blockIdx.x;
 
@@ -31,10 +31,7 @@ __global__ void recurrentEmitAtEachStepKernel (
     extern __shared__ float sharedData[];
 
     // computeFirstStep reads the input from the global memory and writes the output into shared memory.
-    forwardFirstStep(projectedInput, preActivation, firstInstanceEntryIndex, sharedData, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
-
-    // The first hidden state is written into the result array.
-    copyCooperatively(sharedData, firstInstanceEntryIndex, result, firstInstanceEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
+    forwardFirstStep(projectedInput, preActivation, hiddenStates, firstInstanceEntryIndex, sharedData, startEntryIndex, exclusiveEndEntryIndex, activationFunction);
 
     __syncthreads();
 
@@ -44,9 +41,7 @@ __global__ void recurrentEmitAtEachStepKernel (
     for(int step = 1; step < length; step++) {
         firstStateEntryIndex += hiddenDimension;
 
-        forwardOtherStep(projectedInput, preActivation, sharedData, previousStateWeights, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex, activationFunction, hiddenDimension);
-
-        copyCooperatively(sharedData, 0, result, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex);
+        forwardOtherStep(projectedInput, preActivation, hiddenStates, sharedData, previousStateWeights, firstStateEntryIndex, startEntryIndex, exclusiveEndEntryIndex, activationFunction, hiddenDimension);
 
         __syncthreads();
     }
@@ -54,7 +49,8 @@ __global__ void recurrentEmitAtEachStepKernel (
     for(int step = length; step < maximumLength; step++) {
         firstStateEntryIndex += hiddenDimension;
 
-        setToNaN(result, firstStateEntryIndex + startEntryIndex, firstStateEntryIndex + exclusiveEndEntryIndex);
+        setToNaN(hiddenStates, firstStateEntryIndex + startEntryIndex, firstStateEntryIndex + exclusiveEndEntryIndex);
     }
+
 
 }

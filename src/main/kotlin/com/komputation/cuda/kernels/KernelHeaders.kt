@@ -7,14 +7,13 @@ object KernelHeaders {
     val sumReduction = "reduction/SumReduction.cuh"
     val productReduction = "reduction/ProductReduction.cuh"
 
-    val recurrentActivation = "recurrent/RecurrentActivation.cuh"
+    val recurrent = "continuation/recurrent/Recurrent.cuh"
+    val backwardRecurrent = "continuation/recurrent/BackwardRecurrent.cuh"
+    val recurrentActivation = "continuation/recurrent/RecurrentActivation.cuh"
 
-    val recurrent = "recurrent/Recurrent.cuh"
-    val backwardRecurrent = "recurrent/BackwardRecurrent.cuh"
-
-    val relu = "entrywise/Relu.cuh"
-    val sigmoid = "entrywise/Sigmoid.cuh"
-    val tanh = "entrywise/Tanh.cuh"
+    val relu = "continuation/relu/Relu.cuh"
+    val sigmoid = "continuation/sigmoid/Sigmoid.cuh"
+    val tanh = "continuation/tanh/Tanh.cuh"
 
     val addCooperatively = "arrays/add/AddCooperatively.cuh"
     val copyCooperatively = "arrays/copy/CopyCooperatively.cuh"
