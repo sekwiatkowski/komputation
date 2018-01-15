@@ -6,13 +6,11 @@ object ArrayKernels {
 
     fun copyBlock() = KernelInstruction(
         "copyBlockKernel",
-        "$subDirectory/copy/CopyBlockKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/copy/CopyBlockKernel.cu")
 
     fun replaceNaN() = KernelInstruction(
         "replaceNaNKernel",
-        "$subDirectory/nan/ReplaceNaN.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/nan/ReplaceNaN.cu")
 
     fun add() = KernelInstruction(
         "addKernel",

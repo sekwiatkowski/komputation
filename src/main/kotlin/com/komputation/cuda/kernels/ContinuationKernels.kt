@@ -6,83 +6,67 @@ object ContinuationKernels {
 
     fun bias() = KernelInstruction(
         "biasKernel",
-        "$subDirectory/bias/BiasKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/bias/BiasKernel.cu")
 
     fun backwardBias() = KernelInstruction(
         "backwardBiasKernel",
-        "$subDirectory/bias/BackwardBiasKernel.cu",
-        listOf(KernelHeaders.sumReduction))
+        "$subDirectory/bias/BackwardBiasKernel.cu")
 
     fun dropoutTraining() = KernelInstruction(
         "dropoutTrainingKernel",
-        "$subDirectory/dropout/DropoutTrainingKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/dropout/DropoutTrainingKernel.cu")
 
     fun dropoutRuntime() = KernelInstruction(
         "dropoutRuntimeKernel",
-        "$subDirectory/dropout/DropoutRuntimeKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/dropout/DropoutRuntimeKernel.cu")
 
     fun backwardDropout() = KernelInstruction(
         "backwardDropoutKernel",
-        "$subDirectory/dropout/BackwardDropoutKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/dropout/BackwardDropoutKernel.cu")
 
     fun exponentiation() = KernelInstruction(
         "exponentiationKernel",
-        "$subDirectory/exponentiation/ExponentiationKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/exponentiation/ExponentiationKernel.cu")
 
     fun backwardExponentiation() = KernelInstruction(
         "backwardExponentiationKernel",
-        "$subDirectory/exponentiation/BackwardExponentiationKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/exponentiation/BackwardExponentiationKernel.cu")
 
     fun normalization() = KernelInstruction(
         "normalizationKernel",
-        "$subDirectory/normalization/NormalizationKernel.cu",
-        listOf(KernelHeaders.sumReduction, KernelHeaders.nan))
+        "$subDirectory/normalization/NormalizationKernel.cu")
 
     fun backwardNormalization() = KernelInstruction(
         "backwardNormalizationKernel",
-        "$subDirectory/normalization/BackwardNormalizationKernel.cu",
-        listOf(KernelHeaders.sumReduction, KernelHeaders.nan))
+        "$subDirectory/normalization/BackwardNormalizationKernel.cu")
 
     fun sigmoid() = KernelInstruction(
         "sigmoidKernel",
-        "$subDirectory/sigmoid/SigmoidKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.sigmoid))
+        "$subDirectory/sigmoid/SigmoidKernel.cu")
 
     fun backwardSigmoid() = KernelInstruction(
         "backwardSigmoidKernel",
-        "$subDirectory/sigmoid/BackwardSigmoidKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.sigmoid))
+        "$subDirectory/sigmoid/BackwardSigmoidKernel.cu")
 
     fun relu() = KernelInstruction(
         "reluKernel",
-        "$subDirectory/relu/ReluKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.relu))
+        "$subDirectory/relu/ReluKernel.cu")
 
     fun backwardRelu() = KernelInstruction(
         "backwardReluKernel",
-        "$subDirectory/relu/BackwardReluKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.relu))
+        "$subDirectory/relu/BackwardReluKernel.cu")
 
     fun tanh() = KernelInstruction(
         "tanhKernel",
-        "$subDirectory/tanh/TanhKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.tanh))
+        "$subDirectory/tanh/TanhKernel.cu")
 
     fun backwardTanh() = KernelInstruction(
         "backwardTanhKernel",
-        "$subDirectory/tanh/BackwardTanhKernel.cu",
-        listOf(KernelHeaders.nan, KernelHeaders.tanh))
+        "$subDirectory/tanh/BackwardTanhKernel.cu")
 
     fun maxPooling() = KernelInstruction(
         "maxPoolingKernel",
-        "$subDirectory/maxpooling/MaxPoolingKernel.cu",
-        listOf(KernelHeaders.nan))
+        "$subDirectory/maxpooling/MaxPoolingKernel.cu")
 
     fun backwardMaxPooling() = KernelInstruction(
         "backwardMaxPoolingKernel",
@@ -94,27 +78,22 @@ object ContinuationKernels {
 
     fun backwardExpansion() = KernelInstruction(
         "backwardExpansionKernel",
-        "$subDirectory/expansion/BackwardExpansionKernel.cu",
-        listOf(KernelHeaders.sumReduction))
+        "$subDirectory/expansion/BackwardExpansionKernel.cu")
 
     fun recurrentEachStep() = KernelInstruction(
         "recurrentEachStepKernel",
-        "$subDirectory/recurrent/eachstep/RecurrentEachStepKernel.cu",
-        listOf(KernelHeaders.recurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively, KernelHeaders.nan))
+        "$subDirectory/recurrent/eachstep/RecurrentEachStepKernel.cu")
 
     fun backwardRecurrentEachStep() = KernelInstruction(
         "backwardRecurrentEachStepKernel",
-        "$subDirectory/recurrent/eachstep/BackwardRecurrentEachStepKernel.cu",
-        listOf(KernelHeaders.backwardRecurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively))
+        "$subDirectory/recurrent/eachstep/BackwardRecurrentEachStepKernel.cu")
 
     fun recurrentLastStep() = KernelInstruction(
         "recurrentLastStepKernel",
-        "$subDirectory/recurrent/laststep/RecurrentLastStepKernel.cu",
-        listOf(KernelHeaders.recurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively, KernelHeaders.nan))
+        "$subDirectory/recurrent/laststep/RecurrentLastStepKernel.cu")
 
     fun backwardRecurrentLastStep() = KernelInstruction(
         "backwardRecurrentLastStepKernel",
-        "$subDirectory/recurrent/laststep/BackwardRecurrentLastStepKernel.cu",
-        listOf(KernelHeaders.backwardRecurrent, KernelHeaders.recurrentActivation, KernelHeaders.relu, KernelHeaders.sigmoid, KernelHeaders.tanh, KernelHeaders.addCooperatively, KernelHeaders.copyCooperatively))
+        "$subDirectory/recurrent/laststep/BackwardRecurrentLastStepKernel.cu")
 
 }

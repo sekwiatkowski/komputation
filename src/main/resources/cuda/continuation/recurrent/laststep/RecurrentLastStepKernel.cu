@@ -1,5 +1,6 @@
-#include "continuation/recurrent/Recurrent.cuh"
-#include "symbols/NaN.cuh"
+#include "../../../cuda.h"
+#include "../Recurrent.cuh"
+#include "../../../symbols/NaN.cuh"
 
 __global__ void recurrentLastStepKernel (
     int activationFunction,

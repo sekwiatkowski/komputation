@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 /*
     Number of blocks = number of summations
     Number of threads = (number of dimensions + numberIterations - 1) / numberIterations

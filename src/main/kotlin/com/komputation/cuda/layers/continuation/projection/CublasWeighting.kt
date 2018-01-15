@@ -172,11 +172,9 @@ class CublasWeighting internal constructor(
            cuBLAS will return:
                NaN NaN
                NaN NaN */
-
         if(this.canHaveIncompleteLength) {
             this.replaceNaNKernel!!.launch(
                 Pointer.to(
-                    this.pointerToForwardResultSize,
                     this.pointerToMaximumOutputEntries,
                     this.replaceChain_pointerToNumberIterations,
                     Pointer.to(chain),
@@ -190,7 +188,6 @@ class CublasWeighting internal constructor(
 
             this.replaceNaNKernel!!.launch(
                 Pointer.to(
-                    this.pointerToBackwardResultSize,
                     this.pointerToMaximumInputEntries,
                     this.replaceInput_pointerToNumberIterations,
                     Pointer.to(this.deviceInput),
@@ -211,9 +208,9 @@ class CublasWeighting internal constructor(
                 this.numberInputRows,
                 this.deviceBackwardWrtWeights,
                 this.numberWeightEntries)
+
         }
         else {
-
             cublasBackwardProjectionWrtWeights(
                 this.cublasHandle,
                 chain,

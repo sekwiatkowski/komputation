@@ -1,4 +1,5 @@
-#include "reduction/SumReduction.cuh"
+#include "../../cuda.h"
+#include "../../reduction/SumReduction.cuh"
 
 // This assumes that the number of threads is equal to the number of predictions/targets.
 // First, the squared differences between predictions and targets are stored in shared memory.
@@ -19,14 +20,14 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
     int indexColumnInBatch = indexInstance * gridDim.y + indexColumn;
 
     if(indexInstance < batchSize) {
-        float thisValue = 0.0;
+        float thisValue = 0.0f;
 
         if(startIndexWithinColumn < numberRows) {
-            thisValue += powf(predictions[startIndexWithinBatch] - targets[startIndexWithinBatch], 2.0);
+            thisValue += powf(predictions[startIndexWithinBatch] - targets[startIndexWithinBatch], 2.0f);
 
             if(numberIterations > 1) {
                 for(int indexEntry = startIndexWithinBatch + 1; indexEntry < startIndexWithinBatch + numberIterations; indexEntry++) {
-                    thisValue += powf(predictions[indexEntry] - targets[indexEntry], 2.0);
+                    thisValue += powf(predictions[indexEntry] - targets[indexEntry], 2.0f);
                 }
             }
         }
@@ -37,12 +38,12 @@ __global__ void squaredLossKernel (int batchSize, int numberRows, int numberEntr
         reduceWarpsToSums(thisValue, warpId, laneId, sharedData);
 
         if(threadIdx.x == 0) {
-            result[indexColumnInBatch] = 0.5 * sharedData[0];
+            result[indexColumnInBatch] = 0.5f * sharedData[0];
         }
     }
     else {
         if(threadIdx.x == 0) {
-            result[indexColumnInBatch] = 0.0;
+            result[indexColumnInBatch] = 0.0f;
         }
     }
 

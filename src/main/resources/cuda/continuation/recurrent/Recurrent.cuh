@@ -1,9 +1,10 @@
-#include "continuation/recurrent/RecurrentActivation.cuh"
-#include "continuation/relu/Relu.cuh"
-#include "continuation/sigmoid/Sigmoid.cuh"
-#include "continuation/tanh/Tanh.cuh"
-#include "arrays/copy/CopyCooperatively.cuh"
-#include "arrays/add/AddCooperatively.cuh"
+#include "../../cuda.h"
+#include "RecurrentActivation.cuh"
+#include "../relu/Relu.cuh"
+#include "../sigmoid/Sigmoid.cuh"
+#include "../tanh/Tanh.cuh"
+#include "../../arrays/copy/CopyCooperatively.cuh"
+#include "../../arrays/add/AddCooperatively.cuh"
 
 __device__ void forwardRecurrentActivation(float* input, int startInput, float* result, int startEntryIndex, int exclusiveEndEntryIndex, int activationFunction) {
     switch(activationFunction) {
@@ -25,6 +26,8 @@ __device__ void forwardRecurrentActivation(float* input, int startInput, float* 
             for(int entryIndex = startEntryIndex; entryIndex < exclusiveEndEntryIndex; entryIndex++) {
                 result[entryIndex] = tanh(input[startInput + entryIndex]);
             }
+            break;
+        default:
             break;
     }
 }

@@ -19,10 +19,16 @@ fun compileKernel(
 
     val numberHeaders = headers.size
 
-    nvrtcCreateProgram(program, sourceCode, name, numberHeaders, headers, includeNames)
+    nvrtcCreateProgram(
+        program,
+        sourceCode,
+        name,
+        numberHeaders,
+        headers,
+        includeNames)
 
     for (nameExpression in nameExpressions) {
-        JNvrtc.nvrtcAddNameExpression(program, nameExpression)
+        nvrtcAddNameExpression(program, nameExpression)
     }
 
     val (major, minor) = computeCapabilities

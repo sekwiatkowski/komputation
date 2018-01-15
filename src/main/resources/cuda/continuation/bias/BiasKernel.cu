@@ -1,4 +1,5 @@
-#include "symbols/NaN.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
 
 __global__ void biasKernel (
     int batchSize,
@@ -30,8 +31,7 @@ __global__ void biasKernel (
 
             if(indexColumn < length) {
                 for(int indexEntry = firstEntryWithinBatch; indexEntry < lastEntryWithinBatch; indexEntry++) {
-                    int indexColumn = indexEntry % numberRows;
-                    result[indexEntry] = input[indexEntry] + bias[indexColumn];
+                    result[indexEntry] = input[indexEntry] + bias[indexEntry % numberRows];
                 }
             }
             else {

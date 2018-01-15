@@ -1,4 +1,5 @@
-#include "reduction/SumReduction.cuh"
+#include "../../cuda.h"
+#include "../../reduction/SumReduction.cuh"
 
 /*
     Example:

@@ -1,5 +1,6 @@
-#include "symbols/NaN.cuh"
-#include "continuation/sigmoid/Sigmoid.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
+#include "Sigmoid.cuh"
 
 __global__ void backwardSigmoidKernel (
     int batchSize,

@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 __global__ void addKernel (
     float* A,
     float* B,

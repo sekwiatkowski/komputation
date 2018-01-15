@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 __global__ void adagradKernel (
     int numberIterations,
     int* parameterIndices,
@@ -15,7 +17,7 @@ __global__ void adagradKernel (
 
     if(parameterIndex != -1 && count > 0) {
 
-        float scalingFactor = 1.0 / (float)count;
+        float scalingFactor = 1.0f / (float)count;
 
         int startEntryIndex = (blockIdx.y * blockDim.x + threadIdx.x) * numberIterations;
 

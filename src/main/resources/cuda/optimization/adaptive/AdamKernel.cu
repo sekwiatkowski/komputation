@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 __global__ void adamKernel (
     int numberIterations,
     int* parameterIndices,
@@ -21,7 +23,7 @@ __global__ void adamKernel (
 
     if(parameterIndex != -1 && count > 0) {
 
-        float scalingFactor = 1.0 / (float)count;
+        float scalingFactor = 1.0f / (float)count;
 
         int startEntryIndex = (blockIdx.y * blockDim.x + threadIdx.x) * numberIterations;
 
@@ -40,11 +42,11 @@ __global__ void adamKernel (
 
             float updatedFirstMomentEstimate = firstMomentDecay * firstMomentEstimate[parameterEntryIndex] + oneMinusFirstMomentDecay * scaledDerivative;
             firstMomentEstimate[parameterEntryIndex] = updatedFirstMomentEstimate;
-            float correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0 - powf(firstMomentDecay, step));
+            float correctedFirstMomentEstimate = updatedFirstMomentEstimate / (1.0f - powf(firstMomentDecay, step));
 
             float updatedSecondMomentEstimate = secondMomentDecay * secondMomentEstimate[parameterEntryIndex] + oneMinusSecondMomentDecay * scaledDerivative * scaledDerivative;
             secondMomentEstimate[parameterEntryIndex] = updatedSecondMomentEstimate;
-            float correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0 - pow(secondMomentDecay, step));
+            float correctedSecondMomentEstimate = updatedSecondMomentEstimate / (1.0f - powf(secondMomentDecay, step));
 
             float adaptedLearningRate = learningRate / (sqrtf(correctedSecondMomentEstimate) + epsilon);
 

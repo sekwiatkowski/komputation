@@ -1,4 +1,5 @@
-#include "reduction/ProductReduction.cuh"
+#include "../../cuda.h"
+#include "../../reduction/ProductReduction.cuh"
 
 /*
     step 1: 0.8
@@ -7,7 +8,7 @@
 */
 
 __inline__ __device__ float probability(float prediction, float target) {
-    return target * prediction + (1.0 - target) * (1.0 - prediction);
+    return target * prediction + (1.0f - target) * (1.0f - prediction);
 }
 
 __global__ void logisticLossKernel (int batchSize, int numberColumns, int numberIterations, float* predictions, float* targets, float* results)

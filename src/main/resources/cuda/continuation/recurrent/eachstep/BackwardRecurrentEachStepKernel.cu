@@ -1,4 +1,6 @@
-#include "continuation/recurrent/BackwardRecurrent.cuh"
+#include "../../../cuda.h"
+#include "../BackwardRecurrent.cuh"
+#include "../../../arrays/add/AddCooperatively.cuh"
 
 // first half of shared memory: differentiation w.r.t. pre-activation
 // second half of shared memory: differentiation w.r.t. previous hidden state
@@ -68,7 +70,6 @@ __global__ void backwardRecurrentEachStepKernel (
             preActivation,
             hiddenStates,
             backwardResult,
-            chain,
             sharedData,
             firstStateEntryIndex,
             sharedData,
@@ -102,7 +103,6 @@ __global__ void backwardRecurrentEachStepKernel (
         hiddenDimension,
         startEntryIndex,
         exclusiveEndEntryIndex,
-        hiddenDimension,
         activationFunction
     );
 

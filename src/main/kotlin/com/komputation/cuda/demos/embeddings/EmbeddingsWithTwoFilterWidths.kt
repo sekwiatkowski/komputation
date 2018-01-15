@@ -31,7 +31,6 @@ fun main(args: Array<String>) {
     val optimizationStrategy = momentum(0.01f, 0.9f)
 
     val numberFilters = 2
-    val filterWidths = arrayOf(1, 2)
     val filterHeight = embeddingDimension
 
     val numberClasses = EmbeddingData.numberClasses
@@ -42,10 +41,8 @@ fun main(args: Array<String>) {
         maximumBatchSize,
         lookup(embeddings, 2, 2, embeddingDimension, optimizationStrategy),
         stack(
-            *filterWidths
-                .map { filterWidth -> convolution(numberFilters, filterWidth, filterHeight, initializationStrategy, optimizationStrategy)
-                }
-                .toTypedArray()
+            convolution(numberFilters, 1, filterHeight, initializationStrategy, optimizationStrategy),
+            convolution(numberFilters, 2, filterHeight, initializationStrategy, optimizationStrategy)
         ),
         relu(),
         dense(numberClasses, Activation.Softmax, initializationStrategy, optimizationStrategy)

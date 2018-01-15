@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 /*
     backup: v_backup = v
     history update: v = m * v - learning_rate * dx
@@ -21,7 +23,7 @@ __global__ void nesterovKernel (
     int count = counts[updateIndex];
 
     if(parameterIndex != -1 && count > 0) {
-        float scalingFactor = 1.0 / (float)count;
+        float scalingFactor = 1.0f / (float)count;
 
         int startEntryIndex = (blockIdx.y * blockDim.x + threadIdx.x) * numberIterations;
 
@@ -47,7 +49,7 @@ __global__ void nesterovKernel (
 
             float removedPreviousLookAhead = parameters[parameterEntryIndex] - momentum * entryBackup;
 
-            parameters[parameterEntryIndex] = removedPreviousLookAhead + (1.0 + momentum) * entryUpdate;
+            parameters[parameterEntryIndex] = removedPreviousLookAhead + (1.0f + momentum) * entryUpdate;
 
             parameterEntryIndex++;
             gradientEntryIndex++;

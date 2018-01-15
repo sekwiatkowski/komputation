@@ -1,3 +1,5 @@
+#include "../cuda.h"
+
 __global__ void binaryTestingKernel (
     int batchStart,
     int length,
@@ -12,6 +14,6 @@ __global__ void binaryTestingKernel (
         float prediction = predictions[indexEntry];
         float target = targets[indexEntry];
 
-        result[indexEntry] = (prediction < 0.5 && target = 0.0) || (prediction >= 0.5 && target = 1.0);
+        result[indexEntry] = (prediction < 0.5 && target == 0.0) || (prediction >= 0.5 && target == 1.0);
     }
 }

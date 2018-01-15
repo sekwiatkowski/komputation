@@ -1,5 +1,6 @@
-#include "symbols/NaN.cuh"
-#include "continuation/tanh/Tanh.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
+#include "../../continuation/tanh/Tanh.cuh"
 
 __global__ void tanhKernel (
     int batchSize,

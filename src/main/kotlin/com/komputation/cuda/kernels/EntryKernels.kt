@@ -4,7 +4,6 @@ object EntryKernels {
 
     fun lookup() = KernelInstruction(
         "lookupKernel",
-        "entry/LookupKernel.cu",
-        listOf(KernelHeaders.nan))
+        "entry/LookupKernel.cu")
 
 }

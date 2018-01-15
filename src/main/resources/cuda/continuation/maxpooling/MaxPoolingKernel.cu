@@ -1,4 +1,5 @@
-#include "symbols/NaN.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
 
 __inline__ __device__ int findNextPowerOfTwo(int input) {
 
@@ -67,10 +68,10 @@ __global__ void maxPoolingKernel (
             __syncthreads();
 
             if (warpId == 0 && laneId < numberRequiredWarps) {
-                int warpMaximumIndex = warpMaximumIndices[laneId];
-                float warpMaximumValue = input[warpMaximumIndex];
+                int laneWarpMaximumIndex = warpMaximumIndices[laneId];
+                float warpMaximumValue = input[laneWarpMaximumIndex];
 
-                int blockMaximumIndex = findMaximum(warpMaximumIndex, warpMaximumValue, findNextPowerOfTwo(numberRequiredWarps));
+                int blockMaximumIndex = findMaximum(laneWarpMaximumIndex, warpMaximumValue, findNextPowerOfTwo(numberRequiredWarps));
 
                 if(laneId == 0) {
                     maxIndices[resultIndex] = blockMaximumIndex;
@@ -80,7 +81,7 @@ __global__ void maxPoolingKernel (
         }
     }
     else {
-        maxIndices[resultIndex] = nanf("NaN");
+        maxIndices[resultIndex] = -1;
         setToNaN(result, resultStartInstance, resultStartInstance + 1);
     }
 

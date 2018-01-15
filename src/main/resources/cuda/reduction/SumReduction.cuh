@@ -1,3 +1,5 @@
+#include "../cuda.h"
+
 __device__ float reduceWarpToSum(float thisValue) {
     for (int offset = warpSize / 2; offset > 0; offset /= 2) {
         float otherValue = __shfl_down(thisValue, offset, warpSize);
@@ -23,7 +25,7 @@ __device__ float reduceWarpsToSum(float thisValue, int warpId, int laneId, float
 
     int numberWarps = (blockDim.x + warpSize - 1) / warpSize;
 
-    float warpSum = (threadIdx.x < numberWarps) ? shared[threadIdx.x] : 0.0;
+    float warpSum = (threadIdx.x < numberWarps) ? shared[threadIdx.x] : 0.0f;
 
     return reduceWarpToSum(warpSum);
 

@@ -1,4 +1,5 @@
-#include "symbols/NaN.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
 
 __global__ void backwardLogisticLossKernel (int batchSize, int numberColumns, int numberIterations, float* predictions, float* targets, float* results) {
     int indexInstance = blockIdx.x;
@@ -12,10 +13,10 @@ __global__ void backwardLogisticLossKernel (int batchSize, int numberColumns, in
             float target = targets[indexEntry];
             float prediction = predictions[indexEntry];
 
-            float positive = -1.0/prediction;
-            float negative = 1.0/(1.0 - prediction);
+            float positive = -1.0f/prediction;
+            float negative = 1.0f/(1.0f - prediction);
 
-            results[indexEntry] = target * positive + (1.0 - target) * negative;
+            results[indexEntry] = target * positive + (1.0f - target) * negative;
         }
     }
     else {

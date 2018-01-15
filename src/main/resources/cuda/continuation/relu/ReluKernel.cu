@@ -1,5 +1,6 @@
-#include "symbols/NaN.cuh"
-#include "continuation/relu/Relu.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
+#include "Relu.cuh"
 
 __global__ void reluKernel (
     int batchSize,

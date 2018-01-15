@@ -12,7 +12,7 @@ Komputation is available through Maven Central:
 <dependency>
     <groupId>com.komputation</groupId>
     <artifactId>komputation</artifactId>
-    <version>0.12.4</version>
+    <version>0.12.5</version>
 </dependency>
 ```
 

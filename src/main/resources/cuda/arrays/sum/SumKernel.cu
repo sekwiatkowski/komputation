@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 /*
     Number of threads = (batch size * entries per instance + maximum threads per block - 1) / maximum threads per block
  */
@@ -13,7 +15,7 @@ __global__ void sumKernel(
 
     for(int entryIndex = startEntry; entryIndex < exclusiveEndEntry; entryIndex++) {
 
-        float entry = 0.0;
+        float entry = 0.0f;
 
         for(int instanceIndex = 0; instanceIndex < batchSize; instanceIndex++) {
             entry += input[instanceIndex * numberEntries + entryIndex];

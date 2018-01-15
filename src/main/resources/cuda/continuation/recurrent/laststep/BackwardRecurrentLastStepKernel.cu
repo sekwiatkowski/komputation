@@ -1,4 +1,4 @@
-#include "continuation/recurrent/BackwardRecurrent.cuh"
+#include "../BackwardRecurrent.cuh"
 
 // first half of shared memory: differentiation w.r.t. pre-activation
 // second half of shared memory: differentiation w.r.t. previous hidden state
@@ -61,7 +61,6 @@ __global__ void backwardRecurrentLastStepKernel (
             preActivation,
             hiddenStates,
             backwardResult,
-            chain,
             sharedData,
             firstStateEntryIndex,
             sharedData,
@@ -87,7 +86,6 @@ __global__ void backwardRecurrentLastStepKernel (
         hiddenDimension,
         startEntryIndex,
         exclusiveEndEntryIndex,
-        hiddenDimension,
         activationFunction
     );
 

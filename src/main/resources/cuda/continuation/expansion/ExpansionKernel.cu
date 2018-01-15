@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 __global__ void expansionKernel(
     int batchSize,
     float* input,

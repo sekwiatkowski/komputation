@@ -71,7 +71,6 @@ class CudaMaxPooling internal constructor(
             this.forwardConfiguration.numberThreadsPerBlock,
             this.forwardSharedMemoryBytes
         )
-
     }
 
     override fun computeBackwardResult(batchSize: Int, chain: Pointer) {

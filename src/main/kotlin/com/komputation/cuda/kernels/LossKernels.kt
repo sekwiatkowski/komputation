@@ -5,37 +5,31 @@ object LossKernels {
     fun squaredLoss() =
         KernelInstruction(
             "squaredLossKernel",
-            "loss/squaredloss/SquaredLossKernel.cu",
-            listOf(KernelHeaders.sumReduction))
+            "loss/squaredloss/SquaredLossKernel.cu")
 
     fun backwardSquaredLoss() =
         KernelInstruction(
             "backwardSquaredLossKernel",
-            "loss/squaredloss/BackwardSquaredLossKernel.cu",
-            listOf(KernelHeaders.nan))
+            "loss/squaredloss/BackwardSquaredLossKernel.cu")
 
     fun logisticLoss() =
         KernelInstruction(
             "logisticLossKernel",
-            "loss/logisticloss/LogisticLossKernel.cu",
-            listOf(KernelHeaders.productReduction))
+            "loss/logisticloss/LogisticLossKernel.cu")
 
     fun backwardLogisticLoss() =
         KernelInstruction(
             "backwardLogisticLossKernel",
-            "loss/logisticloss/BackwardLogisticLossKernel.cu",
-            listOf(KernelHeaders.nan))
+            "loss/logisticloss/BackwardLogisticLossKernel.cu")
 
     fun crossEntropyLoss() =
         KernelInstruction(
             "crossEntropyLossKernel",
-            "loss/crossentropy/CrossEntropyLossKernel.cu",
-            listOf(KernelHeaders.sumReduction))
+            "loss/crossentropy/CrossEntropyLossKernel.cu")
 
     fun backwardCrossEntropyLoss() =
         KernelInstruction(
             "backwardCrossEntropyLossKernel",
-            "loss/crossentropy/BackwardCrossEntropyLossKernel.cu",
-            listOf(KernelHeaders.nan))
+            "loss/crossentropy/BackwardCrossEntropyLossKernel.cu")
 
 }

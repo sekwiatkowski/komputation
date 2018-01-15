@@ -1,9 +1,10 @@
-#include "continuation/recurrent/RecurrentActivation.cuh"
-#include "continuation/relu/Relu.cuh"
-#include "continuation/sigmoid/Sigmoid.cuh"
-#include "continuation/tanh/Tanh.cuh"
-#include "arrays/copy/CopyCooperatively.cuh"
-#include "arrays/add/AddCooperatively.cuh"
+#include "../../cuda.h"
+#include "RecurrentActivation.cuh"
+#include "../relu/Relu.cuh"
+#include "../sigmoid/Sigmoid.cuh"
+#include "../tanh/Tanh.cuh"
+#include "../../arrays/copy/CopyCooperatively.cuh"
+#include "../../arrays/add/AddCooperatively.cuh"
 
 __device__ void backwardRecurrentActivation(
     float* input,
@@ -36,6 +37,8 @@ __device__ void backwardRecurrentActivation(
             for(int entryIndex = startEntryIndex; entryIndex < exclusiveEndEntryIndex; entryIndex++) {
                 result[startResult + entryIndex] = backwardTanh(input[startInput + entryIndex], chain[startChain + entryIndex]);
             }
+            break;
+        default:
             break;
     }
 }
@@ -192,7 +195,6 @@ __device__ void backwardFirstStep(
     int firstSumOfChainAndBackwardPreviousState,
     int startEntryIndex,
     int exclusiveEndEntryIndex,
-    int hiddenDimension,
     int activationFunction) {
 
     backwardRecurrentActivation(
@@ -212,7 +214,6 @@ __device__ void backwardStepsInBetween(
     float* preActivation,
     float* hiddenStates,
     float* backwardResult,
-    float* chain,
     float* sharedMemory,
     int firstStateEntryIndex,
     float* sumOfChainAndBackwardPreviousState,

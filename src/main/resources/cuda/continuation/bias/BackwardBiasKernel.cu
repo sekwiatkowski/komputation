@@ -1,4 +1,6 @@
-#include "reduction/SumReduction.cuh"
+#include "../../cuda.h"
+#include "../../reduction/SumReduction.cuh"
+
 /*
     Number of blocks = number of chain rows
     Number of threads = (number of chain columns + number of iterations - 1) / number of iterations

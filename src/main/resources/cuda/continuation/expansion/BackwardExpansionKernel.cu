@@ -1,4 +1,5 @@
-#include "reduction/SumReduction.cuh"
+#include "../../cuda.h"
+#include "../../reduction/SumReduction.cuh"
 
 __global__ void backwardExpansionKernel(
     int batchSize,
@@ -65,7 +66,7 @@ __global__ void backwardExpansionKernel(
 
                 }
                 else {
-                    thisValueInIteration = 0.0;
+                    thisValueInIteration = 0.0f;
                 }
 
                 thisValue += thisValueInIteration;

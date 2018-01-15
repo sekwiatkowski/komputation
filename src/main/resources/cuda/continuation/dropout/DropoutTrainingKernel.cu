@@ -1,4 +1,5 @@
-#include "symbols/NaN.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
 
 __inline__ __device__  int xorShift(int seed) {
     int updated = seed;
@@ -19,7 +20,7 @@ __inline__ __device__  int xorShift(int seed) {
 */
 __device__ float generateMask(float seed, float dropoutProbability) {
 
-    return ceilf((seed + 2147483648.0) / 4294967295.0 - dropoutProbability);
+    return ceilf((seed + 2147483648.0f) / 4294967295.0f - dropoutProbability);
 
 }
 

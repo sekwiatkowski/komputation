@@ -1,5 +1,6 @@
-#include "continuation/recurrent/Recurrent.cuh"
-#include "symbols/NaN.cuh"
+#include "../../../cuda.h"
+#include "../Recurrent.cuh"
+#include "../../../symbols/NaN.cuh"
 
 /*
     number of blocks in x dimension = number of instances

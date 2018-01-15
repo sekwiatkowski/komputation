@@ -1,3 +1,5 @@
+#include "../../cuda.h"
+
 __global__ void backwardMaxPoolingKernel (
     int batchSize,
     int* lengths,

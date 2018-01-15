@@ -1,4 +1,5 @@
-#include "symbols/NaN.cuh"
+#include "../../cuda.h"
+#include "../../symbols/NaN.cuh"
 
 __global__ void backwardSquaredLossKernel (int batchSize, int numberEntriesPerInstance, int numberIterations, float* predictions, float* targets, float* result) {
 

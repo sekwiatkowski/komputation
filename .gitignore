@@ -1,2 +1,4 @@
 .idea
+*.iml
 target
+src/main/resources/cuda/CMakeLists.txt
